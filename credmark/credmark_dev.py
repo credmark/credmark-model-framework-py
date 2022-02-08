@@ -1,9 +1,11 @@
 #! /usr/bin/env python3
 import sys
-sys.path.append('.')
-import argparse  # noqa
+import argparse
 import logging
 import json
+import os
+from dotenv import load_dotenv
+sys.path.append('.')
 from credmark.model.engine.context import EngineModelContext
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.errors import MaxModelRunDepthError, MissingModelError, ModelRunRequestError
@@ -12,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    load_dotenv()
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='Credmark developer tool')
@@ -86,11 +90,18 @@ def run_model(args):
     try:
         config_logging(args)
 
+        chain_to_provider_url = None
+        providers_json = os.environ.get('CREDMARK_WEB3_PROVIDERS')
+        if providers_json:
+            try:
+                chain_to_provider_url = json.loads(providers_json)
+            except Exception as err:
+                logger.error(f'Error parsing JSON in env var CREDMARK_WEB3_PROVIDERS: {err}')
+
         model_loader = load_models(args)
 
         chain_id = args['chain_id']
         block_number = args['block_number']
-        provider_url = args['provider_url']
         model_name = args['model_name']
         model_version = args['model_version']
         api_url = args['api_url']
@@ -103,16 +114,17 @@ def run_model(args):
             sys.stderr.write('Reading input JSON on stdin\n')
             input = json.load(sys.stdin)
 
-        result = EngineModelContext.create_context_and_run_model(chain_id=chain_id,
-                                                                 block_number=block_number,
-                                                                 model_name=model_name,
-                                                                 model_version=model_version,
-                                                                 input=input,
-                                                                 model_loader=model_loader,
-                                                                 provider_url=provider_url,
-                                                                 api_url=api_url,
-                                                                 run_id=run_id,
-                                                                 depth=depth)
+        result = EngineModelContext.create_context_and_run_model(
+            chain_id=chain_id,
+            block_number=block_number,
+            model_name=model_name,
+            model_version=model_version,
+            input=input,
+            model_loader=model_loader,
+            chain_to_provider_url=chain_to_provider_url,
+            api_url=api_url,
+            run_id=run_id,
+            depth=depth)
         json.dump(result, sys.stdout)
 
     except (MaxModelRunDepthError, MissingModelError) as e:

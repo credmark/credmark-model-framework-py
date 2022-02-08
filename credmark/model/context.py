@@ -1,8 +1,8 @@
 from abc import abstractmethod
-from web3 import Web3
 from typing import Union
 from credmark.model.ledger import Ledger
 from credmark.model.libraries import Libraries
+from credmark.model.web3 import Web3Registry
 
 
 class ModelContext():
@@ -17,20 +17,26 @@ class ModelContext():
         run_model(...) - run the specified model and return the results
     """
 
-    def __init__(self, chain_id: int, block_number: int, provider_url: Union[str, None]):
+    def __init__(self, chain_id: int, block_number: int,
+                 web3_registry: Web3Registry):
         self.chain_id = chain_id
         self.block_number = block_number
-        self.__provider_url = provider_url
         self.__web3 = None
         self.__ledger = None
         self.__libraries = None
+        self.__web3_registry = web3_registry
+
+    def _update_block_number(self, block_number: int):
+        self.block_number = block_number
+        if self.__web3 is not None:
+            self.__web3.eth.default_block = block_number
 
     @property
     def web3(self):
         if self.__web3 is None:
-            self.__web3 = Web3(Web3.HTTPProvider(self.__provider_url))
-            if self.block_number is not None:
-                self.__web3.eth.default_block = self.block_number
+            self.__web3 = self.__web3_registry.web3_for_chain_id(self.chain_id)
+            self.__web3.eth.default_block = self.block_number if \
+                self.block_number is not None else 'latest'
         return self.__web3
 
     @property
@@ -67,3 +73,4 @@ class ModelContext():
             MissingModelError if requested model is not available
             Exception on other errors
         """
+        self.__web = None
