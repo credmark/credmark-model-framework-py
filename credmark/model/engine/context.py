@@ -118,10 +118,12 @@ class EngineModelContext(ModelContext):
             raise MaxModelRunDepthError('Max model run depth')
 
         if model_class is not None:
-            current_block_number = self.block_number
+            saved_block_number = self.block_number
+            saved_web3 = self._web3
 
             if block_number is not None:
-                self._update_block_number(block_number)
+                self.block_number = block_number
+            self._web3 = None
 
             model = model_class(self)
             result = model.run(input)
@@ -130,7 +132,8 @@ class EngineModelContext(ModelContext):
             self._add_dependency(name, version)
 
             if block_number is not None:
-                self._update_block_number(current_block_number)
+                self.block_number = saved_block_number
+            self._web3 = saved_web3
 
         else:
             # api is not None here or get_model_class() would have

@@ -21,23 +21,18 @@ class ModelContext():
                  web3_registry: Web3Registry):
         self.chain_id = chain_id
         self.block_number = block_number
-        self.__web3 = None
+        self._web3 = None
         self.__ledger = None
         self.__libraries = None
         self.__web3_registry = web3_registry
 
-    def _update_block_number(self, block_number: int):
-        self.block_number = block_number
-        if self.__web3 is not None:
-            self.__web3.eth.default_block = block_number
-
     @property
     def web3(self):
-        if self.__web3 is None:
-            self.__web3 = self.__web3_registry.web3_for_chain_id(self.chain_id)
-            self.__web3.eth.default_block = self.block_number if \
+        if self._web3 is None:
+            self._web3 = self.__web3_registry.web3_for_chain_id(self.chain_id)
+            self._web3.eth.default_block = self.block_number if \
                 self.block_number is not None else 'latest'
-        return self.__web3
+        return self._web3
 
     @property
     def ledger(self):
