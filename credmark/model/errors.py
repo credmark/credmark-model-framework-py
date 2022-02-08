@@ -12,6 +12,10 @@ class MissingModelError(Exception):
         super().__init__(message)
 
 
+class ModelRunError(Exception):
+    pass
+
+
 class MaxModelRunDepthError(Exception):
     pass
 

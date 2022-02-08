@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 sys.path.append('.')
 from credmark.model.engine.context import EngineModelContext
 from credmark.model.engine.model_loader import ModelLoader
-from credmark.model.errors import MaxModelRunDepthError, MissingModelError, ModelRunRequestError
+from credmark.model.errors import MaxModelRunDepthError, MissingModelError, \
+    ModelRunError, ModelRunRequestError
 
 logger = logging.getLogger(__name__)
 
@@ -127,7 +128,7 @@ def run_model(args):
             depth=depth)
         json.dump(result, sys.stdout)
 
-    except (MaxModelRunDepthError, MissingModelError) as e:
+    except (MaxModelRunDepthError, MissingModelError, ModelRunError) as e:
         msg = {
             "statusCode": 500,
             "error": "Model run error",
