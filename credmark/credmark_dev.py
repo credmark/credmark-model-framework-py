@@ -31,6 +31,7 @@ def main():
                                        help='additional help')
 
     parser_list = subparsers.add_parser('list', help='List models', aliases=['list-models'])
+    parser_list.add_argument('--manifests', action='store_true', default=False)
     parser_list.set_defaults(func=list_models)
 
     parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
@@ -76,9 +77,19 @@ def list_models(args):
     model_loader = load_models(args)
 
     sys.stderr.write('\nLoaded models:\n\n')
-    models = model_loader.loaded_model_version_lists()
-    for m, v in models.items():
-        sys.stderr.write(f' - {m}: {v}\n')
+
+    if args.get('manifests'):
+        manifests = model_loader.loaded_model_manifests()
+        for m in manifests:
+            for i, v in m.items():
+                sys.stderr.write(f' {i}: {v}\n')
+            sys.stderr.write('\n')
+
+    else:
+        models = model_loader.loaded_model_version_lists()
+        for m, v in models.items():
+            sys.stderr.write(f' - {m}: {v}\n')
+
     sys.stderr.write('\n')
     sys.stderr.write(
         f'{len(model_loader.errors)} errors, {len(model_loader.warnings)} warnings\n\n')

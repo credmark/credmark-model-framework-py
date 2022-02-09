@@ -60,4 +60,3 @@ class ModelContext():
             MissingModelError if requested model is not available
             Exception on other errors
         """
-        self.__web = None
