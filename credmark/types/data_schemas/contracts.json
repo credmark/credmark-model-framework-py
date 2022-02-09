@@ -1,0 +1,12 @@
+{
+    "address": ":Address",
+    "abi": ":ABI",
+    "meta": {
+        "contractName": ":string",
+        "protocol": ":string",
+        "product": ":string",
+        "chainId": ":int",
+        "constructorArgs": ":Hash[]",
+        "deploymentTx": ":Hash"
+    }
+}
