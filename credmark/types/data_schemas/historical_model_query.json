@@ -4,24 +4,24 @@
         "model": ":Model",
         "version": ":ModelVersion"
     },
-    "$queryType": {
+    "$queryType:HistoricalQueryType": {
         "startEnd": {
             "start": ":Timestamp",
             "end": ":Timestamp",
-            "period": ":TimeRange"
+            "interval": ":TimeRange"
         },
         "recentWindow": {
-            "window": ":TimeRange",
-            "period": ":TimeRange"
+            "window ASK JOEY ABOUT THIS NAME": ":TimeRange",
+            "interval": ":TimeRange"
         },
         "startEndBlock": {
             "startBlock": ":BlockNumber",
             "endBlock": ":BlockNumber",
-            "periodBlock": ":int"
+            "intervalBlocks": ":int"
         },
         "recentWindowBlock": {
             "window": ":int",
-            "period": ":int"
+            "intervalBlocks": ":int"
         }
     }
 }
