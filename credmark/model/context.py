@@ -1,7 +1,6 @@
 from abc import abstractmethod
 from typing import Union
 from credmark.model.ledger import Ledger
-from credmark.model.libraries import Libraries
 from credmark.model.web3 import Web3Registry
 
 
@@ -23,7 +22,6 @@ class ModelContext():
         self.block_number = block_number
         self._web3 = None
         self.__ledger = None
-        self.__libraries = None
         self.__web3_registry = web3_registry
 
     @property
@@ -39,12 +37,6 @@ class ModelContext():
         if self.__ledger is None:
             self.__ledger = Ledger(self)
         return self.__ledger
-
-    @property
-    def libraries(self):
-        if self.__libraries is None:
-            self.__libraries = Libraries()
-        return self.__libraries
 
     @abstractmethod
     def run_model(self, name: str, input: Union[dict, None] = None,
