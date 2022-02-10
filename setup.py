@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from gettext import find
 import os
 import sys
-
 
 try:
     from setuptools import setup, find_namespace_packages as find_packages
@@ -30,7 +28,7 @@ setup(
     author='Credmark',
     author_email='info@credmark.com',
     url='https://github.com/credmark',
-    python_requires='>=3.9.0',
+    python_requires='>=3.6.0',
     packages=find_packages() if find_packages is not None else ['credmark'],
     package_dir={'credmark':
                  'credmark'},
