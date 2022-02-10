@@ -17,11 +17,11 @@ class ModelLoader:
         self.errors = []
         self.warnings = []
 
-        # Map "name:version" to a model class
-        self.__name_version_to_class_dict: dict[str, Type[Model]] = dict()
+        # Map "slug:version" to a model class
+        self.__slug_version_to_class_dict: dict[str, Type[Model]] = dict()
 
-        # Map name to a sorted list of model versions
-        self.__name_to_versions_dict: dict[str, List[version.Version]] = dict()
+        # Map slug to a sorted list of model versions
+        self.__slug_to_versions_dict: dict[str, List[version.Version]] = dict()
 
         self.__model_manifest_list: List[dict] = []
 
@@ -31,8 +31,8 @@ class ModelLoader:
     def clear(self):
         self.errors.clear()
         self.warnings.clear()
-        self.__name_version_to_class_dict.clear()
-        self.__name_to_versions_dict.clear()
+        self.__slug_version_to_class_dict.clear()
+        self.__slug_to_versions_dict.clear()
         self.__model_manifest_list.clear()
 
     def log_errors(self):
@@ -45,12 +45,12 @@ class ModelLoader:
         return len(self.errors) > 0 or len(self.warnings) > 0
 
     def loaded_model_versions(self):
-        """Return a list of name:version strings of loaded models"""
-        return list(self.__name_version_to_class_dict.keys())
+        """Return a list of slug:version strings of loaded models"""
+        return list(self.__slug_version_to_class_dict.keys())
 
     def loaded_model_version_lists(self):
-        """Return a dict of model name to list of version strings"""
-        return {k: [str(v) for v in vs] for k, vs in self.__name_to_versions_dict.items()}
+        """Return a dict of model slug to list of version strings"""
+        return {k: [str(v) for v in vs] for k, vs in self.__slug_to_versions_dict.items()}
 
     def loaded_model_manifests(self):
         return self.__model_manifest_list
@@ -76,7 +76,7 @@ class ModelLoader:
         folder = os.path.dirname(fpath)
         try:
             manifest = self._load_yaml_file(fpath)
-            if manifest is not None and 'credmark_model_manifest' in manifest:
+            if manifest is not None and 'credmarkModelManifest' in manifest:
                 self._process_model_manifest(manifest, folder, fpath)
         except Exception as err:
             self.errors.append(
@@ -108,13 +108,13 @@ class ModelLoader:
     def _process_model_manifest_entry(self, model_manifest):
         try:
             model_classname = model_manifest['class']
-            model_name = model_manifest['name']
+            model_slug = model_manifest['slug']
             # ensure version is a string
             model_version = model_manifest['version'] = str(
                 model_manifest['version'])
         except KeyError as err:
             raise Exception(
-                f'Missing field {err} for model {model_manifest.get("name", "<unknown>")}')
+                f'Missing field {err} for model {model_manifest.get("slug", "<unknown>")}')
 
         mclass = None
         modulename, classname = model_classname = os.path.splitext(
@@ -123,42 +123,42 @@ class ModelLoader:
             mclass = self._load_module_class(modulename, classname[1:])
         else:
             raise Exception(
-                f'Invalid model class "{model_classname}" for model {model_name}')
+                f'Invalid model class "{model_classname}" for model {model_slug}')
 
         if mclass is not None:
-            mclass.name = model_name
+            mclass.slug = model_slug
             mclass.version = model_version
             self._add_model_class(mclass)
             self.__model_manifest_list.append(model_manifest)
 
     def _add_model_class(self, model_class: Type[Model]):
-        name = model_class.name
+        slug = model_class.slug
         ver = model_class.version
 
-        if name is None or ver is None:
+        if slug is None or ver is None:
             raise Exception(
-                f'${model_class} must have name ({name}) and version ({ver}) set')
+                f'${model_class} must have slug ({slug}) and version ({ver}) set')
 
         try:
             pver = version.Version(ver)
         except version.InvalidVersion:
             raise Exception(f'${model_class} has invalid version ({ver})')
 
-        name_ver = f'{name}:{ver}'
-        if name_ver in self.__name_version_to_class_dict:
+        slug_ver = f'{slug}:{ver}'
+        if slug_ver in self.__slug_version_to_class_dict:
             raise Exception(
-                f'Duplicate model name ({name}) and version ({ver}) found. Skipping duplicate.')
+                f'Duplicate model slug ({slug}) and version ({ver}) found. Skipping duplicate.')
 
-        self.logger.debug(f'Added model {name} {ver}')
+        self.logger.debug(f'Added model {slug} {ver}')
 
-        self.__name_version_to_class_dict[f'{name}:{ver}'] = model_class
+        self.__slug_version_to_class_dict[f'{slug}:{ver}'] = model_class
 
-        verlist = self.__name_to_versions_dict.get(name)
+        verlist = self.__slug_to_versions_dict.get(slug)
         if verlist is not None:
             verlist.append(pver)
             verlist.sort()
         else:
-            self.__name_to_versions_dict[name] = [pver]
+            self.__slug_to_versions_dict[slug] = [pver]
 
     def _load_module_class(self, modulename, name):
         """ Import a named object from a module in the context of this function.
@@ -171,11 +171,11 @@ class ModelLoader:
                 f'Error importing class {name} from module {modulename}: {err}')
         return mclass
 
-    def get_model_class(self, name: str, ver: Union[str, None], raise_on_not_found: bool = True):
-        """Get a model class by name and optional version.
+    def get_model_class(self, slug: str, ver: Union[str, None], raise_on_not_found: bool = True):
+        """Get a model class by slug and optional version.
 
         Parameters:
-            name (str): name of the model
+            slug (str): slug of the model
             ver (str | None): [OPTIONAL] version of the model.
                     If None, the latest version is used.
             raise_on_not_found (bool): If true, raises an error if
@@ -191,16 +191,16 @@ class ModelLoader:
 
         if not ver:
             # Get the latest version
-            verlist = self.__name_to_versions_dict.get(name)
+            verlist = self.__slug_to_versions_dict.get(slug)
             if verlist is not None:
                 ver = verlist[-1].public
 
         if ver:
-            model_class = self.__name_version_to_class_dict.get(
-                f'{name}:{ver}')
+            model_class = self.__slug_version_to_class_dict.get(
+                f'{slug}:{ver}')
 
         if model_class is None and raise_on_not_found:
-            err = MissingModelError(name, ver)
+            err = MissingModelError(slug, ver)
             self.logger.error(err)
             raise err
 

@@ -18,7 +18,7 @@ class EngineModelContext(ModelContext):
     def create_context_and_run_model(cls,
                                      chain_id: int,
                                      block_number: int,
-                                     model_name: str,
+                                     model_slug: str,
                                      model_version: Union[str, None] = None,
                                      input: Union[dict, None] = None,
                                      model_loader: Union[ModelLoader,
@@ -48,11 +48,11 @@ class EngineModelContext(ModelContext):
         # We set the block_number in the context so we pass in
         # None for block_number to the run_model method.
         result_tuple = context._run_model(
-            model_name, input, None, model_version)
+            model_slug, input, None, model_version)
         response = {
-            'name': result_tuple[0],
+            'slug': result_tuple[0],
             'version': result_tuple[1],
-            'result': result_tuple[2],
+            'output': result_tuple[2],
             'dependencies': context.__dependencies}
         return response
 
@@ -71,10 +71,10 @@ class EngineModelContext(ModelContext):
         self.__model_loader = model_loader
         self.__api = api
 
-    def _add_dependency(self, name: str, version: str, count: int):
-        versions = self.__dependencies.get(name)
+    def _add_dependency(self, slug: str, version: str, count: int):
+        versions = self.__dependencies.get(slug)
         if versions is None:
-            self.__dependencies[name] = {version: count}
+            self.__dependencies[slug] = {version: count}
         else:
             if version in versions:
                 versions[version] += count
@@ -82,24 +82,24 @@ class EngineModelContext(ModelContext):
                 versions[version] = count
 
     def _add_dependencies(self, dep_dict: dict):
-        for name, versions in dep_dict.items():
-            if name not in self.__dependencies:
-                self.__dependencies[name] = versions
+        for slug, versions in dep_dict.items():
+            if slug not in self.__dependencies:
+                self.__dependencies[slug] = versions
             else:
                 for version, count in versions.items():
-                    self._add_dependency(name, version, count)
+                    self._add_dependency(slug, version, count)
 
     def run_model(self,
-                  name: str,
+                  slug: str,
                   input: Union[dict, None] = None,
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None
                   ):
-        res_tuple = self._run_model(name, input, block_number, version)
+        res_tuple = self._run_model(slug, input, block_number, version)
         return res_tuple[2]
 
     def _run_model(self,
-                   name: str,
+                   slug: str,
                    input: Union[dict, None],
                    block_number: Union[int, None],
                    version: Union[str, None]
@@ -109,7 +109,7 @@ class EngineModelContext(ModelContext):
         # We raise an exception for missing class
         # if we have no api or this is a top-level run.
         model_class = self.__model_loader.get_model_class(
-            name, version, self.__api is None or
+            slug, version, self.__api is None or
             (self.__depth == 0 and not self.dev_mode))
 
         self.__depth += 1
@@ -125,10 +125,10 @@ class EngineModelContext(ModelContext):
             self._web3 = None
 
             model = model_class(self)
-            result = model.run(input)
+            output = model.run(input)
 
             version = model_class.version
-            self._add_dependency(name, version, 1)
+            self._add_dependency(slug, version, 1)
 
             if block_number is not None:
                 self.block_number = saved_block_number
@@ -138,8 +138,8 @@ class EngineModelContext(ModelContext):
             # api is not None here or get_model_class() would have
             # raised an error
             assert api is not None
-            name, version, result, dependencies = api.run_model(
-                name, version, self.chain_id,
+            slug, version, output, dependencies = api.run_model(
+                slug, version, self.chain_id,
                 block_number if block_number is not None else self.block_number,
                 input, self.run_id, self.__depth)
             if dependencies:
@@ -147,4 +147,4 @@ class EngineModelContext(ModelContext):
 
         self.__depth -= 1
 
-        return name, version, result
+        return slug, version, output

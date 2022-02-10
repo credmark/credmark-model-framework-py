@@ -12,7 +12,7 @@ class Model:
 
     Available instance variables:
 
-    name - model name
+    slug - model slug
     version - model version
     logger - a logger for messages related to the model
 
@@ -20,14 +20,14 @@ class Model:
 
     # If loading with a model manifest file, these class
     # variables will be set automatically by the loader.
-    name: str
+    slug: str
     version: str
 
     def __init__(self, context: ModelContext):
         self.context = context
         # Configure our logger.
         self.logger = logging.getLogger(
-            'credmark.models.{0}'.format(self.name))
+            'credmark.models.{0}'.format(self.slug))
         self.init()
 
     def init(self):

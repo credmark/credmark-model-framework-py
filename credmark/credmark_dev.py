@@ -52,8 +52,8 @@ def main():
                             help='[OPTIONAL] Credmark API url')
     parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
     parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
-    parser_run.add_argument('model_name', default='(missing model-name arg)',
-                            help='Name of the model to run.')
+    parser_run.add_argument('model-slug', default='(missing model-slug arg)',
+                            help='Slug for the model to run.')
     parser_run.set_defaults(func=run_model, depth=0)
 
     if len(sys.argv) == 1:
@@ -130,7 +130,7 @@ def run_model(args):
 
         chain_id = args['chain_id']
         block_number = args['block_number']
-        model_name = args['model_name']
+        model_slug = args['model-slug']
         model_version = args['model_version']
         api_url = args['api_url']
         run_id = args['run_id']
@@ -145,7 +145,7 @@ def run_model(args):
         result = EngineModelContext.create_context_and_run_model(
             chain_id=chain_id,
             block_number=block_number,
-            model_name=model_name,
+            model_slug=model_slug,
             model_version=model_version,
             input=input,
             model_loader=model_loader,

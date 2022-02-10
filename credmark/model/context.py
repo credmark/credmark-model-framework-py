@@ -39,12 +39,12 @@ class ModelContext():
         return self.__ledger
 
     @abstractmethod
-    def run_model(self, name: str, input: Union[dict, None] = None,
+    def run_model(self, slug: str, input: Union[dict, None] = None,
                   block_number: Union[int, None] = None, version: Union[str, None] = None) -> dict:
-        """Run a model by name and optional version.
+        """Run a model by slug and optional version.
 
         Parameters:
-            name (str): the name of the model
+            slug (str): the slug of the model
             input (dict | None): an optional dictionary of
                   input data that will be passed to the model when it is run.
             block_number (int | None): optional block number to use as context.
@@ -54,7 +54,7 @@ class ModelContext():
                   the model is used.
 
         Returns:
-            The result returned by the model's run() method.
+            The output returned by the model's run() method.
 
         Raises:
             MissingModelError if requested model is not available

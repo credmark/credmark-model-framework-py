@@ -15,7 +15,7 @@ class ModelApi:
         self.__api_key = api_key
 
     def run_model(self,
-                  name: str,
+                  slug: str,
                   version: Union[str, None],
                   chain_id: int,
                   block_number: int,
@@ -23,7 +23,7 @@ class ModelApi:
                   run_id: Union[str, None] = None,
                   depth: Union[int, None] = None):
         req = {
-            'name': name,
+            'slug': slug,
             'chainId': chain_id,
             'blockNumber': str(block_number),
             'input': input if input is not None else {},
@@ -44,26 +44,26 @@ class ModelApi:
             resp = requests.post(self.__url, json=req, headers=headers)
             resp.raise_for_status()
             resp_obj = resp.json()
-            return resp_obj['name'], resp_obj['version'], \
-                resp_obj['result'], resp_obj['dependencies']
+            return resp_obj['slug'], resp_obj['version'], \
+                resp_obj['output'], resp_obj['dependencies']
         except requests.exceptions.ConnectionError as err:
             logger.error(
-                f'Error running api request for {name} {self.__url}: {err}')
+                f'Error running api request for {slug} {self.__url}: {err}')
             error_result = {
                 "statusCode": 503,
                 "error": "Model runner unavailable",
-                "message": f'Unable to reach model runner for model {name}'
+                "message": f'Unable to reach model runner for model {slug}'
             }
             raise ModelRunRequestError(
                 'Model run request error', error_result)
         except Exception as err:
             logger.error(
-                f'Error running api request for {name} {self.__url}: {err}')
+                f'Error running api request for {slug} {self.__url}: {err}')
             if resp is not None:
                 logger.error(f'Error api response {resp.text}')
                 if resp.status_code == 404:
                     raise MissingModelError(
-                        name, version, 'Model not found from api')
+                        slug, version, 'Model not found from api')
                 else:
                     try:
                         error_result = resp.json()
