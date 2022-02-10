@@ -13,6 +13,8 @@ from credmark.model.errors import MaxModelRunDepthError, MissingModelError, \
 
 logger = logging.getLogger(__name__)
 
+EngineModelContext.dev_mode = True
+
 
 def main():
     load_dotenv()

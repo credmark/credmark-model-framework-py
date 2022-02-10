@@ -11,6 +11,7 @@ from credmark.model.web3 import Web3Registry
 class EngineModelContext(ModelContext):
     logger = logging.getLogger(__name__)
 
+    dev_mode = False
     max_run_depth = 20
 
     @classmethod
@@ -111,7 +112,8 @@ class EngineModelContext(ModelContext):
         # We raise an exception for missing class
         # if we have no api or this is a top-level run.
         model_class = self.__model_loader.get_model_class(
-            name, version, self.__api is None or self.__depth == 0)
+            name, version, self.__api is None or
+            (self.__depth == 0 and not self.dev_mode))
 
         self.__depth += 1
         if self.__depth >= self.max_run_depth:
