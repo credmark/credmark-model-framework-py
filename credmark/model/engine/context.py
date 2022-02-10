@@ -71,26 +71,23 @@ class EngineModelContext(ModelContext):
         self.__model_loader = model_loader
         self.__api = api
 
-    def _add_dependency(self, name: str, version: str):
-        ver = self.__dependencies.get(name)
-        if ver is None:
-            self.__dependencies[name] = version
-        elif isinstance(ver, list):
-            # list will be very short so not worth using a set
-            if version not in ver:
-                ver.append(version)
+    def _add_dependency(self, name: str, version: str, count: int):
+        versions = self.__dependencies.get(name)
+        if versions is None:
+            self.__dependencies[name] = {version: count}
         else:
-            self.__dependencies[name] = [ver, version]
+            if version in versions:
+                versions[version] += count
+            else:
+                versions[version] = count
 
     def _add_dependencies(self, dep_dict: dict):
-        for name, version in dep_dict.items():
+        for name, versions in dep_dict.items():
             if name not in self.__dependencies:
-                self.__dependencies[name] = version
-            elif isinstance(version, list):
-                for ver in version:
-                    self._add_dependency(name, ver)
+                self.__dependencies[name] = versions
             else:
-                self._add_dependency(name, version)
+                for version, count in versions.items():
+                    self._add_dependency(name, version, count)
 
     def run_model(self,
                   name: str,
@@ -131,7 +128,7 @@ class EngineModelContext(ModelContext):
             result = model.run(input)
 
             version = model_class.version
-            self._add_dependency(name, version)
+            self._add_dependency(name, version, 1)
 
             if block_number is not None:
                 self.block_number = saved_block_number
