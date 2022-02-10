@@ -48,6 +48,8 @@ def main():
                             help='[OPTIONAL] Version of the model to run. Defaults to latest.')
     parser_run.add_argument('--api_url', required=False, default=None,
                             help='[OPTIONAL] Credmark API url')
+    parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
+    parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
     parser_run.add_argument('model_name', default='(missing model-name arg)',
                             help='Name of the model to run.')
     parser_run.set_defaults(func=run_model, depth=0)
@@ -127,8 +129,8 @@ def run_model(args):
         model_name = args['model_name']
         model_version = args['model_version']
         api_url = args['api_url']
-        run_id = None
-        depth = 0
+        run_id = args['run_id']
+        depth = args['depth']
 
         if args['input']:
             input = json.loads(args['input'])
