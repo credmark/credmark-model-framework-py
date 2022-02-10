@@ -32,6 +32,7 @@ def main():
 
     parser_list = subparsers.add_parser('list', help='List models', aliases=['list-models'])
     parser_list.add_argument('--manifests', action='store_true', default=False)
+    parser_list.add_argument('--json', action='store_true', default=False)
     parser_list.set_defaults(func=list_models)
 
     parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
@@ -75,24 +76,33 @@ def load_models(args):
 def list_models(args):
     config_logging(args)
     model_loader = load_models(args)
+    json_output = args.get('json')
 
-    sys.stderr.write('\nLoaded models:\n\n')
+    if not json_output:
+        sys.stdout.write('\nLoaded models:\n\n')
 
     if args.get('manifests'):
         manifests = model_loader.loaded_model_manifests()
-        for m in manifests:
-            for i, v in m.items():
-                sys.stderr.write(f' {i}: {v}\n')
-            sys.stderr.write('\n')
+        if json_output:
+            json.dump({'models': manifests}, sys.stdout)
+        else:
+            for m in manifests:
+                for i, v in m.items():
+                    sys.stdout.write(f' {i}: {v}\n')
+                sys.stdout.write('\n')
 
     else:
         models = model_loader.loaded_model_version_lists()
-        for m, v in models.items():
-            sys.stderr.write(f' - {m}: {v}\n')
+        if json_output:
+            json.dump(models, sys.stdout)
+        else:
+            for m, v in models.items():
+                sys.stdout.write(f' - {m}: {v}\n')
 
-    sys.stderr.write('\n')
-    sys.stderr.write(
-        f'{len(model_loader.errors)} errors, {len(model_loader.warnings)} warnings\n\n')
+    if not json_output:
+        sys.stdout.write('\n')
+        sys.stdout.write(
+            f'{len(model_loader.errors)} errors, {len(model_loader.warnings)} warnings\n\n')
     sys.exit(0)
 
 

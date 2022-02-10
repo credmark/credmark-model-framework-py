@@ -5,7 +5,7 @@ class MissingModelError(Exception):
     def __init__(self, name: str, version: Union[str, None], message: Union[str, None] = None):
         self.name = name
         self.version = version
-        message = 'Missing model {0}{1}{2}'.format(
+        message = 'Missing model {0}{1} {2}'.format(
             name if name else '<empty-name>',
             ' version ' + version if version is not None else '',
             message if message is not None else '')
