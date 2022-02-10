@@ -5,6 +5,7 @@ from packaging import version
 import yaml
 from credmark.model import Model
 from credmark.model.errors import MissingModelError
+from requests.structures import CaseInsensitiveDict
 
 
 class ModelLoader:
@@ -18,10 +19,11 @@ class ModelLoader:
         self.warnings = []
 
         # Map "slug:version" to a model class
-        self.__slug_version_to_class_dict: dict[str, Type[Model]] = dict()
+        self.__slug_version_to_class_dict: CaseInsensitiveDict[Type[Model]] = CaseInsensitiveDict()
 
         # Map slug to a sorted list of model versions
-        self.__slug_to_versions_dict: dict[str, List[version.Version]] = dict()
+        self.__slug_to_versions_dict: CaseInsensitiveDict[List[version.Version]] = CaseInsensitiveDict(
+        )
 
         self.__model_manifest_list: List[dict] = []
 
