@@ -42,8 +42,8 @@ def main():
                             help='[OPTIONAL] Web3 default block number.')
     parser_run.add_argument('-i', '--input', required=False, default=None,
                             help='[OPTIONAL] Input JSON. If missing, will read from stdin.')
-    parser_run.add_argument('--provider_url', required=False, default=None,
-                            help='[OPTIONAL] Web3 provider HTTP URL')
+    parser_run.add_argument('--provider_url_map', required=False, default=None,
+                            help='[OPTIONAL] JSON object of chain id to Web3 provider HTTP URL')
     parser_run.add_argument('-v', '--model_version', default=None, required=False,
                             help='[OPTIONAL] Version of the model to run. Defaults to latest.')
     parser_run.add_argument('--api_url', required=False, default=None,
@@ -115,7 +115,9 @@ def run_model(args):
         config_logging(args)
 
         chain_to_provider_url = None
-        providers_json = os.environ.get('CREDMARK_WEB3_PROVIDERS')
+        providers_json = args['provider_url_map']
+        if providers_json is None:
+            providers_json = os.environ.get('CREDMARK_WEB3_PROVIDERS')
         if providers_json:
             try:
                 chain_to_provider_url = json.loads(providers_json)
