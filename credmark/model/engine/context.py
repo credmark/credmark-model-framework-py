@@ -36,8 +36,9 @@ class EngineModelContext(ModelContext):
         if model_loader is None:
             model_loader = ModelLoader(['.'])
 
-        # If we have an api url or a key, we use the api
         api_key = os.environ.get('CREDMARK_API_KEY')
+        # If we have an api url or a key, we create the api
+        # TODO: When public api is available, we will always create the api
         api = ModelApi(api_url, api_key) if api_url or api_key else None
 
         web3_registry = Web3Registry(chain_to_provider_url)

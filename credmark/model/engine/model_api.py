@@ -11,7 +11,13 @@ logger = logging.getLogger(__name__)
 class ModelApi:
 
     def __init__(self, url=None, api_key=None):
-        self.__url = url if url is not None else RUN_MODEL_API_URL
+        if url:
+            self.__url = url
+            self.__internal_api = True
+        else:
+            self.__url = RUN_MODEL_API_URL
+            self.__internal_api = False
+
         self.__api_key = api_key
 
     def run_model(self,
@@ -30,10 +36,11 @@ class ModelApi:
         }
         if version is not None:
             req['version'] = version
-        if run_id is not None:
-            req['runId'] = run_id
-        if depth is not None:
-            req['depth'] = depth
+        if self.__internal_api:
+            if run_id is not None:
+                req['runId'] = run_id
+            if depth is not None:
+                req['depth'] = depth
 
         headers = {'Authorization': 'Bearer ' +
                    self.__api_key} if self.__api_key is not None else None
