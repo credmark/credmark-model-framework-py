@@ -43,9 +43,13 @@ class CreateModel(types.ModuleType):
                 }
             }
 
-            attr_name = '__manifest'
-            setattr(cls, attr_name, attr_value)
-
+            attr_name = '_manifest'
+            def get_attr(self, attr_name = attr_name):
+                return getattr(self, '_' + attr_name)
+            attr_prop = property(get_attr, None)                
+            setattr(cls, attr_name, attr_prop)
+            setattr(cls, '_' + attr_name, attr_value)
+            
             # Checks for the class
             # 1. it need to be inherited from Model class
             assert is_parent(cls, Model)
