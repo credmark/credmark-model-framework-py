@@ -34,7 +34,7 @@ class EngineModelContext(ModelContext):
 
         """
         if model_loader is None:
-            model_loader = ModelLoader(['.'])
+            model_loader = ModelLoader(['.'], manifest_file = 'models.yaml')
 
         api_key = os.environ.get('CREDMARK_API_KEY')
         # If we have an api url or a key, we create the api

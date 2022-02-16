@@ -18,9 +18,9 @@ class CreateModel(types.ModuleType):
 
     def __call__(self,
                  slug: str,
-                 version=Union[str, None],
-                 display_name=Union[str, None],
-                 description=Union[str, None]):
+                 version: str,
+                 display_name: Union[str, None] = None,
+                 description: Union[str, None] = None):
 
         def wrapper(cls_in):
             def is_parent(child, parent):
