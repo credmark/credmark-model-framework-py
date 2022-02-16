@@ -1,11 +1,13 @@
 import logging
 import os
 import re
+import importlib
+import inspect
+import yaml
 from typing import Union, Type, List
 from packaging import version
-import yaml
 from credmark.model import Model
-from credmark.model.errors import MissingModelError
+from credmark.model.errors import *
 from requests.structures import CaseInsensitiveDict
 
 
@@ -25,9 +27,9 @@ class ModelLoader:
                 f'Invalid model slug "{slug}". '
                 'Slugs must be not more than {self.max_slug_length} characters.')
 
-    def __init__(self, manifest_paths: Union[List[str], None] = None):
+    def __init__(self, model_paths: Union[List[str], None] = None, manifest_file: Union[str, None] = None):
         '''
-        manifest_paths is a list of paths to search for model manifest files.
+        model_paths is a list of paths to search for model manifest files.
         '''
         self.errors = []
         self.warnings = []
@@ -41,8 +43,15 @@ class ModelLoader:
 
         self.__model_manifest_list: List[dict] = []
 
-        if manifest_paths is not None:
-            self._search_paths_for_manifest_files(manifest_paths)
+        if manifest_file is not None and os.path.isfile(manifest_file):
+            self.logger.info(f'Loading manifest from {manifest_file}')
+            manifest = self._load_yaml_file(manifest_file)
+            if manifest is not None and 'credmarkModelManifest' in manifest:
+                self._process_model_manifest(manifest, '.', manifest_file)
+        else:
+            if model_paths is not None:
+                self.logger.info(f'Loading manifest from model_paths: {model_paths}')
+                self._search_paths_for_model_files(model_paths)
 
     def clear(self):
         self.errors.clear()
@@ -71,32 +80,39 @@ class ModelLoader:
     def loaded_model_manifests(self):
         return self.__model_manifest_list
 
-    def _search_paths_for_manifest_files(self, paths: List[str]):
+    def _search_paths_for_model_files(self, paths: List[str]):
         for path in paths:
-            self._search_path_for_manifest_files(path)
+            self._search_path_for_model_files(path)
 
-    def _search_path_for_manifest_files(self, path: str):
+    def _search_path_for_model_files(self, path: str):
         if path.startswith('./'):
             path = path[2:]
 
         if os.path.isfile(path):
-            if path.endswith('.yaml'):
+            if path.endswith('.py'):
                 self._try_model_manifest(path)
         else:
             for root, _dirs, files in os.walk(path):
                 for fname in files:
-                    if fname.endswith('.yaml'):
+                    if fname.endswith('.py'):
                         self._try_model_manifest(os.path.join(root, fname))
 
     def _try_model_manifest(self, fpath: str):
-        folder = os.path.dirname(fpath)
-        try:
-            manifest = self._load_yaml_file(fpath)
-            if manifest is not None and 'credmarkModelManifest' in manifest:
-                self._process_model_manifest(manifest, folder, fpath)
-        except Exception as err:
-            self.errors.append(
-                f'Error loading manifest file {fpath}: {err}')
+        if fpath.endswith('.py'):
+            folder = os.path.dirname(fpath)
+            path_to_module = fpath.replace(os.path.sep, '.')[:-3]
+            try:
+                mod = importlib.import_module(path_to_module)
+                manifests = [ v.__dict__['__manifest']
+                             for k,v in mod.__dict__.items()
+                                if inspect.isclass(v) and
+                                   '__manifest' in v.__dict__ and 
+                                   'credmarkModelManifest' in v.__dict__['__manifest'] ]
+                for manifest in manifests:
+                    self._process_model_manifest(manifest, folder, fpath)
+            except Exception as err:
+                self.errors.append(
+                    f'Error loading manifest file {fpath}: {err}')
 
     def _load_yaml_file(self, path):
         with open(path, "r") as stream:
@@ -112,7 +128,7 @@ class ModelLoader:
             model = manifest.get('model')
             if model is not None:
                 models = [model]
-
+        
         if models is not None:
             for model in models:
                 try:
@@ -222,3 +238,29 @@ class ModelLoader:
             raise err
 
         return model_class
+
+    def write_manifest_file(self, manifest_file: str):
+        try:
+            manifests = self.loaded_model_manifests()
+            with open(manifest_file, 'w') as fp:
+                try:
+                    yaml.dump({'credmarkModelManifest': '1.0', 'models': manifests}, fp)
+                    self.logger.info(f'Saved manifest to {manifest_file}')
+                except:
+                    err = WriteModelManifestError(manifest_file)
+                    self.logger.error(err)
+                    raise err
+        except Exception as err:
+            self.errors.append(
+                f'Error write manifest file {manifest_file}: {err}')
+            pass
+
+    def remove_manifest_file(self, manifest_file: str):
+        try:
+            if os.path.isfile(manifest_file):
+                os.remove(manifest_file)
+                self.logger.info(f'Removed manifest {manifest_file}')
+        except Exception as err:
+            self.errors.append(
+                f'Error removing manifest file {manifest_file}: {err}')
+            raise err
