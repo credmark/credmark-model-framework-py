@@ -1,7 +1,7 @@
 from typing import Type, Union, List
 from .errors import InvalidColumnException, InvalidQueryException
 from .tables import BlockTable, ContractTable, \
-    LogTable, ReceiptTable, TokenTransferTable, \
+    LogTable, ReceiptTable, TokenTable, TokenTransferTable, \
     TraceTable, TransactionTable, LedgerTable
 
 
@@ -13,6 +13,7 @@ class Ledger:
     Contract = ContractTable
     Log = LogTable
     Receipt = ReceiptTable
+    Token = TokenTable
     TokenTransfer = TokenTransferTable
 
     def __init__(self, context):
@@ -34,7 +35,8 @@ class Ledger:
                          where: Union[str, None] = None,
                          group_by: Union[str, None] = None,
                          order_by: Union[str, None] = None,
-                         limit: Union[str, None] = None):
+                         limit: Union[str, None] = None,
+                         offset: Union[str, None] = None):
         self._validate_columns(model_slug, columns, table_def)
 
         if where is None and limit is None:
@@ -46,74 +48,93 @@ class Ledger:
                                        'where': where,
                                        'groupBy': group_by,
                                        'orderBy': order_by,
-                                       'limit': limit})
+                                       'limit': limit,
+                                       'offset': offset})
 
     def get_transactions(self, columns: List[str],
                          where: Union[str, None] = None,
                          group_by: Union[str, None] = None,
                          order_by: Union[str, None] = None,
-                         limit: Union[str, None] = None):
+                         limit: Union[str, None] = None,
+                         offset: Union[str, None] = None):
         return self._send_cwgo_query('ledger.transaction_data',
                                      TransactionTable,
                                      columns, where, group_by,
-                                     order_by, limit)
+                                     order_by, limit, offset)
 
     def get_traces(self, columns: List[str],
                    where: Union[str, None] = None,
                    group_by: Union[str, None] = None,
                    order_by: Union[str, None] = None,
-                   limit: Union[str, None] = None):
+                   limit: Union[str, None] = None,
+                   offset: Union[str, None] = None):
         return self._send_cwgo_query('ledger.trace_data',
                                      TraceTable,
                                      columns, where, group_by,
-                                     order_by, limit)
+                                     order_by, limit, offset)
 
     def get_logs(self, columns: List[str],
                  where: Union[str, None] = None,
                  group_by: Union[str, None] = None,
                  order_by: Union[str, None] = None,
-                 limit: Union[str, None] = None):
+                 limit: Union[str, None] = None,
+                 offset: Union[str, None] = None):
         return self._send_cwgo_query('ledger.log_data',
                                      LogTable,
                                      columns, where, group_by,
-                                     order_by, limit)
+                                     order_by, limit, offset)
 
     def get_contracts(self, columns: List[str],
                       where: Union[str, None] = None,
                       group_by: Union[str, None] = None,
                       order_by: Union[str, None] = None,
-                      limit: Union[str, None] = None):
+                      limit: Union[str, None] = None,
+                      offset: Union[str, None] = None):
         return self._send_cwgo_query('ledger.contract_data',
                                      ContractTable,
                                      columns, where, group_by,
-                                     order_by, limit)
+                                     order_by, limit, offset)
 
     def get_blocks(self, columns: List[str],
                    where: Union[str, None] = None,
                    group_by: Union[str, None] = None,
                    order_by: Union[str, None] = None,
-                   limit: Union[str, None] = None):
+                   limit: Union[str, None] = None,
+                   offset: Union[str, None] = None):
         return self._send_cwgo_query('ledger.block_data',
                                      BlockTable,
                                      columns, where, group_by,
-                                     order_by, limit)
+                                     order_by, limit, offset)
 
     def get_receipts(self, columns: List[str],
                      where: Union[str, None] = None,
                      group_by: Union[str, None] = None,
                      order_by: Union[str, None] = None,
-                     limit: Union[str, None] = None):
+                     limit: Union[str, None] = None,
+                     offset: Union[str, None] = None):
         return self._send_cwgo_query('ledger.receipt_data',
                                      ReceiptTable,
                                      columns, where, group_by,
-                                     order_by, limit)
+                                     order_by, limit, offset)
+
+    def get_erc20_tokens(self, columns: List[str],
+                         where: Union[str, None] = None,
+                         group_by: Union[str, None] = None,
+                         order_by: Union[str, None] = None,
+                         limit: Union[str, None] = None,
+                         offset: Union[str, None] = None):
+        return self._send_cwgo_query('ledger.erc20_token_data',
+                                     TokenTable,
+                                     columns, where, group_by,
+                                     order_by, limit, offset)
 
     def get_erc20_transfers(self, columns: List[str],
                             where: Union[str, None] = None,
                             group_by: Union[str, None] = None,
                             order_by: Union[str, None] = None,
-                            limit: Union[str, None] = None):
-        return self._send_cwgo_query('ledger.erc20_transfer_data',
+                            limit: Union[str, None] = None,
+                            offset: Union[str, None] = None):
+        return self._send_cwgo_query('ledger.erc20_token_transfer_data',
                                      TokenTransferTable,
                                      columns, where, group_by,
-                                     order_by, limit)
+                                     order_by, limit, offset)
