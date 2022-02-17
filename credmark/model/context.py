@@ -4,8 +4,6 @@ from credmark.model.ledger import Ledger
 from credmark.model.web3 import Web3Registry
 from credmark.types.data.block_number import BlockNumber
 
-from credmark.utils.utils import Utils
-
 
 class ModelContext():
     """Base model context class
@@ -41,12 +39,6 @@ class ModelContext():
         if self.__ledger is None:
             self.__ledger = Ledger(self)
         return self.__ledger
-
-    @property
-    def utils(self):
-        if self._utils is None:
-            self._utils = Utils(self)
-        return self._utils
 
     @abstractmethod
     def run_model(self, slug: str, input: Union[dict, None] = None,
