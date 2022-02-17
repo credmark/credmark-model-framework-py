@@ -26,7 +26,8 @@ class EngineModelContext(ModelContext):
                                      chain_to_provider_url: Union[dict[str, str], None] = None,
                                      api_url: Union[str, None] = None,
                                      run_id: Union[str, None] = None,
-                                     depth: int = 0):
+                                     depth: int = 0,
+                                     manifest_file : str = None):
         """
         Parameters:
             run_id (str | None): a string to identify a particular model run. It is

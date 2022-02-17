@@ -180,7 +180,8 @@ def run_model(args):
             chain_to_provider_url=chain_to_provider_url,
             api_url=api_url,
             run_id=run_id,
-            depth=depth)
+            depth=depth,
+            manifest_file=manifest_file)
         json.dump(result, sys.stdout)
 
     except (MaxModelRunDepthError, MissingModelError, ModelRunError) as e:
