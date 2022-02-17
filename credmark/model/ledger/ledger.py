@@ -1,55 +1,140 @@
-from typing import Union, List
-from .errors import InvalidColumnException
-from .definitions import TransactionDefinition, LedgerObject
-from .query import LedgerQuery
+from typing import Type, Union, List
+from .errors import InvalidColumnException, InvalidQueryException
+from .tables import BlockTable, ContractTable, \
+    LogTable, ReceiptTable, TokenTable, TokenTransferTable, \
+    TraceTable, TransactionTable, LedgerTable
 
 
 class Ledger:
+
+    Transaction = TransactionTable
+    Trace = TraceTable
+    Block = BlockTable
+    Contract = ContractTable
+    Log = LogTable
+    Receipt = ReceiptTable
+    Token = TokenTable
+    TokenTransfer = TokenTransferTable
+
     def __init__(self, context):
         self.context = context
-        # TODO: Do we need these instance vars?
-        self.columns = None
-        self.query = None
 
-    def _validate_columns(self, columns: List[str], ledger_object_type: type[LedgerObject]):
+    def _validate_columns(self, model_slug: str, columns: List[str], ledger_object_type: type[LedgerTable]):
+        column_set = ledger_object_type.columns()
+
         for column in columns:
-            if column not in ledger_object_type.columns:
+            if column.upper() not in column_set:
                 raise InvalidColumnException(
-                    column, ledger_object_type.columns, "invalid column name")
+                    model_slug,
+                    column, list(column_set), "invalid column name")
 
-    def get_transactions(self, columns: List[str], query: Union[LedgerQuery, None]):
-        self._validate_columns(columns, TransactionDefinition)
-        self.query = query
-        self.columns = columns
-        return self.context.run_model('ledger.transaction_data', {'columns': columns, 'query': query})
+    def _send_cwgo_query(self,
+                         model_slug: str,
+                         table_def: Type[LedgerTable],
+                         columns: List[str],
+                         where: Union[str, None] = None,
+                         group_by: Union[str, None] = None,
+                         order_by: Union[str, None] = None,
+                         limit: Union[str, None] = None,
+                         offset: Union[str, None] = None):
+        self._validate_columns(model_slug, columns, table_def)
 
-    def get_traces(self, columns: List[str], query: Union[LedgerQuery, None]):
-        self.query = query
-        self.columns = columns
-        return self.context.run_model('ledger.trace_data', {'columns': columns, 'query': query})
+        if where is None and limit is None:
+            raise InvalidQueryException(
+                model_slug, f'{model_slug} call must have a where or limit value set.')
 
-    def get_logs(self, columns: List[str], query: Union[LedgerQuery, None]):
-        self.query = query
-        self.columns = columns
-        return self.context.run_model('ledger.log_data', {'columns': columns, 'query': query})
+        return self.context.run_model(model_slug,
+                                      {'columns': columns,
+                                       'where': where,
+                                       'groupBy': group_by,
+                                       'orderBy': order_by,
+                                       'limit': limit,
+                                       'offset': offset})
 
-    def get_contracts(self, columns: List[str], query: Union[LedgerQuery, None]):
-        self.query = query
-        self.columns = columns
-        return self.context.run_model('ledger.contract_data', {'columns': columns, 'query': query})
+    def get_transactions(self, columns: List[str],
+                         where: Union[str, None] = None,
+                         group_by: Union[str, None] = None,
+                         order_by: Union[str, None] = None,
+                         limit: Union[str, None] = None,
+                         offset: Union[str, None] = None):
+        return self._send_cwgo_query('ledger.transaction_data',
+                                     TransactionTable,
+                                     columns, where, group_by,
+                                     order_by, limit, offset)
 
-    def get_blocks(self, columns: List[str], query: Union[LedgerQuery, None]):
-        self.query = query
-        self.columns = columns
-        return self.context.run_model('ledger.block_data', {'columns': columns, 'query': query})
+    def get_traces(self, columns: List[str],
+                   where: Union[str, None] = None,
+                   group_by: Union[str, None] = None,
+                   order_by: Union[str, None] = None,
+                   limit: Union[str, None] = None,
+                   offset: Union[str, None] = None):
+        return self._send_cwgo_query('ledger.trace_data',
+                                     TraceTable,
+                                     columns, where, group_by,
+                                     order_by, limit, offset)
 
-    def get_receipts(self, columns: List[str], query: Union[LedgerQuery, None]):
-        self.query = query
-        self.columns = columns
-        return self.context.run_model('ledger.receipt_data', {'columns': columns, 'query': query})
+    def get_logs(self, columns: List[str],
+                 where: Union[str, None] = None,
+                 group_by: Union[str, None] = None,
+                 order_by: Union[str, None] = None,
+                 limit: Union[str, None] = None,
+                 offset: Union[str, None] = None):
+        return self._send_cwgo_query('ledger.log_data',
+                                     LogTable,
+                                     columns, where, group_by,
+                                     order_by, limit, offset)
 
-    def get_erc20_transfers(self, columns: List[str], query: Union[LedgerQuery, None]):
-        self.query = query
-        self.columns = columns
-        return self.context.run_model('ledger.erc20_transfer_data',
-                                      {'columns': columns, 'query': query})
+    def get_contracts(self, columns: List[str],
+                      where: Union[str, None] = None,
+                      group_by: Union[str, None] = None,
+                      order_by: Union[str, None] = None,
+                      limit: Union[str, None] = None,
+                      offset: Union[str, None] = None):
+        return self._send_cwgo_query('ledger.contract_data',
+                                     ContractTable,
+                                     columns, where, group_by,
+                                     order_by, limit, offset)
+
+    def get_blocks(self, columns: List[str],
+                   where: Union[str, None] = None,
+                   group_by: Union[str, None] = None,
+                   order_by: Union[str, None] = None,
+                   limit: Union[str, None] = None,
+                   offset: Union[str, None] = None):
+        return self._send_cwgo_query('ledger.block_data',
+                                     BlockTable,
+                                     columns, where, group_by,
+                                     order_by, limit, offset)
+
+    def get_receipts(self, columns: List[str],
+                     where: Union[str, None] = None,
+                     group_by: Union[str, None] = None,
+                     order_by: Union[str, None] = None,
+                     limit: Union[str, None] = None,
+                     offset: Union[str, None] = None):
+        return self._send_cwgo_query('ledger.receipt_data',
+                                     ReceiptTable,
+                                     columns, where, group_by,
+                                     order_by, limit, offset)
+
+    def get_erc20_tokens(self, columns: List[str],
+                         where: Union[str, None] = None,
+                         group_by: Union[str, None] = None,
+                         order_by: Union[str, None] = None,
+                         limit: Union[str, None] = None,
+                         offset: Union[str, None] = None):
+        return self._send_cwgo_query('ledger.erc20_token_data',
+                                     TokenTable,
+                                     columns, where, group_by,
+                                     order_by, limit, offset)
+
+    def get_erc20_transfers(self, columns: List[str],
+                            where: Union[str, None] = None,
+                            group_by: Union[str, None] = None,
+                            order_by: Union[str, None] = None,
+                            limit: Union[str, None] = None,
+                            offset: Union[str, None] = None):
+        return self._send_cwgo_query('ledger.erc20_token_transfer_data',
+                                     TokenTransferTable,
+                                     columns, where, group_by,
+                                     order_by, limit, offset)
