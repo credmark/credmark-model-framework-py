@@ -9,7 +9,6 @@ from .errors import WrongModelMethodSignature
 
 def it(slug: str,   # pylint: disable=locally-disabled, invalid-name
         version: str,
-        nft_id: Union[str, None] = None,
         tags: Union[list[str], None] = None,
         display_name: Union[str, None] = None,
         description: Union[str, None] = None):
@@ -28,7 +27,6 @@ def it(slug: str,   # pylint: disable=locally-disabled, invalid-name
             'model': {
                 'slug': slug,
                 'version': version,
-                'nftId': nft_id,
                 'tags': tags,
                 'display_name': display_name,
                 'description': description,
