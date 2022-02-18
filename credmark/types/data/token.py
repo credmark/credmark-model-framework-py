@@ -12,9 +12,9 @@ class Token():
         pass
 
     @classmethod
-    def get(cls, id):
-        if(Address.valid(id)):
-            return Token(id)
+    def get(cls, identity):
+        if(Address.valid(identity)):
+            return Token(identity)
         if("symbol is in the registry"):
             return Token("symbol.address")
 
