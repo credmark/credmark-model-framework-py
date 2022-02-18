@@ -49,11 +49,10 @@ def main():
     parser_list.set_defaults(func=remove_manifest_file)
 
     parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
+    parser_run.add_argument('-b', '--block_number', type=int, required=True,
+                            help='Default block number.')
     parser_run.add_argument('-c', '--chain_id', type=int, default=1, required=False,
                             help='[OPTIONAL] The chain ID. Defaults to 1.')
-    parser_run.add_argument('-b', '--block_number', type=lambda x: x if type(x) == str and x in ["latest", "earliest", "pending"] else int(x),
-                            required=False, default='latest',
-                            help='[OPTIONAL] Web3 default block number.')
     parser_run.add_argument('-i', '--input', required=False, default=None,
                             help='[OPTIONAL] Input JSON. If missing, will read from stdin.')
     parser_run.add_argument('--provider_url_map', required=False, default=None,
@@ -157,7 +156,7 @@ def run_model(args):
         model_loader = load_models(args)
 
         chain_id: int = args['chain_id']
-        block_number: Union[int, str] = args['block_number']
+        block_number: int = args['block_number']
         model_slug: str = args['model-slug']
         model_version: Union[str, None] = args['model_version']
         api_url: Union[str, None] = args['api_url']
