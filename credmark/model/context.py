@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from typing import Union
+from credmark.model.contract_helper import ContractHelper
 from credmark.model.ledger import Ledger
 from credmark.model.web3 import Web3Registry
 
@@ -22,6 +23,7 @@ class ModelContext():
         self.block_number = block_number
         self._web3 = None
         self.__ledger = None
+        self._contract_helper = None
         self.__web3_registry = web3_registry
 
     @property
@@ -37,6 +39,12 @@ class ModelContext():
         if self.__ledger is None:
             self.__ledger = Ledger(self)
         return self.__ledger
+
+    @property
+    def contract_helper(self):
+        if self._contract_helper is None:
+            self._contract_helper = ContractHelper(self)
+        return self._contract_helper
 
     @abstractmethod
     def run_model(self, slug: str, input: Union[dict, None] = None,
