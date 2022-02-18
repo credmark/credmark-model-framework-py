@@ -7,7 +7,7 @@ import yaml
 from typing import Union, Type, List
 from packaging import version
 from credmark.model import Model
-from credmark.model.errors import *
+from credmark.model.errors import MissingModelError, WriteModelManifestError
 from requests.structures import CaseInsensitiveDict
 
 
@@ -42,6 +42,8 @@ class ModelLoader:
         )
 
         self.__model_manifest_list: List[dict] = []
+
+        self.manifest_file = manifest_file
 
         if manifest_file is not None and os.path.isfile(manifest_file):
             self.logger.info(f'Loading manifest from {manifest_file}')
@@ -103,11 +105,11 @@ class ModelLoader:
             path_to_module = fpath.replace(os.path.sep, '.')[:-3]
             try:
                 mod = importlib.import_module(path_to_module)
-                manifests = [ v.__dict__['__manifest']
-                             for k,v in mod.__dict__.items()
-                                if inspect.isclass(v) and
-                                   '__manifest' in v.__dict__ and 
-                                   'credmarkModelManifest' in v.__dict__['__manifest'] ]
+                manifests = [v.__dict__['__manifest']
+                             for k, v in mod.__dict__.items()
+                             if inspect.isclass(v) and
+                             '__manifest' in v.__dict__ and
+                             'credmarkModelManifest' in v.__dict__['__manifest']]
                 for manifest in manifests:
                     self._process_model_manifest(manifest, folder, fpath)
             except Exception as err:
@@ -128,7 +130,7 @@ class ModelLoader:
             model = manifest.get('model')
             if model is not None:
                 models = [model]
-        
+
         if models is not None:
             for model in models:
                 try:
@@ -239,7 +241,11 @@ class ModelLoader:
 
         return model_class
 
-    def write_manifest_file(self, manifest_file: str):
+    def write_manifest_file(self):
+        manifest_file = self.manifest_file
+        if manifest_file is None:
+            return
+
         try:
             manifests = self.loaded_model_manifests()
             with open(manifest_file, 'w') as fp:
@@ -251,16 +257,19 @@ class ModelLoader:
                     self.logger.error(err)
                     raise err
         except Exception as err:
-            self.errors.append(
-                f'Error write manifest file {manifest_file}: {err}')
-            pass
+            self.logger.error(
+                f'Error writing manifest file {manifest_file}: {err}')
 
-    def remove_manifest_file(self, manifest_file: str):
+    def remove_manifest_file(self):
+        manifest_file = self.manifest_file
+        if manifest_file is None:
+            return
+
         try:
             if os.path.isfile(manifest_file):
                 os.remove(manifest_file)
                 self.logger.info(f'Removed manifest {manifest_file}')
         except Exception as err:
-            self.errors.append(
+            self.logger.error(
                 f'Error removing manifest file {manifest_file}: {err}')
             raise err
