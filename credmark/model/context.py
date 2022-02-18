@@ -2,6 +2,7 @@ from abc import abstractmethod
 from typing import Union
 from credmark.model.ledger import Ledger
 from credmark.model.web3 import Web3Registry
+from credmark.types.data.block_number import BlockNumber
 
 
 class ModelContext():
@@ -19,9 +20,10 @@ class ModelContext():
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry: Web3Registry):
         self.chain_id = chain_id
-        self.block_number = block_number
+        self.block_number = BlockNumber(block_number, self)
         self._web3 = None
         self.__ledger = None
+        self._utils = None
         self.__web3_registry = web3_registry
 
     @property

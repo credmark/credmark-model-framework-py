@@ -26,8 +26,7 @@ class EngineModelContext(ModelContext):
                                      chain_to_provider_url: Union[dict[str, str], None] = None,
                                      api_url: Union[str, None] = None,
                                      run_id: Union[str, None] = None,
-                                     depth: int = 0,
-                                     manifest_file : str = None):
+                                     depth: int = 0):
         """
         Parameters:
             run_id (str | None): a string to identify a particular model run. It is
@@ -35,7 +34,7 @@ class EngineModelContext(ModelContext):
 
         """
         if model_loader is None:
-            model_loader = ModelLoader(['.'], manifest_file = 'models.yaml')
+            model_loader = ModelLoader(['.'])
 
         api_key = os.environ.get('CREDMARK_API_KEY')
         # If we have an api url or a key, we create the api
