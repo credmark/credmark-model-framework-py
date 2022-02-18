@@ -28,8 +28,10 @@ def main():
                         help='[OPTIONAL] Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL')
     parser.add_argument('--model_path', default="models", required=False,
                         help='[OPTIONAL] Semicolon separated paths to the model folders \
-                            (or parent), the manifest file, or model python file.')
-    parser.add_argument('--manifest_file', type=str, default='models.yaml')
+                            (or parent) or model python file. Defaults to models folder.')
+    parser.add_argument('--manifest_file', type=str, default='models.yaml',
+                        help='[OPTIONAL] Name of the built manifest file. Defaults to models.yaml. '
+                        '(Not required during development.)')
 
     subparsers = parser.add_subparsers(title='Commands',
                                        description='Supported commands',
