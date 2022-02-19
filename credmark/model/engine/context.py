@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Union
 from credmark.model import ModelContext
-from credmark.model.errors import MaxModelRunDepthError
+from credmark.model.errors import MaxModelRunDepthError, ModelRunError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.web3 import Web3Registry
@@ -96,6 +96,11 @@ class EngineModelContext(ModelContext):
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None
                   ):
+        if block_number is not None and block_number > self.block_number:
+            raise ModelRunError(
+                f'Attempt to run model {slug} at context block {self.block_number} '
+                f'with future block {block_number}')
+
         res_tuple = self._run_model(slug, input, block_number, version)
         return res_tuple[2]
 
