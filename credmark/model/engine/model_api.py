@@ -31,7 +31,7 @@ class ModelApi:
         req = {
             'slug': slug,
             'chainId': chain_id,
-            'blockNumber': str(block_number),
+            'blockNumber': block_number,
             'input': input if input is not None else {},
         }
         if version is not None:
