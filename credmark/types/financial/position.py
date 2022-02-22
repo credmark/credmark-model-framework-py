@@ -1,5 +1,6 @@
+from credmark.types.dto import DTO, DTOField
 
-class Position():
-    def __init__(self, amount, token):
-        self.amount = amount
-        self.token = token
+
+class Position(DTO):
+    amount: float = DTOField(0.0, description='Quantity of token held')
+    token: str = DTOField(..., description='Token symbol')
