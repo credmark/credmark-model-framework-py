@@ -1,8 +1,11 @@
 from abc import abstractmethod
-from typing import Union
+from typing import Any, Type, TypeVar, Union, overload
+from credmark.model.dto import DTO
 from credmark.model.ledger import Ledger
 from credmark.model.web3 import Web3Registry
 from credmark.types.data.block_number import BlockNumber
+
+DTOT = TypeVar('DTOT')
 
 
 class ModelContext():
@@ -40,9 +43,34 @@ class ModelContext():
             self.__ledger = Ledger(self)
         return self.__ledger
 
+    @overload
     @abstractmethod
-    def run_model(self, slug: str, input: Union[dict, None] = None,
-                  block_number: Union[int, None] = None, version: Union[str, None] = None) -> dict:
+    def run_model(self,
+                  slug: str,
+                  input: Union[dict, DTO, None],
+                  return_type: Type[DTOT],
+                  block_number: Union[int, None] = None,
+                  version: Union[str, None] = None,
+                  ) -> DTOT: ...
+
+    @overload
+    @abstractmethod
+    def run_model(self,
+                  slug: str,
+                  input: Union[dict, DTO, None],
+                  return_type: Union[Type[dict], None] = None,
+                  block_number: Union[int, None] = None,
+                  version: Union[str, None] = None,
+                  ) -> dict: ...
+
+    @abstractmethod
+    def run_model(self,
+                  slug,
+                  input,
+                  return_type=None,
+                  block_number=None,
+                  version=None,
+                  ) -> Any:
         """Run a model by slug and optional version.
 
         Parameters:
@@ -54,9 +82,15 @@ class ModelContext():
             version (str | None): optional version of the model.
                   If version is None, the latest version of
                   the model is used.
+            return_type (DTO Type | None): optional class to use for the
+                  returned output data. If not specified, returned value is a dict.
+                  If a DTO specified, the returned value will be an instance
+                  of that class if the output data is compatible with it. If its not,
+                  an exception will be raised.
 
         Returns:
-            The output returned by the model's run() method.
+            The output returned by the model's run() method as a dict
+            or a DTO instance if return_type is specified.
 
         Raises:
             MissingModelError if requested model is not available

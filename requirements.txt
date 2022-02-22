@@ -38,6 +38,7 @@ pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycodestyle==2.8.0
 pycryptodome==3.14.0
+pydantic==1.9.0
 pyparsing==3.0.7
 pyrsistent==0.18.1
 python-dateutil==2.8.2
@@ -49,6 +50,7 @@ rlp==2.0.1
 rsa==4.8
 six==1.16.0
 toolz==0.11.2
+typing_extensions==4.0.1
 urllib3==1.26.8
 varint==1.0.2
 web3 @ git+https://github.com/credmark/web3.py.git@e886bbd74f0974cb1895846550ef71ce3af167fc

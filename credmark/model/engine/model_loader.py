@@ -6,7 +6,7 @@ import inspect
 import yaml
 from typing import Union, Type, List
 from packaging import version
-from credmark.model import Model
+from credmark.model.base import Model
 from credmark.model.errors import MissingModelError, WriteModelManifestError
 from requests.structures import CaseInsensitiveDict
 
@@ -35,7 +35,8 @@ class ModelLoader:
         self.warnings = []
 
         # Map "slug:version" to a model class
-        self.__slug_version_to_class_dict: CaseInsensitiveDict[Type[Model]] = CaseInsensitiveDict()
+        self.__slug_version_to_class_dict: CaseInsensitiveDict[Type[Model]] = CaseInsensitiveDict(
+        )
 
         # Map slug to a sorted list of model versions
         self.__slug_to_versions_dict: CaseInsensitiveDict[List[version.Version]] = CaseInsensitiveDict(
@@ -161,8 +162,6 @@ class ModelLoader:
                 f'Invalid model class "{model_classname}" for model {model_slug}')
 
         if mclass is not None:
-            mclass.slug = model_slug
-            mclass.version = model_version
             self._add_model_class(mclass)
             self.__model_manifest_list.append(model_manifest)
 
