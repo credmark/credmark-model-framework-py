@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from typing import Any, Type, TypeVar, Union, overload
-from credmark.model.dto import DTO
+from credmark.types.dto import DTO
 from credmark.model.ledger import Ledger
 from credmark.model.web3 import Web3Registry
 from credmark.types.data.block_number import BlockNumber

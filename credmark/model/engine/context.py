@@ -7,7 +7,7 @@ from credmark.model.errors import MaxModelRunDepthError, ModelRunError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.web3 import Web3Registry
-from credmark.model.dto import DTO
+from credmark.types.dto import DTO
 
 
 class EngineModelContext(ModelContext):

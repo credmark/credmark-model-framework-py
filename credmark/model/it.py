@@ -1,4 +1,4 @@
-from .dto import DTO
+from credmark.types.dto import DTO
 from .base import Model
 import sys
 import types
