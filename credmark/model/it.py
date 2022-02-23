@@ -19,6 +19,7 @@ def it(slug: str,   # pylint: disable=locally-disabled, invalid-name
         tags: Union[list[str], None] = None,
         display_name: Union[str, None] = None,
         description: Union[str, None] = None,
+        developer: Union[str, None] = None,
         input: Union[Type[DTO], None] = None,
         output: Union[Type[DTO], None] = None):
     def wrapper(cls_in):
@@ -39,6 +40,7 @@ def it(slug: str,   # pylint: disable=locally-disabled, invalid-name
                 'tags': tags,
                 'display_name': display_name,
                 'description': description,
+                'developer': developer if developer is not None else '',
                 'input': input.schema_json() if input is not None and issubclass(input, DTO)
                 else DICT_SCHEMA_JSON,
                 'output': output.schema_json() if output is not None and issubclass(output, DTO)
