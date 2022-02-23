@@ -1,14 +1,26 @@
 import logging
 import os
 from typing import Union
-from credmark.model import ModelContext
-from credmark.model.errors import MaxModelRunDepthError
+from credmark.model.context import ModelContext
+from credmark.model.errors import MaxModelRunDepthError, ModelRunError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.web3 import Web3Registry
+from credmark.types.dto import DTO
 
 
 class EngineModelContext(ModelContext):
+    """Model context class
+
+    Instance attributes:
+        chain_id (int): chain ID, ex 1
+        block_number (int): default block number
+        web3 (Web3): a configured web3 instance for RPC calls
+
+    Methods:
+        run_model(...) - run the specified model and return the results
+    """
+
     logger = logging.getLogger(__name__)
 
     dev_mode = False
@@ -26,8 +38,7 @@ class EngineModelContext(ModelContext):
                                      chain_to_provider_url: Union[dict[str, str], None] = None,
                                      api_url: Union[str, None] = None,
                                      run_id: Union[str, None] = None,
-                                     depth: int = 0,
-                                     manifest_file : str = None):
+                                     depth: int = 0):
         """
         Parameters:
             run_id (str | None): a string to identify a particular model run. It is
@@ -35,7 +46,7 @@ class EngineModelContext(ModelContext):
 
         """
         if model_loader is None:
-            model_loader = ModelLoader(['.'], manifest_file = 'models.yaml')
+            model_loader = ModelLoader(['.'])
 
         api_key = os.environ.get('CREDMARK_API_KEY')
         # If we have an api url or a key, we create the api
@@ -51,10 +62,12 @@ class EngineModelContext(ModelContext):
         # None for block_number to the run_model method.
         result_tuple = context._run_model(
             model_slug, input, None, model_version)
+
+        output = result_tuple[2]
         response = {
             'slug': result_tuple[0],
             'version': result_tuple[1],
-            'output': result_tuple[2],
+            'output': output if isinstance(output, dict) else output.dict(),
             'dependencies': context.__dependencies}
         return response
 
@@ -92,17 +105,49 @@ class EngineModelContext(ModelContext):
                     self._add_dependency(slug, version, count)
 
     def run_model(self,
-                  slug: str,
-                  input: Union[dict, None] = None,
-                  block_number: Union[int, None] = None,
-                  version: Union[str, None] = None
+                  slug,
+                  input=None,
+                  return_type=None,
+                  block_number=None,
+                  version=None,
                   ):
+        """Run a model by slug and optional version.
+
+        Parameters:
+            slug (str): the slug of the model
+            input (dict | None): an optional dictionary of
+                  input data that will be passed to the model when it is run.
+            block_number (int | None): optional block number to use as context.
+                  If None, the block_number of the current context will be used.
+            version (str | None): optional version of the model.
+                  If version is None, the latest version of
+                  the model is used.
+            return_type (DTO Type | None): optional class to use for the
+                  returned output data. If not specified, returned value is a dict.
+                  If a DTO specified, the returned value will be an instance
+                  of that class if the output data is compatible with it. If its not,
+                  an exception will be raised.
+
+        Returns:
+            The output returned by the model's run() method as a dict
+            or a DTO instance if return_type is specified.
+
+        Raises:
+            MissingModelError if requested model is not available
+            Exception on other errors
+        """
+        if block_number is not None and block_number > self.block_number:
+            raise ModelRunError(
+                f'Attempt to run model {slug} at context block {self.block_number} '
+                f'with future block {block_number}')
+
         res_tuple = self._run_model(slug, input, block_number, version)
-        return res_tuple[2]
+        output = res_tuple[2]
+        return self.transform_data_for_dto(output, return_type, slug, 'output')
 
     def _run_model(self,
                    slug: str,
-                   input: Union[dict, None],
+                   input: Union[dict, DTO, None],
                    block_number: Union[int, None],
                    version: Union[str, None]
                    ):
@@ -126,6 +171,8 @@ class EngineModelContext(ModelContext):
                 self.block_number = block_number
             self._web3 = None
 
+            input = self.transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
+
             model = model_class(self)
             output = model.run(input)
 
@@ -143,7 +190,8 @@ class EngineModelContext(ModelContext):
             slug, version, output, dependencies = api.run_model(
                 slug, version, self.chain_id,
                 block_number if block_number is not None else self.block_number,
-                input, self.run_id, self.__depth)
+                input if input is None or isinstance(input, dict) else input.dict(),
+                self.run_id, self.__depth)
             if dependencies:
                 self._add_dependencies(dependencies)
 

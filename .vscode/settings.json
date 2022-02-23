@@ -3,7 +3,13 @@
   "python.languageServer": "Pylance",
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.diagnosticMode": "workspace",
-  "python.formatting.autopep8Args": ["--ignore", "E402", "--max-line-length", "100"],
+  "python.formatting.autopep8Args": [
+    "--ignore",
+    "E402",
+    "--max-line-length",
+    "100"
+  ],
   "python.linting.pylintEnabled": true,
   "python.linting.lintOnSave": true,
+  "python.linting.enabled": true,
 }

@@ -5,7 +5,6 @@ import logging
 import json
 import os
 from typing import Union
-import functools
 
 from dotenv import load_dotenv
 sys.path.append('.')
@@ -29,7 +28,10 @@ def main():
                         help='[OPTIONAL] Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL')
     parser.add_argument('--model_path', default="models", required=False,
                         help='[OPTIONAL] Semicolon separated paths to the model folders \
-                            (or parent), the manifest file, or model python file.')
+                            (or parent) or model python file. Defaults to models folder.')
+    parser.add_argument('--manifest_file', type=str, default='models.yaml',
+                        help='[OPTIONAL] Name of the built manifest file. Defaults to models.yaml. '
+                        '(Not required during development.)')
 
     subparsers = parser.add_subparsers(title='Commands',
                                        description='Supported commands',
@@ -38,23 +40,21 @@ def main():
     parser_list = subparsers.add_parser('list', help='List models', aliases=['list-models'])
     parser_list.add_argument('--manifests', action='store_true', default=False)
     parser_list.add_argument('--json', action='store_true', default=False)
-    parser_list.add_argument('-f', '--file', type=str, default='models.yaml')
     parser_list.set_defaults(func=list_models)
 
-    parser_list = subparsers.add_parser('build', help='Build model manifest', aliases=['build-manifest'])
-    parser_list.add_argument('-f', '--file', type=str, default='models.yaml')
+    parser_list = subparsers.add_parser(
+        'build', help='Build model manifest', aliases=['build-manifest'])
     parser_list.set_defaults(func=write_manifest_file)
 
-    parser_list = subparsers.add_parser('clean', help='Clean model manifest', aliases=['remove-manifest'])
-    parser_list.add_argument('-f', '--file', type=str, default='models.yaml')
+    parser_list = subparsers.add_parser(
+        'clean', help='Clean model manifest', aliases=['remove-manifest'])
     parser_list.set_defaults(func=remove_manifest_file)
 
     parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
+    parser_run.add_argument('-b', '--block_number', type=int, required=True,
+                            help='Default block number.')
     parser_run.add_argument('-c', '--chain_id', type=int, default=1, required=False,
                             help='[OPTIONAL] The chain ID. Defaults to 1.')
-    parser_run.add_argument('-b', '--block_number', type=lambda x: x if type(x) == str and x in ["latest", "earliest", "pending"] else int(x),
-                            required=False, default='latest',
-                            help='[OPTIONAL] Web3 default block number.')
     parser_run.add_argument('-i', '--input', required=False, default=None,
                             help='[OPTIONAL] Input JSON. If missing, will read from stdin.')
     parser_run.add_argument('--provider_url_map', required=False, default=None,
@@ -67,7 +67,6 @@ def main():
     parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
     parser_run.add_argument('model-slug', default='(missing model-slug arg)',
                             help='Slug for the model to run.')
-    parser_run.add_argument('-f', '--file', type=str, default='models.yaml')                            
     parser_run.set_defaults(func=run_model, depth=0)
 
     if len(sys.argv) == 1:
@@ -84,17 +83,18 @@ def config_logging(args):
         level=args['log_level'])
 
 
-def load_models(args, manifest_file: Union[str, None]):
+def load_models(args):
+    manifest_file = args.get('manifest_file')
     model_path = args['model_path']
     model_loader = ModelLoader([model_path] if model_path is not None else None, manifest_file)
     model_loader.log_errors()
     return model_loader
 
+
 def list_models(args):
     config_logging(args)
 
-    manifest_file = args.get('file')
-    model_loader = load_models(args, manifest_file)
+    model_loader = load_models(args)
     json_output = args.get('json')
 
     if not json_output:
@@ -123,19 +123,21 @@ def list_models(args):
             f'{len(model_loader.errors)} errors, {len(model_loader.warnings)} warnings\n\n')
     sys.exit(0)
 
+
 def write_manifest_file(args):
     config_logging(args)
-    manifest_file = args.get('file')
-    model_loader = load_models(args, manifest_file)
-    model_loader.write_manifest_file(manifest_file)
+    model_loader = load_models(args)
+    model_loader.write_manifest_file()
     sys.exit(0)
+
 
 def remove_manifest_file(args):
     config_logging(args)
-    model_loader = load_models({'model_path': None}, manifest_file = None)
-    manifest_file = args.get('file')    
-    model_loader.remove_manifest_file(manifest_file)
+    manifest_file = args.get('manifest_file')
+    model_loader = load_models({'model_path': None, 'manifest_file': manifest_file})
+    model_loader.remove_manifest_file()
     sys.exit(0)
+
 
 def run_model(args):
     exit_code = 0
@@ -153,16 +155,15 @@ def run_model(args):
             except Exception as err:
                 logger.error(f'Error parsing JSON in env var CREDMARK_WEB3_PROVIDERS: {err}')
 
-        manifest_file = args.get('file')
-        model_loader = load_models(args, manifest_file)
+        model_loader = load_models(args)
 
-        chain_id = args['chain_id']
-        block_number = args['block_number']
-        model_slug = args['model-slug']
-        model_version = args['model_version']
-        api_url = args['api_url']
-        run_id = args['run_id']
-        depth = args['depth']
+        chain_id: int = args['chain_id']
+        block_number: int = args['block_number']
+        model_slug: str = args['model-slug']
+        model_version: Union[str, None] = args['model_version']
+        api_url: Union[str, None] = args['api_url']
+        run_id: Union[str, None] = args['run_id']
+        depth: int = args['depth']
 
         if args['input']:
             input = json.loads(args['input'])
@@ -180,8 +181,7 @@ def run_model(args):
             chain_to_provider_url=chain_to_provider_url,
             api_url=api_url,
             run_id=run_id,
-            depth=depth,
-            manifest_file=manifest_file)
+            depth=depth)
         json.dump(result, sys.stdout)
 
     except (MaxModelRunDepthError, MissingModelError, ModelRunError) as e:
