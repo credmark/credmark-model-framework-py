@@ -1,4 +1,3 @@
-from typing import Optional
 from eth_typing.evm import ChecksumAddress
 
 
