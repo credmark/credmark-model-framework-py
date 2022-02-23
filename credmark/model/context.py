@@ -66,7 +66,7 @@ class ModelContext():
     @abstractmethod
     def run_model(self,
                   slug: str,
-                  input: Union[dict, DTO, None],
+                  input: Union[dict, DTO, None] = None,
                   return_type: Union[Type[dict], None] = None,
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,
@@ -75,7 +75,7 @@ class ModelContext():
     @abstractmethod
     def run_model(self,
                   slug,
-                  input,
+                  input=None,
                   return_type=None,
                   block_number=None,
                   version=None,
