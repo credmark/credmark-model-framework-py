@@ -21,8 +21,7 @@ class Model:
     # the loader or decorator
     slug: str
     version: str
-    inputDTO: Union[Type[DTO], None]
-    outputDTO: Union[Type[DTO], None]
+    _manifest: dict
 
     def __init__(self, context: ModelContext):
         self.context = context
