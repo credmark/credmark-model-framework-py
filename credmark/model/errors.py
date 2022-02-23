@@ -20,13 +20,19 @@ class MaxModelRunDepthError(Exception):
     pass
 
 
+class ModelOutputError(Exception):
+    pass
+
+
 class ModelRunRequestError(Exception):
     def __init__(self, message, result: dict):
         super().__init__(message)
         self.result = result
 
+
 class WriteModelManifestError(Exception):
     pass
+
 
 class WrongModelMethodSignature(Exception):
     pass

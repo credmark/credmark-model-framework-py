@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Union
 from credmark.model.context import ModelContext
-from credmark.model.errors import MaxModelRunDepthError, ModelRunError
+from credmark.model.errors import MaxModelRunDepthError, ModelRunError, ModelOutputError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.web3 import Web3Registry
@@ -44,6 +44,10 @@ class EngineModelContext(ModelContext):
             run_id (str | None): a string to identify a particular model run. It is
                 same for any other models run from within a model.
 
+        Raises:
+            ModelOutputError if model output is not a dict-like object.
+            Exception on other errors
+
         """
         if model_loader is None:
             model_loader = ModelLoader(['.'])
@@ -60,14 +64,21 @@ class EngineModelContext(ModelContext):
 
         # We set the block_number in the context so we pass in
         # None for block_number to the run_model method.
+
         result_tuple = context._run_model(
             model_slug, input, None, model_version)
 
         output = result_tuple[2]
+        try:
+            output_as_dict = output if isinstance(output, dict) else output.dict()
+        except:
+            raise ModelRunError(
+                f'The output of the model is not a dict-like type. output = {output}')
+
         response = {
             'slug': result_tuple[0],
             'version': result_tuple[1],
-            'output': output if isinstance(output, dict) else output.dict(),
+            'output': output_as_dict,
             'dependencies': context.__dependencies}
         return response
 
@@ -136,13 +147,16 @@ class EngineModelContext(ModelContext):
             MissingModelError if requested model is not available
             Exception on other errors
         """
+
         if block_number is not None and block_number > self.block_number:
             raise ModelRunError(
                 f'Attempt to run model {slug} at context block {self.block_number} '
                 f'with future block {block_number}')
 
         res_tuple = self._run_model(slug, input, block_number, version)
-        output = res_tuple[2]
+
+        # The last item of the tuple is the output.
+        output = res_tuple[-1]
         return self.transform_data_for_dto(output, return_type, slug, 'output')
 
     def _run_model(self,
@@ -151,6 +165,7 @@ class EngineModelContext(ModelContext):
                    block_number: Union[int, None],
                    version: Union[str, None]
                    ):
+
         api = self.__api
 
         # We raise an exception for missing class
@@ -175,6 +190,8 @@ class EngineModelContext(ModelContext):
 
             model = model_class(self)
             output = model.run(input)
+
+            output = self.transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
 
             version = model_class.version
             self._add_dependency(slug, version, 1)

@@ -107,18 +107,16 @@ class ModelContext():
             if dto is None:
                 if data is None:
                     return {}
-                elif isinstance(data, dict):
+                if isinstance(data, dict):
                     return data
-                else:
-                    return data.dict()
+                return data.dict()
             else:
                 if data is None:
-                    return dto()
-                elif isinstance(data, dto):
+                    return dto
+                if isinstance(data, dto):
                     return data
-                elif isinstance(data, dict):
+                if isinstance(data, dict):
                     return dto(**data)
-                else:
-                    return dto(**data.dict())
+                return dto(**data.dict())
         except Exception as e:
             raise ModelRunError(f'Error validating model {slug} {data_source}: {e}')
