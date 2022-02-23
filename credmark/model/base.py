@@ -22,6 +22,7 @@ class Model:
     # variables will be set automatically by the loader.
     slug: str
     version: str
+    _manifest: dict
 
     def __init__(self, context: ModelContext):
         self.context = context
