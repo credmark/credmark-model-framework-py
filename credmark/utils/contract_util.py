@@ -1,20 +1,20 @@
 from eth_typing.evm import ChecksumAddress
 
 
-class ContractHelper:
+class ContractUtil:
 
     def __init__(self,
                  context,
                  ) -> None:
         self.context = context
 
-    def get_contracts(self,
-                      address: str = None,
-                      name: str = None,
-                      protocol: str = None,
-                      product: str = None,
-                      abi: dict = None,
-                      tags: dict = None,):
+    def load(self,
+             address: str = None,
+             name: str = None,
+             protocol: str = None,
+             product: str = None,
+             abi: dict = None,
+             tags: dict = None,):
         if name is None and address is None and abi is None:
             raise Exception
 
@@ -39,12 +39,10 @@ class ContractHelper:
             q["abi"] = abi
 
         contract_q_results = self.context.run_model('contract.metadata', q)
-
-        for contract in contract_q_results:
-
+        for contract in contract_q_results['contracts']:
             contracts.append(self.context.web3.eth.contract(
-                address=self.context.web3.toChecksumAddress(contract['ADDRESS']),
-                abi=contract['ABI']
+                address=self.context.web3.toChecksumAddress(contract['address']),
+                abi=contract['abi']
             ))
 
         return contracts

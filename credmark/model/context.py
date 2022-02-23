@@ -1,19 +1,13 @@
 from abc import abstractmethod
-<< << << < HEAD
 from typing import Any, Type, TypeVar, Union, overload
 from .errors import ModelRunError
 from .ledger import Ledger
 from .web3 import Web3Registry
 from credmark.types.dto import DTO
 from credmark.types.data.block_number import BlockNumber
+from credmark.model.contract_helper import ContractHelper
 
 DTOT = TypeVar('DTOT')
-== == == =
-from typing import Union
-from credmark.model.contract_helper import ContractHelper
-from credmark.model.ledger import Ledger
-from credmark.model.web3 import Web3Registry
->>>>>> > 2460cf4(contract util init commit)
 
 
 class ModelContext():
