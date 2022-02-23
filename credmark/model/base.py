@@ -44,3 +44,12 @@ class Model:
         Model instances may be reused if the context does not change
         so keep in mind that run() may be called multiple times.
         """
+
+    def convert_dict_to_dto(self,
+                            data: dict,
+                            dto_class: Type[DTO]):
+        """
+        A model can call this method to convert a dict
+        of data in a known format into a DTO instance.
+        """
+        return self.context.transform_data_for_dto(data, dto_class, self.slug, 'transform')

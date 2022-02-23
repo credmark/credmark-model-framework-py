@@ -1,8 +1,7 @@
 import logging
 import os
-from typing import Type, Union
+from typing import Union
 from credmark.model.context import ModelContext
-from credmark.model.ledger import Ledger
 from credmark.model.errors import MaxModelRunDepthError, ModelRunError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
@@ -87,20 +86,6 @@ class EngineModelContext(ModelContext):
         self.__model_loader = model_loader
         self.__api = api
 
-    @property
-    def web3(self):
-        if self._web3 is None:
-            self._web3 = self.__web3_registry.web3_for_chain_id(self.chain_id)
-            self._web3.eth.default_block = self.block_number if \
-                self.block_number is not None else 'latest'
-        return self._web3
-
-    @property
-    def ledger(self):
-        if self.__ledger is None:
-            self.__ledger = Ledger(self)
-        return self.__ledger
-
     def _add_dependency(self, slug: str, version: str, count: int):
         versions = self.__dependencies.get(slug)
         if versions is None:
@@ -158,31 +143,7 @@ class EngineModelContext(ModelContext):
 
         res_tuple = self._run_model(slug, input, block_number, version)
         output = res_tuple[2]
-        return self._transform_data_for_dto(output, return_type, slug, 'output')
-
-    def _transform_data_for_dto(self, data: Union[dict, DTO, None],
-                                dto: Union[Type[DTO], None],
-                                slug: str,
-                                data_source: str):
-        try:
-            if dto is None:
-                if data is None:
-                    return {}
-                elif isinstance(data, dict):
-                    return data
-                else:
-                    return data.dict()
-            else:
-                if data is None:
-                    return dto()
-                elif isinstance(data, dto):
-                    return data
-                elif isinstance(data, dict):
-                    return dto(**data)
-                else:
-                    return dto(**data.dict())
-        except Exception as e:
-            raise ModelRunError(f'Error validating model {slug} {data_source}: {e}')
+        return self.transform_data_for_dto(output, return_type, slug, 'output')
 
     def _run_model(self,
                    slug: str,
@@ -210,7 +171,7 @@ class EngineModelContext(ModelContext):
                 self.block_number = block_number
             self._web3 = None
 
-            input = self._transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
+            input = self.transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
 
             model = model_class(self)
             output = model.run(input)
