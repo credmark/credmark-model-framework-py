@@ -1,17 +1,26 @@
+from credmark.types.dto import DTO
 from .base import Model
-
 import sys
 import types
 import inspect
-from typing import Union
+from typing import Type, Union
 from .errors import WrongModelMethodSignature
+
+DICT_SCHEMA_JSON = '{"title": "Object", "type": "object", "properties": {}}'
+
+# We could probably get the input and output DTOs from
+# the run() method signature instead of passing them as params to
+# the decorator but there may be reasons why they want to use
+# different types and the DTOs are used to document the schema.
 
 
 def it(slug: str,   # pylint: disable=locally-disabled, invalid-name
         version: str,
         tags: Union[list[str], None] = None,
         display_name: Union[str, None] = None,
-        description: Union[str, None] = None):
+        description: Union[str, None] = None,
+        input: Union[Type[DTO], None] = None,
+        output: Union[Type[DTO], None] = None):
     def wrapper(cls_in):
         def is_parent(child, parent):
             found = parent in child.__bases__
@@ -30,6 +39,10 @@ def it(slug: str,   # pylint: disable=locally-disabled, invalid-name
                 'tags': tags,
                 'display_name': display_name,
                 'description': description,
+                'input': input.schema_json() if input is not None and issubclass(input, DTO)
+                else DICT_SCHEMA_JSON,
+                'output': output.schema_json() if output is not None and issubclass(output, DTO)
+                else DICT_SCHEMA_JSON,
                 'class': cls.__dict__['__module__'] + '.' + cls.__name__
             }
         }
@@ -41,6 +54,11 @@ def it(slug: str,   # pylint: disable=locally-disabled, invalid-name
         attr_prop = property(get_attr, None)
         setattr(cls, attr_name, attr_prop)
         setattr(cls, '_' + attr_name, attr_value)
+
+        setattr(cls, 'slug', slug)
+        setattr(cls, 'version', version)
+        setattr(cls, 'inputDTO', input)
+        setattr(cls, 'outputDTO', output)
 
         # Checks for the class
         # 1. it need to be inherited from Model class
@@ -59,24 +77,14 @@ def it(slug: str,   # pylint: disable=locally-disabled, invalid-name
                     continue
 
                 found_this_method = True
-                try:
-                    assert inspect.signature(Model.__dict__[method]) == inspect.signature(
-                        mro_cls.__dict__[method])
-                    break
-                except:
-                    if mro_cls == cls:
-                        msg = (f'Model {cls.__name__} does not define method '
-                               f'{method}{inspect.signature(cls.__dict__[method])} with '
-                               f'signature {inspect.signature(Model.__dict__[method])}')
-                    else:
-                        msg = (f'Model\'s parent {mro_cls.__name__} does not define '
-                               f'method {method}{inspect.signature(mro_cls.__dict__[method])} with '
-                               f'signature {inspect.signature(Model.__dict__[method])}')
-                    raise WrongModelMethodSignature(msg)
+
+                # Since the run method is overloaded, the signatures won't match exactly.
+                # TODO: Add parameter and return value type compatibility check
+                break
 
             if not found_this_method:
                 raise WrongModelMethodSignature(
-                    f'Model {cls.__name__} misses a method {method}() with signature {inspect.signature(Model.__dict__[method])}')
+                    f'Model {cls.__name__} misses a method {method}() with signature {inspect.signature(Model.__dict__[method])}')  # pylint: disable=line-too-long
 
         return cls
 

@@ -1,4 +1,6 @@
 from typing import Type, Union, List
+import credmark.model
+from credmark.types.models.ledger import LedgerModelOutput
 from .errors import InvalidColumnException, InvalidQueryException
 from .tables import BlockTable, ContractTable, \
     LogTable, ReceiptTable, TokenTable, TokenTransferTable, \
@@ -17,7 +19,8 @@ class Ledger:
     TokenTransfer = TokenTransferTable
 
     def __init__(self, context):
-        self.context = context
+        # We type the property here to avoid circular ref
+        self.context: credmark.model.ModelContext = context
 
     def _validate_columns(self, model_slug: str,
                           columns: List[str],
@@ -51,7 +54,8 @@ class Ledger:
                                        'groupBy': group_by,
                                        'orderBy': order_by,
                                        'limit': limit,
-                                       'offset': offset})
+                                       'offset': offset},
+                                      return_type=LedgerModelOutput)
 
     def get_transactions(self, columns: List[str],
                          where: Union[str, None] = None,
