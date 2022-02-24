@@ -21,7 +21,7 @@ class Model:
     # the loader or decorator
     slug: str
     version: str
-    _manifest: dict
+    _manifest: dict      
     inputDTO: Union[Type[DTO], None]
     outputDTO: Union[Type[DTO], None]
 

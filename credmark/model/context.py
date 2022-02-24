@@ -27,9 +27,9 @@ class ModelContext():
         self.chain_id = chain_id
         self.block_number = BlockNumber(block_number, self)
         self._web3 = None
+        self.__web3_registry = web3_registry        
         self.__ledger = None
         self.__utils = None
-        self.__web3_registry = web3_registry
 
     @property
     def web3(self):
@@ -44,6 +44,12 @@ class ModelContext():
         if self.__ledger is None:
             self.__ledger = Ledger(self)
         return self.__ledger
+
+    @property
+    def contracts(self):
+        if self.__utils is None:
+            self.__utils = ContractUtil(self)
+        return self.__utils
 
     @overload
     @abstractmethod
@@ -66,7 +72,8 @@ class ModelContext():
                   ) -> dict: ...
 
     @property
-    def utils(self):
+    def 
+    (self):
         if self.__utils is None:
             self.__utils = ContractUtil(self)
         return self.__utils
