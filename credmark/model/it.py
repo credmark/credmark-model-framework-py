@@ -6,7 +6,7 @@ import inspect
 from typing import Type, Union
 from .errors import WrongModelMethodSignature
 
-DICT_SCHEMA_JSON = '{"title": "Object", "type": "object", "properties": {}}'
+DICT_SCHEMA = {"title": "Object", "type": "object", "properties": {}}
 
 # We could probably get the input and output DTOs from
 # the run() method signature instead of passing them as params to
@@ -41,10 +41,10 @@ def it(slug: str,   # pylint: disable=locally-disabled, invalid-name
                 'display_name': display_name,
                 'description': description,
                 'developer': developer if developer is not None else '',
-                'input': input.schema_json() if input is not None and issubclass(input, DTO)
-                else DICT_SCHEMA_JSON,
-                'output': output.schema_json() if output is not None and issubclass(output, DTO)
-                else DICT_SCHEMA_JSON,
+                'input': input.schema() if input is not None and issubclass(input, DTO)
+                else DICT_SCHEMA,
+                'output': output.schema() if output is not None and issubclass(output, DTO)
+                else DICT_SCHEMA,
                 'class': cls.__dict__['__module__'] + '.' + cls.__name__
             }
         }
