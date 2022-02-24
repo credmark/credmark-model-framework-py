@@ -1,4 +1,5 @@
 from abc import abstractmethod
+<< << << < HEAD
 from typing import Any, Type, TypeVar, Union, overload
 from .errors import ModelRunError
 from .ledger import Ledger
@@ -7,6 +8,12 @@ from credmark.types.dto import DTO
 from credmark.types.data.block_number import BlockNumber
 
 DTOT = TypeVar('DTOT')
+== == == =
+from typing import Union
+from credmark.model.contract_helper import ContractHelper
+from credmark.model.ledger import Ledger
+from credmark.model.web3 import Web3Registry
+>>>>>> > 2460cf4(contract util init commit)
 
 
 class ModelContext():
@@ -26,14 +33,14 @@ class ModelContext():
         self.chain_id = chain_id
         self.block_number = BlockNumber(block_number, self)
         self._web3 = None
-        self._ledger = None
-        self._utils = None
-        self._web3_registry = web3_registry
+        self.__ledger = None
+        self._contract_helper = None
+        self.__web3_registry = web3_registry
 
     @property
     def web3(self):
         if self._web3 is None:
-            self._web3 = self._web3_registry.web3_for_chain_id(self.chain_id)
+            self._web3 = self.__web3_registry.web3_for_chain_id(self.chain_id)
             self._web3.eth.default_block = self.block_number if \
                 self.block_number is not None else 'latest'
         return self._web3
@@ -63,6 +70,12 @@ class ModelContext():
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,
                   ) -> dict: ...
+
+    @property
+    def contract_helper(self):
+        if self._contract_helper is None:
+            self._contract_helper = ContractHelper(self)
+        return self._contract_helper
 
     @abstractmethod
     def run_model(self,
