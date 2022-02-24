@@ -69,6 +69,7 @@ class EngineModelContext(ModelContext):
             model_slug, input, None, model_version)
 
         output = result_tuple[2]
+        # Raise error with non-dict-like output
         try:
             output_as_dict = output if isinstance(output, dict) else output.dict()
         except:
