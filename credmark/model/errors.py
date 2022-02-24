@@ -25,8 +25,10 @@ class ModelRunRequestError(Exception):
         super().__init__(message)
         self.result = result
 
+
 class WriteModelManifestError(Exception):
     pass
+
 
 class WrongModelMethodSignature(Exception):
     pass
