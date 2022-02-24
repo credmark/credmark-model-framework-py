@@ -22,6 +22,8 @@ class Model:
     slug: str
     version: str
     _manifest: dict
+    inputDTO: Union[Type[DTO], None]
+    outputDTO: Union[Type[DTO], None]
 
     def __init__(self, context: ModelContext):
         self.context = context

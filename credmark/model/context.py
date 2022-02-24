@@ -5,7 +5,7 @@ from .ledger import Ledger
 from .web3 import Web3Registry
 from credmark.types.dto import DTO
 from credmark.types.data.block_number import BlockNumber
-from credmark.model.contract_helper import ContractHelper
+from credmark.utils.contract_util import ContractUtil
 
 DTOT = TypeVar('DTOT')
 
@@ -28,7 +28,7 @@ class ModelContext():
         self.block_number = BlockNumber(block_number, self)
         self._web3 = None
         self.__ledger = None
-        self._contract_helper = None
+        self.__utils = None
         self.__web3_registry = web3_registry
 
     @property
@@ -41,9 +41,9 @@ class ModelContext():
 
     @property
     def ledger(self):
-        if self._ledger is None:
-            self._ledger = Ledger(self)
-        return self._ledger
+        if self.__ledger is None:
+            self.__ledger = Ledger(self)
+        return self.__ledger
 
     @overload
     @abstractmethod
@@ -66,10 +66,10 @@ class ModelContext():
                   ) -> dict: ...
 
     @property
-    def contract_helper(self):
-        if self._contract_helper is None:
-            self._contract_helper = ContractHelper(self)
-        return self._contract_helper
+    def utils(self):
+        if self.__utils is None:
+            self.__utils = ContractUtil(self)
+        return self.__utils
 
     @abstractmethod
     def run_model(self,

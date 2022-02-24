@@ -73,7 +73,7 @@ class EngineModelContext(ModelContext):
         try:
             output_as_dict = output if isinstance(output, dict) else output.dict()
         except:
-            raise ModelRunError(
+            raise ModelOutputError(
                 f'The output of the model is not a dict-like type. output = {output}')
 
         response = {
