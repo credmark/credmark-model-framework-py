@@ -2,7 +2,9 @@
 credmark-model-sdk
 ===============================
 
-Credmark SDK for developing models in python
+Credmark SDK for developing models in python.
+
+For information on how to build models, see the `credmark-models-py repo <https://github.com/credmark/credmark-models-py>`_
 
 Install
 -------
