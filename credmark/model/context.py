@@ -132,4 +132,5 @@ class ModelContext():
                     return dto(**data)
                 return dto(**data.dict())
         except Exception as e:
-            raise ModelRunError(f'Error validating model {slug} {data_source}: {e}')
+            raise ModelRunError(
+                f'Error validating model {slug} {data_source}: {e}, with data={data}')

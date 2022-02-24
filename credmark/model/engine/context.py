@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Union
 from credmark.model.context import ModelContext
-from credmark.model.errors import MaxModelRunDepthError, ModelRunError, ModelOutputError
+from credmark.model.errors import MaxModelRunDepthError, ModelRunError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.web3 import Web3Registry
@@ -45,10 +45,10 @@ class EngineModelContext(ModelContext):
                 same for any other models run from within a model.
 
         Raises:
-            ModelOutputError if model output is not a dict-like object.
+            ModelRunError if model output is not a dict-like object.
             Exception on other errors
-
         """
+
         if model_loader is None:
             model_loader = ModelLoader(['.'])
 
@@ -69,12 +69,7 @@ class EngineModelContext(ModelContext):
             model_slug, input, None, model_version)
 
         output = result_tuple[2]
-        # Raise error with non-dict-like output
-        try:
-            output_as_dict = output if isinstance(output, dict) else output.dict()
-        except:
-            raise ModelOutputError(
-                f'The output of the model is not a dict-like type. output = {output}')
+        output_as_dict = context.transform_data_for_dto(output, None, model_slug, 'output')
 
         response = {
             'slug': result_tuple[0],
