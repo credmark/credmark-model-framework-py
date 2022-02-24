@@ -27,7 +27,7 @@ class ModelContext():
         self.chain_id = chain_id
         self.block_number = BlockNumber(block_number, self)
         self._web3 = None
-        self.__web3_registry = web3_registry        
+        self.__web3_registry = web3_registry
         self.__ledger = None
         self.__utils = None
 
@@ -72,8 +72,7 @@ class ModelContext():
                   ) -> dict: ...
 
     @property
-    def 
-    (self):
+    def utils(self):
         if self.__utils is None:
             self.__utils = ContractUtil(self)
         return self.__utils
