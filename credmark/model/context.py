@@ -118,23 +118,31 @@ class ModelContext():
                                data_source: str):
         try:
             if dto is None:
+                # Return a dict
                 if data is None:
+                    # empty dict
                     return {}
-                if isinstance(data, dict):
-                    return data
-                else:
+                if isinstance(data, DTO):
+                    # get dict from dto instance
                     return data.dict()
+                else:
+                    # return dict
+                    return data
             else:
+                # Return a dto instance
                 if data is None:
-                    # We construct the dto with no data
+                    # construct the dto with no data
                     # (which will be fine if the dto has default values)
                     return dto()
                 if isinstance(data, dto):
+                    # already the right dto class
                     return data
-                if isinstance(data, dict):
-                    return dto(**data)
-                else:
+                if isinstance(data, DTO):
+                    # convert one dto to another dto class
                     return dto(**data.dict())
+                else:
+                    # create dto from dict
+                    return dto(**data)
         except Exception as e:
             raise ModelRunError(
                 f'Error validating model {slug} {data_source}: {e}, with data={data}')
