@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Any, Union
 import logging
 import requests
 from ..errors import MissingModelError, ModelRunRequestError
@@ -27,7 +27,8 @@ class ModelApi:
                   block_number: int,
                   input=Union[dict, None],
                   run_id: Union[str, None] = None,
-                  depth: Union[int, None] = None):
+                  depth: Union[int, None] = None) -> \
+            tuple[str, str, dict[str, Any], dict[str, Any]]:
         req = {
             'slug': slug,
             'chainId': chain_id,
