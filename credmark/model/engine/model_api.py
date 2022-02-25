@@ -1,7 +1,7 @@
 from typing import Any, Union
 import logging
 import requests
-from ..errors import MissingModelError, ModelRunRequestError
+from credmark.model.errors import MissingModelError, ModelRunRequestError
 
 RUN_MODEL_API_URL = 'https://gateway.credmark.com/v0/models/run'
 

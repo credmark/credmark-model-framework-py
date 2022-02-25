@@ -3,6 +3,7 @@ from pydantic import (  # pylint: disable=locally-disabled, unused-import
     Field as DTOField,
     constr,
     validator,
+    Json,
 )
 
 

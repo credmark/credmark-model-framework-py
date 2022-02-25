@@ -1,10 +1,8 @@
-import sys
-import types
 import inspect
 from typing import Type, Union
 
 from .base import Model
-from ..types import DTO
+from credmark.types import DTO
 from .errors import WrongModelMethodSignature
 
 DICT_SCHEMA = {"title": "Object", "type": "object", "properties": {}}
@@ -92,15 +90,3 @@ def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
         return cls
 
     return wrapper
-
-
-class ModIt(types.ModuleType):
-    def __init__(self):
-        types.ModuleType.__init__(self, __name__)
-        # or super().__init__(__name__) for Python 3
-        self.__dict__.update(sys.modules[__name__].__dict__)
-
-    def __call__(self, *args, **kwargs):
-        return describe(*args, *kwargs)
-
-# sys.modules[__name__] = ModIt()

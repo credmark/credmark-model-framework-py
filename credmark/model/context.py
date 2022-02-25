@@ -5,9 +5,10 @@ from .errors import ModelRunError
 from .ledger import Ledger
 from .web3 import Web3Registry
 
-from ..types import DTO
-from ..types.data.block_number import BlockNumber
-from ..utils.contract_util import ContractUtil
+
+from credmark.types import DTO
+from credmark.types.data.block_number import BlockNumber
+from credmark.utils.contract_util import ContractUtil
 
 DTOT = TypeVar('DTOT')
 
@@ -121,7 +122,8 @@ class ModelContext():
                     return {}
                 if isinstance(data, dict):
                     return data
-                return data.dict()
+                else:
+                    return data.dict()
             else:
                 if data is None:
                     return dto
@@ -129,7 +131,8 @@ class ModelContext():
                     return data
                 if isinstance(data, dict):
                     return dto(**data)
-                return dto(**data.dict())
+                else:
+                    return dto(**data.dict())
         except Exception as e:
             raise ModelRunError(
                 f'Error validating model {slug} {data_source}: {e}, with data={data}')

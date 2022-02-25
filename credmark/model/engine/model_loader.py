@@ -8,8 +8,8 @@ from typing import Union, Type, List
 from packaging import version
 from requests.structures import CaseInsensitiveDict
 
-from ..base import Model
-from ..errors import MissingModelError, WriteModelManifestError
+from credmark.model import Model
+from credmark.model.errors import MissingModelError, WriteModelManifestError
 
 
 class ModelLoader:
@@ -28,7 +28,7 @@ class ModelLoader:
                 f'Invalid model slug "{slug}". '
                 'Slugs must be not more than {self.max_slug_length} characters.')
 
-    def __init__(self, model_paths: Union[List[str], None] = None, manifest_file: Union[str, None] = None):
+    def __init__(self, model_paths: Union[List[str], None] = None, manifest_file: Union[str, None] = None):  # pylint: disable=line-too-long
         '''
         model_paths is a list of paths to search for model manifest files.
         '''
@@ -36,11 +36,11 @@ class ModelLoader:
         self.warnings = []
 
         # Map "slug:version" to a model class
-        self.__slug_version_to_class_dict: CaseInsensitiveDict[Type[Model]] = CaseInsensitiveDict(
+        self.__slug_version_to_class_dict: CaseInsensitiveDict[Type[Model]] = CaseInsensitiveDict(  # pylint: disable=line-too-long
         )
 
         # Map slug to a sorted list of model versions
-        self.__slug_to_versions_dict: CaseInsensitiveDict[List[version.Version]] = CaseInsensitiveDict(
+        self.__slug_to_versions_dict: CaseInsensitiveDict[List[version.Version]] = CaseInsensitiveDict(  # pylint: disable=line-too-long
         )
 
         self.__model_manifest_list: List[dict] = []
@@ -147,7 +147,7 @@ class ModelLoader:
             self.validate_model_slug(model_slug)
             model_classname = model_manifest['class']
             # ensure version is a string
-            model_version = model_manifest['version'] = str(
+            _model_version = model_manifest['version'] = str(
                 model_manifest['version'])
         except KeyError as err:
             raise Exception(

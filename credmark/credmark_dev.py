@@ -61,7 +61,7 @@ def main():
                             help='[OPTIONAL] JSON object of chain id to Web3 provider HTTP URL')
     parser_run.add_argument('-v', '--model_version', default=None, required=False,
                             help='[OPTIONAL] Version of the model to run. Defaults to latest.')
-    parser_run.add_argument('--api_url', required=False, default=None,
+    parser_run.add_argument('-api', '--api_url', required=False, default=None,
                             help='[OPTIONAL] Credmark API url')
     parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
     parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)

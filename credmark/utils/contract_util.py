@@ -1,4 +1,7 @@
 from eth_typing.evm import ChecksumAddress
+from pydantic import Json
+from credmark.types import DTO, Json
+from credmark.types.data import Contracts, Contract
 
 
 class ContractUtil:
@@ -39,6 +42,9 @@ class ContractUtil:
             q["abi"] = abi
 
         contract_q_results = self.context.run_model('contract.metadata', q)
+
+        Contracts(contracts=contract_q_results['contracts'])
+
         for contract in contract_q_results['contracts']:
             contracts.append(self.context.web3.eth.contract(
                 address=self.context.web3.toChecksumAddress(contract['address']),

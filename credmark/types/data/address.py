@@ -1,12 +1,3 @@
-from typing import (
-    Union,
-)
-
-from eth_utils import (
-    is_integer,
-    is_checksum_address
-)
-
 from web3._utils.validation import (
     validate_address as eth_utils_validate_address,
 )
@@ -18,16 +9,11 @@ from typing import (
 
 from web3 import Web3
 
-from ..dto import DTO, DTOField
-
-import functools
+from credmark.types import DTO, DTOField
 
 
-def validate_address(addr: Union[str, int]) -> str:
-    if not is_checksum_address(addr):
-        _addr = Web3.toChecksumAddress(addr)
-    else:
-        _addr = addr
+def validate_address(addr: str) -> str:
+    _addr = Web3.toChecksumAddress(addr)
     eth_utils_validate_address(_addr)
     return _addr
 
@@ -42,7 +28,7 @@ class AddressStr(str):
         yield cls.validate
 
     @ classmethod
-    def validate(cls, addr: Union[str, int]) -> str:
+    def validate(cls, addr: str) -> str:
         return validate_address(addr)
 
 
@@ -51,9 +37,9 @@ class Address(str):
         addr: AddressStr = DTOField(..., description='address')
 
     def __init__(self, addr):
-        if is_integer(addr):
-            addr = Web3.toChecksumAddress(addr)
+        _addr = Web3.toChecksumAddress(addr)
         self._addr = self.__class__.DTOAddress(addr=addr)
+        super().__init__()
 
     def __hash__(self):
         return super().__hash__()
@@ -88,6 +74,8 @@ class Address(str):
 
 
 if __name__ == '__main__':
+    import functools
+
     def expect_exception(func):
         got_exception = False
         try:
@@ -100,7 +88,7 @@ if __name__ == '__main__':
     class PoolAddress(DTO):
         poolAddress: AddressStr = DTOField(..., description='Address of Pool')
 
-    pa = PoolAddress(poolAddress='0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8')
+    # pa = PoolAddress(poolAddress='0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8')
 
     expect_exception(
         functools.partial(PoolAddress, {'poolAddress': '0xD905e2eaeBe188fc92179b6350'})
@@ -115,7 +103,7 @@ if __name__ == '__main__':
     assert Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8') == Address(
         '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8')
 
-    assert not Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D9') == Address(
+    assert Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D9') != Address(
         '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8')
 
     assert Address.valid(addr='0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8')
@@ -131,10 +119,11 @@ if __name__ == '__main__':
 
     expect_exception(
         functools.partial(
-            Address, '0x' + bytes.fromhex('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'[2:]).hex())
+            Address, '0x' + bytes.fromhex(
+                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'[2:]).hex())
     )
 
-    addr = '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'
-    assert hash(Address(addr)) == hash(addr)
+    ADDR1 = '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'
+    assert hash(Address(ADDR1)) == hash(ADDR1)
 
     print('all passed')

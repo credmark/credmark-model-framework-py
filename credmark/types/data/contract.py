@@ -1,19 +1,33 @@
-from ..dto import DTO, DTOField
+from typing import (
+    List
+)
 from .address import AddressStr
+from .json import JsonDict, JsonStr, JsonList
+from ..dto import DTO, Json
 
-from typing import Optional
+#  Contracts(contracts=contract_q_results['contracts'])
+#  Contract(contract_q_results['contracts'][0])
+#  json.dumps(contract_q_results['contracts'][0]['abi'])
+# JsonDict
 
 
-class ContractMeta(DTO):
-    contractName: str
-    protocol: str
-    product: str
-    chainId: int
-    constructorArgs: str  # ":Hash[]",
-    deploymentTx: str  # ":Hash"
+class Contract2(DTO):
+    name: str
+    address: AddressStr
+    deploy_tx_hash: str  # hexstr
+    constructor_args: str  # hexstr
+    abi_hash: str  # hexstr
+    abi: JsonStr  # json
 
 
 class Contract(DTO):
-    address: AddressStr = DTOField(0.0, description='address')
-    abi: str = DTOField(0.0, description='abi')
-    meta: ContractMeta = DTOField(description='meta')
+    name: str
+    address: str
+    deploy_tx_hash: str  # hexstr
+    constructor_args: str  # hexstr
+    abi_hash: str  # hexstr
+    abi: JsonList  # json
+
+
+class Contracts(DTO):
+    contracts: List[Contract]
