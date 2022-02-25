@@ -18,7 +18,7 @@ class Web3Registry:
         else:
             chain_to_provider_url = {}
 
-        key_prefix = 'CREDMARK_WEB3_PROVIDER_CHAINID_'
+        key_prefix = 'CREDMARK_WEB3_PROVIDER_CHAIN_ID_'
         for key, val in os.environ.items():
             if key.startswith(key_prefix):
                 chain_to_provider_url[key.replace(key_prefix, '')] = val
