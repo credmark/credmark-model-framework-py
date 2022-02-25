@@ -6,9 +6,10 @@ import inspect
 import yaml
 from typing import Union, Type, List
 from packaging import version
-from credmark.model.base import Model
-from credmark.model.errors import MissingModelError, WriteModelManifestError
 from requests.structures import CaseInsensitiveDict
+
+from ..base import Model
+from ..errors import MissingModelError, WriteModelManifestError
 
 
 class ModelLoader:

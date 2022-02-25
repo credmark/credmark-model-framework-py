@@ -8,9 +8,9 @@ from typing import Union
 
 from dotenv import load_dotenv
 sys.path.append('.')
-from credmark.model.engine.context import EngineModelContext
-from credmark.model.engine.model_loader import ModelLoader
-from credmark.model.errors import MaxModelRunDepthError, MissingModelError, \
+from .model.engine.context import EngineModelContext
+from .model.engine.model_loader import ModelLoader
+from .model.errors import MaxModelRunDepthError, MissingModelError, \
     ModelRunError, ModelRunRequestError
 
 logger = logging.getLogger(__name__)
@@ -147,6 +147,9 @@ def run_model(args):
 
         chain_to_provider_url = None
         providers_json = args['provider_url_map']
+
+        breakpoint()
+
         if providers_json is None:
             providers_json = os.environ.get('CREDMARK_WEB3_PROVIDERS')
         if providers_json:

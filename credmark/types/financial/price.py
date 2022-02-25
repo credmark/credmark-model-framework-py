@@ -1,4 +1,4 @@
-from credmark.types.dto import DTO, DTOField
+from ..dto import DTO, DTOField
 
 
 class Price(DTO):

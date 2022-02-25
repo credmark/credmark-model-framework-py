@@ -1,11 +1,13 @@
 from abc import abstractmethod
 from typing import Any, Type, TypeVar, Union, overload
+
 from .errors import ModelRunError
 from .ledger import Ledger
 from .web3 import Web3Registry
-from credmark.types.dto import DTO
-from credmark.types.data.block_number import BlockNumber
-from credmark.utils.contract_util import ContractUtil
+
+from ..types import DTO
+from ..types.data.block_number import BlockNumber
+from ..utils.contract_util import ContractUtil
 
 DTOT = TypeVar('DTOT')
 

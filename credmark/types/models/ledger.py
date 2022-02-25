@@ -1,5 +1,5 @@
 from typing import List
-from credmark.types.dto import DTO, DTOField
+from ...types.dto import DTO, DTOField
 
 
 class LedgerModelOutput(DTO):

@@ -1,9 +1,10 @@
-from credmark.types.dto import DTO
-from .base import Model
 import sys
 import types
 import inspect
 from typing import Type, Union
+
+from .base import Model
+from ..types import DTO
 from .errors import WrongModelMethodSignature
 
 DICT_SCHEMA = {"title": "Object", "type": "object", "properties": {}}

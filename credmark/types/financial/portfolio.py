@@ -1,6 +1,6 @@
 from typing import List
-from credmark.types.dto import DTO, DTOField
-from credmark.types.financial.position import Position
+from ..dto import DTO, DTOField
+from .position import Position
 
 
 class Portfolio(DTO):

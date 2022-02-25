@@ -1,6 +1,7 @@
 from typing import Type, Union, List
-import credmark.model
-from credmark.types.models.ledger import LedgerModelOutput
+from ...types.models.ledger import LedgerModelOutput
+from ... import model
+
 from .errors import InvalidColumnException, InvalidQueryException
 from .tables import BlockTable, ContractTable, \
     LogTable, ReceiptTable, TokenTable, TokenTransferTable, \
@@ -20,7 +21,7 @@ class Ledger:
 
     def __init__(self, context):
         # We type the property here to avoid circular ref
-        self.context: credmark.model.ModelContext = context
+        self.context: model.ModelContext = context
 
     def _validate_columns(self, model_slug: str,
                           columns: List[str],
