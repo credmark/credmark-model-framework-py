@@ -126,7 +126,9 @@ class ModelContext():
                     return data.dict()
             else:
                 if data is None:
-                    return dto
+                    # We construct the dto with no data
+                    # (which will be fine if the dto has default values)
+                    return dto()
                 if isinstance(data, dto):
                     return data
                 if isinstance(data, dict):
