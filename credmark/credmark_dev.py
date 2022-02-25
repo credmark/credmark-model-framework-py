@@ -6,7 +6,7 @@ import json
 import os
 from typing import Union
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 sys.path.append('.')
 from .model.engine.context import EngineModelContext
 from .model.engine.model_loader import ModelLoader
@@ -19,7 +19,7 @@ EngineModelContext.dev_mode = True
 
 
 def main():
-    load_dotenv()
+    load_dotenv(find_dotenv(usecwd=True))
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -147,8 +147,6 @@ def run_model(args):
 
         chain_to_provider_url = None
         providers_json = args['provider_url_map']
-
-        breakpoint()
 
         if providers_json is None:
             providers_json = os.environ.get('CREDMARK_WEB3_PROVIDERS')
