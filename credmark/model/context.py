@@ -30,29 +30,29 @@ class ModelContext():
         self.chain_id = chain_id
         self.block_number = BlockNumber(block_number, self)
         self._web3 = None
-        self.__web3_registry = web3_registry
-        self.__ledger = None
-        self.__utils = None
+        self._web3_registry = web3_registry
+        self._ledger = None
+        self._contract_util = None
 
     @property
     def web3(self):
         if self._web3 is None:
-            self._web3 = self.__web3_registry.web3_for_chain_id(self.chain_id)
+            self._web3 = self._web3_registry.web3_for_chain_id(self.chain_id)
             self._web3.eth.default_block = self.block_number if \
                 self.block_number is not None else 'latest'
         return self._web3
 
     @property
     def ledger(self):
-        if self.__ledger is None:
-            self.__ledger = Ledger(self)
-        return self.__ledger
+        if self._ledger is None:
+            self._ledger = Ledger(self)
+        return self._ledger
 
     @property
     def contracts(self):
-        if self.__utils is None:
-            self.__utils = ContractUtil(self)
-        return self.__utils
+        if self._contract_util is None:
+            self._contract_util = ContractUtil(self)
+        return self._contract_util
 
     @overload
     @abstractmethod
@@ -73,12 +73,6 @@ class ModelContext():
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,
                   ) -> dict: ...
-
-    @property
-    def utils(self):
-        if self.__utils is None:
-            self.__utils = ContractUtil(self)
-        return self.__utils
 
     @abstractmethod
     def run_model(self,
