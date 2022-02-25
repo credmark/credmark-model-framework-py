@@ -14,14 +14,14 @@ DICT_SCHEMA = {"title": "Object", "type": "object", "properties": {}}
 # different types and the DTOs are used to document the schema.
 
 
-def it(slug: str,   # pylint: disable=locally-disabled, invalid-name
-        version: str,
-        tags: Union[list[str], None] = None,
-        display_name: Union[str, None] = None,
-        description: Union[str, None] = None,
-        developer: Union[str, None] = None,
-        input: Union[Type[DTO], None] = None,
-        output: Union[Type[DTO], None] = None):
+def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
+             version: str,
+             tags: Union[list[str], None] = None,
+             display_name: Union[str, None] = None,
+             description: Union[str, None] = None,
+             developer: Union[str, None] = None,
+             input: Union[Type[DTO], None] = None,
+             output: Union[Type[DTO], None] = None):
     def wrapper(cls_in):
         def is_parent(child, parent):
             found = parent in child.__bases__
@@ -100,6 +100,6 @@ class ModIt(types.ModuleType):
         self.__dict__.update(sys.modules[__name__].__dict__)
 
     def __call__(self, *args, **kwargs):
-        return it(*args, *kwargs)
+        return describe(*args, *kwargs)
 
 # sys.modules[__name__] = ModIt()

@@ -11,7 +11,9 @@ DTOT = TypeVar('DTOT')
 
 
 class ModelContext():
-    """Base model context class
+
+    """
+    Base model context class
 
     Instance attributes:
         chain_id (int): chain ID, ex 1
@@ -20,6 +22,7 @@ class ModelContext():
 
     Methods:
         run_model(...) - run the specified model and return the results
+
     """
 
     def __init__(self, chain_id: int, block_number: int,
