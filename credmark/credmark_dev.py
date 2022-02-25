@@ -3,7 +3,6 @@ import sys
 import argparse
 import logging
 import json
-import os
 from typing import Union
 
 from dotenv import load_dotenv, find_dotenv
@@ -12,6 +11,7 @@ from .model.engine.context import EngineModelContext
 from .model.engine.model_loader import ModelLoader
 from .model.errors import MaxModelRunDepthError, MissingModelError, \
     ModelRunError, ModelRunRequestError
+from .model.web3 import Web3Registry
 
 logger = logging.getLogger(__name__)
 
@@ -148,13 +148,17 @@ def run_model(args):
         chain_to_provider_url = None
         providers_json = args['provider_url_map']
 
-        if providers_json is None:
-            providers_json = os.environ.get('CREDMARK_WEB3_PROVIDERS')
-        if providers_json:
+        # if arg is provided, it overrides any providers env vars
+        if providers_json is not None:
             try:
                 chain_to_provider_url = json.loads(providers_json)
             except Exception as err:
-                logger.error(f'Error parsing JSON in env var CREDMARK_WEB3_PROVIDERS: {err}')
+                logger.error(f'Error parsing JSON in arg provider_url_map: {err}')
+        else:
+            try:
+                chain_to_provider_url = Web3Registry.load_providers_from_env()
+            except Exception as err:
+                logger.error(f'{err}')
 
         model_loader = load_models(args)
 
