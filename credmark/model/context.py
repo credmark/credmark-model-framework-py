@@ -113,11 +113,11 @@ class ModelContext():
 
     def transform_data_for_dto(self,
                                data: Union[dict, DTO, None],
-                               dto: Union[Type[DTO], None],
+                               dto_class: Union[Type[DTO], None],
                                slug: str,
                                data_source: str):
         try:
-            if dto is None:
+            if dto_class is None:
                 # Return a dict
                 if data is None:
                     # empty dict
@@ -133,16 +133,16 @@ class ModelContext():
                 if data is None:
                     # construct the dto with no data
                     # (which will be fine if the dto has default values)
-                    return dto()
-                if isinstance(data, dto):
+                    return dto_class()
+                if isinstance(data, dto_class):
                     # already the right dto class
                     return data
                 if isinstance(data, DTO):
                     # convert one dto to another dto class
-                    return dto(**data.dict())
+                    return dto_class(**data.dict())
                 else:
                     # create dto from dict
-                    return dto(**data)
+                    return dto_class(**data)
         except Exception as e:
             raise ModelRunError(
                 f'Error validating model {slug} {data_source}: {e}, with data={data}')
