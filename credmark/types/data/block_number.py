@@ -27,7 +27,7 @@ class BlockNumber(int):
     def __sub__(self, number):
         return BlockNumber(super().__sub__(number), self.context)
 
-    def __timestamp__(self):
+    def __timestamp__(self) -> int:
         if self._timestamp is None:
             if self.context is not None:
                 self._timestamp = self.context.web3.eth.get_block(self.__int__()).timestamp
@@ -38,7 +38,7 @@ class BlockNumber(int):
         return datetime.fromtimestamp(self.__timestamp__())
 
     @ property
-    def timestamp(self):
+    def timestamp(self) -> int:
         return self.__timestamp__()
 
     # TODO: Add checking that we aren't looking into the future
