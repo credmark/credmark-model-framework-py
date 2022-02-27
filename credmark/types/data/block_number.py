@@ -33,13 +33,16 @@ class BlockNumber(int):
                 self._timestamp = self.context.web3.eth.get_block(self.__int__()).timestamp
         return self._timestamp
 
-    @ property
     def to_datetime(self):
         return datetime.fromtimestamp(self.__timestamp__())
 
     @ property
     def timestamp(self) -> int:
         return self.__timestamp__()
+
+    @ property
+    def datestring(self) -> str:
+        return str(self.to_datetime())
 
     # TODO: Add checking that we aren't looking into the future
     # TODO: Add BlockRange type

@@ -1,3 +1,4 @@
+from tabnanny import check
 from web3._utils.validation import (
     validate_address as eth_utils_validate_address,
 )
@@ -5,6 +6,7 @@ from web3._utils.validation import (
 from typing import (
     Dict,
     Any,
+    Optional,
 )
 
 from web3 import Web3
@@ -32,20 +34,21 @@ class AddressStr(str):
         return validate_address(addr)
 
 
-class Address(str):
-    class DTOAddress(DTO):
-        addr: AddressStr = DTOField(..., description='address')
+class Address(DTO):
+    address: AddressStr = DTOField(..., description='address')
 
-    def __init__(self, addr):
-        _addr = Web3.toChecksumAddress(addr)
-        self._addr = self.__class__.DTOAddress(addr=addr)
-        super().__init__()
+    @property
+    def checksum(self):
+        return Web3.toChecksumAddress(self.address)
+
+    def lower(self):
+        return self.address.lower()
 
     def __hash__(self):
         return super().__hash__()
 
     def __str__(self):
-        return self._addr.addr
+        return self.address
 
     def __repr__(self):
         return self.__str__()
@@ -55,14 +58,10 @@ class Address(str):
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self._addr == other._addr
+            return self.address == other.address
         if isinstance(other, str):
-            return self._addr.addr == other
+            return self.address == other
         return self.__str__() == self.__class__(other).__str__()
-
-    @ property
-    def addr(self):
-        return self._addr.addr
 
     @ classmethod
     def valid(cls, addr):
