@@ -42,25 +42,32 @@ class ContractDTO(DTO):
     address: Union[Address, None] = None
     deploy_tx_hash: Union[str, None] = None
     constructor_args: Union[str, None] = None
+    protocol: Union[str, None] = None
+    product: Union[str, None] = None
     abi_hash: Union[str, None] = None
     abi: JsonList = []
 
 
 class Contract(ContractDTO):
-    _context: Any = PrivateAttr()
-    _instance: Any = PrivateAttr()
+    _context: Any = PrivateAttr(default_factory=None)
+    _instance: Any = PrivateAttr(default_factory=None)
 
     class Config:
         arbitrary_types_allowed = True
         underscore_attrs_are_private = True
 
+    def __init__(self, **data):
+        super().__init__(**data)
+        self._instance = None
+        self._context = data['_context']
+
     @property
     def instance(self) -> Web3Contract:
         if self._instance is None:
-            if self.info.address is not None:
+            if self.dict()['address'] is not None:
                 self._instance = self._context.web3.eth.contract(
-                    address=self._context.web3.toChecksumAddress(self.info.address),
-                    abi=self.info.abi
+                    address=self._context.web3.toChecksumAddress(self.dict()['address']),
+                    abi=self.dict()['abi']
                 )
             else:
                 raise ValueError(f'address is None. Unable to create contract')
@@ -71,4 +78,4 @@ class Contract(ContractDTO):
         return self.instance.functions
 
     def __dict__(self):
-        return self.info.__dict__
+        return self.__dict__
