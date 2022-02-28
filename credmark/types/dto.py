@@ -4,6 +4,7 @@ from pydantic import (  # pylint: disable=locally-disabled, unused-import
     constr,
     validator,
     Json,
+    Extra
 )
 
 

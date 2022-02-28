@@ -1,15 +1,19 @@
 import re
 from typing import (
-    List
+    List,
+    Union
 )
-from .address import AddressStr
+from xml.sax.handler import property_declaration_handler
+from .address import AddressStr, Address
 from .json import JsonList
-from ..dto import DTO
+from ..dto import DTO, Extra
 
 from typing import (
     Dict,
     Any,
 )
+
+from web3.contract import Contract as Web3Contract
 
 
 class Hex0xStr(str):
@@ -36,14 +40,38 @@ class Hex0xStr(str):
         return hex_0x_str
 
 
-class Contract(DTO):
-    name: str
-    address: AddressStr
-    deploy_tx_hash: str  # hexstr
-    constructor_args: str  # hexstr
-    abi_hash: str  # hexstr
-    abi: JsonList  # json-list
+class Contract(dict):
+
+    def __init__(self, context, **kwargs) -> None:
+        self.context = context
+        self._instance = None
+        self._dto = ContractDTO(**kwargs)
+
+    @property
+    def info(self):
+        return self._dto
+
+    @property
+    def instance(self):
+        if self._instance is None:
+            self._instance = self.context.web3.eth.contract(
+                address=self.context.web3.toChecksumAddress(self.info.address),
+                abi=self.info.abi
+            )
+        return self._instance
+
+    @property
+    def functions(self):
+        return self.instance.functions
+
+    def __dict__(self):
+        return self.info.__dict__
 
 
-class Contracts(DTO):
-    contracts: List[Contract]
+class ContractDTO(DTO):
+    name: Union[str, None] = None
+    address: Union[str, None] = None
+    deploy_tx_hash: Union[str, None] = None
+    constructor_args: Union[str, None] = None
+    abi_hash: Union[str, None] = None
+    abi: JsonList = []

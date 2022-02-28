@@ -1,6 +1,6 @@
 from pydantic import Json
 from credmark.types import DTO, Json
-from credmark.types.data import Contracts, Contract
+from credmark.types.data import Contract, Address
 
 
 class ContractUtil:
@@ -10,13 +10,13 @@ class ContractUtil:
                  ) -> None:
         self.context = context
 
-    def load(self,
-             address: str = None,
-             name: str = None,
-             protocol: str = None,
-             product: str = None,
-             abi: dict = None,
-             tags: dict = None,):
+    def load_description(self,
+                         address: str = None,
+                         name: str = None,
+                         protocol: str = None,
+                         product: str = None,
+                         abi: dict = None,
+                         tags: dict = None,):
         if name is None and address is None and abi is None:
             raise Exception
 
@@ -41,12 +41,14 @@ class ContractUtil:
             q["abi"] = abi
 
         contract_q_results = self.context.run_model('contract.metadata', q)
-
-        contract_q_results = Contracts(**contract_q_results)
-        for contract in contract_q_results.contracts:
-            contracts.append(self.context.web3.eth.contract(
-                address=contract.address,
-                abi=contract.abi
-            ))
-
+        for contract in contract_q_results['contracts']:
+            print(contract)
+            contracts.append(Contract(context=self.context, **contract))
         return contracts
+
+    def load_address(self, address: str):
+        contract_q_results = self.context.run_model(
+            'contract.metadata', {'contractAddress': address})
+        contract_obj = Contract(context=self.context, **(contract_q_results['contracts'][0]))
+
+        return contract_obj
