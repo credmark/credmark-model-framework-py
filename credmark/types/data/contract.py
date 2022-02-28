@@ -1,16 +1,13 @@
 import re
-from typing import (
-    List,
-    Union
-)
-from xml.sax.handler import property_declaration_handler
-from .address import AddressStr, Address
-from .json import JsonList
-from ..dto import DTO, Extra
+
+from credmark.types.data.address import Address
+from credmark.types.data.json_dto import JsonList
+from credmark.types.dto import DTO, DTOExtra,PrivateAttr
 
 from typing import (
     Dict,
     Any,
+    Union,
 )
 
 from web3.contract import Contract as Web3Contract
@@ -40,24 +37,33 @@ class Hex0xStr(str):
         return hex_0x_str
 
 
-class Contract(dict):
+class ContractDTO(DTO):
+    name: Union[str, None] = None
+    address: Union[Address, None] = None
+    deploy_tx_hash: Union[str, None] = None
+    constructor_args: Union[str, None] = None
+    abi_hash: Union[str, None] = None
+    abi: JsonList = []
 
-    def __init__(self, context, **kwargs) -> None:
-        self.context = context
-        self._instance = None
-        self._dto = ContractDTO(**kwargs)
+
+class Contract(ContractDTO):
+    _context: Any = PrivateAttr()
+    _instance: Any = PrivateAttr()
+
+    class Config:
+        arbitrary_types_allowed = True
+        underscore_attrs_are_private = True
 
     @property
-    def info(self):
-        return self._dto
-
-    @property
-    def instance(self):
+    def instance(self) -> Web3Contract:
         if self._instance is None:
-            self._instance = self.context.web3.eth.contract(
-                address=self.context.web3.toChecksumAddress(self.info.address),
-                abi=self.info.abi
-            )
+            if self.info.address is not None:
+                self._instance = self._context.web3.eth.contract(
+                    address=self._context.web3.toChecksumAddress(self.info.address),
+                    abi=self.info.abi
+                )
+            else:
+                raise ValueError(f'address is None. Unable to create contract')
         return self._instance
 
     @property
@@ -66,12 +72,3 @@ class Contract(dict):
 
     def __dict__(self):
         return self.info.__dict__
-
-
-class ContractDTO(DTO):
-    name: Union[str, None] = None
-    address: Union[str, None] = None
-    deploy_tx_hash: Union[str, None] = None
-    constructor_args: Union[str, None] = None
-    abi_hash: Union[str, None] = None
-    abi: JsonList = []

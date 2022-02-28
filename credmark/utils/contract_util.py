@@ -1,6 +1,9 @@
-from pydantic import Json
-from credmark.types import DTO, Json
-from credmark.types.data import Contract, Address
+from credmark.types import Contract, ContractDTO, Address
+
+from typing import (
+    Union,
+    List,
+)
 
 
 class ContractUtil:
@@ -11,20 +14,20 @@ class ContractUtil:
         self.context = context
 
     def load_description(self,
-                         address: str = None,
-                         name: str = None,
-                         protocol: str = None,
-                         product: str = None,
-                         abi: dict = None,
-                         tags: dict = None,):
+                         address: Union[Address, None] = None,
+                         name: Union[str, None] = None,
+                         protocol: Union[str, None] = None,
+                         product: Union[str, None] = None,
+                         abi: Union[dict, None] = None,
+                         tags: Union[dict, None] = None) -> List[Contract]:
         if name is None and address is None and abi is None:
             raise Exception
 
-            # This means we can end up with different KINDS of contracts together. probably no bueno
+            # This means we can end up with different KINDS of contracts together. probably no bueno # pylint disable=locally-disabled,line-too-long
             # we could do it if we could return a contract that is a subclass of web3.contract.Contract
             # but I don't understand how to do that with a web3 context
 
-        contracts = []
+        contracts: List[Contract] = []
         q = {}
 
         if address is not None:
@@ -42,13 +45,11 @@ class ContractUtil:
 
         contract_q_results = self.context.run_model('contract.metadata', q)
         for contract in contract_q_results['contracts']:
-            print(contract)
-            contracts.append(Contract(context=self.context, **contract))
+            contracts.append(Contract(_context=self.context, _instance=None, **contract))
         return contracts
 
-    def load_address(self, address: str):
+    def load_address(self, address: str) -> Contract:
         contract_q_results = self.context.run_model(
             'contract.metadata', {'contractAddress': address})
-        contract_obj = Contract(context=self.context, **(contract_q_results['contracts'][0]))
-
+        contract_obj = Contract(_context=self.context, _instance=None, **(contract_q_results['contracts'][0]))
         return contract_obj

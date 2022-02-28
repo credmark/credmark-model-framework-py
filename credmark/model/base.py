@@ -2,7 +2,7 @@ from abc import abstractmethod
 import logging
 from typing import Type, Union
 from .context import ModelContext
-from credmark.types import DTO
+from credmark.types.dto import DTO
 
 
 class Model:

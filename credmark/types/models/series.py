@@ -1,5 +1,5 @@
 from typing import List
-from credmark.types import DTO, DTOField
+from credmark.types.dto import DTO, DTOField
 
 
 class SeriesBlockOutput(DTO):

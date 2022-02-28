@@ -5,8 +5,7 @@ from .errors import ModelRunError
 from .ledger import Ledger
 from .web3 import Web3Registry
 
-
-from credmark.types import DTO
+from credmark.types.dto import DTO
 from credmark.types.data.block_number import BlockNumber
 from credmark.utils.contract_util import ContractUtil
 
