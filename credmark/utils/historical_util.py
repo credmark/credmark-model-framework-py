@@ -41,12 +41,9 @@ class HistoricalUtil:
         if interval is not None:
             (i_k, i_v) = self.parse_timerangestr(interval)
             interval_timestamp = self.range_timestamp(i_k, i_v)
-            if snap_clock == 'interval':
-                snap_clock = interval_timestamp
         else:
             interval_timestamp = self.range_timestamp(w_k, 1)
-            if snap_clock == 'interval':
-                snap_clock = w_k
+
 
         if snap_clock is None and end_timestamp is None:
             series_input = {
@@ -62,8 +59,13 @@ class HistoricalUtil:
             if end_timestamp is None:
                 end_timestamp = self.context.block_number.timestamp
             if snap_clock is not None:
-                (s_k, s_v) = self.parse_timerangestr(snap_clock)
-                snap_sec = self.range_timestamp(s_k, s_v)
+
+                if snap_clock == 'interval':
+                    snap_sec = interval_timestamp
+                else:
+                    (s_k, s_v) = self.parse_timerangestr(snap_clock)
+                    snap_sec = self.range_timestamp(s_k, s_v)
+
                 end_timestamp = end_timestamp - (end_timestamp % snap_sec)
 
             series_input = {
@@ -74,6 +76,7 @@ class HistoricalUtil:
                 "end": end_timestamp,
                 "interval": interval_timestamp
             }
+
             return self.context.run_model('series.time-start-end-interval', series_input)
 
     def run_model_historical_blocks(self,
