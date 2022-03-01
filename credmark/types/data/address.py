@@ -65,7 +65,7 @@ class Address(str):
         return True
 
     @property
-    def checksum(self):
+    def checksum(self) -> ChecksumAddress:
         return self.__str__()
 
     def lower(self):
