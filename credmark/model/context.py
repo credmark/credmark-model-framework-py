@@ -1,5 +1,8 @@
 from abc import abstractmethod
 from typing import Any, Type, TypeVar, Union, overload
+from credmark.types.data.contract import Contract
+
+from credmark.utils.historical_util import HistoricalUtil
 
 from .errors import ModelRunError
 from .ledger import Ledger
@@ -35,6 +38,7 @@ class ModelContext():
         self._web3_registry = web3_registry
         self._ledger = None
         self._contract_util = None
+        self._historical_util = None
 
     @property
     def web3(self):
@@ -45,16 +49,22 @@ class ModelContext():
         return self._web3
 
     @property
-    def ledger(self):
+    def ledger(self) -> Ledger:
         if self._ledger is None:
             self._ledger = Ledger(self)
         return self._ledger
 
     @property
-    def contracts(self):
+    def contracts(self) -> ContractUtil:
         if self._contract_util is None:
             self._contract_util = ContractUtil(self)
         return self._contract_util
+    
+    @property
+    def historical(self) -> HistoricalUtil:
+        if self._historical_util is None:
+            self._historical_util = HistoricalUtil(self)
+        return self._historical_util
 
     @overload
     @abstractmethod
