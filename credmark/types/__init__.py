@@ -7,8 +7,9 @@ from .data.json_dto import JsonStr, JsonList, JsonDict
 
 from .models.ledger import LedgerModelOutput
 from .models.series import (
-    SeriesBlockOutput,
-    SeriesModelOutput
+    BlockSeriesDTO,
+    BlockSeriesRowDTO, 
+    SeriesModelInput
 )
 
 from .financial.portfolio import Portfolio

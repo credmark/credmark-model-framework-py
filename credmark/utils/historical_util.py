@@ -2,6 +2,8 @@ from datetime import datetime
 from datetime import timedelta
 from typing import Union
 
+from ..types import BlockSeriesDTO, SeriesModelInput
+
 
 class HistoricalUtil:
 
@@ -46,14 +48,15 @@ class HistoricalUtil:
 
 
         if snap_clock is None and end_timestamp is None:
-            series_input = {
+            
+            input = SeriesModelInput(**{
                 "modelSlug": model_slug, 
                 "modelInput": model_input,
                 "modelVersion": model_version,
                 "window": window_timestamp,
                 "interval": interval_timestamp
-            }
-            return self.context.run_model('series.time-window-interval', series_input)
+            })
+            return BlockSeriesDTO(**self.context.run_model('series.time-window-interval', input))
         else:
             
             if end_timestamp is None:
@@ -67,17 +70,16 @@ class HistoricalUtil:
                     snap_sec = self.range_timestamp(s_k, s_v)
 
                 end_timestamp = end_timestamp - (end_timestamp % snap_sec)
-
-            series_input = {
+            
+            input = SeriesModelInput(**{
                 "modelSlug": model_slug, 
                 "modelInput": model_input,
                 "modelVersion": model_version,
                 "start": end_timestamp - window_timestamp,
                 "end": end_timestamp,
                 "interval": interval_timestamp
-            }
-
-            return self.context.run_model('series.time-start-end-interval', series_input)
+            })
+            return BlockSeriesDTO(**self.context.run_model('series.time-start-end-interval', input))
 
     def run_model_historical_blocks(self,
                              model_slug: str,

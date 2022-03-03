@@ -33,13 +33,21 @@ class ModelContext():
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry: Web3Registry):
         self.chain_id = chain_id
-        self.block_number = BlockNumber(block_number, self)
+        self._block_number = BlockNumber(block_number, self)
         self._web3 = None
         self._web3_registry = web3_registry
         self._ledger = None
         self._contract_util = None
         self._historical_util = None
 
+    @property
+    def block_number(self):
+        return self._block_number
+
+    @block_number.setter
+    def block_number(self, block_number: float):
+        self._block_number = BlockNumber(block_number, self)
+    
     @property
     def web3(self):
         if self._web3 is None:
