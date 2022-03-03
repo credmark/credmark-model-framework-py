@@ -45,7 +45,7 @@ class ModelContext():
         return self._block_number
 
     @block_number.setter
-    def block_number(self, block_number: float):
+    def block_number(self, block_number: int):
         self._block_number = BlockNumber(block_number, self)
     
     @property
