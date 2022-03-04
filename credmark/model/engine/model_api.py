@@ -25,7 +25,7 @@ class ModelApi:
                   version: Union[str, None],
                   chain_id: int,
                   block_number: int,
-                  input=Union[dict, None],
+                  input: Union[dict, None],
                   run_id: Union[str, None] = None,
                   depth: Union[int, None] = None) -> \
             tuple[str, str, dict[str, Any], dict[str, Any]]:
