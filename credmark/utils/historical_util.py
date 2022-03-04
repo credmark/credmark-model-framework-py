@@ -39,7 +39,7 @@ class HistoricalUtil:
                              interval: str = None,
                              end_timestamp: int = None,
                              snap_clock: Union[str, None] = 'interval',
-                             model_version: Union[str, None] = None) -> dict:
+                             model_version: Union[str, None] = None) -> BlockSeriesDTO:
         (w_k, w_v) = self.parse_timerangestr(window)
         window_timestamp = self.range_timestamp(w_k, w_v)
         if interval is not None:
@@ -47,7 +47,6 @@ class HistoricalUtil:
             interval_timestamp = self.range_timestamp(i_k, i_v)
         else:
             interval_timestamp = self.range_timestamp(w_k, 1)
-
 
         if snap_clock is None and end_timestamp is None:
             
@@ -58,7 +57,7 @@ class HistoricalUtil:
                 "window": window_timestamp,
                 "interval": interval_timestamp
             })
-            return BlockSeriesDTO(**self.context.run_model('series.time-window-interval', input))
+            return self.context.run_model('series.time-window-interval', input,return_type=BlockSeriesDTO)
         else:
             
             if end_timestamp is None:
@@ -73,15 +72,16 @@ class HistoricalUtil:
 
                 end_timestamp = end_timestamp - (end_timestamp % snap_sec)
             
-            input = SeriesModelInput(**{
-                "modelSlug": model_slug, 
-                "modelInput": model_input,
-                "modelVersion": model_version,
-                "start": end_timestamp - window_timestamp,
-                "end": end_timestamp,
-                "interval": interval_timestamp
-            })
-            return BlockSeriesDTO(**self.context.run_model('series.time-start-end-interval', input))
+            input = SeriesModelInput(
+                modelSlug= model_slug, 
+                modelInput= model_input,
+                modelVersion= model_version,
+                start= end_timestamp - window_timestamp,
+                end= end_timestamp,
+                interval= interval_timestamp
+            )
+            
+            return self.context.run_model('series.time-start-end-interval', input, return_type=BlockSeriesDTO)
 
     def run_model_historical_blocks(self,
                              model_slug: str,
@@ -90,7 +90,7 @@ class HistoricalUtil:
                              model_input: dict = {},
                              end_block: Union[int, None] = None,
                              snap_block: Union[int, None] = None,
-                             model_version: Union[str, None] = None) -> dict:
+                             model_version: Union[str, None] = None) -> BlockSeriesDTO:
 
         if snap_block is None and end_block is None:
             series_input = {
@@ -100,7 +100,7 @@ class HistoricalUtil:
                 "window": window,
                 "interval": interval
             }
-            return self.context.run_model('series.block-window-interval', series_input)
+            return self.context.run_model('series.block-window-interval', series_input, return_type=BlockSeriesDTO)
         else:
             if end_block is None:
                 end_block = self.context.block_number
@@ -115,7 +115,7 @@ class HistoricalUtil:
                 "end": end_block,
                 "interval": interval
             }
-            return self.context.run_model('series.block-start-end-interval', series_input)
+            return self.context.run_model('series.block-start-end-interval', series_input, return_type=BlockSeriesDTO)
 
     
     def parse_timerangestr(self, time_str: str):

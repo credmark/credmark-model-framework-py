@@ -61,12 +61,14 @@ class Contract(ContractDTO):
         self._instance = None
         self._context = data['_context']
 
+    ## TODO: combine into one class
+    
     @property
     def instance(self) -> Web3Contract:
         if self._instance is None:
             if self.dict()['address'] is not None:
                 self._instance = self._context.web3.eth.contract(
-                    address=self._context.web3.toChecksumAddress(self.dict()['address']),
+                    address=self._context.web3.toChecksumAddress(self.address.dict()['address']),
                     abi=self.dict()['abi']
                 )
             else:
