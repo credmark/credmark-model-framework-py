@@ -1,7 +1,11 @@
-from pydantic import (  # pylint: disable=locally-disabled, unused-import
+# pylint: disable=locally-disabled, unused-import
+
+from pydantic import (
     BaseModel as DTO,
     Field as DTOField,
     constr,
+    confloat,
+    conint,
     validator,
     Json as DTOJson,
     Extra as DTOExtra,
