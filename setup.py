@@ -21,13 +21,13 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
-    name='credmark-model-sdk',
+    name='credmark-model-framework',
     version='0.5.0',
-    description='Credmark model development SDK',
+    description='Credmark model development framework',
     long_description=readme + '\n\n' + history,
     author='Credmark',
     author_email='info@credmark.com',
-    url='https://github.com/credmark',
+    url='https://github.com/credmark/credmark-model-framework-py',
     python_requires='>=3.9.0',
     packages=find_packages() if find_packages is not None else ['credmark'],
     package_dir={'credmark':

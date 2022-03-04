@@ -1,8 +1,8 @@
 ===============================
-credmark-model-sdk
+credmark-model-framework
 ===============================
 
-Credmark SDK for developing models in python.
+Credmark Model Framework for developing models in python.
 
 For information on how to build models, see the `credmark-models-py repo <https://github.com/credmark/credmark-models-py>`_
 
@@ -11,7 +11,7 @@ Install
 
 .. code-block:: bash
 
-    $ pip install credmark-model-sdk
+    $ pip install credmark-model-framework
 
 
 Configuration
