@@ -114,8 +114,10 @@ def list_models(args):
         if json_output:
             json.dump(models, sys.stdout)
         else:
-            for m, v in models.items():
-                sys.stdout.write(f' - {m}: {v}\n')
+            slugs = list(models.keys())
+            slugs.sort()
+            for s in slugs:
+                sys.stdout.write(f' - {s}: {models[s]}\n')
 
     if not json_output:
         sys.stdout.write('\n')

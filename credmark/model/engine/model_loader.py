@@ -57,6 +57,8 @@ class ModelLoader:
                 self.logger.info(f'Loading manifest from model_paths: {model_paths}')
                 self._search_paths_for_model_files(model_paths)
 
+        self.__model_manifest_list.sort(key=lambda m: m['slug'])
+
     def clear(self):
         self.errors.clear()
         self.warnings.clear()
