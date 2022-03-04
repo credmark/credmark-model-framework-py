@@ -5,8 +5,8 @@ from .ledger import Ledger
 from .web3 import Web3Registry
 from credmark.types.dto import DTO
 from credmark.types.data.block_number import BlockNumber
-from credmark.utils.contract_util import ContractUtil
-from credmark.utils.historical_util import HistoricalUtil
+from credmark.model.utils.contract_util import ContractUtil
+from credmark.model.utils.historical_util import HistoricalUtil
 
 DTOT = TypeVar('DTOT')
 
