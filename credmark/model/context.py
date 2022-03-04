@@ -1,16 +1,12 @@
 from abc import abstractmethod
 from typing import Any, Type, TypeVar, Union, overload
-from credmark.types.data.contract import Contract
-
-from credmark.utils.historical_util import HistoricalUtil
-
 from .errors import ModelRunError
 from .ledger import Ledger
 from .web3 import Web3Registry
-
 from credmark.types.dto import DTO
 from credmark.types.data.block_number import BlockNumber
 from credmark.utils.contract_util import ContractUtil
+from credmark.utils.historical_util import HistoricalUtil
 
 DTOT = TypeVar('DTOT')
 
@@ -47,7 +43,7 @@ class ModelContext():
     @block_number.setter
     def block_number(self, block_number: int):
         self._block_number = BlockNumber(block_number, self)
-    
+
     @property
     def web3(self):
         if self._web3 is None:
@@ -67,7 +63,7 @@ class ModelContext():
         if self._contract_util is None:
             self._contract_util = ContractUtil(self)
         return self._contract_util
-    
+
     @property
     def historical(self) -> HistoricalUtil:
         if self._historical_util is None:
