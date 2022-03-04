@@ -2,7 +2,9 @@ from datetime import datetime
 from datetime import timedelta
 from typing import Union
 
+
 from ..types import BlockSeriesDTO, SeriesModelInput
+from ..types.dto import DTO
 
 
 class HistoricalUtil:
@@ -33,7 +35,7 @@ class HistoricalUtil:
     def run_model_historical(self,
                              model_slug: str,
                              window: str,
-                             model_input: dict = {},
+                             model_input: Union[dict, DTO] = {},
                              interval: str = None,
                              end_timestamp: int = None,
                              snap_clock: Union[str, None] = 'interval',
