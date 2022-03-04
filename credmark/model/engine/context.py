@@ -93,6 +93,10 @@ class EngineModelContext(ModelContext):
         self.__model_loader = model_loader
         self.__api = api
 
+    @property
+    def dependencies(self):
+        return self.__dependencies
+
     def _add_dependency(self, slug: str, version: str, count: int):
         versions = self.__dependencies.get(slug)
         if versions is None:
@@ -167,34 +171,46 @@ class EngineModelContext(ModelContext):
         # We raise an exception for missing class
         # if we have no api or this is a top-level run.
         model_class = self.__model_loader.get_model_class(
-            slug, version, self.__api is None or
+            slug, version, api is None or
             (self.__depth == 0 and not self.dev_mode))
 
         self.__depth += 1
         if self.__depth >= self.max_run_depth:
-            raise MaxModelRunDepthError('Max model run depth')
+            raise MaxModelRunDepthError(f'Max model run depth hit {self.__depth}')
 
         if model_class is not None:
-            saved_block_number = self.block_number
-            saved_web3 = self._web3
 
-            if block_number is not None:
-                self.block_number = block_number
-            self._web3 = None
+            if self.__depth == 1:
+                # At top level, we use this context
+                context = self
+            else:
+                # otherwise we create a new context
+                if block_number is None:
+                    block_number = self.block_number
+
+                context = EngineModelContext(self.chain_id,
+                                             block_number,
+                                             self._web3_registry,
+                                             self.run_id,
+                                             self.__depth,
+                                             self.__model_loader,
+                                             api
+                                             )
 
             input = self.transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
 
-            model = model_class(self)
+            model = model_class(context)
             output = model.run(input)
 
             output = self.transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
 
+            # If we ran with a different context, we add its deps
+            if context != self:
+                self._add_dependencies(context.dependencies)
+
+            # Now we add dependency for this run
             version = model_class.version
             self._add_dependency(slug, version, 1)
-
-            if block_number is not None:
-                self.block_number = saved_block_number
-            self._web3 = saved_web3
 
         else:
             # api is not None here or get_model_class() would have
