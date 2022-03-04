@@ -24,7 +24,7 @@ class LedgerTable:
 class TransactionTable(LedgerTable):
     class Columns:
         HASH = 'hash'
-        NONCE = 'nonce',
+        NONCE = 'nonce'
         BLOCK_HASH = 'block_hash'
         TRANSACTION_INDEX = 'transaction_index'
         FROM_ADDRESS = 'from_address'
