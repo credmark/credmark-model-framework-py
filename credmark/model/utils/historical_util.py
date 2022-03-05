@@ -33,7 +33,7 @@ class HistoricalUtil:
     def run_model_historical(self,
                              model_slug: str,
                              window: str,
-                             model_input: Union[dict, DTO, None],
+                             model_input: Union[dict, DTO, None] = None,
                              interval: Union[str, None] = None,
                              end_timestamp: Union[int, None] = None,
                              snap_clock: Union[str, None] = 'interval',
