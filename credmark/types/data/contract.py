@@ -1,8 +1,9 @@
 import re
+import credmark.model
 
 from credmark.types.data.address import Address
 from credmark.types.data.json_dto import JsonList
-from credmark.types.dto import DTO, DTOExtra,PrivateAttr
+from credmark.types.dto import DTO, DTOField, PrivateAttr
 
 from typing import (
     Dict,
@@ -24,9 +25,9 @@ class Hex0xStr(str):
 
     @classmethod
     def validate(cls, hex_0x_str: str) -> str:
-        Hex0xStr
+        # Hex0xStr
         # (?:0x?)?[\p{XDigit}]+$
-        '^0x[0-9a-fA-F]+$'
+        # '^0x[0-9a-fA-F]+$'
 
         r_hex_short = r'\s*(?:#|0x)?([0-9a-f])([0-9a-f])([0-9a-f])([0-9a-f])?\s*'
         r_hex_long = r'\s*(?:#|0x)?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})?\s*'
@@ -45,11 +46,11 @@ class ContractDTO(DTO):
     protocol: Union[str, None] = None
     product: Union[str, None] = None
     abi_hash: Union[str, None] = None
-    abi: JsonList = []
+    abi: JsonList = DTOField([])
 
 
 class Contract(ContractDTO):
-    _context: Any = PrivateAttr(default_factory=None)
+    _context = PrivateAttr(default_factory=None)
     _instance: Any = PrivateAttr(default_factory=None)
 
     class Config:
@@ -59,25 +60,22 @@ class Contract(ContractDTO):
     def __init__(self, **data):
         super().__init__(**data)
         self._instance = None
-        self._context = data['_context']
+        self._context: credmark.model.ModelContext = data['_context']
 
-    ## TODO: combine into one class
-    
+    # TODO: combine into one class
+
     @property
     def instance(self) -> Web3Contract:
         if self._instance is None:
-            if self.dict()['address'] is not None:
+            if self.address is not None:
                 self._instance = self._context.web3.eth.contract(
-                    address=self._context.web3.toChecksumAddress(self.address.dict()['address']),
+                    address=self._context.web3.toChecksumAddress(self.address),
                     abi=self.dict()['abi']
                 )
             else:
-                raise ValueError(f'address is None. Unable to create contract')
+                raise ValueError('Contract address is None. Unable to create contract')
         return self._instance
 
     @property
     def functions(self):
         return self.instance.functions
-
-    def __dict__(self):
-        return self.__dict__
