@@ -8,7 +8,7 @@ import json
 from credmark.types.dto import DTO, DTOJson
 
 
-class JsonStr(str):
+class JsonSerializableObject(str):
     class JsonDTO(DTO):
         json_str: DTOJson
 

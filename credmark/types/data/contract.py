@@ -10,7 +10,7 @@ from web3.contract import Contract as Web3Contract
 
 import credmark.model
 from credmark.types.data.address import Address
-from credmark.types.data.json_dto import JsonStr
+from credmark.types.data.json_dto import JsonSerializableObject
 from credmark.types.dto import DTO, DTOField, PrivateAttr
 
 
@@ -46,7 +46,7 @@ class Contract(DTO):
     protocol: Union[str, None] = None
     product: Union[str, None] = None
     abi_hash: Union[str, None] = None
-    abi: List[JsonStr] = DTOField([])
+    abi: List[JsonSerializableObject] = DTOField([])
     _context = PrivateAttr(default_factory=None)
     _instance: Union[Web3Contract, None] = PrivateAttr(default_factory=None)
 
