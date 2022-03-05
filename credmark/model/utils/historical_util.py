@@ -1,5 +1,5 @@
 from typing import Union
-from credmark.model.context import ModelContext
+import credmark.model
 from credmark.model.errors import ModelRunError
 from credmark.types import BlockSeriesDTO, SeriesModelInput
 from credmark.types.dto import DTO
@@ -28,7 +28,7 @@ class HistoricalUtil:
     }
 
     def __init__(self, context) -> None:
-        self.context: ModelContext = context
+        self.context: credmark.model.ModelContext = context
 
     def run_model_historical(self,
                              model_slug: str,
