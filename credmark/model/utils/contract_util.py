@@ -1,4 +1,4 @@
-from credmark.types import Contract, ContractDTO, Address
+from credmark.types import Contract, Address
 
 from typing import (
     Union,
@@ -51,5 +51,6 @@ class ContractUtil:
     def load_address(self, address: str) -> Contract:
         contract_q_results = self.context.run_model(
             'contract.metadata', {'contractAddress': address})
-        contract_obj = Contract(_context=self.context, _instance=None, **(contract_q_results['contracts'][0]))
+        contract_obj = Contract(_context=self.context, _instance=None,
+                                **(contract_q_results['contracts'][0]))
         return contract_obj

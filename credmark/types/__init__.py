@@ -2,13 +2,13 @@
 
 from .data.address import Address, AddressDTO
 from .data.block_number import BlockNumber
-from .data.contract import Contract, ContractDTO
+from .data.contract import Contract
 from .data.json_dto import JsonStr, JsonList, JsonDict
 
 from .models.ledger import LedgerModelOutput
 from .models.series import (
     BlockSeriesDTO,
-    BlockSeriesRowDTO, 
+    BlockSeriesRowDTO,
     SeriesModelInput
 )
 

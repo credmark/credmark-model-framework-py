@@ -37,7 +37,7 @@ class Hex0xStr(str):
         return hex_0x_str
 
 
-class ContractDTO(DTO):
+class Contract(DTO):
     name: Union[str, None] = None
     address: Union[Address, None] = None
     deploy_tx_hash: Union[str, None] = None
@@ -46,9 +46,6 @@ class ContractDTO(DTO):
     product: Union[str, None] = None
     abi_hash: Union[str, None] = None
     abi: JsonList = DTOField([])
-
-
-class Contract(ContractDTO):
     _context = PrivateAttr(default_factory=None)
     _instance: Union[Web3Contract, None] = PrivateAttr(default_factory=None)
 
@@ -60,8 +57,6 @@ class Contract(ContractDTO):
         super().__init__(**data)
         self._instance = None
         self._context: credmark.model.ModelContext = data['_context']
-
-    # TODO: combine into one class
 
     @property
     def instance(self):
