@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Optional, Union
 from credmark.types.dto import DTO, DTOField
 
 
@@ -22,7 +22,7 @@ class BlockSeriesDTO(DTO):
     """
     series: List[BlockSeriesRowDTO] = DTOField([], description='List of series block outputs')
 
-    def get(self, block_number = None, timestamp = None):
+    def get(self, block_number=None, timestamp=None):
         if block_number is not None:
             return next((x for x in self.series if x.blockNumber == block_number), None)
         if timestamp is not None:
@@ -33,13 +33,13 @@ class BlockSeriesDTO(DTO):
 
     def __call__(self, idx):
         return self.series[idx]
-            
+
 
 class SeriesModelInput(DTO):
-    window: int = None
+    window: Optional[int] = None
     interval: int
-    start: int = None
-    end: int = None
+    start: Optional[int] = None
+    end: Optional[int] = None
     modelInput: Union[dict, DTO]
     modelSlug: str
-    modelVersion: str = None
+    modelVersion: Optional[str] = None
