@@ -1,10 +1,4 @@
 import re
-import credmark.model
-
-from credmark.types.data.address import Address
-from credmark.types.data.json_dto import JsonList
-from credmark.types.dto import DTO, DTOField, PrivateAttr
-
 from typing import (
     Dict,
     Any,
@@ -12,6 +6,11 @@ from typing import (
 )
 
 from web3.contract import Contract as Web3Contract
+
+import credmark.model
+from credmark.types.data.address import Address
+from credmark.types.data.json_dto import JsonList
+from credmark.types.dto import DTO, DTOField, PrivateAttr
 
 
 class Hex0xStr(str):
@@ -29,12 +28,12 @@ class Hex0xStr(str):
         # (?:0x?)?[\p{XDigit}]+$
         # '^0x[0-9a-fA-F]+$'
 
-        r_hex_short = r'\s*(?:#|0x)?([0-9a-f])([0-9a-f])([0-9a-f])([0-9a-f])?\s*'
+        # r_hex_short = r'\s*(?:#|0x)?([0-9a-f])([0-9a-f])([0-9a-f])([0-9a-f])?\s*'
         r_hex_long = r'\s*(?:#|0x)?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})?\s*'
 
         m = re.fullmatch(r_hex_long, hex_0x_str)
         if not m:
-            raise ValueError('Unkwown no-0x-prefix hex: {hex_0x_str}')
+            raise ValueError('Unknown no-0x-prefix hex: {hex_0x_str}')
         return hex_0x_str
 
 
@@ -51,7 +50,7 @@ class ContractDTO(DTO):
 
 class Contract(ContractDTO):
     _context = PrivateAttr(default_factory=None)
-    _instance: Any = PrivateAttr(default_factory=None)
+    _instance: Union[Web3Contract, None] = PrivateAttr(default_factory=None)
 
     class Config:
         arbitrary_types_allowed = True
@@ -65,7 +64,7 @@ class Contract(ContractDTO):
     # TODO: combine into one class
 
     @property
-    def instance(self) -> Web3Contract:
+    def instance(self):
         if self._instance is None:
             if self.address is not None:
                 self._instance = self._context.web3.eth.contract(
