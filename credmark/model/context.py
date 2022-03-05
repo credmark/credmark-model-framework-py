@@ -137,7 +137,7 @@ class ModelContext():
                     return {}
                 if isinstance(data, DTO):
                     # get dict from dto instance
-                    return data.dict()
+                    return data.dict(exclude_unset=True)
                 else:
                     # return dict
                     return data
