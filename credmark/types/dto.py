@@ -12,5 +12,7 @@ from pydantic import (
     PrivateAttr,
 )
 
+
 def fixstr(fixed_length):
-    return constr(min_length=fixed_length, max_length=fixed_length)
+    return constr(min_length=fixed_length,
+                  max_length=fixed_length)

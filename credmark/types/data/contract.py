@@ -3,13 +3,14 @@ from typing import (
     Dict,
     Any,
     Union,
+    List,
 )
 
 from web3.contract import Contract as Web3Contract
 
 import credmark.model
 from credmark.types.data.address import Address
-from credmark.types.data.json_dto import JsonList
+from credmark.types.data.json_dto import JsonStr
 from credmark.types.dto import DTO, DTOField, PrivateAttr
 
 
@@ -45,7 +46,7 @@ class Contract(DTO):
     protocol: Union[str, None] = None
     product: Union[str, None] = None
     abi_hash: Union[str, None] = None
-    abi: JsonList = DTOField([])
+    abi: List[JsonStr] = DTOField([])
     _context = PrivateAttr(default_factory=None)
     _instance: Union[Web3Contract, None] = PrivateAttr(default_factory=None)
 

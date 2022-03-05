@@ -23,7 +23,8 @@ class ContractUtil:
         if name is None and address is None and abi is None:
             raise Exception
 
-            # This means we can end up with different KINDS of contracts together. probably no bueno # pylint disable=locally-disabled,line-too-long
+            # This means we can end up with different KINDS of contracts together.
+            # probably no bueno
             # we could do it if we could return a contract that is a subclass of web3.contract.Contract
             # but I don't understand how to do that with a web3 context
 

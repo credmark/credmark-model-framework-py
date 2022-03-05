@@ -3,7 +3,7 @@
 from .data.address import Address, AddressDTO
 from .data.block_number import BlockNumber
 from .data.contract import Contract
-from .data.json_dto import JsonStr, JsonList, JsonDict
+from .data.json_dto import JsonStr  # Not in Use yet: ContractABI
 
 from .models.ledger import LedgerModelOutput
 from .models.series import (
