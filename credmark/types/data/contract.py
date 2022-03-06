@@ -40,7 +40,6 @@ class Contract(DTO):
                 if context is not None:
                     if self.abi is None:
                         self.load()
-                        # TODO: Check if self.abi is None and fetch if necessary
                     self._instance = context.web3.eth.contract(
                         address=context.web3.toChecksumAddress(self.address),
                         abi=self.abi

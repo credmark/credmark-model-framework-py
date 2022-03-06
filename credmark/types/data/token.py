@@ -75,7 +75,7 @@ class Token(Contract):
         context = credmark.model.ModelContext.current_context
         if context is None:
             raise ValueError(f'No current context to get price of token {self.symbol}')
-        return context.run_model(CoreModels.token_price, self).price_usd
+        return context.run_model(CoreModels.token_price, self).get('price_usd')
 
 
 class Tokens(IterableListDto):
