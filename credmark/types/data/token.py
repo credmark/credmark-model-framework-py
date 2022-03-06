@@ -38,6 +38,11 @@ class Token(Contract):
                 data['decimals'] = td.get('decimals', None)
                 data['protocol'] = td.get('protocol', None)
 
+            # TODO: un-hardcode this
+
+            if 'abi' not in data:
+                data['abi'] = MIN_ERC20_ABI
+
             if data.get('decimals', None) is None:
                 try:
                     data['decimals'] = context.web3.eth.contract(

@@ -51,3 +51,9 @@ class IterableListDto(DTO):
 
     def __getitem__(self, key):
         return getattr(self, self.iterator).__getitem__(key)
+
+    def append(self, obj):
+        return getattr(self, self.iterator).append(obj)
+
+    def extend(self, obj):
+        return getattr(self, self.iterator).extend(obj)
