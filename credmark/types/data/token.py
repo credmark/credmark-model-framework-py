@@ -1,0 +1,54 @@
+
+import credmark.model
+from .contract import Contract, Address
+from .token_data import TOKEN_DATA, MIN_ERC20_ABI
+from typing import Union
+
+
+class Token(Contract):
+    symbol: Union[str, None]
+    decimals: Union[int, None]
+    address: Union[Address, None]
+
+    def __init__(self, **data):
+
+        if 'symbol' not in data or 'decimals' not in data or 'address' not in data or 'name' not in data:
+            chain_id = credmark.model.ModelContext.current_context.chain_id
+            td = []
+            if 'address' in data:
+                td = [t for t in TOKEN_DATA[str(chain_id)] if t['address'] == data['address']]
+            elif 'symbol' in data:
+                td = [t for t in TOKEN_DATA[str(chain_id)] if t['symbol'] == data['symbol']]
+            elif 'name' in data:
+                td = [t for t in TOKEN_DATA[str(chain_id)] if t['name'] == data['name']]
+
+            if len(td) == 1:
+                td = td[0]
+                data['symbol'] = td['symbol']
+                data['address'] = td['address']
+                data['name'] = td.get('name', None)
+                data['decimals'] = td.get('decimals', None)
+                data['protocol'] = td.get('protocol', None)
+
+            if data.get('decimals', None) is None:
+                try:
+                    data['decimals'] = credmark.model.ModelContext.current_context.web3.eth.contract(
+                        address=Address(str(data.get('address'))).checksum, abi=MIN_ERC20_ABI).functions.decimals().call()
+                except Exception:
+                    pass
+
+            if data.get('symbol', None) is None:
+                try:
+                    data['symbol'] = credmark.model.ModelContext.current_context.web3.eth.contract(
+                        address=Address(str(data.get('address'))).checksum, abi=MIN_ERC20_ABI).functions.decimals().call()
+                except Exception:
+                    pass
+
+            if data.get('name', None) is None:
+                try:
+                    data['name'] = credmark.model.ModelContext.current_context.web3.eth.contract(
+                        address=Address(str(data.get('address'))).checksum, abi=MIN_ERC20_ABI).functions.name().call()
+                except Exception:
+                    pass
+
+        super().__init__(**data)
