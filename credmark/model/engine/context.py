@@ -199,10 +199,14 @@ class EngineModelContext(ModelContext):
 
             input = self.transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
 
+            ModelContext.current_context = context
+
             model = model_class(context)
             output = model.run(input)
 
             output = self.transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
+
+            ModelContext.current_context = self
 
             # If we ran with a different context, we add its deps
             if context != self:

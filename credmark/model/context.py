@@ -25,9 +25,13 @@ class ModelContext():
         run_model(...) - run the specified model and return the results
 
     """
+    current_context = None  # type: ignore
 
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry: Web3Registry):
+        if ModelContext.current_context is None:
+            ModelContext.current_context: ModelContext = self
+
         self.chain_id = chain_id
         self._block_number = BlockNumber(block_number, self)
         self._web3 = None
