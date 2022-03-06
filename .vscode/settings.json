@@ -5,11 +5,15 @@
     "python.analysis.diagnosticMode": "workspace",
     "python.formatting.autopep8Args": [
         "--ignore",
-        "E402",
+        "E402", // Module level import not at top of file
         "--max-line-length",
-        "100"
+        "100",
     ],
     "python.linting.pylintEnabled": true,
     "python.linting.lintOnSave": true,
     "python.linting.enabled": true,
+    "python.linting.pylintArgs": [
+        "--disable",
+        "E0402",  // relative-beyond-top-level
+    ]
 }
