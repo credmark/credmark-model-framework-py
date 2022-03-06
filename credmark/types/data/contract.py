@@ -1,7 +1,4 @@
-import re
 from typing import (
-    Dict,
-    Any,
     Union,
     List,
 )
@@ -12,30 +9,6 @@ import credmark.model
 from credmark.types.data.address import Address
 from credmark.types.data.json_dto import JsonSerializableObject
 from credmark.types.dto import DTO, DTOField, PrivateAttr
-
-
-class Hex0xStr(str):
-    @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(type='string', format='json-string')
-
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, hex_0x_str: str) -> str:
-        # Hex0xStr
-        # (?:0x?)?[\p{XDigit}]+$
-        # '^0x[0-9a-fA-F]+$'
-
-        # r_hex_short = r'\s*(?:#|0x)?([0-9a-f])([0-9a-f])([0-9a-f])([0-9a-f])?\s*'
-        r_hex_long = r'\s*(?:#|0x)?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})?\s*'
-
-        m = re.fullmatch(r_hex_long, hex_0x_str)
-        if not m:
-            raise ValueError('Unknown no-0x-prefix hex: {hex_0x_str}')
-        return hex_0x_str
 
 
 class Contract(DTO):
