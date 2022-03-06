@@ -29,9 +29,6 @@ class ModelContext():
 
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry: Web3Registry):
-        if ModelContext.current_context is None:
-            ModelContext.current_context: Union[ModelContext, None] = self
-
         self.chain_id = chain_id
         self._block_number = credmark.types.BlockNumber(block_number)
         self._web3 = None
@@ -39,6 +36,9 @@ class ModelContext():
         self._ledger = None
         self._contract_util = None
         self._historical_util = None
+
+        if ModelContext.current_context is None:
+            ModelContext.current_context: Union[ModelContext, None] = self
 
     @property
     def block_number(self):
