@@ -34,13 +34,16 @@ class Contract(DTO):
         if self._instance is None:
             if self.address is not None:
                 context = credmark.model.ModelContext.current_context
-                # TODO: Check if self.abi is None and fetch if necessary
-                self._instance = context.web3.eth.contract(
-                    address=context.web3.toChecksumAddress(self.address),
-                    abi=self.abi
-                )
+                if context is not None:
+                    # TODO: Check if self.abi is None and fetch if necessary
+                    self._instance = context.web3.eth.contract(
+                        address=context.web3.toChecksumAddress(self.address),
+                        abi=self.abi
+                    )
+                else:
+                    raise ValueError('No current context. Unable to create contract instance.')
             else:
-                raise ValueError('Contract address is None. Unable to create contract')
+                raise ValueError('Contract address is None. Unable to create contract instance.')
         return self._instance
 
     @property
