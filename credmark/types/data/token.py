@@ -1,5 +1,6 @@
 
 import credmark.model
+import credmark.types
 from .contract import Contract, Address
 from .token_data import TOKEN_DATA, MIN_ERC20_ABI
 from typing import List, Union
@@ -75,7 +76,7 @@ class Token(Contract):
         context = credmark.model.ModelContext.current_context
         if context is None:
             raise ValueError(f'No current context to get price of token {self.symbol}')
-        return context.run_model(CoreModels.token_price, self).get('price_usd')
+        return context.run_model(CoreModels.token_price, self, return_type=credmark.types.Price).price_usd
 
 
 class Tokens(IterableListDto):
