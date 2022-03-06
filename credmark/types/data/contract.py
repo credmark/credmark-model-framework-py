@@ -52,4 +52,5 @@ class Contract(DTO):
 
 
 class Contracts(IterableListDto):
-    list: List[Contract]
+    contracts: List[Contract]
+    iterator = 'contracts'

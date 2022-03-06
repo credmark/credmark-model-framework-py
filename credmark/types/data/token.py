@@ -73,4 +73,5 @@ class Token(Contract):
 
 
 class Tokens(IterableListDto):
-    list: List[Token]
+    tokens: List[Token]
+    iterator = 'tokens'

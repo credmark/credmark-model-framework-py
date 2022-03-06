@@ -2,9 +2,9 @@
 
 from .data.address import Address
 from .data.block_number import BlockNumber
-from .data.contract import Contract
-from .data.token import Token
-from .data.wallet import Wallet
+from .data.contract import Contract, Contracts
+from .data.token import Token, Tokens
+from .data.wallet import Wallet, Wallets
 
 from .models.ledger import LedgerModelOutput
 from .models.series import (

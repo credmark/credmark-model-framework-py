@@ -13,6 +13,7 @@ from pydantic import (
     Extra as DTOExtra,
     PrivateAttr,
 )
+from abc import abstractproperty
 
 
 def fixstr(fixed_length):
@@ -43,10 +44,10 @@ class HexStr(str):
 
 
 class IterableListDto(DTO):
-    list: List[Any]
+    iterator: str
 
     def __iter__(self):
-        return self.list.__iter__()
+        return getattr(self, self.iterator).__iter__()
 
     def __getitem__(self, key):
-        return self.list.__getitem__(key)
+        return getattr(self, self.iterator).__getitem__(key)

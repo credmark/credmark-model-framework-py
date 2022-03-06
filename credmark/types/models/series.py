@@ -1,5 +1,5 @@
 from typing import List, Optional, Union
-from credmark.types.dto import DTO, DTOField
+from credmark.types.dto import DTO, DTOField, IterableListDto
 
 
 class BlockSeriesRowDTO(DTO):
@@ -9,7 +9,7 @@ class BlockSeriesRowDTO(DTO):
     output: dict = DTOField(..., description='Output of the model run for this block')
 
 
-class BlockSeriesDTO(DTO):
+class BlockSeriesDTO(IterableListDto):
     """
     A DTO for the output of "series.*" models which run another
     model over a series of blocks.
@@ -21,18 +21,13 @@ class BlockSeriesDTO(DTO):
         obj: AModelDto = self.convert_dict_to_dto(output.series[0].output, AModelDto)
     """
     series: List[BlockSeriesRowDTO] = DTOField([], description='List of series block outputs')
+    iterator = 'series'
 
     def get(self, block_number=None, timestamp=None):
         if block_number is not None:
             return next((x for x in self.series if x.blockNumber == block_number), None)
         if timestamp is not None:
             return self.get(max(s.blockNumber for s in [s for s in self.series if s.blockTimestamp <= timestamp]))
-
-    def __getitem__(self, idx):
-        return self.series[idx]
-
-    def __call__(self, idx):
-        return self.series[idx]
 
 
 class SeriesModelInput(DTO):

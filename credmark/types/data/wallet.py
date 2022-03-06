@@ -8,4 +8,5 @@ class Wallet(DTO):
 
 
 class Wallets(IterableListDto):
-    list: List[Wallet]
+    wallets: List[Wallet]
+    iterator: str = 'wallets'
