@@ -40,7 +40,7 @@ class Token(Contract):
             if data.get('symbol', None) is None:
                 try:
                     data['symbol'] = credmark.model.ModelContext.current_context.web3.eth.contract(
-                        address=Address(str(data.get('address'))).checksum, abi=MIN_ERC20_ABI).functions.decimals().call()
+                        address=Address(str(data.get('address'))).checksum, abi=MIN_ERC20_ABI).functions.symbol().call()
                 except Exception:
                     pass
 
@@ -52,3 +52,7 @@ class Token(Contract):
                     pass
 
         super().__init__(**data)
+
+    @property
+    def price_usd(self):
+        return credmark.model.ModelContext.current_context.run_model('price', self).get('value_usd', None)
