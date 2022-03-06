@@ -1,4 +1,5 @@
 from credmark.types import Contract, Address
+import credmark.model
 
 from typing import (
     Union,
@@ -11,7 +12,7 @@ class ContractUtil:
     def __init__(self,
                  context,
                  ) -> None:
-        self.context = context
+        self.context: credmark.model.ModelContext = context
 
     def load_description(self,
                          address: Union[Address, None] = None,
@@ -46,12 +47,12 @@ class ContractUtil:
 
         contract_q_results = self.context.run_model('contract.metadata', q)
         for contract in contract_q_results['contracts']:
-            contracts.append(Contract(_context=self.context, _instance=None, **contract))
+            contracts.append(Contract(_instance=None, **contract))
         return contracts
 
     def load_address(self, address: str) -> Contract:
         contract_q_results = self.context.run_model(
             'contract.metadata', {'contractAddress': address})
-        contract_obj = Contract(_context=self.context, _instance=None,
+        contract_obj = Contract(_instance=None,
                                 **(contract_q_results['contracts'][0]))
         return contract_obj
