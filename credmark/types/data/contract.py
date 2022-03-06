@@ -7,7 +7,7 @@ from web3.contract import Contract as Web3Contract
 
 import credmark.model
 from credmark.types.data.address import Address
-from credmark.types.dto import DTO, DTOField, PrivateAttr
+from credmark.types.dto import DTO, DTOField, IterableListDto, PrivateAttr
 
 
 class Contract(DTO):
@@ -49,3 +49,7 @@ class Contract(DTO):
     @property
     def functions(self):
         return self.instance.functions
+
+
+class Contracts(IterableListDto):
+    list: List[Contract]

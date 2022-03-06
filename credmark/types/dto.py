@@ -1,7 +1,7 @@
 # pylint: disable=locally-disabled, unused-import
 
 import re
-from typing import Any, Dict
+from typing import Any, Dict, List
 from pydantic import (
     BaseModel as DTO,
     Field as DTOField,
@@ -40,3 +40,13 @@ class HexStr(str):
         if not m:
             raise ValueError('Invalid hex string: {hex_str}')
         return hex_str
+
+
+class IterableListDto(DTO):
+    list: List[Any]
+
+    def __iter__(self):
+        return self.list.__iter__()
+
+    def __getitem__(self, key):
+        return self.list.__getitem__(key)

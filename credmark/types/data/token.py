@@ -2,7 +2,8 @@
 import credmark.model
 from .contract import Contract, Address
 from .token_data import TOKEN_DATA, MIN_ERC20_ABI
-from typing import Union
+from typing import List, Union
+from ..dto import DTO, IterableListDto
 
 
 class Token(Contract):
@@ -63,3 +64,7 @@ class Token(Contract):
     @property
     def price_usd(self):
         return credmark.model.ModelContext.current_context.run_model('price', self).get('value_usd', None)
+
+
+class Tokens(IterableListDto):
+    list: List[Token]
