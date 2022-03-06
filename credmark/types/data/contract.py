@@ -40,15 +40,14 @@ class Hex0xStr(str):
 
 class Contract(DTO):
     name: Union[str, None] = None
-    address: Union[Address, None] = None
+    address: Address = DTOField(..., description='Contract address')
     deploy_tx_hash: Union[str, None] = None
     constructor_args: Union[str, None] = None
     protocol: Union[str, None] = None
     product: Union[str, None] = None
     abi_hash: Union[str, None] = None
-    abi: List[JsonSerializableObject] = DTOField([])
-    _context = PrivateAttr(default_factory=None)
-    _instance: Union[Web3Contract, None] = PrivateAttr(default_factory=None)
+    abi: Union[List[JsonSerializableObject], None] = None
+    _instance: Union[Web3Contract, None] = PrivateAttr(default=None)
 
     class Config:
         arbitrary_types_allowed = True
@@ -57,14 +56,15 @@ class Contract(DTO):
     def __init__(self, **data):
         super().__init__(**data)
         self._instance = None
-        self._context: credmark.model.ModelContext = data['_context']
 
     @property
     def instance(self):
         if self._instance is None:
             if self.address is not None:
-                self._instance = self._context.web3.eth.contract(
-                    address=self._context.web3.toChecksumAddress(self.address),
+                context = credmark.model.ModelContext.current_context
+                # TODO: Check if self.abi is None and fetch if necessary
+                self._instance = context.web3.eth.contract(
+                    address=context.web3.toChecksumAddress(self.address),
                     abi=self.abi
                 )
             else:
