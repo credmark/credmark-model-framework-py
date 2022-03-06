@@ -41,21 +41,24 @@ class Token(Contract):
             if data.get('decimals', None) is None:
                 try:
                     data['decimals'] = context.web3.eth.contract(
-                        address=Address(str(data.get('address'))).checksum, abi=MIN_ERC20_ABI).functions.decimals().call()
+                        address=Address(str(data.get('address'))).checksum,
+                        abi=MIN_ERC20_ABI).functions.decimals().call()
                 except Exception:
                     pass
 
             if data.get('symbol', None) is None:
                 try:
-                    data['symbol'] = credmark.model.ModelContext.current_context.web3.eth.contract(
-                        address=Address(str(data.get('address'))).checksum, abi=MIN_ERC20_ABI).functions.symbol().call()
+                    data['symbol'] = context.web3.eth.contract(
+                        address=Address(str(data.get('address'))).checksum,
+                        abi=MIN_ERC20_ABI).functions.symbol().call()
                 except Exception:
                     pass
 
             if data.get('name', None) is None:
                 try:
                     data['name'] = context.web3.eth.contract(
-                        address=Address(str(data.get('address'))).checksum, abi=MIN_ERC20_ABI).functions.name().call()
+                        address=Address(str(data.get('address'))).checksum,
+                        abi=MIN_ERC20_ABI).functions.name().call()
                 except Exception:
                     pass
 
@@ -63,7 +66,10 @@ class Token(Contract):
 
     @property
     def price_usd(self):
-        return credmark.model.ModelContext.current_context.run_model('price', self).get('value_usd', None)
+        context = credmark.model.ModelContext.current_context
+        if context is None:
+            raise ValueError(f'No current context to get price of token {self.symbol}')
+        return context.run_model('price', self).get('value_usd', None)
 
 
 class Tokens(IterableListDto):
