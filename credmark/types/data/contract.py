@@ -65,7 +65,7 @@ class Contract(DTO):
             if self.address is not None:
                 self._instance = self._context.web3.eth.contract(
                     address=self._context.web3.toChecksumAddress(self.address),
-                    abi=self.dict()['abi']
+                    abi=self.abi
                 )
             else:
                 raise ValueError('Contract address is None. Unable to create contract')
