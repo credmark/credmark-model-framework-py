@@ -1,29 +1,31 @@
+import re
 from typing import (
     Dict,
     Any,
 )
 
+from web3 import Web3
 from web3._utils.validation import (
     validate_address as eth_utils_validate_address,
 )
-
-from eth_typing import (
-    ChecksumAddress
-)
-
-from web3 import Web3
-
 from credmark.types.dto import DTO, DTOField
 
-def validate_address(addr: str) -> str:
-    _addr = Web3.toChecksumAddress(addr)
-    eth_utils_validate_address(_addr)
-    return _addr
+
+def validate_address(addr: str):
+    checksum_addr = Web3.toChecksumAddress(addr)
+    eth_utils_validate_address(checksum_addr)
+    return checksum_addr
+
+
+evm_address_regex = re.compile(r'^0x[a-fA-F0-9]{40}$')
+
 
 class Address(str):
     @classmethod
     def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(type='ChecksumAddress', format='str')
+        field_schema.update(type='string',
+                            pattern='^0x[a-fA-F0-9]{40}$',
+                            format='evm-address')
 
     @classmethod
     def __get_validators__(cls):
@@ -31,30 +33,27 @@ class Address(str):
 
     @classmethod
     def validate(cls, addr: str):
-        return cls(validate_address(addr))
+        if not isinstance(addr, str):
+            raise TypeError('Address must be a string')
+        m = evm_address_regex.fullmatch(addr)
+        if not m:
+            raise ValueError(f"Invalid address string '{addr}'")
 
-    def __init__(self, addr: str):
-        _addr = validate_address(addr)
-        self._addr = _addr
+        return cls(addr)
 
-    def __hash__(self):
-        return self._addr.__hash__()
+    def __new__(cls, addr):
+        if isinstance(addr, int):
+            addr = hex(addr)
+        elif not isinstance(addr, str):
+            raise TypeError('Address instance must be created with a string or int')
+        return str.__new__(cls, addr.lower())
 
-    def __str__(self) -> str:
-        return self._addr.__str__()
+    def __init__(self, _addr: str):
+        super().__init__()
+        self._checksum = validate_address(self)
 
     def __repr__(self):
-        return self._addr.__repr__()
-
-    def str(self):
-        return self.__str__()
-
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self._addr == other._addr
-        if isinstance(other, str):
-            return self._addr == validate_address(other)
-        return self.__str__() == self.__class__(other).__str__()
+        return f'Address({super().__repr__()})'
 
     @classmethod
     def valid(cls, addr):
@@ -65,14 +64,9 @@ class Address(str):
         return True
 
     @property
-    def checksum(self) -> ChecksumAddress:
-        return self.__str__()
+    def checksum(self):
+        return self._checksum
 
-    def lower(self):
-        return self._addr.lower()
-
-class AddressDTO(DTO):
-    address: Address = DTOField(..., description='address')
 
 if __name__ == '__main__':
     import functools
@@ -95,7 +89,7 @@ if __name__ == '__main__':
         functools.partial(PoolAddress, {'poolAddress': '0xD905e2eaeBe188fc92179b6350'})
     )
 
-    Address(0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8)
+    Address(0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8)  # type: ignore
     Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8')
     Address('0xd533a949740bb3306d119cc777fa900ba034cd52')
     Address('0x' + (bytes.fromhex('0xddf252ad1be2c89b69c2b068fc378daa952ba7f1'[2:])).hex())
@@ -112,7 +106,8 @@ if __name__ == '__main__':
     assert not Address.valid('0xD905e2eaeBe')
 
     a1 = Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8')
-    assert a1 == '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'
+    assert a1 == '0xd905e2eaebe188fc92179b6350807d8bd91db0d8'
+    assert a1.checksum == '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'
 
     expect_exception(
         functools.partial(Address, 123)
@@ -124,7 +119,7 @@ if __name__ == '__main__':
                 '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'[2:]).hex())
     )
 
-    ADDR1 = '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'
+    ADDR1 = '0xd905e2eaebe188fc92179b6350807d8bd91db0d8'
     assert hash(Address(ADDR1)) == hash(ADDR1)
 
     print('all passed')

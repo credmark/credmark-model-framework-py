@@ -1,9 +1,8 @@
 # pylint disable=unused-imports
 
-from .data.address import Address, AddressDTO
+from .data.address import Address
 from .data.block_number import BlockNumber
 from .data.contract import Contract
-from .data.json_dto import JsonSerializableObject  # Not in Use yet: ContractABI
 
 from .models.ledger import LedgerModelOutput
 from .models.series import (
