@@ -30,10 +30,10 @@ class ModelContext():
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry: Web3Registry):
         if ModelContext.current_context is None:
-            ModelContext.current_context: ModelContext = self
+            ModelContext.current_context: Union[ModelContext, None] = self
 
         self.chain_id = chain_id
-        self._block_number = BlockNumber(block_number, self)
+        self._block_number = BlockNumber(block_number)
         self._web3 = None
         self._web3_registry = web3_registry
         self._ledger = None
@@ -46,7 +46,7 @@ class ModelContext():
 
     @block_number.setter
     def block_number(self, block_number: int):
-        self._block_number = BlockNumber(block_number, self)
+        self._block_number = BlockNumber(block_number)
 
     @property
     def web3(self):

@@ -12,8 +12,15 @@ class Token(Contract):
 
     def __init__(self, **data):
 
-        if 'symbol' not in data or 'decimals' not in data or 'address' not in data or 'name' not in data:
-            chain_id = credmark.model.ModelContext.current_context.chain_id
+        if 'symbol' not in data or \
+            'decimals' not in data or \
+            'address' not in data or \
+                'name' not in data:
+            context = credmark.model.ModelContext.current_context
+            if context is None:
+                raise ValueError(f'No current context to look up missing token data {data}')
+
+            chain_id = context.chain_id
             td = []
             if 'address' in data:
                 td = [t for t in TOKEN_DATA[str(chain_id)] if t['address'] == data['address']]
@@ -32,7 +39,7 @@ class Token(Contract):
 
             if data.get('decimals', None) is None:
                 try:
-                    data['decimals'] = credmark.model.ModelContext.current_context.web3.eth.contract(
+                    data['decimals'] = context.web3.eth.contract(
                         address=Address(str(data.get('address'))).checksum, abi=MIN_ERC20_ABI).functions.decimals().call()
                 except Exception:
                     pass
@@ -46,7 +53,7 @@ class Token(Contract):
 
             if data.get('name', None) is None:
                 try:
-                    data['name'] = credmark.model.ModelContext.current_context.web3.eth.contract(
+                    data['name'] = context.web3.eth.contract(
                         address=Address(str(data.get('address'))).checksum, abi=MIN_ERC20_ABI).functions.name().call()
                 except Exception:
                     pass
