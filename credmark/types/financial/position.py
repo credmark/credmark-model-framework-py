@@ -8,8 +8,12 @@ class Position(DTO):
 
     def value_usd(self):
         # TODO: Figure out for non-ERC20 Tokens
-        return float(self.token.price_usd) * self.scaled_amount
+        return self.token.price_usd * self.scaled_amount
 
     @property
     def scaled_amount(self):
-        return self.amount / (10 ** self.token.decimals)
+        decimals = self.token.decimals
+        if decimals is None:
+            raise ValueError(
+                f'No position scaled_amount for token {self.token.symbol} missing decimals value')
+        return self.amount / (10 ** decimals)
