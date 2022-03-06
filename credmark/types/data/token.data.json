@@ -1,6 +1,6 @@
 {
     "1":[
-        {"symbol":"CMK", "decimals":18, "name":"Credmark", "address":"0x68CFb82Eacb9f198d508B514d898a403c449533E"},
+        {"symbol":"CMK", "decimals":18, "name":"Credmark", "address":"0x68CFb82Eacb9f198d508B514d898a403c449533E", "protocol":"credmark"},
         {"symbol":"USDC", "decimals":6, "name":"USD Coin", "address":"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}
     ]
 }
