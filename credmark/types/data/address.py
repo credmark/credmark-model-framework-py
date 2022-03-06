@@ -21,6 +21,17 @@ evm_address_regex = re.compile(r'^0x[a-fA-F0-9]{40}$')
 
 
 class Address(str):
+    """
+    An EVM address which is a lowercase hex string.
+
+    It can be created with a lowercase, uppercase, or checksum hex string
+    and will be converted to lowercase.
+
+    It can be used as a normal string but it also has
+    a "checksum" property which returns a web3 ChecksumAddress.
+
+    It compares with other strings/Addresses in a case-insensitive way.
+    """
     @classmethod
     def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
         field_schema.update(type='string',
@@ -54,6 +65,33 @@ class Address(str):
 
     def __repr__(self):
         return f'Address({super().__repr__()})'
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return str(self) == other.lower()
+        return NotImplemented
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __lt__(self, other):
+        if isinstance(other, str):
+            return str(self) < other.lower()
+        return NotImplemented
+
+    def __ge__(self, other):
+        return not self < other
+
+    def __gt__(self, other):
+        if isinstance(other, str):
+            return str(self) > other.lower()
+        return NotImplemented
+
+    def __le__(self, other):
+        return not self > other
 
     @classmethod
     def valid(cls, addr):
@@ -107,7 +145,10 @@ if __name__ == '__main__':
 
     a1 = Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8')
     assert a1 == '0xd905e2eaebe188fc92179b6350807d8bd91db0d8'
+    assert a1 == '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'
     assert a1.checksum == '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'
+
+    assert a1 != '0xA905e2eaeBe188fc92179b6350807D8bd91Db0D8'
 
     expect_exception(
         functools.partial(Address, 123)
