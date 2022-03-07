@@ -16,4 +16,10 @@ pip install git+https://github.com/credmark/credmark-model-framework-py.git@main
 python setup.py sdist
 ```
 
+## Tests
 
+Run tests with:
+
+```
+python -m unittest discover tests
+```
