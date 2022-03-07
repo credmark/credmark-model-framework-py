@@ -13,6 +13,25 @@ DICT_SCHEMA = {"title": "Object", "type": "object", "properties": {}}
 # the decorator but there may be reasons why they want to use
 # different types and the DTOs are used to document the schema.
 
+MAX_SLUG_LENGTH = 64
+model_slug_re = re.compile(r'^([A-Za-z]+\.)?([A-Za-z0-9]+\-)*[A-Za-z0-9]+$')
+
+
+def validate_model_slug(slug: str, prefix: Union[str, None] = None):
+    if prefix is not None and not slug.startswith(prefix):
+        raise InvalidModelSlug(f'Slug for model {slug} must start with "{prefix}"')
+
+    if model_slug_re.match(slug) is None or len(slug) > MAX_SLUG_LENGTH:
+        quoted_prefix = f'"{prefix}"' if prefix else ''
+        raise InvalidModelSlug(
+            f'Invalid model slug "{slug}". '
+            f'{"Following the prefix " + quoted_prefix if prefix else "Following a prefix and dot"}, '
+            'slugs must start and end with a letter or number and may contain hyphens.')
+    if len(slug) > MAX_SLUG_LENGTH:
+        raise InvalidModelSlug(
+            f'Invalid model slug "{slug}". '
+            'Slugs must be not more than {MAX_SLUG_LENGTH} characters.')
+
 
 def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
              version: str,
@@ -34,8 +53,9 @@ def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
 
         mod_parts = cls.__dict__['__module__'].split('.')
         if len(mod_parts) > 1 and mod_parts[1] == 'contrib':
-            if not slug.startswith('contrib.'):
-                raise InvalidModelSlug(f'Slug for model {slug} must start with "contrib."')
+            validate_model_slug(slug, 'contrib.')
+        else:
+            validate_model_slug(slug)
 
         attr_value = {
             'credmarkModelManifest': 'v1',

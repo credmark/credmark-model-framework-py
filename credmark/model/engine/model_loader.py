@@ -1,32 +1,18 @@
 import logging
 import os
-import re
 import importlib
 import inspect
 import yaml
 from typing import Union, Type, List
 from packaging import version
 from requests.structures import CaseInsensitiveDict
-
 from credmark.model import Model
 from credmark.model.errors import MissingModelError, WriteModelManifestError
+from credmark.model.describe import validate_model_slug
 
 
 class ModelLoader:
     logger = logging.getLogger(__name__)
-
-    max_slug_length = 64
-    model_slug_re = re.compile(r'^([A-Za-z]+\.)?([A-Za-z0-9]+\-)*[A-Za-z0-9]+$')
-
-    def validate_model_slug(self, slug: str):
-        if self.model_slug_re.match(slug) is None or len(slug) > self.max_slug_length:
-            raise Exception(
-                f'Invalid model slug "{slug}". '
-                'Slugs must start and end with a letter or number and may contain hyphens.')
-        if len(slug) > self.max_slug_length:
-            raise Exception(
-                f'Invalid model slug "{slug}". '
-                'Slugs must be not more than {self.max_slug_length} characters.')
 
     def __init__(self, model_paths: Union[List[str], None] = None, manifest_file: Union[str, None] = None):  # pylint: disable=line-too-long
         '''
@@ -146,7 +132,7 @@ class ModelLoader:
     def _process_model_manifest_entry(self, model_manifest):
         try:
             model_slug = model_manifest['slug']
-            self.validate_model_slug(model_slug)
+            validate_model_slug(model_slug)
             model_classname = model_manifest['class']
             # ensure version is a string
             _model_version = model_manifest['version'] = str(
