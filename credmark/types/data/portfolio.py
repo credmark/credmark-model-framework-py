@@ -1,5 +1,5 @@
 from typing import List
-from ..dto import DTO, DTOField, IterableListDto
+from ..dto import DTOField, IterableListDto
 from .position import Position
 
 

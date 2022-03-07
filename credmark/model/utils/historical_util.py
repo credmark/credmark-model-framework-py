@@ -1,7 +1,7 @@
 from typing import Union
 import credmark.model
 from credmark.model.errors import ModelRunError
-from credmark.types import BlockSeriesDTO, SeriesModelInput
+from credmark.types import BlockSeries, SeriesModelInput
 from credmark.types.dto import DTO
 
 
@@ -37,7 +37,7 @@ class HistoricalUtil:
                              interval: Union[str, None] = None,
                              end_timestamp: Union[int, None] = None,
                              snap_clock: Union[str, None] = 'interval',
-                             model_version: Union[str, None] = None) -> BlockSeriesDTO:
+                             model_version: Union[str, None] = None) -> BlockSeries:
         if model_version is None:
             model_version = ''
         if model_input is None:
@@ -62,7 +62,7 @@ class HistoricalUtil:
             )
             return self.context.run_model('series.time-window-interval',
                                           input,
-                                          return_type=BlockSeriesDTO)
+                                          return_type=BlockSeries)
         else:
 
             if end_timestamp is None:
@@ -88,7 +88,7 @@ class HistoricalUtil:
 
             return self.context.run_model('series.time-start-end-interval',
                                           input,
-                                          return_type=BlockSeriesDTO)
+                                          return_type=BlockSeries)
 
     def run_model_historical_blocks(self,
                                     model_slug: str,
@@ -97,7 +97,7 @@ class HistoricalUtil:
                                     model_input: Union[dict, None] = None,
                                     end_block: Union[int, None] = None,
                                     snap_block: Union[int, None] = None,
-                                    model_version: Union[str, None] = None) -> BlockSeriesDTO:
+                                    model_version: Union[str, None] = None) -> BlockSeries:
         if model_version is None:
             model_version = ''
         if model_input is None:
@@ -113,7 +113,7 @@ class HistoricalUtil:
             )
             return self.context.run_model('series.block-window-interval',
                                           series_input,
-                                          return_type=BlockSeriesDTO)
+                                          return_type=BlockSeries)
         else:
             if end_block is None:
                 end_block = self.context.block_number
@@ -130,7 +130,7 @@ class HistoricalUtil:
             )
             return self.context.run_model('series.block-start-end-interval',
                                           series_input,
-                                          return_type=BlockSeriesDTO)
+                                          return_type=BlockSeries)
 
     def parse_timerangestr(self, time_str: str):
         key = None

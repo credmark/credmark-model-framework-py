@@ -7,13 +7,12 @@ from typing import (
 from web3.contract import Contract as Web3Contract
 
 import credmark.model
-from credmark.types.data.address import Address
-from credmark.types.dto import DTO, DTOField, IterableListDto, PrivateAttr
+from credmark.types.data.account import Account
+from credmark.types.dto import IterableListDto, PrivateAttr
 
 
-class Contract(DTO):
+class Contract(Account):
     name: Union[str, None] = None
-    address: Address = DTOField(..., description='Contract address')
     deploy_tx_hash: Union[str, None] = None
     constructor_args: Union[str, None] = None
     protocol: Union[str, None] = None

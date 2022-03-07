@@ -2,14 +2,14 @@ from typing import List, Optional, Union
 from credmark.types.dto import DTO, DTOField, IterableListDto
 
 
-class BlockSeriesRowDTO(DTO):
+class BlockSeriesRow(DTO):
     blockNumber: int = DTOField(..., description='Block number in the series')
     blockTimestamp: int = DTOField(..., description='The Timestamp of the Block')
     sampleTimestamp: int = DTOField(..., description='The Sample Blocktime')
     output: dict = DTOField(..., description='Output of the model run for this block')
 
 
-class BlockSeriesDTO(IterableListDto):
+class BlockSeries(IterableListDto):
     """
     A DTO for the output of "series.*" models which run another
     model over a series of blocks.
@@ -20,7 +20,7 @@ class BlockSeriesDTO(IterableListDto):
 
         obj: AModelDto = self.convert_dict_to_dto(output.series[0].output, AModelDto)
     """
-    series: List[BlockSeriesRowDTO] = DTOField([], description='List of series block outputs')
+    series: List[BlockSeriesRow] = DTOField([], description='List of series block outputs')
     iterator = 'series'
 
     def get(self, block_number=None, timestamp=None):

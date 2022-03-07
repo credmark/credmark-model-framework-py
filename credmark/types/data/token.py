@@ -1,7 +1,8 @@
 
 import credmark.model
 import credmark.types
-from .contract import Contract, Address
+from .contract import Contract
+from .address import Address
 from .token_data import TOKEN_DATA, MIN_ERC20_ABI
 from typing import List, Union
 from ..dto import IterableListDto
@@ -9,9 +10,10 @@ from ..models.core import CoreModels
 
 
 class Token(Contract):
+    # TODO: Make a special case for USD
     symbol: Union[str, None]
+    # TODO: Decimals are only available in erc20s, not erc721 or erc1155
     decimals: Union[int, None]
-    address: Union[Address, None]
 
     def __init__(self, **data):
 
@@ -36,6 +38,7 @@ class Token(Contract):
                 td = td[0]
                 data['symbol'] = td['symbol']
                 data['address'] = td['address']
+                # TODO: The contract name and the Token Name can be different
                 data['name'] = td.get('name', None)
                 data['decimals'] = td.get('decimals', None)
                 data['protocol'] = td.get('protocol', None)
@@ -76,9 +79,25 @@ class Token(Contract):
         context = credmark.model.ModelContext.current_context
         if context is None:
             raise ValueError(f'No current context to get price of token {self.symbol}')
-        return context.run_model(CoreModels.token_price, self, return_type=credmark.types.Price).price_usd
+        return context.run_model(CoreModels.token_price, self, return_type=credmark.types.Price).price
 
 
 class Tokens(IterableListDto):
     tokens: List[Token]
     iterator = 'tokens'
+
+
+class ERC20(Token):
+    pass
+
+
+class ERC721(Token):
+    def __init__(self, **data):
+        super().__init__(**data)
+        raise NotImplementedError()
+
+
+class ERC1155(Token):
+    def __init__(self, **data):
+        super().__init__(**data)
+        raise NotImplementedError()

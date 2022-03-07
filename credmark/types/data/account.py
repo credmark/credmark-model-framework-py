@@ -3,10 +3,10 @@ from .address import Address
 from ..dto import DTO, IterableListDto
 
 
-class Wallet(DTO):
+class Account(DTO):
     address: Address
 
 
-class Wallets(IterableListDto):
-    wallets: List[Wallet]
-    iterator: str = 'wallets'
+class Accounts(IterableListDto):
+    accounts: List[Account]
+    iterator: str = 'accounts'
