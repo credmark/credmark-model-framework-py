@@ -1,9 +1,10 @@
 import inspect
+import re
 from typing import Type, Union
 
 from .base import Model
 from credmark.types.dto import DTO
-from .errors import WrongModelMethodSignature
+from .errors import InvalidModelSlug, WrongModelMethodSignature
 
 DICT_SCHEMA = {"title": "Object", "type": "object", "properties": {}}
 
@@ -30,6 +31,11 @@ def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
             cls = type(cls_in.__name__, (Model, *cls_in.__bases__), dict(cls_in.__dict__))
         else:
             cls = cls_in
+
+        mod_parts = cls.__dict__['__module__'].split('.')
+        if len(mod_parts) > 1 and mod_parts[1] == 'contrib':
+            if not slug.startswith('contrib.'):
+                raise InvalidModelSlug(f'Slug for model {slug} must start with "contrib."')
 
         attr_value = {
             'credmarkModelManifest': 'v1',

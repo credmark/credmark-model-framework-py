@@ -32,3 +32,7 @@ class WriteModelManifestError(Exception):
 
 class WrongModelMethodSignature(Exception):
     pass
+
+
+class InvalidModelSlug(Exception):
+    pass

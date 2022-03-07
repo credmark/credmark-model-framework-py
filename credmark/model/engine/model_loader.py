@@ -16,7 +16,7 @@ class ModelLoader:
     logger = logging.getLogger(__name__)
 
     max_slug_length = 64
-    model_slug_re = re.compile(r'^([A-Za-z0-9]+\-)*[A-Za-z0-9]+$')
+    model_slug_re = re.compile(r'^([A-Za-z]+\.)?([A-Za-z0-9]+\-)*[A-Za-z0-9]+$')
 
     def validate_model_slug(self, slug: str):
         if self.model_slug_re.match(slug) is None or len(slug) > self.max_slug_length:
@@ -118,7 +118,7 @@ class ModelLoader:
                     self._process_model_manifest(manifest, folder, fpath)
             except Exception as err:
                 self.errors.append(
-                    f'Error loading manifest file {fpath}: {err}')
+                    f'Error loading manifest in model file {fpath}: {err}')
 
     def _load_yaml_file(self, path):
         with open(path, "r") as stream:
