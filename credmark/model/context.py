@@ -146,6 +146,11 @@ class ModelContext():
         values will remain as DTOs. In this case, to serialize the
         data you can use credmark.model.encoder.json_dump or
         json_dumps.
+
+        :param data: data in the form of a dict or DTO instance
+        :param dto_class: DTO subclass (or None to convert to dict)
+        :param slug: the slug of the calling model (used for errors)
+        :param data_source: short string describing source of data, ex "input" (used for errors)
         """
         try:
             if dto_class is None:
