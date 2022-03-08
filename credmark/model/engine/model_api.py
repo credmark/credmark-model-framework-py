@@ -4,6 +4,7 @@ import requests
 from credmark.model.errors import MissingModelError, ModelRunRequestError
 
 RUN_MODEL_API_URL = 'https://gateway.credmark.com/v1/model/run'
+RUN_REQUEST_TIMEOUT = 600
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class ModelApi:
         resp_obj = None
 
         try:
-            resp = requests.post(self.__url, json=req, headers=headers)
+            resp = requests.post(self.__url, json=req, headers=headers, timeout=RUN_REQUEST_TIMEOUT)
             resp.raise_for_status()
             resp_obj = resp.json()
             return resp_obj['slug'], resp_obj['version'], \
