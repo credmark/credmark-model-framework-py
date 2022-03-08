@@ -2,11 +2,12 @@ import logging
 import os
 from typing import Union
 from credmark.model.context import ModelContext
-from credmark.model.errors import MaxModelRunDepthError, ModelRunError, ModelRunRequestError
+from credmark.model.errors import MaxModelRunDepthError, ModelRunError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.web3 import Web3Registry
 from credmark.types.dto import DTO
+from credmark.types.models.core import CoreModels
 
 
 class EngineModelContext(ModelContext):
@@ -61,7 +62,7 @@ class EngineModelContext(ModelContext):
 
         if block_number is None:
             # Lookup latest block number if none specified
-            block_number = cls.get_latest_block_number(web3_registry, chain_id)
+            block_number = cls.get_latest_block_number(api, chain_id)
             cls.logger.info(f'Using latest block number {block_number}')
 
         context = EngineModelContext(
@@ -83,10 +84,15 @@ class EngineModelContext(ModelContext):
         return response
 
     @classmethod
-    def get_latest_block_number(cls, web3_registry: Web3Registry, chain_id: int):
+    def get_latest_block_number(cls, api: ModelApi, chain_id: int):
         try:
-            web3 = web3_registry.web3_for_chain_id(chain_id)
-            return web3.eth.get_block_number()
+            _s, _v, output, _d = api.run_model(CoreModels.ledger_block_number,
+                                               None, chain_id, 0,
+                                               {"block": "latest"})
+            block_number: int = output['blockNumber']
+            if block_number == -1:
+                raise ModelRunError(f'No latest block found on chain {chain_id}')
+            return block_number
         except Exception as err:
             raise ModelRunError(f'Error looking up latest block on chain {chain_id}: {err}')
 
