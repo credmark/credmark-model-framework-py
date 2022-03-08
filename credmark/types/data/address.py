@@ -106,6 +106,8 @@ class Address(str):
         return self._checksum
 
 
+NULL_ADDRESS = Address("0x0000000000000000000000000000000000000000")
+
 if __name__ == '__main__':
     import functools
 

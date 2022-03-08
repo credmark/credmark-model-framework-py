@@ -42,6 +42,7 @@ class Token(Contract):
                 data['name'] = td.get('name', None)
                 data['decimals'] = td.get('decimals', None)
                 data['protocol'] = td.get('protocol', None)
+                data['product'] = td.get('product', None)
 
             # TODO: un-hardcode this
 

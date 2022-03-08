@@ -1,6 +1,6 @@
 # pylint disable=unused-imports
 
-from .data.address import Address
+from .data.address import Address, NULL_ADDRESS
 from .data.block_number import BlockNumber
 from .data.contract import Contract, Contracts
 from .data.token import Token, Tokens
