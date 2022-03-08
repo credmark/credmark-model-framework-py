@@ -12,6 +12,7 @@ from .model.engine.model_loader import ModelLoader
 from .model.errors import MaxModelRunDepthError, MissingModelError, \
     ModelRunError, ModelRunRequestError
 from .model.web3 import Web3Registry
+from .model.encoder import json_dump
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +195,8 @@ def run_model(args):
             api_url=api_url,
             run_id=run_id,
             depth=depth)
-        json.dump(result, sys.stdout)
+
+        json_dump(result, sys.stdout)
 
     except (MaxModelRunDepthError, MissingModelError, ModelRunError) as e:
         msg = {
