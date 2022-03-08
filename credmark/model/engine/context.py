@@ -86,9 +86,8 @@ class EngineModelContext(ModelContext):
     @classmethod
     def get_latest_block_number(cls, api: ModelApi, chain_id: int):
         try:
-            _s, _v, output, _d = api.run_model(CoreModels.ledger_block_number,
-                                               None, chain_id, 0,
-                                               {"block": "latest"})
+            _s, _v, output, _d = api.run_model(CoreModels.latest_block_number,
+                                               None, chain_id, 0, {})
             block_number: int = output['blockNumber']
             if block_number == -1:
                 raise ModelRunError(f'No latest block found on chain {chain_id}')

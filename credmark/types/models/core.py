@@ -4,4 +4,4 @@ class CoreModels:
     """Get price of a token"""
     token_price = 'price'
 
-    ledger_block_number = 'ledger.block_number'
+    latest_block_number = 'rpc.get-latest-blocknumber'
