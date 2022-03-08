@@ -1,11 +1,11 @@
 from typing import List
 import inspect
-from credmark.types.dto import DTO, DTOField, IterableListDto
+from credmark.types.dto import DTOField, PrivateAttr, IterableListDto
 
 
 class LedgerModelOutput(IterableListDto):
     data: List[dict] = DTOField([], description='A list of dicts which are the rows of data')
-    iterator = "data"
+    _iterator = PrivateAttr("data")
 
 
 class LedgerTable:

@@ -1,5 +1,6 @@
 from typing import List, Optional, Union
-from credmark.types.dto import DTO, DTOField, IterableListDto
+
+from credmark.types.dto import DTO, DTOField, PrivateAttr, IterableListDto
 
 
 class BlockSeriesRow(DTO):
@@ -21,13 +22,14 @@ class BlockSeries(IterableListDto):
         obj: AModelDto = self.convert_dict_to_dto(output.series[0].output, AModelDto)
     """
     series: List[BlockSeriesRow] = DTOField([], description='List of series block outputs')
-    iterator = 'series'
+    _iterator = PrivateAttr('series')
 
     def get(self, block_number=None, timestamp=None):
         if block_number is not None:
             return next((x for x in self.series if x.blockNumber == block_number), None)
         if timestamp is not None:
-            return self.get(max(s.blockNumber for s in [s for s in self.series if s.blockTimestamp <= timestamp]))
+            return self.get(max(s.blockNumber for s in
+                                [s for s in self.series if s.blockTimestamp <= timestamp]))
 
 
 class SeriesModelInput(DTO):

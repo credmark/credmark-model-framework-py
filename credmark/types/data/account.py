@@ -1,6 +1,6 @@
 from typing import List
 from .address import Address
-from ..dto import DTO, IterableListDto
+from ..dto import DTO, PrivateAttr, IterableListDto
 
 
 class Account(DTO):
@@ -9,4 +9,4 @@ class Account(DTO):
 
 class Accounts(IterableListDto):
     accounts: List[Account]
-    iterator: str = 'accounts'
+    _iterator: str = PrivateAttr('accounts')

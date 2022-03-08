@@ -44,16 +44,16 @@ class HexStr(str):
 
 
 class IterableListDto(DTO):
-    iterator: str
+    _iterator: str
 
     def __iter__(self):
-        return getattr(self, self.iterator).__iter__()
+        return getattr(self, self._iterator).__iter__()
 
     def __getitem__(self, key):
-        return getattr(self, self.iterator).__getitem__(key)
+        return getattr(self, self._iterator).__getitem__(key)
 
     def append(self, obj):
-        return getattr(self, self.iterator).append(obj)
+        return getattr(self, self._iterator).append(obj)
 
     def extend(self, obj):
-        return getattr(self, self.iterator).extend(obj)
+        return getattr(self, self._iterator).extend(obj)

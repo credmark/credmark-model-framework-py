@@ -5,7 +5,7 @@ from .contract import Contract
 from .address import Address
 from .token_data import TOKEN_DATA, MIN_ERC20_ABI
 from typing import List, Union
-from ..dto import IterableListDto
+from ..dto import PrivateAttr, IterableListDto
 from ..models.core import CoreModels
 
 
@@ -85,7 +85,7 @@ class Token(Contract):
 
 class Tokens(IterableListDto):
     tokens: List[Token]
-    iterator = 'tokens'
+    _iterator = PrivateAttr('tokens')
 
 
 class ERC20(Token):
