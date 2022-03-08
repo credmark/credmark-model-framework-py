@@ -51,9 +51,9 @@ def main():
     parser_list.set_defaults(func=remove_manifest_file)
 
     parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
-    required_run = parser_run.add_argument_group('required arguments')
-    required_run.add_argument('-b', '--block_number', type=int, required=True,
-                              help='Default block number used for the context of the model run.')
+    parser_run.add_argument('-b', '--block_number', type=int, required=False, default=None,
+                            help='Block number used for the context of the model run.'
+                            ' If not specified, it is set to the latest block of the chain.')
     parser_run.add_argument('-c', '--chain_id', type=int, default=1, required=False,
                             help='[OPTIONAL] The chain ID. Defaults to 1.')
     parser_run.add_argument('-i', '--input', required=False, default='{}',
@@ -170,7 +170,7 @@ def run_model(args):
         model_loader = load_models(args)
 
         chain_id: int = args['chain_id']
-        block_number: int = args['block_number']
+        block_number: Union[int, None] = args['block_number']
         model_slug: str = args['model-slug']
         model_version: Union[str, None] = args['model_version']
         api_url: Union[str, None] = args['api_url']

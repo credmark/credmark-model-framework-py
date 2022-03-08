@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Union
 from credmark.model.context import ModelContext
-from credmark.model.errors import MaxModelRunDepthError, ModelRunError
+from credmark.model.errors import MaxModelRunDepthError, ModelRunError, ModelRunRequestError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.web3 import Web3Registry
@@ -29,7 +29,7 @@ class EngineModelContext(ModelContext):
     @classmethod
     def create_context_and_run_model(cls,
                                      chain_id: int,
-                                     block_number: int,
+                                     block_number: Union[int, None],
                                      model_slug: str,
                                      model_version: Union[str, None] = None,
                                      input: Union[dict, None] = None,
@@ -41,6 +41,7 @@ class EngineModelContext(ModelContext):
                                      depth: int = 0):
         """
         Parameters:
+            block_number: if None, latest block is used
             run_id (str | None): a string to identify a particular model run. It is
                 same for any other models run from within a model.
 
@@ -58,12 +59,16 @@ class EngineModelContext(ModelContext):
 
         web3_registry = Web3Registry(chain_to_provider_url)
 
+        if block_number is None:
+            # Lookup latest block number if none specified
+            block_number = cls.get_latest_block_number(web3_registry, chain_id)
+            cls.logger.info(f'Using latest block number {block_number}')
+
         context = EngineModelContext(
             chain_id, block_number, web3_registry, run_id, depth, model_loader, api)
 
-        # We set the block_number in the context so we pass in
+        # We set the block_number in the context above so we pass in
         # None for block_number to the run_model method.
-
         result_tuple = context._run_model(
             model_slug, input, None, model_version)
 
@@ -76,6 +81,14 @@ class EngineModelContext(ModelContext):
             'output': output_as_dict,
             'dependencies': context.__dependencies}
         return response
+
+    @classmethod
+    def get_latest_block_number(cls, web3_registry: Web3Registry, chain_id: int):
+        try:
+            web3 = web3_registry.web3_for_chain_id(chain_id)
+            return web3.eth.get_block_number()
+        except Exception as err:
+            raise ModelRunError(f'Error looking up latest block on chain {chain_id}: {err}')
 
     def __init__(self,
                  chain_id: int,
