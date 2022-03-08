@@ -106,13 +106,13 @@ class ModelContext():
 
         Parameters:
             slug (str): the slug of the model
-            input (dict | None): an optional dictionary of
+            input (dict | DTO | None): an optional dictionary or DTO instance of
                   input data that will be passed to the model when it is run.
             block_number (int | None): optional block number to use as context.
                   If None, the block_number of the current context will be used.
             version (str | None): optional version of the model.
                   If version is None, the latest version of
-                  the model is used.
+                  the model is used. Use of this paramater is NOT recommended.
             return_type (DTO Type | None): optional class to use for the
                   returned output data. If not specified, returned value is a dict.
                   If a DTO specified, the returned value will be an instance
