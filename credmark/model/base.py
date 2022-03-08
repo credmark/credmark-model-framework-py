@@ -3,6 +3,7 @@ import logging
 from typing import Type, Union
 from .context import ModelContext
 from credmark.types.dto import DTO
+from .transform import transform_data_for_dto
 
 
 class Model:
@@ -53,4 +54,4 @@ class Model:
         A model can call this method to convert a dict
         of data in a known format into a DTO instance.
         """
-        return self.context.transform_data_for_dto(data, dto_class, self.slug, 'transform')
+        return transform_data_for_dto(data, dto_class, self.slug, 'transform')

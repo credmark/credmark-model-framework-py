@@ -5,6 +5,7 @@ from credmark.model.context import ModelContext
 from credmark.model.errors import MaxModelRunDepthError, ModelRunError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
+from credmark.model.transform import transform_data_for_dto
 from credmark.model.web3 import Web3Registry
 from credmark.types.dto import DTO
 from credmark.types.models.core import CoreModels
@@ -74,7 +75,7 @@ class EngineModelContext(ModelContext):
             model_slug, input, None, model_version)
 
         output = result_tuple[2]
-        output_as_dict = context.transform_data_for_dto(output, None, model_slug, 'output')
+        output_as_dict = transform_data_for_dto(output, None, model_slug, 'output')
 
         response = {
             'slug': result_tuple[0],
@@ -174,7 +175,7 @@ class EngineModelContext(ModelContext):
 
         # The last item of the tuple is the output.
         output = res_tuple[-1]
-        return self.transform_data_for_dto(output, return_type, slug, 'output')
+        return transform_data_for_dto(output, return_type, slug, 'output')
 
     def _run_model(self,
                    slug: str,
@@ -214,14 +215,14 @@ class EngineModelContext(ModelContext):
                                              api
                                              )
 
-            input = self.transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
+            input = transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
 
             ModelContext.current_context = context
 
             model = model_class(context)
             output = model.run(input)
 
-            output = self.transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
+            output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
 
             ModelContext.current_context = self
 
