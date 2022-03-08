@@ -133,6 +133,20 @@ class ModelContext():
                                dto_class: Union[Type[DTO], None],
                                slug: str,
                                data_source: str):
+        """
+        Transform data (dict, DTO or None) to a DTO class or a dict.
+        This can be used to ensure you have the DTO (or dict) you expect.
+        Specifying dto_class=None will convert data to a dict.
+
+        It can also be used to create DTOs from model output that might be generic,
+        for example models that call other models.
+
+        Note that if you have a data structure such as a dict or list
+        that contains DTOs, the transformation is not deep so the embedded
+        values will remain as DTOs. In this case, to serialize the
+        data you can use credmark.model.encoder.json_dump or
+        json_dumps.
+        """
         try:
             if dto_class is None:
                 # Return a dict
