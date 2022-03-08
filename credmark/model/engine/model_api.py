@@ -3,7 +3,7 @@ import logging
 import requests
 from credmark.model.errors import MissingModelError, ModelRunRequestError
 
-RUN_MODEL_API_URL = 'https://gateway.credmark.com/v0/model/run'
+RUN_MODEL_API_URL = 'https://gateway.credmark.com/v1/model/run'
 
 logger = logging.getLogger(__name__)
 
