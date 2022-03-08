@@ -51,12 +51,13 @@ def main():
     parser_list.set_defaults(func=remove_manifest_file)
 
     parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
-    parser_run.add_argument('-b', '--block_number', type=int, required=True,
-                            help='Default block number.')
+    required_run = parser_run.add_argument_group('required arguments')
+    required_run.add_argument('-b', '--block_number', type=int, required=True,
+                              help='Default block number.')
     parser_run.add_argument('-c', '--chain_id', type=int, default=1, required=False,
                             help='[OPTIONAL] The chain ID. Defaults to 1.')
-    parser_run.add_argument('-i', '--input', required=False, default=None,
-                            help='[OPTIONAL] Input JSON. If missing, will read from stdin.')
+    parser_run.add_argument('-i', '--input', required=False, default='{}',
+                            help='[OPTIONAL] Input JSON or if value is "-" it will read input JSON from stdin.')
     parser_run.add_argument('--provider_url_map', required=False, default=None,
                             help='[OPTIONAL] JSON object of chain id to Web3 provider HTTP URL')
     parser_run.add_argument('-v', '--model_version', default=None, required=False,
@@ -172,7 +173,7 @@ def run_model(args):
         run_id: Union[str, None] = args['run_id']
         depth: int = args['depth']
 
-        if args['input']:
+        if args['input'] != '-':
             input = json.loads(args['input'])
         else:
             sys.stderr.write('Reading input JSON on stdin\n')
