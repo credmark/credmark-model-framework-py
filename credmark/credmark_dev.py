@@ -53,17 +53,21 @@ def main():
     parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
     required_run = parser_run.add_argument_group('required arguments')
     required_run.add_argument('-b', '--block_number', type=int, required=True,
-                              help='Default block number.')
+                              help='Default block number used for the context of the model run.')
     parser_run.add_argument('-c', '--chain_id', type=int, default=1, required=False,
                             help='[OPTIONAL] The chain ID. Defaults to 1.')
     parser_run.add_argument('-i', '--input', required=False, default='{}',
-                            help='[OPTIONAL] Input JSON or if value is "-" it will read input JSON from stdin.')
-    parser_run.add_argument('--provider_url_map', required=False, default=None,
-                            help='[OPTIONAL] JSON object of chain id to Web3 provider HTTP URL')
+                            help='[OPTIONAL] Input JSON or '
+                            'if value is "-" it will read input JSON from stdin.')
     parser_run.add_argument('-v', '--model_version', default=None, required=False,
                             help='[OPTIONAL] Version of the model to run. Defaults to latest.')
+    parser_run.add_argument('--provider_url_map', required=False, default=None,
+                            help='[OPTIONAL] JSON object of chain id to Web3 provider HTTP URL. '
+                            'Overrides settings in env vars.')
     parser_run.add_argument('--api_url', required=False, default=None,
-                            help='[OPTIONAL] Credmark API url')
+                            help='[OPTIONAL] Credmark API url. '
+                            'Defaults to the standard API gateway. '
+                            'You do not normally need to set this.')
     parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
     parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
     parser_run.add_argument('model-slug', default='(missing model-slug arg)',
