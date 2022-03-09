@@ -19,7 +19,6 @@ def validate_address(addr: str):
 
 evm_address_regex = re.compile(r'^0x[a-fA-F0-9]{40}$')
 
-
 class Address(str):
     """
     An EVM address which is a lowercase hex string.
@@ -105,6 +104,9 @@ class Address(str):
     def checksum(self):
         return self._checksum
 
+    @staticmethod
+    def example():
+        return { 'address': '0x0000000000000000000000000000000000000000',}
 
 NULL_ADDRESS = Address("0x0000000000000000000000000000000000000000")
 

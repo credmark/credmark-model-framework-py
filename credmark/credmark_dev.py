@@ -13,6 +13,7 @@ from .model.errors import MaxModelRunDepthError, MissingModelError, \
     ModelRunError, ModelRunRequestError
 from .model.web3 import Web3Registry
 from .model.encoder import json_dump
+from .types import *
 
 logger = logging.getLogger(__name__)
 
@@ -116,9 +117,37 @@ def list_models(args):
         if json_output:
             json.dump({'models': manifests}, sys.stdout)
         else:
+            # add more human-descriptive
             for m in manifests:
-                for i, v in m.items():
-                    sys.stdout.write(f' {i}: {v}\n')
+                # breakpoint()
+                try:
+                    print(m['slug'])
+                    if len(m['input']['properties']) == 0:
+                        print('required' in m['input'], {})
+                        xx = {}
+                    else:
+                        def drill(head_node, n):
+                            if n > 5:
+                                raise ValueError('Too many recursion')
+                            if 'required' in head_node:
+                                for k in head_node['required']:
+                                    props = head_node['properties'][k]
+                                    if 'title' in props:
+                                        if 'example' in head_node:
+                                            print(k, head_node['example'])
+                                        else:
+                                            print(k, head_node['type'])
+                                    elif '$ref' in props:
+                                        ref = props['$ref'].split('/')
+                                        print(k, drill(head_node[ref[1]][ref[2]], n+1))
+                        head_node = m['input']
+                        drill(head_node, 0)
+                except Exception as err:
+                    breakpoint()
+                    raise
+
+                # for i, v in m.items():
+                #    sys.stdout.write(f' {i}: {v}\n')
                 sys.stdout.write('\n')
     else:
         models = model_loader.loaded_model_version_lists()
