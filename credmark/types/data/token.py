@@ -1,11 +1,12 @@
 
+from email.policy import default
 import credmark.model
 import credmark.types
 from .contract import Contract
 from .address import Address
 from .token_data import TOKEN_DATA, MIN_ERC20_ABI
 from typing import List, Union
-from ..dto import PrivateAttr, IterableListGenericDTO
+from ..dto import PrivateAttr, IterableListGenericDTO, DTOField
 from ..models.core import CoreModels
 
 
@@ -84,7 +85,7 @@ class Token(Contract):
 
 
 class Tokens(IterableListGenericDTO[Token]):
-    tokens: List[Token]
+    tokens: List[Token] = DTOField(default=[], description="An iterable list of Token Objects")
     _iterator = PrivateAttr('tokens')
 
 
