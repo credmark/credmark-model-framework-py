@@ -64,7 +64,7 @@ class Address(str):
         self._checksum = validate_address(self)
 
     def __repr__(self):
-        return f'Address({super().__repr__()})'
+        return super().__repr__()
 
     def __hash__(self):
         return hash(str(self))
