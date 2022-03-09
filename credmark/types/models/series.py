@@ -1,38 +1,35 @@
-from typing import List, Optional, Type, TypeVar, Union
-from credmark.model.transform import transform_data_for_dto
-from credmark.types.dto import DTO, DTOField, PrivateAttr, IterableListDto
+from typing import List, Optional, TypeVar, Union, Generic
+from credmark.types.dto import DTO, GenericDTO, DTOField, PrivateAttr, IterableListGenericDTO
 
 DTOCLS = TypeVar('DTOCLS')
 
 
-class BlockSeriesRow(DTO):
+class BlockSeriesRow(GenericDTO, Generic[DTOCLS]):
+    """
+    A data row in a block series.
+    The generic type specifies the class to use as the output.
+
+    For example: row = BlockSeriesRow[MyOutputClass](**data)
+    where row.output will be an instance of MyOutputClass
+    """
     blockNumber: int = DTOField(..., description='Block number in the series')
     blockTimestamp: int = DTOField(..., description='The Timestamp of the Block')
     sampleTimestamp: int = DTOField(..., description='The Sample Blocktime')
-    output: dict = DTOField(..., description='Output of the model run for this block')
-
-    def output_dto(self, dto_class: Type[DTOCLS]) -> DTOCLS:
-        """
-        Convert the output dict to a DTO instance
-        """
-        return transform_data_for_dto(self.output,
-                                      dto_class,  # type:ignore
-                                      'block-series',
-                                      'output')
+    output: DTOCLS = DTOField(..., description='Output of the model run for this block')
 
 
-class BlockSeries(IterableListDto):
+class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS]):
     """
     A DTO for the output of "series.*" models which run another
     model over a series of blocks.
 
-    The output dict for a SeriesBlockOutput can be converted to
-    a DTO by calling series_row.output_dto(DTOClass). For example
-    from within a model:
+    The generic type specifies the class to use as the output
+    in the BlockSeriesRow.
 
-        obj: AModelDto = output.series[0].output_dto(AModelDto)
+    For example: blockSeries = BlockSeries[MyOutputClass](**data)
+    where blockSeries.series[0].output will be an instance of MyOutputClass
     """
-    series: List[BlockSeriesRow] = DTOField([], description='List of series block outputs')
+    series: List[BlockSeriesRow[DTOCLS]] = DTOField([], description='List of series block outputs')
     _iterator = PrivateAttr('series')
 
     def get(self, block_number=None, timestamp=None):

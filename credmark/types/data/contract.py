@@ -8,7 +8,7 @@ from web3.contract import Contract as Web3Contract
 
 import credmark.model
 from credmark.types.data.account import Account
-from credmark.types.dto import PrivateAttr, IterableListDto
+from credmark.types.dto import PrivateAttr, IterableListGenericDTO
 
 
 class Contract(Account):
@@ -66,6 +66,6 @@ class Contract(Account):
         return self.instance.functions
 
 
-class Contracts(IterableListDto):
+class Contracts(IterableListGenericDTO[Contract]):
     contracts: List[Contract]
     _iterator = PrivateAttr('contracts')
