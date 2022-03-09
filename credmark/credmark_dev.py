@@ -122,6 +122,9 @@ def list_models(args):
                 sys.stdout.write('\n')
     else:
         models = model_loader.loaded_model_version_lists()
+        if model_slug is not None:
+            models = {k:v for k, v in models.items() if model_slug in k}
+
         if json_output:
             json.dump(models, sys.stdout)
         else:
