@@ -1,7 +1,7 @@
 # pylint: disable=locally-disabled, unused-import
 
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, Generic, Iterator, List, TypeVar
 from pydantic import (
     BaseModel as DTO,
     Field as DTOField,
@@ -13,6 +13,8 @@ from pydantic import (
     Extra as DTOExtra,
     PrivateAttr,
 )
+from pydantic.generics import GenericModel as GenericDTO
+
 from abc import abstractproperty
 
 
@@ -50,6 +52,25 @@ class IterableListDto(DTO):
         return getattr(self, self._iterator).__iter__()
 
     def __getitem__(self, key):
+        return getattr(self, self._iterator).__getitem__(key)
+
+    def append(self, obj):
+        return getattr(self, self._iterator).append(obj)
+
+    def extend(self, obj):
+        return getattr(self, self._iterator).extend(obj)
+
+
+DTOCLS = TypeVar('DTOCLS')
+
+
+class IterableListGenericDto(GenericDTO, Generic[DTOCLS]):
+    _iterator: str
+
+    def __iter__(self) -> Iterator[DTOCLS]:
+        return getattr(self, self._iterator).__iter__()
+
+    def __getitem__(self, key) -> DTOCLS:
         return getattr(self, self._iterator).__getitem__(key)
 
     def append(self, obj):
