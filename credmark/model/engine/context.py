@@ -188,9 +188,12 @@ class EngineModelContext(ModelContext):
 
         # We raise an exception for missing class
         # if we have no api or this is a top-level run.
+        raise_on_missing = (api is None or
+                            (self.__depth == 0 and
+                             (not self.dev_mode or (self.dev_mode and self.run_id is not None))))
+
         model_class = self.__model_loader.get_model_class(
-            slug, version, api is None or
-            (self.__depth == 0 and not self.dev_mode))
+            slug, version, raise_on_missing)
 
         self.__depth += 1
         if self.__depth >= self.max_run_depth:
