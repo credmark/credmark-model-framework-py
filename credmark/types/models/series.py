@@ -32,12 +32,13 @@ class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS
     series: List[BlockSeriesRow[DTOCLS]] = DTOField([], description='List of series block outputs')
     _iterator = PrivateAttr('series')
 
-    def get(self, block_number=None, timestamp=None):
+    def get(self, block_number=None, timestamp=None) -> Union[BlockSeriesRow[DTOCLS], None]:
         if block_number is not None:
             return next((x for x in self.series if x.blockNumber == block_number), None)
         if timestamp is not None:
-            return self.get(max(s.blockNumber for s in
-                                [s for s in self.series if s.blockTimestamp <= timestamp]))
+            return self.get(block_number=max(s.blockNumber for s in
+                                             [s for s in self.series if s.blockTimestamp <= timestamp]))
+        return None
 
 
 class SeriesModelInput(DTO):
