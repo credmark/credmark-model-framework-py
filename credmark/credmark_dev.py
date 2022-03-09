@@ -41,6 +41,8 @@ def main():
     parser_list = subparsers.add_parser('list', help='List models', aliases=['list-models'])
     parser_list.add_argument('--manifests', action='store_true', default=False)
     parser_list.add_argument('--json', action='store_true', default=False)
+    parser_list.add_argument('model-slug', nargs='?', default=None, type=str,
+                             help='Slug for the model to show.')
     parser_list.set_defaults(func=list_models)
 
     parser_list = subparsers.add_parser(
@@ -102,12 +104,15 @@ def list_models(args):
 
     model_loader = load_models(args)
     json_output = args.get('json')
+    model_slug = args.get('model-slug')
 
     if not json_output:
         sys.stdout.write('\nLoaded models:\n\n')
 
     if args.get('manifests'):
         manifests = model_loader.loaded_model_manifests()
+        if model_slug is not None:
+            manifests = [m for m in manifests if model_slug in m['slug'] ]
         if json_output:
             json.dump({'models': manifests}, sys.stdout)
         else:
