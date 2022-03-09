@@ -13,7 +13,7 @@ class PydanticJSONEncoder(json.JSONEncoder):
 
     def default(self, o):
         if isinstance(o, DTO):
-            return o.json()
+            return o.dict()
         return json.JSONEncoder.default(self, o)
 
 
