@@ -92,7 +92,9 @@ def config_logging(args):
 def load_models(args):
     manifest_file = args.get('manifest_file')
     model_path = args['model_path']
-    model_loader = ModelLoader([model_path] if model_path is not None else None, manifest_file)
+    load_dev_models = not args.get('run_id')  # we assume developer will not pass a run_id
+    model_loader = ModelLoader(
+        [model_path] if model_path is not None else None, manifest_file, load_dev_models)
     model_loader.log_errors()
     return model_loader
 

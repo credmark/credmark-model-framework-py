@@ -6,7 +6,7 @@ from credmark.types.dto import DTOField, PrivateAttr, IterableListGenericDTO
 class LedgerModelOutput(IterableListGenericDTO[dict]):
     data: List[dict] = DTOField(
         default=[], description='A list of dicts which are the rows of data')
-    _iterator = PrivateAttr("data")
+    _iterator: str = PrivateAttr("data")
 
 
 class LedgerTable:

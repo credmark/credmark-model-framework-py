@@ -68,4 +68,4 @@ class Contract(Account):
 
 class Contracts(IterableListGenericDTO[Contract]):
     contracts: List[Contract] = DTOField(default=[], description="A List of Contracts")
-    _iterator = PrivateAttr('contracts')
+    _iterator: str = PrivateAttr('contracts')

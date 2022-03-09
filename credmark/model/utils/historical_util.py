@@ -1,7 +1,7 @@
 from typing import Type, TypeVar, Union
 import credmark.model
 from credmark.model.errors import ModelRunError
-from credmark.types import BlockSeries, SeriesModelInput
+from credmark.types import BlockSeries, SeriesModelStartEndIntervalInput, SeriesModelWindowIntervalInput
 from credmark.types.dto import DTO
 
 DTOCLS = TypeVar('DTOCLS')
@@ -67,7 +67,7 @@ class HistoricalUtil:
 
         if snap_clock is None and end_timestamp is None:
 
-            input = SeriesModelInput(
+            input = SeriesModelWindowIntervalInput(
                 modelSlug=model_slug,
                 modelInput=model_input,
                 modelVersion=model_version,
@@ -91,7 +91,7 @@ class HistoricalUtil:
 
                 end_timestamp = end_timestamp - (end_timestamp % snap_sec)
 
-            input = SeriesModelInput(
+            input = SeriesModelStartEndIntervalInput(
                 modelSlug=model_slug,
                 modelInput=model_input,
                 modelVersion=model_version,
@@ -130,7 +130,7 @@ class HistoricalUtil:
         run_return_type = BlockSeries[model_return_type]
 
         if snap_block is None and end_block is None:
-            series_input = SeriesModelInput(
+            series_input = SeriesModelWindowIntervalInput(
                 modelSlug=model_slug,
                 modelInput=model_input,
                 modelVersion=model_version,
@@ -146,7 +146,7 @@ class HistoricalUtil:
             if snap_block is not None:
                 end_block = end_block - (end_block % snap_block)
 
-            series_input = SeriesModelInput(
+            series_input = SeriesModelStartEndIntervalInput(
                 modelSlug=model_slug,
                 modelInput=model_input,
                 modelVersion=model_version,

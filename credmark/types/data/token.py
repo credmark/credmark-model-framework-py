@@ -86,7 +86,7 @@ class Token(Contract):
 
 class Tokens(IterableListGenericDTO[Token]):
     tokens: List[Token] = DTOField(default=[], description="An iterable list of Token Objects")
-    _iterator = PrivateAttr('tokens')
+    _iterator: str = PrivateAttr('tokens')
 
 
 class ERC20(Token):
