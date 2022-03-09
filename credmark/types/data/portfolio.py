@@ -4,5 +4,5 @@ from .position import Position
 
 
 class Portfolio(IterableListGenericDTO[Position]):
-    positions: List[Position] = DTOField([], description='List of positions')
+    positions: List[Position] = DTOField(default=[], description='List of positions')
     _iterator = PrivateAttr('positions')

@@ -9,5 +9,5 @@ class Account(DTO):
 
 class Accounts(IterableListGenericDTO[Account]):
     accounts: List[Account] = DTOField(
-        default=[], description="An iterable list of Account objects")
+        default=[], description="A list of Accounts")
     _iterator: str = PrivateAttr('accounts')
