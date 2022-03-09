@@ -8,8 +8,9 @@ from credmark.types.models.rpc import RpcBlockRangeOutput, \
     RpcBlockStartEndIntervalInput, RpcBlockWindowIntervalInput
 from credmark.types.dto import DTO
 
-# This models are local versions of models that are
-# used during development.
+# These models are local versions of models that are
+# used during development. They have high version numbers
+# so they take priority over versions on the server.
 
 
 def run_model_for_block_range(context: ModelContext,
@@ -32,7 +33,7 @@ def run_model_for_block_range(context: ModelContext,
 
 
 @credmark.model.describe(slug='series.time-start-end-interval',
-                         version='1.0',
+                         version='100.0',
                          display_name='Series Time Interval',
                          description='Run a model over a series of blocks specifying a time start, end, and interval',
                          developer='Credmark',
@@ -59,7 +60,7 @@ class SeriesTimeStartEndInterval(credmark.model.Model):
 
 
 @credmark.model.describe(slug='series.time-window-interval',
-                         version='1.0',
+                         version='100.0',
                          display_name='Series Time Window Interval',
                          description='Run a model over a series of blocks specifying a time window and interval',
                          developer='Credmark',
@@ -85,7 +86,7 @@ class SeriesTimeWindowInterval(credmark.model.Model):
 
 
 @credmark.model.describe(slug='series.block-start-end-interval',
-                         version='1.0',
+                         version='100.0',
                          display_name='Series Block Interval',
                          description='Run a model over a series of blocks specifying a block start, end, and interval',
                          developer='Credmark',
@@ -112,7 +113,7 @@ class SeriesBlockStartEndInterval(credmark.model.Model):
 
 
 @credmark.model.describe(slug='series.block-window-interval',
-                         version='1.0',
+                         version='100.0',
                          display_name='Series Block Window Interval',
                          description='Run a model over a series of blocks specifying a block window and interval',
                          developer='Credmark',
