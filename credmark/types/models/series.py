@@ -29,8 +29,9 @@ class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS
     For example: blockSeries = BlockSeries[MyOutputClass](**data)
     where blockSeries.series[0].output will be an instance of MyOutputClass
     """
-    series: List[BlockSeriesRow[DTOCLS]] = DTOField([], description='List of series block outputs')
-    _iterator = PrivateAttr('series')
+    series: List[BlockSeriesRow[DTOCLS]] = DTOField(
+        default=[], description='List of series block outputs')
+    _iterator: str = PrivateAttr('series')
 
     def get(self, block_number=None, timestamp=None) -> Union[BlockSeriesRow[DTOCLS], None]:
         if block_number is not None:
@@ -41,11 +42,18 @@ class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS
         return None
 
 
-class SeriesModelInput(DTO):
-    window: Optional[int] = None
+class SeriesModelStartEndIntervalInput(DTO):
     interval: int
-    start: Optional[int] = None
-    end: Optional[int] = None
-    modelInput: Union[dict, DTO]
+    start: int
+    end: int
+    modelInput: Union[dict, DTO, None] = None
+    modelSlug: str
+    modelVersion: Optional[str] = None
+
+
+class SeriesModelWindowIntervalInput(DTO):
+    window: int
+    interval: int
+    modelInput: Union[dict, DTO, None] = None
     modelSlug: str
     modelVersion: Optional[str] = None
