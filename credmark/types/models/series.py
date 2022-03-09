@@ -1,5 +1,5 @@
 from typing import List, Optional, TypeVar, Union, Generic
-from credmark.types.dto import DTO, GenericDTO, DTOField, PrivateAttr, IterableListGenericDto
+from credmark.types.dto import DTO, GenericDTO, DTOField, PrivateAttr, IterableListGenericDTO
 
 DTOCLS = TypeVar('DTOCLS')
 
@@ -18,7 +18,7 @@ class BlockSeriesRow(GenericDTO, Generic[DTOCLS]):
     output: DTOCLS = DTOField(..., description='Output of the model run for this block')
 
 
-class BlockSeries(IterableListGenericDto[BlockSeriesRow[DTOCLS]], Generic[DTOCLS]):
+class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS]):
     """
     A DTO for the output of "series.*" models which run another
     model over a series of blocks.

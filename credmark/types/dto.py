@@ -13,6 +13,7 @@ from pydantic import (
     Extra as DTOExtra,
     PrivateAttr,
 )
+# A GenericDTO is a kind of DTO: isintance(g, DTO) == True
 from pydantic.generics import GenericModel as GenericDTO
 
 from abc import abstractproperty
@@ -45,26 +46,10 @@ class HexStr(str):
         return hex_str
 
 
-class IterableListDto(DTO):
-    _iterator: str
-
-    def __iter__(self):
-        return getattr(self, self._iterator).__iter__()
-
-    def __getitem__(self, key):
-        return getattr(self, self._iterator).__getitem__(key)
-
-    def append(self, obj):
-        return getattr(self, self._iterator).append(obj)
-
-    def extend(self, obj):
-        return getattr(self, self._iterator).extend(obj)
-
-
 DTOCLS = TypeVar('DTOCLS')
 
 
-class IterableListGenericDto(GenericDTO, Generic[DTOCLS]):
+class IterableListGenericDTO(GenericDTO, Generic[DTOCLS]):
     _iterator: str
 
     def __iter__(self) -> Iterator[DTOCLS]:
