@@ -1,6 +1,8 @@
-from typing import List, Optional, Union
+from typing import List, Optional, Type, TypeVar, Union
 from credmark.model.transform import transform_data_for_dto
 from credmark.types.dto import DTO, DTOField, PrivateAttr, IterableListDto
+
+DTOCLS = TypeVar('DTOCLS')
 
 
 class BlockSeriesRow(DTO):
@@ -8,12 +10,16 @@ class BlockSeriesRow(DTO):
     blockTimestamp: int = DTOField(..., description='The Timestamp of the Block')
     sampleTimestamp: int = DTOField(..., description='The Sample Blocktime')
     output: dict = DTOField(..., description='Output of the model run for this block')
+    _output_dto: Union[DTO, None] = PrivateAttr(None)
 
-    def output_dto(self, dto_class):
+    def output_dto(self, dto_class: Type[DTOCLS]) -> DTOCLS:
         """
         Convert the output dict to a DTO instance
         """
-        return transform_data_for_dto(self.output, dto_class, 'block-series', 'output')
+        if self._output_dto is None:
+            self._output_dto = transform_data_for_dto(  # type:ignore
+                self.output, dto_class, 'block-series', 'output')  # type:ignore
+        return self._output_dto  # type:ignore
 
 
 class BlockSeries(IterableListDto):

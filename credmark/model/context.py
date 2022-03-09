@@ -1,6 +1,5 @@
 from abc import abstractmethod
 from typing import Any, Type, TypeVar, Union, overload
-from .errors import ModelRunError
 from .ledger import Ledger
 from .web3 import Web3Registry
 import credmark.types
