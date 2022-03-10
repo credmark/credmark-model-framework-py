@@ -1,8 +1,10 @@
-from typing import Union
+from typing import Type, TypeVar, Union
 import credmark.model
 from credmark.model.errors import ModelRunError
-from credmark.types import BlockSeries, SeriesModelInput
+from credmark.types import BlockSeries, SeriesModelStartEndIntervalInput, SeriesModelWindowIntervalInput
 from credmark.types.dto import DTO
+
+DTOCLS = TypeVar('DTOCLS')
 
 
 class HistoricalUtil:
@@ -37,11 +39,23 @@ class HistoricalUtil:
                              interval: Union[str, None] = None,
                              end_timestamp: Union[int, None] = None,
                              snap_clock: Union[str, None] = 'interval',
-                             model_version: Union[str, None] = None) -> BlockSeries:
+                             model_return_type: Type[DTOCLS] = dict,
+                             model_version: Union[str, None] = None) -> BlockSeries[DTOCLS]:
+        """
+        Run a model over a series of historical blocks.
+
+        :param model_slug: the slug of the model to run
+        :param window: a string defining a time window, ex. "30 day"
+        :param interval: a string defining a time interval, ex. "1 day"
+        :param model_input: input passed to the model being run
+        :param model_return_type: the DTO class or dict for the output of the model
+             being run. This will be the type of the BlockSeriesRow.output
+        """
         if model_version is None:
             model_version = ''
         if model_input is None:
             model_input = {}
+        run_return_type = BlockSeries[model_return_type]
 
         (w_k, w_v) = self.parse_timerangestr(window)
         window_timestamp = self.range_timestamp(w_k, w_v)
@@ -53,7 +67,7 @@ class HistoricalUtil:
 
         if snap_clock is None and end_timestamp is None:
 
-            input = SeriesModelInput(
+            input = SeriesModelWindowIntervalInput(
                 modelSlug=model_slug,
                 modelInput=model_input,
                 modelVersion=model_version,
@@ -62,7 +76,7 @@ class HistoricalUtil:
             )
             return self.context.run_model('series.time-window-interval',
                                           input,
-                                          return_type=BlockSeries)
+                                          return_type=run_return_type)  # type: ignore
         else:
 
             if end_timestamp is None:
@@ -77,7 +91,7 @@ class HistoricalUtil:
 
                 end_timestamp = end_timestamp - (end_timestamp % snap_sec)
 
-            input = SeriesModelInput(
+            input = SeriesModelStartEndIntervalInput(
                 modelSlug=model_slug,
                 modelInput=model_input,
                 modelVersion=model_version,
@@ -88,23 +102,35 @@ class HistoricalUtil:
 
             return self.context.run_model('series.time-start-end-interval',
                                           input,
-                                          return_type=BlockSeries)
+                                          return_type=run_return_type)  # type: ignore
 
     def run_model_historical_blocks(self,
                                     model_slug: str,
                                     window: int,
                                     interval: int,
-                                    model_input: Union[dict, None] = None,
+                                    model_input: Union[dict, DTO, None] = None,
                                     end_block: Union[int, None] = None,
                                     snap_block: Union[int, None] = None,
-                                    model_version: Union[str, None] = None) -> BlockSeries:
+                                    model_return_type: Type[DTOCLS] = dict,
+                                    model_version: Union[str, None] = None) -> BlockSeries[DTOCLS]:
+        """
+        Run a model over a series of historical blocks.
+
+        :param model_slug: the slug of the model to run
+        :param window: number of blocks
+        :param interval: number of blocks for each interval
+        :param model_input: input passed to the model being run
+        :param model_return_type: the DTO class or dict for the output of the model
+             being run. This will be the type of the BlockSeriesRow.output
+        """
         if model_version is None:
             model_version = ''
         if model_input is None:
             model_input = {}
+        run_return_type = BlockSeries[model_return_type]
 
         if snap_block is None and end_block is None:
-            series_input = SeriesModelInput(
+            series_input = SeriesModelWindowIntervalInput(
                 modelSlug=model_slug,
                 modelInput=model_input,
                 modelVersion=model_version,
@@ -113,14 +139,14 @@ class HistoricalUtil:
             )
             return self.context.run_model('series.block-window-interval',
                                           series_input,
-                                          return_type=BlockSeries)
+                                          return_type=run_return_type)  # type: ignore
         else:
             if end_block is None:
                 end_block = self.context.block_number
             if snap_block is not None:
                 end_block = end_block - (end_block % snap_block)
 
-            series_input = SeriesModelInput(
+            series_input = SeriesModelStartEndIntervalInput(
                 modelSlug=model_slug,
                 modelInput=model_input,
                 modelVersion=model_version,
@@ -130,7 +156,7 @@ class HistoricalUtil:
             )
             return self.context.run_model('series.block-start-end-interval',
                                           series_input,
-                                          return_type=BlockSeries)
+                                          return_type=run_return_type)  # type: ignore
 
     def parse_timerangestr(self, time_str: str):
         key = None

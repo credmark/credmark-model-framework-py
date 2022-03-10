@@ -14,7 +14,10 @@ from credmark.model.describe import validate_model_slug
 class ModelLoader:
     logger = logging.getLogger(__name__)
 
-    def __init__(self, model_paths: Union[List[str], None] = None, manifest_file: Union[str, None] = None):  # pylint: disable=line-too-long
+    def __init__(self,
+                 model_paths: Union[List[str], None] = None,
+                 manifest_file: Union[str, None] = None,
+                 load_dev_models=False):
         '''
         model_paths is a list of paths to search for model manifest files.
         '''
@@ -37,11 +40,16 @@ class ModelLoader:
             self.logger.info(f'Loading manifest from {manifest_file}')
             manifest = self._load_yaml_file(manifest_file)
             if manifest is not None and 'credmarkModelManifest' in manifest:
-                self._process_model_manifest(manifest, '.', manifest_file)
+                self._process_model_manifest(manifest, manifest_file)
         else:
             if model_paths is not None:
                 self.logger.info(f'Loading manifest from model_paths: {model_paths}')
                 self._search_paths_for_model_files(model_paths)
+
+        if load_dev_models:
+            self.logger.info('Loading dev models')
+            self._try_model_module('credmark.model.dev_models.series_models',
+                                   'credmark/model/dev_models/series_models')
 
         self.__model_manifest_list.sort(key=lambda m: m['slug'])
 
@@ -91,20 +99,22 @@ class ModelLoader:
 
     def _try_model_manifest(self, fpath: str):
         if fpath.endswith('.py'):
-            folder = os.path.dirname(fpath)
             path_to_module = fpath.replace(os.path.sep, '.')[:-3]
-            try:
-                mod = importlib.import_module(path_to_module)
-                manifests = [v.__dict__['__manifest']
-                             for k, v in mod.__dict__.items()
-                             if inspect.isclass(v) and
-                             '__manifest' in v.__dict__ and
-                             'credmarkModelManifest' in v.__dict__['__manifest']]
-                for manifest in manifests:
-                    self._process_model_manifest(manifest, folder, fpath)
-            except Exception as err:
-                self.errors.append(
-                    f'Error loading manifest in model file {fpath}: {err}')
+            self._try_model_module(path_to_module, fpath)
+
+    def _try_model_module(self, module_name, fpath):
+        try:
+            mod = importlib.import_module(module_name)
+            manifests = [v.__dict__['__manifest']
+                         for k, v in mod.__dict__.items()
+                         if inspect.isclass(v) and
+                         '__manifest' in v.__dict__ and
+                         'credmarkModelManifest' in v.__dict__['__manifest']]
+            for manifest in manifests:
+                self._process_model_manifest(manifest, fpath)
+        except Exception as err:
+            self.errors.append(
+                f'Error loading manifest for module {module_name} in model file {fpath}: {err}')
 
     def _load_yaml_file(self, path):
         with open(path, "r") as stream:
@@ -113,7 +123,7 @@ class ModelLoader:
             except yaml.YAMLError as exc:
                 raise Exception(f'Error loading yaml: {exc}')
 
-    def _process_model_manifest(self, manifest, _root: str, fpath: str):
+    def _process_model_manifest(self, manifest, fpath: str):
         models: list = manifest.get('models')
 
         if models is None:

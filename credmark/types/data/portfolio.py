@@ -1,8 +1,8 @@
 from typing import List
-from ..dto import DTOField, PrivateAttr, IterableListDto
+from ..dto import DTOField, PrivateAttr, IterableListGenericDTO
 from .position import Position
 
 
-class Portfolio(IterableListDto):
-    positions: List[Position] = DTOField([], description='List of positions')
-    _iterator = PrivateAttr('positions')
+class Portfolio(IterableListGenericDTO[Position]):
+    positions: List[Position] = DTOField(default=[], description='List of positions')
+    _iterator: str = PrivateAttr('positions')

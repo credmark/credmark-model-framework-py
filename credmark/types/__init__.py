@@ -10,7 +10,14 @@ from .models.ledger import LedgerModelOutput
 from .models.series import (
     BlockSeries,
     BlockSeriesRow,
-    SeriesModelInput
+    SeriesModelStartEndIntervalInput,
+    SeriesModelWindowIntervalInput
+)
+from .models.rpc import (
+    RpcBlockStartEndIntervalInput,
+    RpcBlockWindowIntervalInput,
+    RpcBlockNumber,
+    RpcBlockRangeOutput
 )
 
 from .data.portfolio import Portfolio

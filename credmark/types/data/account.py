@@ -1,6 +1,6 @@
 from typing import List
 from .address import Address, NULL_ADDRESS
-from ..dto import DTO, PrivateAttr, IterableListDto
+from ..dto import DTO, DTOField, PrivateAttr, IterableListGenericDTO
 
 
 class Account(DTO):
@@ -16,7 +16,8 @@ class Account(DTO):
         }
 
 
-class Accounts(IterableListDto):
-    accounts: List[Account]
+class Accounts(IterableListGenericDTO[Account]):
+    accounts: List[Account] = DTOField(
+        default=[], description="A list of Accounts")
     _iterator: str = PrivateAttr('accounts')
 
