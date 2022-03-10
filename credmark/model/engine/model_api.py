@@ -8,6 +8,7 @@ GATEWAY_API_URL = 'https://gateway.credmark.com'
 
 RUN_MODEL_PATH = '/v1/model/run'
 GET_MODELS_PATH = '/v1/models'
+GET_MODEL_PATH_FORMAT = '/v1/models/{}'
 GET_MODEL_DEPLOYMENTS_PATH_FORMAT = '/v1/models/{}/deployments'
 
 RUN_REQUEST_TIMEOUT = 600
@@ -63,6 +64,12 @@ class ModelApi:
 
     def get_models(self):
         url = urljoin(self.__url, GET_MODELS_PATH)
+        models = self._get(url)
+        return models if models is not None else []
+
+    def get_model(self, slug: str):
+        path = GET_MODEL_PATH_FORMAT.format(quote(slug))
+        url = urljoin(self.__url, path)
         return self._get(url)
 
     def get_model_deployments(self, slug: str):
