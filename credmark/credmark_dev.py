@@ -12,12 +12,20 @@ from .model.engine.model_loader import ModelLoader
 from .model.errors import MaxModelRunDepthError, MissingModelError, \
     ModelRunError, ModelRunRequestError
 from .model.web3 import Web3Registry
+from .model.engine.model_api import ModelApi
 from .model.encoder import json_dump
 from .types import *
 
 logger = logging.getLogger(__name__)
 
 EngineModelContext.dev_mode = True
+
+
+def add_api_url_arg(parser):
+    parser.add_argument('--api_url', required=False, default=None,
+                        help='Credmark API url. '
+                        'Defaults to the standard API gateway. '
+                        'You do not normally need to set this.')
 
 
 def main():
@@ -27,56 +35,67 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='Credmark developer tool')
     parser.add_argument('--log_level', default='INFO', required=False,
-                        help='[OPTIONAL] Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL')
+                        help='Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL')
     parser.add_argument('--model_path', default="models", required=False,
-                        help='[OPTIONAL] Semicolon separated paths to the model folders \
+                        help='Semicolon separated paths to the model folders \
                             (or parent) or model python file. Defaults to models folder.')
     parser.add_argument('--manifest_file', type=str, default='models.json',
-                        help='[OPTIONAL] Name of the built manifest file. Defaults to models.json. '
+                        help='Name of the built manifest file. Defaults to models.json. '
                         '(Not required during development.)')
 
     subparsers = parser.add_subparsers(title='Commands',
                                        description='Supported commands',
                                        help='additional help')
 
-    parser_list = subparsers.add_parser('list', help='List models', aliases=['list-models'])
-    parser_list.add_argument('--manifests', action='store_true', default=False)
-    parser_list.add_argument('--json', action='store_true', default=False)
+    parser_list = subparsers.add_parser(
+        'list', help='List models in this repo', aliases=['list-models'])
+    parser_list.add_argument('--manifests', action='store_true', default=False,
+                             help="Show full manifests")
+    parser_list.add_argument('--json', action='store_true',
+                             default=False, help="Output as json")
     parser_list.add_argument('model-slug', nargs='?', default=None, type=str,
-                             help='Slug for the model to show.')
+                             help='[OPTIONAL] Slug for the model to show.')
     parser_list.set_defaults(func=list_models)
 
-    parser_list = subparsers.add_parser(
-        'build', help='Build model manifest', aliases=['build-manifest'])
-    parser_list.set_defaults(func=write_manifest_file)
-
-    parser_list = subparsers.add_parser(
-        'clean', help='Clean model manifest', aliases=['remove-manifest'])
-    parser_list.set_defaults(func=remove_manifest_file)
+    parser_models = subparsers.add_parser(
+        'deployed', help='List deployed models on server', aliases=['deployed-models'])
+    parser_models.add_argument('--manifests', action='store_true', default=False,
+                               help="Show full manifests")
+    parser_models.add_argument('--json', action='store_true',
+                               default=False, help="Output as json")
+    parser_models.add_argument('model-slug', nargs='?', default=None, type=str,
+                               help='[OPTIONAL] Slug for the model to show.')
+    add_api_url_arg(parser_models)
+    parser_models.set_defaults(func=list_deployed_models)
 
     parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
     parser_run.add_argument('-b', '--block_number', type=int, required=False, default=None,
                             help='Block number used for the context of the model run.'
                             ' If not specified, it is set to the latest block of the chain.')
     parser_run.add_argument('-c', '--chain_id', type=int, default=1, required=False,
-                            help='[OPTIONAL] The chain ID. Defaults to 1.')
+                            help='Chain ID. Defaults to 1.')
     parser_run.add_argument('-i', '--input', required=False, default='{}',
-                            help='[OPTIONAL] Input JSON or '
+                            help='Input JSON or '
                             'if value is "-" it will read input JSON from stdin.')
     parser_run.add_argument('-v', '--model_version', default=None, required=False,
-                            help='[OPTIONAL] Version of the model to run. Defaults to latest.')
+                            help='Version of the model to run. Defaults to latest.')
     parser_run.add_argument('--provider_url_map', required=False, default=None,
-                            help='[OPTIONAL] JSON object of chain id to Web3 provider HTTP URL. '
+                            help='JSON object of chain id to Web3 provider HTTP URL. '
                             'Overrides settings in env vars.')
-    parser_run.add_argument('--api_url', required=False, default=None,
-                            help='[OPTIONAL] Credmark API url. '
-                            'Defaults to the standard API gateway. '
-                            'You do not normally need to set this.')
+    add_api_url_arg(parser_run)
     parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
     parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
     parser_run.add_argument('model-slug', default='(missing model-slug arg)',
                             help='Slug for the model to run.')
     parser_run.set_defaults(func=run_model, depth=0)
+
+    parser_build = subparsers.add_parser(
+        'build', help='Build model manifest [Not required during development]', aliases=['build-manifest'])
+    parser_build.set_defaults(func=write_manifest_file)
+
+    parser_clean = subparsers.add_parser(
+        'clean', help='Clean model manifest', aliases=['remove-manifest'])
+    parser_clean.set_defaults(func=remove_manifest_file)
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -168,6 +187,55 @@ def list_models(args):
         sys.stdout.write(
             f'{len(model_loader.errors)} errors, {len(model_loader.warnings)} warnings\n\n')
     sys.exit(0)
+
+
+def list_deployed_models(args):
+    config_logging(args)
+    json_output = args.get('json')
+    model_slug = args.get('model-slug')
+    show_manifests = args.get('manifests') or model_slug
+    api_url = args.get('api_url')
+    model_api = ModelApi(api_url)
+
+    if model_slug:
+        model = model_api.get_model(model_slug)
+        if model is not None:
+            deployments = model_api.get_model_deployments(model_slug)
+            if deployments:
+                model['versions'] = {
+                    dep["version"]: dep.get("location", "") for dep in deployments}
+            models = [model]
+        else:
+            models = []
+    else:
+        models = model_api.get_models()
+
+    if not json_output:
+        if model_slug:
+            sys.stdout.write('\n')
+            if len(models) == 0:
+                sys.stdout.write(f'Model slug {model_slug} not found on server.\n\n')
+        else:
+            sys.stdout.write('\nDeployed Models:\n\n')
+
+        if show_manifests:
+            for model in models:
+                print('slug:', model['slug'])
+                versions = model.get('versions')
+                if versions:
+                    print('versions:', versions)
+                print('displayName:', model.get('displayName'))
+                print('description:', model.get('description'))
+                print('developer:', model.get('developer'))
+                print('input:', model.get('input'))
+                print('output:', model.get('output'))
+                print('')
+        else:
+            for model in models:
+                print(f'{model["slug"]} : {model.get("displayName", "")}')
+            print('')
+    else:
+        json.dump(models, sys.stdout)
 
 
 def write_manifest_file(args):
