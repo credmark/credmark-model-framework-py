@@ -31,8 +31,8 @@ def main():
     parser.add_argument('--model_path', default="models", required=False,
                         help='[OPTIONAL] Semicolon separated paths to the model folders \
                             (or parent) or model python file. Defaults to models folder.')
-    parser.add_argument('--manifest_file', type=str, default='models.yaml',
-                        help='[OPTIONAL] Name of the built manifest file. Defaults to models.yaml. '
+    parser.add_argument('--manifest_file', type=str, default='models.json',
+                        help='[OPTIONAL] Name of the built manifest file. Defaults to models.json. '
                         '(Not required during development.)')
 
     subparsers = parser.add_subparsers(title='Commands',
@@ -92,12 +92,11 @@ def config_logging(args):
         level=args['log_level'])
 
 
-def load_models(args):
+def load_models(args, load_dev_models=False):
     manifest_file = args.get('manifest_file')
     model_path = args['model_path']
-    load_dev_models = not args.get('run_id')  # we assume developer will not pass a run_id
-    model_loader = ModelLoader(
-        [model_path] if model_path is not None else None, manifest_file, load_dev_models)
+    model_paths = [model_path] if model_path is not None else None
+    model_loader = ModelLoader(model_paths, manifest_file, load_dev_models)
     model_loader.log_errors()
     return model_loader
 
@@ -105,7 +104,7 @@ def load_models(args):
 def list_models(args):
     config_logging(args)
 
-    model_loader = load_models(args)
+    model_loader = load_models(args, True)
     json_output = args.get('json')
     model_slug = args.get('model-slug')
 
@@ -115,7 +114,7 @@ def list_models(args):
     if args.get('manifests'):
         manifests = model_loader.loaded_model_manifests()
         if model_slug is not None:
-            manifests = [m for m in manifests if model_slug in m['slug'] ]
+            manifests = [m for m in manifests if model_slug in m['slug']]
         if json_output:
             json.dump({'models': manifests}, sys.stdout)
         else:
@@ -141,7 +140,7 @@ def list_models(args):
                                             print(k, head_node['type'])
                                     elif '$ref' in props:
                                         ref = props['$ref'].split('/')
-                                        print(k, drill(head_node[ref[1]][ref[2]], n+1))
+                                        print(k, drill(head_node[ref[1]][ref[2]], n + 1))
                         head_node = m['input']
                         drill(head_node, 0)
                 except Exception as err:
@@ -154,7 +153,7 @@ def list_models(args):
     else:
         models = model_loader.loaded_model_version_lists()
         if model_slug is not None:
-            models = {k:v for k, v in models.items() if model_slug in k}
+            models = {k: v for k, v in models.items() if model_slug in k}
 
         if json_output:
             json.dump(models, sys.stdout)
@@ -181,8 +180,7 @@ def write_manifest_file(args):
 def remove_manifest_file(args):
     config_logging(args)
     manifest_file = args.get('manifest_file')
-    model_loader = load_models({'model_path': None, 'manifest_file': manifest_file})
-    model_loader.remove_manifest_file()
+    ModelLoader.remove_manifest_file(manifest_file)
     sys.exit(0)
 
 
@@ -207,7 +205,8 @@ def run_model(args):
             except Exception as err:
                 logger.error(f'{err}')
 
-        model_loader = load_models(args)
+        model_loader = load_models(args, load_dev_models=not args.get(
+            'run_id'))  # we assume developer will not pass a run_id
 
         chain_id: int = args['chain_id']
         block_number: Union[int, None] = args['block_number']
