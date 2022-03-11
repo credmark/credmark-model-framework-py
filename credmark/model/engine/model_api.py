@@ -1,4 +1,5 @@
-from typing import Any, Union
+from typing import Any, ClassVar, Union
+import os
 import logging
 import requests
 from urllib.parse import urljoin, quote
@@ -18,16 +19,27 @@ logger = logging.getLogger(__name__)
 
 class ModelApi:
 
-    def __init__(self, url: Union[str, None] = None, api_key=None):
+    _url_to_api: ClassVar = dict()
+
+    @classmethod
+    def api_for_url(cls, url: Union[str, None] = None):
         if url:
             if url.endswith(RUN_MODEL_PATH):
                 url = url[:-(len(RUN_MODEL_PATH))]
-            self.__url = url
-            self.__internal_api = True
         else:
-            self.__url = GATEWAY_API_URL
-            self.__internal_api = False
+            url = GATEWAY_API_URL
 
+        api: ModelApi = cls._url_to_api.get(url)  # type: ignore
+        if api is None:
+            api_key = os.environ.get('CREDMARK_API_KEY')
+            internal_api = url != GATEWAY_API_URL
+            api = ModelApi(url, api_key, internal_api)
+            cls._url_to_api[url] = api
+        return api
+
+    def __init__(self, url: str, api_key=None, internal_api=False):
+        self.__url = url
+        self.__internal_api = internal_api
         self.__api_key = api_key
 
     def _get(self, url):

@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any, Type, TypeVar, Union, overload
+from typing import Any, ClassVar, Type, TypeVar, Union, overload
 from .ledger import Ledger
 from .web3 import Web3Registry
 import credmark.types
@@ -24,10 +24,13 @@ class ModelContext():
         run_model(...) - run the specified model and return the results
 
     """
-    current_context = None  # type: ignore
+    current_context: ClassVar = None
 
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry: Web3Registry):
+        # type hint
+        ModelContext.current_context: Union[ModelContext, None]
+
         self.chain_id = chain_id
         self._block_number = credmark.types.BlockNumber(block_number)
         self._web3 = None
@@ -35,9 +38,6 @@ class ModelContext():
         self._ledger = None
         self._contract_util = None
         self._historical_util = None
-
-        if ModelContext.current_context is None:
-            ModelContext.current_context: Union[ModelContext, None] = self
 
     @property
     def block_number(self):
