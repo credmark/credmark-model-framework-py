@@ -39,8 +39,8 @@ def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
              display_name: Union[str, None] = None,
              description: Union[str, None] = None,
              developer: Union[str, None] = None,
-             input: Union[Type[DTO], None] = None,
-             output: Union[Type[DTO], None] = None):
+             input: Union[Type[DTO], Type[dict], None] = None,
+             output: Union[Type[DTO], Type[dict], None] = None):
     def wrapper(cls_in):
         def is_parent(child, parent):
             found = parent in child.__bases__
