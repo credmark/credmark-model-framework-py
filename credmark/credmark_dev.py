@@ -3,7 +3,9 @@ import sys
 import argparse
 import logging
 import json
-from typing import Union
+from typing import (
+    Union,
+)
 
 from dotenv import load_dotenv, find_dotenv
 sys.path.append('.')
@@ -13,7 +15,7 @@ from .model.errors import MaxModelRunDepthError, MissingModelError, \
     ModelRunError, ModelRunRequestError
 from .model.web3 import Web3Registry
 from .model.encoder import json_dump
-from .types import *
+from .types.dto import cross_examples
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +44,13 @@ def main():
     parser_list = subparsers.add_parser('list', help='List models', aliases=['list-models'])
     parser_list.add_argument('--manifests', action='store_true', default=False)
     parser_list.add_argument('--json', action='store_true', default=False)
-    parser_list.add_argument('model-slug', nargs='?', default=None, type=str,
-                             help='Slug for the model to show.')
     parser_list.set_defaults(func=list_models)
+
+    parser_list = subparsers.add_parser(
+        'describe', help='describe models', aliases=['describe-models'])
+    parser_list.add_argument('model-slug', nargs='?', default=None, type=str,
+                             help='Slug to describe.')
+    parser_list.set_defaults(func=describe_models)
 
     parser_list = subparsers.add_parser(
         'build', help='Build model manifest', aliases=['build-manifest'])
@@ -102,6 +108,120 @@ def load_models(args):
     return model_loader
 
 
+def drill_definition(head_node, var_name, node, n_iter, ret_type):
+    assert ret_type in ['tree', 'example']
+    try:
+        # 1. DTO/dict
+        # 1.1 DTO with example
+        # 1.2 DTO without example
+        # 1.3 dict
+        # 2. Array
+        # 2.1 DTO
+        # 2.2 other
+        # 3. Union
+        # 4. DTO Reference
+
+        if 'type' in node:
+            if node['type'] == 'object':
+                # DTO with example
+                if ret_type == 'example' and 'examples' in node:
+                    return node["examples"]
+                # DTO without example
+                if 'properties' in node:
+                    props = node['properties']
+                    required = node['required'] if 'required' in node else list(props.keys())
+                    ret = []
+                    for prop_name, prop_item in props.items():
+                        if prop_name in required:
+                            if ret_type == 'tree':
+                                ret.extend(drill_definition(
+                                    head_node, prop_name, prop_item, n_iter + 1, ret_type))
+                            elif ret_type == 'example':
+                                drill_ret = drill_definition(
+                                    head_node, prop_name, prop_item, n_iter + 1, ret_type)
+                                if len(ret) == 0:
+                                    ret = drill_ret
+                                else:
+                                    ret = cross_examples(ret, drill_ret, limit=10)
+                    return ret
+
+                # dict
+                if ret_type == 'tree':
+                    return [(n_iter, 'dict()')]
+                return [{var_name: {}}]
+
+            if node['type'] == 'array':
+                # array of object
+                if '$ref' in node['items']:
+                    ref = node['items']['$ref'].split('/')
+                    definition_node = head_node[ref[1]][ref[2]]
+                    ret = drill_definition(head_node, var_name,
+                                           definition_node, n_iter + 1, ret_type)
+                    if ret_type == 'tree':
+                        return [(n_iter, f'List[{var_name}]')] + ret
+                    return [{var_name: [ret]}]
+
+                # array of other type
+                if 'type' in node['items']:
+                    if ret_type == 'tree':
+                        return [(n_iter, f'List[{node["items"]["type"]}]')]
+                    return [{var_name: node["items"]['type']}]
+                else:
+                    raise ValueError(f'Unhandled {node}')
+            else:  # ['type'] != 'array'
+                # ordinary type
+                if ret_type == 'tree':
+                    return [(n_iter, node["type"])]
+                return [{var_name: node["type"]}]
+
+        # Various Union type
+        elif 'anyOf' in node or 'allOf' in node or 'oneOf' in node:
+            ret = []
+            of_node = node.get('anyOf', node.get('allOf', node.get('oneOf')))
+            for item in of_node:
+                if ret_type == 'tree':
+                    ret.extend(drill_definition(
+                        head_node, var_name, item, n_iter + 1, ret_type))
+                elif ret_type == 'example':
+                    drill_ret = drill_definition(
+                        head_node, var_name, item, n_iter + 1, ret_type)
+                    if len(ret) == 0:
+                        ret = drill_ret
+                    else:
+                        ret = cross_examples(ret, drill_ret, limit=10)
+            return ret
+
+        # Object reference
+        elif '$ref' in node:
+            ref = node['$ref'].split('/')
+            definition_node = head_node[ref[1]][ref[2]]
+            breakpoint()
+            return drill_definition(head_node, var_name, definition_node, n_iter + 1, ret_type)
+        else:
+            raise ValueError(f'Unhandled {node}')
+    except Exception as err:
+        raise ValueError(f'Unknown schema node {var_name, node, err}')
+
+
+def print_tree(v):
+    if isinstance(v, tuple):
+        nn, cc = v
+        print(f'{" "*4*nn}{cc}')
+    elif isinstance(v, list):
+        for x in v:
+            print_tree(x)
+    elif isinstance(v, dict):
+        for kk, vv in v.items():
+            print(f'{kk}: {print_tree(vv)}')
+        raise ValueError(v)
+
+
+def describe_models(args, ):
+    args['manifests'] = True
+    args['json'] = False
+    list_models(args)
+
+
 def list_models(args):
     config_logging(args)
 
@@ -115,38 +235,40 @@ def list_models(args):
     if args.get('manifests'):
         manifests = model_loader.loaded_model_manifests()
         if model_slug is not None:
-            manifests = [m for m in manifests if model_slug in m['slug'] ]
+            manifests = [m for m in manifests if model_slug in m['slug']]
         if json_output:
             json.dump({'models': manifests}, sys.stdout)
         else:
-            # add more human-descriptive
+            # add more tree-descriptive
             for m in manifests:
                 # breakpoint()
                 try:
-                    print(m['slug'])
-                    if len(m['input']['properties']) == 0:
-                        print('required' in m['input'], {})
-                        xx = {}
+                    print(m['slug'], ":")
+                    print(m['input'], ":")
+                    print()
+
+                    head_node = m['input']
+                    tree_schema = drill_definition(
+                        head_node, head_node['title'], head_node, 0, 'tree')
+                    examples = drill_definition(
+                        head_node, head_node['title'], head_node, 0, 'example')
+
+                    print('example:')
+                    if len(examples) > 0:
+                        for n, l in enumerate(examples):
+                            print(f'#{n+1:02d}: {l}')
                     else:
-                        def drill(head_node, n):
-                            if n > 5:
-                                raise ValueError('Too many recursion')
-                            if 'required' in head_node:
-                                for k in head_node['required']:
-                                    props = head_node['properties'][k]
-                                    if 'title' in props:
-                                        if 'example' in head_node:
-                                            print(k, head_node['example'])
-                                        else:
-                                            print(k, head_node['type'])
-                                    elif '$ref' in props:
-                                        ref = props['$ref'].split('/')
-                                        print(k, drill(head_node[ref[1]][ref[2]], n+1))
-                        head_node = m['input']
-                        drill(head_node, 0)
+                        print('Nil')
+
+                    print('tree_schema:')
+                    if len(tree_schema) > 0:
+                        print_tree(tree_schema)
+                    else:
+                        print('Nil')
+                    print(tree_schema)
+
                 except Exception as err:
-                    breakpoint()
-                    raise
+                    raise err
 
                 # for i, v in m.items():
                 #    sys.stdout.write(f' {i}: {v}\n')
@@ -154,7 +276,7 @@ def list_models(args):
     else:
         models = model_loader.loaded_model_version_lists()
         if model_slug is not None:
-            models = {k:v for k, v in models.items() if model_slug in k}
+            models = {k: v for k, v in models.items() if model_slug in k}
 
         if json_output:
             json.dump(models, sys.stdout)

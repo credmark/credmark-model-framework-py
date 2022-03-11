@@ -18,10 +18,23 @@ from pydantic.generics import GenericModel as GenericDTO
 
 from abc import abstractproperty
 
+from itertools import product
+
 
 def fixstr(fixed_length):
     return constr(min_length=fixed_length,
                   max_length=fixed_length)
+
+
+def combine_dict(dicts):
+    dd = {}
+    for d in dicts:
+        dd |= d
+    return dd
+
+
+def cross_examples(*x, limit=10):
+    return [combine_dict(ds) for ds in product(*x)][:limit]
 
 
 class HexStr(str):

@@ -1,5 +1,4 @@
 
-from email.policy import default
 import credmark.model
 import credmark.types
 from .contract import Contract
@@ -16,12 +15,19 @@ class Token(Contract):
     # TODO: Decimals are only available in erc20s, not erc721 or erc1155
     decimals: Union[int, None]
 
+    class Config:
+        schema_extra = {
+            'examples': [{'symbol': 'USDC'},
+                         {'symbol': 'USDC', 'decimals': 6}
+                         ] + Contract.Config.schema_extra['examples']
+        }
+
     def __init__(self, **data):
 
         if 'symbol' not in data or \
-            'decimals' not in data or \
-            'address' not in data or \
-                'name' not in data:
+           'decimals' not in data or \
+           'address' not in data or \
+           'name' not in data:
             context = credmark.model.ModelContext.current_context
             if context is None:
                 raise ValueError(f'No current context to look up missing token data {data}')
@@ -81,7 +87,8 @@ class Token(Contract):
         context = credmark.model.ModelContext.current_context
         if context is None:
             raise ValueError(f'No current context to get price of token {self.symbol}')
-        return context.run_model(CoreModels.token_price, self, return_type=credmark.types.Price).price
+        return context.run_model(CoreModels.token_price, self,
+                                 return_type=credmark.types.Price).price
 
 
 class Tokens(IterableListGenericDTO[Token]):
