@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import Union
 from credmark.model.context import ModelContext
 from credmark.model.errors import MaxModelRunDepthError, ModelRunError
@@ -51,40 +50,40 @@ class EngineModelContext(ModelContext):
             ModelRunError if model output is not a dict-like object.
             Exception on other errors
         """
+        try:
+            if model_loader is None:
+                model_loader = ModelLoader(['.'])
 
-        if model_loader is None:
-            model_loader = ModelLoader(['.'])
+            api = ModelApi.api_for_url(api_url)
 
-        api_key = os.environ.get('CREDMARK_API_KEY')
-        # If we have an api url or a key, we create the api
-        api = ModelApi(api_url, api_key)
+            web3_registry = Web3Registry(chain_to_provider_url)
 
-        web3_registry = Web3Registry(chain_to_provider_url)
+            if block_number is None:
+                # Lookup latest block number if none specified
+                block_number = cls.get_latest_block_number(api, chain_id)
+                cls.logger.info(f'Using latest block number {block_number}')
 
-        if block_number is None:
-            # Lookup latest block number if none specified
-            block_number = cls.get_latest_block_number(api, chain_id)
-            cls.logger.info(f'Using latest block number {block_number}')
+            context = EngineModelContext(
+                chain_id, block_number, web3_registry, run_id, depth, model_loader, api)
 
-        context = EngineModelContext(
-            chain_id, block_number, web3_registry, run_id, depth, model_loader, api)
+            ModelContext.current_context = context
 
-        # We set the block_number in the context above so we pass in
-        # None for block_number to the run_model method.
-        result_tuple = context._run_model(
-            model_slug, input, None, model_version)
+            # We set the block_number in the context above so we pass in
+            # None for block_number to the run_model method.
+            result_tuple = context._run_model(
+                model_slug, input, None, model_version)
 
-        output = result_tuple[2]
-        output_as_dict = transform_data_for_dto(output, None, model_slug, 'output')
+            output = result_tuple[2]
+            output_as_dict = transform_data_for_dto(output, None, model_slug, 'output')
 
-        ModelContext.current_context = None
-
-        response = {
-            'slug': result_tuple[0],
-            'version': result_tuple[1],
-            'output': output_as_dict,
-            'dependencies': context.__dependencies}
-        return response
+            response = {
+                'slug': result_tuple[0],
+                'version': result_tuple[1],
+                'output': output_as_dict,
+                'dependencies': context.__dependencies}
+            return response
+        finally:
+            ModelContext.current_context = None
 
     @classmethod
     def get_latest_block_number(cls, api: ModelApi, chain_id: int):
