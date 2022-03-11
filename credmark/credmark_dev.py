@@ -3,7 +3,10 @@ import sys
 import argparse
 import logging
 import json
-from typing import Union
+from typing import (
+    List,
+    Union,
+)
 
 from dotenv import load_dotenv, find_dotenv
 sys.path.append('.')
@@ -14,7 +17,11 @@ from .model.errors import MaxModelRunDepthError, MissingModelError, \
 from .model.web3 import Web3Registry
 from .model.engine.model_api import ModelApi
 from .model.encoder import json_dump
-from .types import *
+from .types.dto import (
+    print_example,
+    print_tree,
+    dto_schema_viz,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +41,14 @@ def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='Credmark developer tool')
-    parser.add_argument('--log_level', default='INFO', required=False,
+    parser.add_argument('--log_level', default=None, required=False,
                         help='Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL')
     parser.add_argument('--model_path', default="models", required=False,
                         help='Semicolon separated paths to the model folders \
                             (or parent) or model python file. Defaults to models folder.')
     parser.add_argument('--manifest_file', type=str, default='models.json',
                         help='Name of the built manifest file. Defaults to models.json. '
-                        '(Not required during development.)')
+                        '[Not required during development]')
 
     subparsers = parser.add_subparsers(title='Commands',
                                        description='Supported commands',
@@ -58,7 +65,7 @@ def main():
     parser_list.set_defaults(func=list_models)
 
     parser_models = subparsers.add_parser(
-        'deployed', help='List deployed models on server', aliases=['deployed-models'])
+        'models', help='List models deployed on server', aliases=['deployed-models'])
     parser_models.add_argument('--manifests', action='store_true', default=False,
                                help="Show full manifests")
     parser_models.add_argument('--json', action='store_true',
@@ -67,6 +74,13 @@ def main():
                                help='[OPTIONAL] Slug for the model to show.')
     add_api_url_arg(parser_models)
     parser_models.set_defaults(func=list_deployed_models)
+
+    parser_list = subparsers.add_parser(
+        'describe', help='Show documentation for local and deployed models', aliases=['describe-models', 'man'])
+    parser_list.add_argument('model-slug', nargs='?', default=None, type=str,
+                             help='Slug or partial slug to describe.')
+    add_api_url_arg(parser_list)
+    parser_list.set_defaults(func=describe_models)
 
     parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
     parser_run.add_argument('-b', '--block_number', type=int, required=False, default=None,
@@ -90,7 +104,8 @@ def main():
     parser_run.set_defaults(func=run_model, depth=0)
 
     parser_build = subparsers.add_parser(
-        'build', help='Build model manifest [Not required during development]', aliases=['build-manifest'])
+        'build', help='Build model manifest [Not required during development]',
+        aliases=['build-manifest'])
     parser_build.set_defaults(func=write_manifest_file)
 
     parser_clean = subparsers.add_parser(
@@ -105,10 +120,13 @@ def main():
     args.func(vars(args))
 
 
-def config_logging(args):
+def config_logging(args, default_level='WARNING'):
+    level = args['log_level']
+    if not level:
+        level = default_level
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=args['log_level'])
+        level=level)
 
 
 def load_models(args, load_dev_models=False):
@@ -118,6 +136,39 @@ def load_models(args, load_dev_models=False):
     model_loader = ModelLoader(model_paths, manifest_file, load_dev_models)
     model_loader.log_errors()
     return model_loader
+
+
+def describe_models(args, ):
+    config_logging(args)
+    model_api = create_model_api(args)
+    model_loader = load_models(args, True)
+
+    manifests = model_loader.loaded_model_manifests()
+    try:
+        deployed_manifests = model_api.get_models()
+    except Exception:
+        # Error will have been logged but we continue
+        # so things work offline
+        deployed_manifests = []
+
+    manifests = merge_manifests(manifests, deployed_manifests)
+
+    model_slug = args.get('model-slug')
+    if model_slug is not None:
+        manifests = [m for m in manifests if model_slug in m['slug']]
+
+    print('')
+    if len(manifests) > 0:
+        print_manifests(manifests, True)
+    else:
+        print_no_models_found(model_slug)
+
+
+def print_no_models_found(model_slug):
+    if model_slug:
+        print(f'No models matching slug {model_slug}')
+    else:
+        print('No models found')
 
 
 def list_models(args):
@@ -137,38 +188,10 @@ def list_models(args):
         if json_output:
             json.dump({'models': manifests}, sys.stdout)
         else:
-            # add more human-descriptive
-            for m in manifests:
-                # breakpoint()
-                try:
-                    print(m['slug'])
-                    if len(m['input']['properties']) == 0:
-                        print('required' in m['input'], {})
-                        xx = {}
-                    else:
-                        def drill(head_node, n):
-                            if n > 5:
-                                raise ValueError('Too many recursion')
-                            if 'required' in head_node:
-                                for k in head_node['required']:
-                                    props = head_node['properties'][k]
-                                    if 'title' in props:
-                                        if 'example' in head_node:
-                                            print(k, head_node['example'])
-                                        else:
-                                            print(k, head_node['type'])
-                                    elif '$ref' in props:
-                                        ref = props['$ref'].split('/')
-                                        print(k, drill(head_node[ref[1]][ref[2]], n + 1))
-                        head_node = m['input']
-                        drill(head_node, 0)
-                except Exception as err:
-                    breakpoint()
-                    raise
-
-                # for i, v in m.items():
-                #    sys.stdout.write(f' {i}: {v}\n')
-                sys.stdout.write('\n')
+            if len(manifests) > 0:
+                print_manifests(manifests)
+            else:
+                print_no_models_found(model_slug)
     else:
         models = model_loader.loaded_model_version_lists()
         if model_slug is not None:
@@ -179,8 +202,11 @@ def list_models(args):
         else:
             slugs = list(models.keys())
             slugs.sort()
-            for s in slugs:
-                sys.stdout.write(f' - {s}: {models[s]}\n')
+            if len(slugs) > 0:
+                for s in slugs:
+                    sys.stdout.write(f' - {s}: {models[s]}\n')
+            else:
+                print_no_models_found(model_slug)
 
     if not json_output:
         sys.stdout.write('\n')
@@ -189,13 +215,30 @@ def list_models(args):
     sys.exit(0)
 
 
+def create_model_api(args):
+    api_url = args.get('api_url')
+    return ModelApi(api_url)
+
+
+def merge_manifests(manifests: List[dict], extra_manifests: List[dict]):
+    """
+    We copy the list because it may be owned by the model_loader.
+    """
+    merged = manifests.copy()
+    slugs = {m['slug'] for m in merged}
+    for m in extra_manifests:
+        if not m['slug'] in slugs:
+            merged.append(m)
+    merged.sort(key=lambda m: m['slug'])
+    return merged
+
+
 def list_deployed_models(args):
     config_logging(args)
     json_output = args.get('json')
     model_slug = args.get('model-slug')
     show_manifests = args.get('manifests') or model_slug
-    api_url = args.get('api_url')
-    model_api = ModelApi(api_url)
+    model_api = create_model_api(args)
 
     if model_slug:
         model = model_api.get_model(model_slug)
@@ -204,42 +247,72 @@ def list_deployed_models(args):
             if deployments:
                 model['versions'] = {
                     dep["version"]: dep.get("location", "") for dep in deployments}
-            models = [model]
+            manifests = [model]
         else:
-            models = []
+            manifests = []
     else:
-        models = model_api.get_models()
+        manifests = model_api.get_models()
 
     if not json_output:
         if model_slug:
             sys.stdout.write('\n')
-            if len(models) == 0:
+            if len(manifests) == 0:
                 sys.stdout.write(f'Model slug {model_slug} not found on server.\n\n')
         else:
             sys.stdout.write('\nDeployed Models:\n\n')
 
         if show_manifests:
-            for model in models:
-                print('slug:', model['slug'])
-                versions = model.get('versions')
-                if versions:
-                    print('versions:', versions)
-                print('displayName:', model.get('displayName'))
-                print('description:', model.get('description'))
-                print('developer:', model.get('developer'))
-                print('input:', model.get('input'))
-                print('output:', model.get('output'))
-                print('')
+            print_manifests(manifests)
         else:
-            for model in models:
+            for model in manifests:
                 print(f'{model["slug"]} : {model.get("displayName", "")}')
             print('')
     else:
-        json.dump(models, sys.stdout)
+        json.dump(manifests, sys.stdout)
+
+
+def print_manifests(manifests: List[dict], describe_schemas=False):
+    for m in manifests:
+        for i, v in m.items():
+            if i == 'slug':
+                sys.stdout.write(f'{v}\n')
+                sys.stdout.write(f' - {i}: {v}\n')
+            else:
+                if not describe_schemas:
+                    sys.stdout.write(f' - {i}: {v}\n')
+                else:
+                    if i == 'input':
+                        input_tree = dto_schema_viz(
+                            v, v.get('title', 'Object'), v, 0, 'tree', 10)
+                        input_examples = dto_schema_viz(
+                            v, v.get('title', 'Object'), v, 0, 'example', 10)
+
+                        print(' - input schema:')
+                        print_tree(input_tree, '   ', sys.stdout.write)
+
+                        print(' - input example:')
+                        print_example(input_examples, '   ', sys.stdout.write)
+
+                    elif i == 'output':
+                        output_tree = dto_schema_viz(
+                            v, v.get('title', 'Object'), v, 0, 'tree', 1)
+                        output_examples = dto_schema_viz(
+                            v, v.get('title', 'Object'), v, 0, 'example', 1)
+
+                        print(' - output schema:')
+                        print_tree(output_tree, '   ', sys.stdout.write)
+
+                        print(' - output example:')
+                        print_example(output_examples, '   ', sys.stdout.write)
+
+                    else:
+                        sys.stdout.write(f' - {i}: {v}\n')
+
+        sys.stdout.write('\n')
 
 
 def write_manifest_file(args):
-    config_logging(args)
+    config_logging(args, 'INFO')
     model_loader = load_models(args)
     model_loader.write_manifest_file()
     sys.exit(0)
@@ -256,7 +329,7 @@ def run_model(args):
     exit_code = 0
 
     try:
-        config_logging(args)
+        config_logging(args, 'INFO')
 
         chain_to_provider_url = None
         providers_json = args['provider_url_map']

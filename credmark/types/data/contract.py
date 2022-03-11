@@ -7,9 +7,8 @@ from typing import (
 from web3.contract import Contract as Web3Contract
 
 import credmark.model
-from credmark.types.data.account import Account, NULL_ADDRESS
+from credmark.types.data.account import Account
 from credmark.types.dto import PrivateAttr, IterableListGenericDTO, DTOField
-
 
 
 class Contract(Account):
@@ -26,9 +25,11 @@ class Contract(Account):
         arbitrary_types_allowed = True
         underscore_attrs_are_private = True
         schema_extra = {
-            'example': { 'address': NULL_ADDRESS, }
+            'examples': Account.Config.schema_extra['examples'] +
+            [{'address': '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+              'abi': '(Optional) contract abi JSON string'
+              }]
         }
-
 
     def __init__(self, **data):
         if isinstance(data.get('abi'), str):

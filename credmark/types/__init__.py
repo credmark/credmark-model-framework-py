@@ -1,4 +1,4 @@
-# pylint disable=unused-imports
+# pylint: disable=locally-disabled, unused-import
 
 from .data.address import Address, NULL_ADDRESS
 from .data.block_number import BlockNumber

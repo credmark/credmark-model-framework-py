@@ -1,7 +1,11 @@
 from typing import Type, TypeVar, Union
 import credmark.model
 from credmark.model.errors import ModelRunError
-from credmark.types import BlockSeries, SeriesModelStartEndIntervalInput, SeriesModelWindowIntervalInput
+from credmark.types import (
+    BlockSeries,
+    SeriesModelStartEndIntervalInput,
+    SeriesModelWindowIntervalInput,
+)
 from credmark.types.dto import DTO
 
 DTOCLS = TypeVar('DTOCLS')

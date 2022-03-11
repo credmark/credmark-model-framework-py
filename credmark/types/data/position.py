@@ -1,10 +1,17 @@
-from ..dto import DTO, DTOField
+from ..dto import DTO, DTOField, cross_examples
 from ..data.token import Token
 
 
 class Position(DTO):
     amount: float = DTOField(0.0, description='Quantity of token held')
     token: Token = DTOField(..., description='Token')
+
+    class Config:
+        schema_extra = {
+            'examples': cross_examples([{'amount': '4.2', }],
+                                       Token.Config.schema_extra['examples'],
+                                       limit=10)
+        }
 
     def value_usd(self):
         # TODO: Figure out for non-ERC20 Tokens
