@@ -22,7 +22,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='credmark-model-framework',
-    version='0.5.10',
+    version='0.5.11',
     description='Credmark model development framework',
     long_description=readme + '\n\n' + history,
     author='Credmark',
