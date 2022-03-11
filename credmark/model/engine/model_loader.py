@@ -2,7 +2,7 @@ import logging
 import os
 import importlib
 import inspect
-import yaml
+import json
 from typing import Union, Type, List
 from packaging import version
 from requests.structures import CaseInsensitiveDict
@@ -38,7 +38,7 @@ class ModelLoader:
 
         if manifest_file is not None and os.path.isfile(manifest_file):
             self.logger.info(f'Loading manifest from {manifest_file}')
-            manifest = self._load_yaml_file(manifest_file)
+            manifest = self._load_json_file(manifest_file)
             if manifest is not None and 'credmarkModelManifest' in manifest:
                 self._process_model_manifest(manifest, manifest_file)
         else:
@@ -116,12 +116,12 @@ class ModelLoader:
             self.errors.append(
                 f'Error loading manifest for module {module_name} in model file {fpath}: {err}')
 
-    def _load_yaml_file(self, path):
+    def _load_json_file(self, path):
         with open(path, "r") as stream:
             try:
-                return yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                raise Exception(f'Error loading yaml: {exc}')
+                return json.load(stream)
+            except Exception as exc:
+                raise Exception(f'Error loading json manifest: {exc}')
 
     def _process_model_manifest(self, manifest, fpath: str):
         models: list = manifest.get('models')
@@ -248,7 +248,7 @@ class ModelLoader:
             manifests = self.loaded_model_manifests()
             with open(manifest_file, 'w') as fp:
                 try:
-                    yaml.dump({'credmarkModelManifest': '1.0', 'models': manifests}, fp)
+                    json.dump({'credmarkModelManifest': '1.0', 'models': manifests}, fp)
                     self.logger.info(f'Saved manifest to {manifest_file}')
                 except:
                     err = WriteModelManifestError(manifest_file)
@@ -258,16 +258,16 @@ class ModelLoader:
             self.logger.error(
                 f'Error writing manifest file {manifest_file}: {err}')
 
-    def remove_manifest_file(self):
-        manifest_file = self.manifest_file
+    @classmethod
+    def remove_manifest_file(cls, manifest_file):
         if manifest_file is None:
             return
 
         try:
             if os.path.isfile(manifest_file):
                 os.remove(manifest_file)
-                self.logger.info(f'Removed manifest {manifest_file}')
+                cls.logger.info(f'Removed manifest {manifest_file}')
         except Exception as err:
-            self.logger.error(
+            cls.logger.error(
                 f'Error removing manifest file {manifest_file}: {err}')
             raise err

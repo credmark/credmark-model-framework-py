@@ -77,6 +77,8 @@ class EngineModelContext(ModelContext):
         output = result_tuple[2]
         output_as_dict = transform_data_for_dto(output, None, model_slug, 'output')
 
+        ModelContext.current_context = None
+
         response = {
             'slug': result_tuple[0],
             'version': result_tuple[1],

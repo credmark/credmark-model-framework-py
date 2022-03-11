@@ -131,4 +131,4 @@ dmypy.json
 .DS_Store
 
 # model manifest
-models.yaml
+models.json
