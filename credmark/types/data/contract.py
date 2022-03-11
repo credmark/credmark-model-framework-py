@@ -28,7 +28,7 @@ class Contract(Account):
             'examples': Account.Config.schema_extra['examples'] +
             [{'address': '0x1F98431c8aD98523631AE4a59f267346ea31F984',
               'abi': '(Optional) contract abi JSON string'
-             }]
+              }]
         }
 
     def __init__(self, **data):
