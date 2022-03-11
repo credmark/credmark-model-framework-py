@@ -12,6 +12,7 @@ def cross_examples(*x, limit=10):
     return [combine_dict(ds) for ds in product(*x)][:limit]
 
 
+#  -> Union[Iterable[Tuple[Any, Any, Any]], Iterable[Dict[str, str]]]
 def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, limit=10):
     assert ret_type in ['tree', 'example']
     try:
@@ -45,8 +46,9 @@ def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, limit=10):
                             if ret_type == 'tree':
                                 if len(ret) == 1:
                                     ret = [(n_iter, var_name, node['type'])]
-                                ret.extend(dto_schema_viz(
-                                    head_node, prop_name, prop_item, n_iter + 1, ret_type, limit))
+                                drill_ret = dto_schema_viz(
+                                    head_node, prop_name, prop_item, n_iter + 1, ret_type, limit)
+                                ret.extend(drill_ret)
                             elif ret_type == 'example':
                                 drill_ret = dto_schema_viz(
                                     head_node, prop_name, prop_item, n_iter + 1, ret_type, limit)
@@ -95,12 +97,18 @@ def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, limit=10):
                     if len(ret) == 0:
                         ret = drill_ret
                     else:
-                        ret[0] = (ret[0][0], ret[0][1] + ' | ' + drill_ret[1])
+                        ret[0] = (ret[0][0], ret[0][1], ret[0][2] + ' | ' + drill_ret[0][2])
                 elif ret_type == 'example':
                     if len(ret) == 0:
                         ret = drill_ret
                     else:
-                        ret = cross_examples(ret, drill_ret, limit=limit)
+                        for r in ret:
+                            for rr in drill_ret:
+                                for k, v in rr.items():
+                                    if k in r:
+                                        r[var_name] = f'{r[var_name]} | {v}'
+                                    else:
+                                        r[var_name] = f'{r[var_name]} | {rr}'
             return ret
 
         # Object reference

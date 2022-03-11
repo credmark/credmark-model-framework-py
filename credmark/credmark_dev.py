@@ -20,7 +20,6 @@ from .types.dto import (
     print_example,
     print_tree,
     dto_schema_viz,
-    cross_examples,
 )
 
 logger = logging.getLogger(__name__)
@@ -103,7 +102,8 @@ def main():
     parser_run.set_defaults(func=run_model, depth=0)
 
     parser_build = subparsers.add_parser(
-        'build', help='Build model manifest [Not required during development]', aliases=['build-manifest'])
+        'build', help='Build model manifest [Not required during development]',
+        aliases=['build-manifest'])
     parser_build.set_defaults(func=write_manifest_file)
 
     parser_clean = subparsers.add_parser(
