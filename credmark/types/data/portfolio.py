@@ -19,7 +19,7 @@ class Portfolio(IterableListGenericDTO[Position]):
 
     class Config:
         schema_extra: dict = {
-            'examples': [{'positions': Position.Config.schema_extra['examples']}, ]
+            'examples': [{'positions': [exp]} for exp in Position.Config.schema_extra['examples']]
         }
 
 
