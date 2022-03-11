@@ -48,13 +48,13 @@ class ModelApi:
                 f'Error running api request for {url}: {err}')
             raise
         except Exception as err:
-            logger.error(
-                f'Error running api request for {url}: {err}')
             if resp is not None:
                 if resp.status_code == 404:
                     return None
                 else:
                     logger.error(f'Error api response {resp.text}')
+            logger.error(
+                f'Error running api request for {url}: {err}')
             raise
         finally:
             # Ensure the response is closed in case we ever don't
