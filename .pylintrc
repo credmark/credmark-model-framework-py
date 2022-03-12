@@ -94,7 +94,8 @@ disable=raw-checker-failed,
         useless-super-delegation,
         consider-using-f-string,
         logging-not-lazy,
-        wrong-import-position
+        wrong-import-position,
+        consider-using-ternary  # consider-using-ternary gives incorrect suggestions!
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
