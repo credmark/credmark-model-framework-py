@@ -190,12 +190,13 @@ class EngineModelContext(ModelContext):
                    ):
 
         is_cli = self.dev_mode and not self.run_id
-        use_local = self.__is_top_level or self.dev_mode
-        use_remote = not self.__is_top_level or is_cli
+        # these are not exclusive
+        try_local = self.__is_top_level or self.dev_mode
+        try_remote = not self.__is_top_level or is_cli
 
         api = self.__api
 
-        if use_local:
+        if try_local:
             # We raise an exception for missing class if no api
             raise_on_missing = api is None
             model_class = self.__model_loader.get_model_class(
@@ -247,7 +248,7 @@ class EngineModelContext(ModelContext):
             version = model_class.version
             self._add_dependency(slug, version, 1)
 
-        elif use_remote:
+        elif try_remote:
             # api is not None here or get_model_class() would have
             # raised an error
             assert api is not None
