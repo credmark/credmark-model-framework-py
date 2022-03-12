@@ -190,9 +190,9 @@ class EngineModelContext(ModelContext):
                    ):
 
         is_cli = self.dev_mode and not self.run_id
-        # these are not exclusive
-        try_local = (self.__is_top_level and not self.is_active) or self.dev_mode
-        try_remote = not self.__is_top_level or is_cli
+        is_top_level_inactive = self.__is_top_level and not self.is_active
+        try_local = is_top_level_inactive or self.dev_mode
+        try_remote = not is_top_level_inactive or is_cli
 
         api = self.__api
 
