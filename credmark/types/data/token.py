@@ -38,8 +38,8 @@ class Token(Contract):
     address: Union[Address, None] = None
     symbol: Union[str, None] = None
     name: Union[str, None] = None
-    decimals: Union[int, None] = None
     is_native_token: bool = False
+    decimals: Union[str, None] = PrivateAttr(None)
 
     @classmethod
     def native_token(cls):
@@ -122,6 +122,22 @@ class Token(Contract):
         if self.is_native_token:
             return 0
         return self.functions.allowance(owner, spender).call()
+
+    @property
+    def decimals_lazy_load(self):
+        if self.decimals is None:
+            self.decimals = self.functions.decimals()
+        return self.decmials
+
+    @property
+    def name_lazy_load(self):
+        if self.name is None:
+            self.name = self.functions.decimals()
+
+    @property
+    def symbol_lazy_load(self):
+        if self.symbol is None:
+            self.symbol = self.functions.symbol()
 
     # TODO: Lazy Load decimals
     # TODO: Lazy Load symbol
