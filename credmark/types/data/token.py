@@ -39,7 +39,7 @@ class Token(Contract):
     symbol: Union[str, None] = None
     name: Union[str, None] = None
     is_native_token: bool = False
-    decimals: Union[str, None] = PrivateAttr(None)
+    decimals: Union[str, None] = None
 
     @classmethod
     def native_token(cls):
