@@ -1,6 +1,7 @@
 
 import credmark.model
 import credmark.types
+from .token_wei import TokenWei
 from .contract import Contract
 from .address import Address
 from .data_content.fungible_token_data import FUNGIBLE_TOKEN_DATA
@@ -39,7 +40,7 @@ class Token(Contract):
     symbol: Union[str, None] = None
     name: Union[str, None] = None
     is_native_token: bool = False
-    decimals: Union[int, None] = None
+    decimals: int
 
     @classmethod
     def native_token(cls):
@@ -115,23 +116,23 @@ class Token(Contract):
                 self.abi = ERC20_BASE_ABI
         return super().instance
 
-    def total_supply(self):
+    def total_supply(self) -> TokenWei:
         if self.is_native_token:
-            return
-        return self.functions.totalSupply().call()
+            return TokenWei(0, self.decimals)
+        return TokenWei(self.functions.totalSupply().call(), self.decimals)
 
-    def balance_of(self, address: Address):
+    def balance_of(self, address: Address) -> TokenWei:
         if self.is_native_token:
             context = credmark.model.ModelContext.current_context
             if context is None:
                 raise ValueError(f'No current context to get price of token {self.symbol}')
-            return context.web3.eth.get_balance(address)
-        return self.functions.balanceOf(address).call()
+            return TokenWei(context.web3.eth.get_balance(address), self.decimals)
+        return TokenWei(self.functions.balanceOf(address).call(), self.decimals)
 
-    def allowance(self, owner: Address, spender: Address):
+    def allowance(self, owner: Address, spender: Address) -> TokenWei:
         if self.is_native_token:
-            return 0
-        return self.functions.allowance(owner, spender).call()
+            return TokenWei(0, self.decimals)
+        return TokenWei(self.functions.allowance(owner, spender).call(), self.decimals)
 
 
 class Tokens(IterableListGenericDTO[Token]):

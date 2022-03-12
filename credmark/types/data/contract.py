@@ -60,12 +60,13 @@ class Contract(Account):
         if context is not None:
             contract_q_results = context.run_model(
                 'contract.metadata', {'contractAddress': self.address})
-            res = contract_q_results['contracts'][0]
-            self.contract_name = res.get('name')
-            self.constructor_args = res.get('constructor_args')
-            self.protocol = res.get('protocol')
-            self.product = res.get('product')
-            self.abi = res.get('abi')
+            if len(contract_q_results['contracts']) > 0:
+                res = contract_q_results['contracts'][0]
+                self.contract_name = res.get('name')
+                self.constructor_args = res.get('constructor_args')
+                self.protocol = res.get('protocol')
+                self.product = res.get('product')
+                self.abi = res.get('abi')
 
     @property
     def functions(self):
