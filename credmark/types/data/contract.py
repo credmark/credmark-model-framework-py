@@ -12,7 +12,7 @@ from credmark.types.dto import PrivateAttr, IterableListGenericDTO, DTOField
 
 
 class Contract(Account):
-    name: Union[str, None] = None
+    contract_name: Union[str, None] = None
     deploy_tx_hash: Union[str, None] = None
     constructor_args: Union[str, None] = None
     protocol: Union[str, None] = None
@@ -61,7 +61,7 @@ class Contract(Account):
             contract_q_results = context.run_model(
                 'contract.metadata', {'contractAddress': self.address})
             res = contract_q_results['contracts'][0]
-            self.name = res.get('name')
+            self.contract_name = res.get('name')
             self.constructor_args = res.get('constructor_args')
             self.protocol = res.get('protocol')
             self.product = res.get('product')

@@ -1,10 +1,30 @@
 # pylint: disable=line-too-long
+from typing import Union
+from credmark.types.data.address import Address
 
-MIN_ERC20_ABI = '[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Transfer","type":"event"}]'
-TOKEN_DATA = {
+
+FUNGIBLE_TOKEN_DATA = {
     "1": [
-        {"symbol": "CMK", "decimals": 18, "name": "Credmark",
-            "address": "0x68CFb82Eacb9f198d508B514d898a403c449533E", "protocol": "credmark"},
+        {
+            "symbol": "ETH",
+            "decimals": 18,
+            "name": "ethereum",
+            "is_native_token": True
+        },
+        {
+            "symbol": "WETH",
+            "decimals": 18,
+            "name": "Wrapped Ether",
+            "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "wraps": "ETH"
+        },
+        {
+            "symbol": "CMK",
+            "decimals": 18,
+            "name": "Credmark",
+            "address": "0x68CFb82Eacb9f198d508B514d898a403c449533E",
+            "protocol": "credmark"
+        },
         {
             "symbol": "USDT",
             "decimals": 6,
@@ -323,6 +343,12 @@ TOKEN_DATA = {
             "name": "HoloToken",
             "address": "0x6c6EE5e31d828De241282B9606C8e98Ea48526E2"
         }
-    ]
+    ],
+    "137": {
+        "symbol": "MATIC",
+        "decimals": 18,
+        "name": "polygon",
+        "native_token": True
+    }
 }
 # pylint: enable=line-too-long
