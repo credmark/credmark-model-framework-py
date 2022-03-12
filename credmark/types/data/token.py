@@ -81,6 +81,16 @@ class Token(Contract):
                 data['protocol'] = token_data.get('protocol', None)
                 data['product'] = token_data.get('product', None)
 
+            if data.get('address', None) is not None:
+                erc20 = Contract(address=data.get('address'), abi=ERC20_BASE_ABI)
+                if data.get('symbol', None) is None:
+                    data['symbol'] = erc20.functions.symbol().call()
+                if data.get('name', None) is None:
+                    data['name'] = erc20.functions.name().call()
+                if data.get('decimals', None) is None:
+                    data['decimals'] = erc20.functions.decimals().call()
+                # TODO: Handle the Error that this isn't an ERC20
+
         super().__init__(**data)
 
     @ property
@@ -100,7 +110,7 @@ class Token(Contract):
     def instance(self):
         try:
             return super().instance
-        except ValueError:
+        except Exception:
             if self.abi is None:
                 self.abi = ERC20_BASE_ABI
         return super().instance
@@ -122,26 +132,6 @@ class Token(Contract):
         if self.is_native_token:
             return 0
         return self.functions.allowance(owner, spender).call()
-
-    @property
-    def decimals_lazy_load(self):
-        if self.decimals is None:
-            self.decimals = self.functions.decimals()
-        return self.decmials
-
-    @property
-    def name_lazy_load(self):
-        if self.name is None:
-            self.name = self.functions.decimals()
-
-    @property
-    def symbol_lazy_load(self):
-        if self.symbol is None:
-            self.symbol = self.functions.symbol()
-
-    # TODO: Lazy Load decimals
-    # TODO: Lazy Load symbol
-    # TODO: Lazy Load name
 
 
 class Tokens(IterableListGenericDTO[Token]):
