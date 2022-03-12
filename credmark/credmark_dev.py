@@ -217,7 +217,7 @@ def list_models(args):
 
 def create_model_api(args):
     api_url = args.get('api_url')
-    return ModelApi(api_url)
+    return ModelApi.api_for_url(api_url)
 
 
 def merge_manifests(manifests: List[dict], extra_manifests: List[dict]):
