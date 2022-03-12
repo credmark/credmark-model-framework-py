@@ -1,7 +1,7 @@
 import logging
 from typing import Union
 from credmark.model.context import ModelContext
-from credmark.model.errors import MaxModelRunDepthError, ModelRunError
+from credmark.model.errors import MaxModelRunDepthError, MissingModelError, ModelRunError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.transform import transform_data_for_dto
@@ -64,7 +64,8 @@ class EngineModelContext(ModelContext):
                 cls.logger.info(f'Using latest block number {block_number}')
 
             context = EngineModelContext(
-                chain_id, block_number, web3_registry, run_id, depth, model_loader, api)
+                chain_id, block_number, web3_registry,
+                run_id, depth, model_loader, api, True)
 
             ModelContext.current_context = context
 
@@ -104,13 +105,16 @@ class EngineModelContext(ModelContext):
                  run_id: Union[str, None],
                  depth: int,
                  model_loader: ModelLoader,
-                 api: Union[ModelApi, None]):
+                 api: Union[ModelApi, None],
+                 is_top_level: bool = False):
         super().__init__(chain_id, block_number, web3_registry)
         self.run_id = run_id
         self.__depth = depth
         self.__dependencies = {}
         self.__model_loader = model_loader
         self.__api = api
+        self.__is_top_level = is_top_level
+        self.is_active = False
 
     @property
     def dependencies(self):
@@ -185,16 +189,19 @@ class EngineModelContext(ModelContext):
                    version: Union[str, None]
                    ):
 
+        is_cli = self.dev_mode and not self.run_id
+        use_local = self.__is_top_level or self.dev_mode
+        use_remote = not self.__is_top_level or is_cli
+
         api = self.__api
 
-        # We raise an exception for missing class
-        # if we have no api or this is a top-level run.
-        raise_on_missing = (api is None or
-                            (self.__depth == 0 and
-                             (not self.dev_mode or (self.dev_mode and self.run_id is not None))))
-
-        model_class = self.__model_loader.get_model_class(
-            slug, version, raise_on_missing)
+        if use_local:
+            # We raise an exception for missing class if no api
+            raise_on_missing = api is None
+            model_class = self.__model_loader.get_model_class(
+                slug, version, raise_on_missing)
+        else:
+            model_class = None
 
         self.__depth += 1
         if self.__depth >= self.max_run_depth:
@@ -202,7 +209,7 @@ class EngineModelContext(ModelContext):
 
         if model_class is not None:
 
-            if self.__depth == 1:
+            if not self.is_active:
                 # At top level, we use this context
                 context = self
             else:
@@ -222,12 +229,14 @@ class EngineModelContext(ModelContext):
             input = transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
 
             ModelContext.current_context = context
+            context.is_active = True
 
             model = model_class(context)
             output = model.run(input)
 
             output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
 
+            context.is_active = False
             ModelContext.current_context = self
 
             # If we ran with a different context, we add its deps
@@ -238,7 +247,7 @@ class EngineModelContext(ModelContext):
             version = model_class.version
             self._add_dependency(slug, version, 1)
 
-        else:
+        elif use_remote:
             # api is not None here or get_model_class() would have
             # raised an error
             assert api is not None
@@ -249,6 +258,10 @@ class EngineModelContext(ModelContext):
                 self.run_id, self.__depth)
             if dependencies:
                 self._add_dependencies(dependencies)
+        else:
+            err = MissingModelError(slug, version)
+            self.logger.error(err)
+            raise err
 
         self.__depth -= 1
 
