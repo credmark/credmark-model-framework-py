@@ -9,7 +9,8 @@ class Position(DTO):
     class Config:
         schema_extra = {
             'examples': cross_examples([{'amount': '4.2', }],
-                                       Token.Config.schema_extra['examples'],
+                                       [{'token': v}
+                                           for v in Token.Config.schema_extra['examples']],
                                        limit=10)
         }
 
@@ -17,7 +18,7 @@ class Position(DTO):
         # TODO: Figure out for non-ERC20 Tokens
         return self.token.price_usd * self.scaled_amount
 
-    @property
+    @ property
     def scaled_amount(self):
         decimals = self.token.decimals
         if decimals is None:
