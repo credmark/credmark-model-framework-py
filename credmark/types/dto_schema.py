@@ -13,8 +13,10 @@ def cross_examples(*x, limit=10):
 
 
 #  -> Union[Iterable[Tuple[Any, Any, Any]], Iterable[Dict[str, str]]]
-def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, limit=10):
+def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, only_required, tag, limit=10):
     assert ret_type in ['tree', 'example']
+    # print(var_name, tag, ret_type, only_required)
+
     try:
         # 1. DTO/dict
         # 1.1 DTO with example
@@ -29,8 +31,9 @@ def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, limit=10):
         if 'type' in node:
             if node['type'] == 'object':
                 # DTO with example
-                if ret_type == 'example' and 'examples' in node:
-                    return node["examples"]
+                if ret_type == 'example' and ('examples' in node or 'example' in node):
+                    # return [{var_name: v} for v in node.get('examples', node.get('example'))]
+                    return node.get('examples', node.get('example'))[:limit]
 
                 # DTO without example
                 if ret_type == 'tree':
@@ -42,20 +45,30 @@ def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, limit=10):
                     props = node['properties']
                     required = node['required'] if 'required' in node else list(props.keys())
                     for prop_name, prop_item in props.items():
-                        if prop_name in required:
-                            if ret_type == 'tree':
-                                if len(ret) == 1:
-                                    ret = [(n_iter, var_name, node['type'])]
-                                drill_ret = dto_schema_viz(
-                                    head_node, prop_name, prop_item, n_iter + 1, ret_type, limit)
-                                ret.extend(drill_ret)
-                            elif ret_type == 'example':
-                                drill_ret = dto_schema_viz(
-                                    head_node, prop_name, prop_item, n_iter + 1, ret_type, limit)
-                                if len(ret) == 0:
-                                    ret = drill_ret
-                                else:
-                                    ret = cross_examples(ret, drill_ret, limit=limit)
+                        if only_required:
+                            if prop_name not in required:
+                                break
+
+                        drill_ret = dto_schema_viz(
+                            head_node, prop_name, prop_item, n_iter + 1, ret_type, only_required, 'prop', limit)
+
+                        if ret_type == 'tree':
+                            if len(ret) == 1:
+                                # For generic dict, return node['type'] which is "object".
+                                # For non-generic object type, return the object name.
+                                title_or_object = node['title'] if 'title' in node else node['type']
+                                ret = [(n_iter, var_name, title_or_object +
+                                        ('(*)' if prop_name in required else ''))]
+
+                            ret.extend(drill_ret)
+
+                        elif ret_type == 'example':
+                            if ret == [{var_name: node['type']}]:
+                                ret = drill_ret
+                            else:
+                                # breakpoint()
+                                ret = cross_examples(ret, drill_ret, limit=limit)
+
                 return ret
 
             if node['type'] == 'array':
@@ -64,20 +77,20 @@ def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, limit=10):
                     ref = node['items']['$ref'].split('/')
                     definition_node = head_node[ref[1]][ref[2]]
                     ret = dto_schema_viz(head_node, var_name,
-                                         definition_node, n_iter, ret_type, limit)
+                                         definition_node, n_iter, ret_type, only_required, 'array_ref', limit)
                     if ret_type == 'tree':
                         ret[0] = (*ret[0][:-1], f'List[{ref[2]}]')
                         return ret
-                    return [{var_name: [x]} for x in ret]
+                    return [{var_name: [x]} for x in ret][:limit]
 
-                # array of other type
+                # array of other types
                 array_type = node['items']['type'] if 'type' in node['items'] else 'Any'
                 if 'items' in node['items']:
                     array_type = ','.join([item['type'] for item in node['items']['items']])
                     array_type = f'({array_type})'
                 if ret_type == 'tree':
                     return [(n_iter, var_name, f'List[{array_type}]')]
-                return [{var_name: array_type}]
+                return [{var_name: f'[{array_type}]'}]
 
             # ['type'] != 'array'
             # ordinary type
@@ -90,8 +103,8 @@ def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, limit=10):
             ret = []
             of_node = node.get('anyOf', node.get('allOf', node.get('oneOf')))
             for item in of_node:
-                drill_ret = dto_schema_viz(
-                    head_node, var_name, item, n_iter, ret_type, limit)
+                drill_ret = dto_schema_viz(head_node, var_name, item,
+                                           n_iter, ret_type, only_required, 'union', limit)
 
                 if ret_type == 'tree':
                     if len(ret) == 0:
@@ -99,6 +112,8 @@ def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, limit=10):
                     else:
                         ret[0] = (ret[0][0], ret[0][1], ret[0][2] + ' | ' + drill_ret[0][2])
                 elif ret_type == 'example':
+                    if drill_ret == [{}]:
+                        drill_ret = [{var_name: '{}'}]
                     if len(ret) == 0:
                         ret = drill_ret
                     else:
@@ -115,14 +130,18 @@ def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, limit=10):
         elif '$ref' in node:
             ref = node['$ref'].split('/')
             definition_node = head_node[ref[1]][ref[2]]
-            return dto_schema_viz(head_node, var_name, definition_node, n_iter, ret_type, limit)
+            if ret_type == 'example':
+                # return [{var_name: dto_schema_viz(head_node, var_name, definition_node, n_iter, ret_type, only_required, 'ref', limit)}]
+                return [{var_name: v} for v in dto_schema_viz(head_node, var_name, definition_node, n_iter, ret_type, only_required, 'ref', limit)][:limit]
+            return dto_schema_viz(head_node, var_name, definition_node, n_iter, ret_type, only_required, 'ref', limit)
 
         else:
             if ret_type == 'tree':
                 return [(n_iter, var_name, 'object')]
             return [{var_name: 'object'}]
+
     except Exception as err:
-        raise ValueError(f'Unknown schema node {var_name, node, err}')
+        raise ValueError(f'Unknown schema node {var_name, node, err, tag}')
 
 
 def print_tree(tree, prefix, print_func):

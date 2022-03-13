@@ -283,11 +283,11 @@ def print_manifests(manifests: List[dict], describe_schemas=False):
                 else:
                     if i == 'input':
                         input_tree = dto_schema_viz(
-                            v, v.get('title', 'Object'), v, 0, 'tree', 10)
+                            v, v.get('title', 'Object'), v, 0, 'tree', only_required=False, tag='top', limit=10)
                         input_examples = dto_schema_viz(
-                            v, v.get('title', 'Object'), v, 0, 'example', 10)
+                            v, v.get('title', 'Object'), v, 0, 'example', only_required=False, tag='top', limit=10)
 
-                        print(' - input schema:')
+                        print(' - input schema (* for required field):')
                         print_tree(input_tree, '   ', sys.stdout.write)
 
                         print(' - input example:')
@@ -295,11 +295,11 @@ def print_manifests(manifests: List[dict], describe_schemas=False):
 
                     elif i == 'output':
                         output_tree = dto_schema_viz(
-                            v, v.get('title', 'Object'), v, 0, 'tree', 1)
+                            v, v.get('title', 'Object'), v, 0, 'tree', only_required=False, tag='top', limit=1)
                         output_examples = dto_schema_viz(
-                            v, v.get('title', 'Object'), v, 0, 'example', 1)
+                            v, v.get('title', 'Object'), v, 0, 'example', only_required=True, tag='top', limit=1)
 
-                        print(' - output schema:')
+                        print(' - output schema (* for required field):')
                         print_tree(output_tree, '   ', sys.stdout.write)
 
                         print(' - output example:')
