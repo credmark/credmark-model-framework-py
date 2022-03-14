@@ -19,13 +19,14 @@ def run_model_for_block_range(context: ModelContext,
                               model_input: Union[DTO, dict, None],
                               model_version: Union[str, None]):
     block_series = BlockSeries[dict]()
-    for block_num in block_range:
+    for block in block_range:
+        block_number = block.blockNumber
         run_output = context.run_model(
-            model_slug, model_input, version=model_version)
+            model_slug, model_input, block_number=block_number, version=model_version)
 
-        row = BlockSeriesRow[dict](blockNumber=block_num.blockNumber,
-                                   blockTimestamp=block_num.blockTimestamp,
-                                   sampleTimestamp=block_num.sampleTimestamp,
+        row = BlockSeriesRow[dict](blockNumber=block_number,
+                                   blockTimestamp=block.blockTimestamp,
+                                   sampleTimestamp=block.sampleTimestamp,
                                    output=run_output)
         block_series.append(row)
 
