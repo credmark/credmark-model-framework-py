@@ -41,7 +41,7 @@ class Ledger:
                          group_by: Union[str, None] = None,
                          order_by: Union[str, None] = None,
                          limit: Union[str, None] = None,
-                         offset: Union[str, None] = None):
+                         offset: Union[str, None] = None) -> LedgerModelOutput:
         self._validate_columns(model_slug, columns, table_def)
 
         if where is None and limit is None:
