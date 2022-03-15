@@ -14,7 +14,7 @@ DICT_SCHEMA = {"title": "Object", "type": "object", "properties": {}}
 # different types and the DTOs are used to document the schema.
 
 MAX_SLUG_LENGTH = 64
-model_slug_re = re.compile(r'^([A-Za-z]+\.)?([A-Za-z0-9]+\-)*[A-Za-z0-9]+$')
+model_slug_re = re.compile(r'^(([A-Za-z0-9]+\-)*[A-Za-z0-9]+\.)?([A-Za-z0-9]+\-)*[A-Za-z0-9]+$')
 
 
 def validate_model_slug(slug: str, prefix: Union[str, None] = None):
