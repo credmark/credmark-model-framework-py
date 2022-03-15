@@ -37,17 +37,17 @@ class ModelLoader:
         self.manifest_file = manifest_file
 
         if manifest_file is not None and os.path.isfile(manifest_file):
-            self.logger.info(f'Loading manifest from {manifest_file}')
+            self.logger.debug(f'Loading manifest from {manifest_file}')
             manifest = self._load_json_file(manifest_file)
             if manifest is not None and 'credmarkModelManifest' in manifest:
                 self._process_model_manifest(manifest, manifest_file)
         else:
             if model_paths is not None:
-                self.logger.info(f'Loading manifest from model_paths: {model_paths}')
+                self.logger.debug(f'Loading manifest from model_paths: {model_paths}')
                 self._search_paths_for_model_files(model_paths)
 
         if load_dev_models:
-            self.logger.info('Loading dev models')
+            self.logger.debug('Loading dev models')
             self._try_model_module('credmark.model.dev_models.series_models',
                                    'credmark/model/dev_models/series_models')
 
