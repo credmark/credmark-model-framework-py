@@ -62,7 +62,7 @@ class Contract(Account):
                 'contract.metadata', {'contractAddress': self.address})
             if len(contract_q_results['contracts']) > 0:
                 res = contract_q_results['contracts'][0]
-                self.contract_name = res.get('name')
+                self.contract_name = res.get('contract_name')
                 self.constructor_args = res.get('constructor_args')
                 self.protocol = res.get('protocol')
                 self.product = res.get('product')

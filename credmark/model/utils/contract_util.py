@@ -16,13 +16,15 @@ class ContractUtil:
 
     def load_description(self,
                          address: Union[Address, None] = None,
-                         name: Union[str, None] = None,
+                         contract_name: Union[str, None] = None,
                          protocol: Union[str, None] = None,
                          product: Union[str, None] = None,
                          abi: Union[dict, None] = None,
                          tags: Union[dict, None] = None) -> List[Contract]:
-        if name is None and address is None and abi is None:
+        if contract_name is None and address is None and abi is None:
             raise Exception
+
+            # TODO: name needs to be contract_name to avoid confusion with name().call() which is on ERC20s
 
             # This means we can end up with different KINDS of contracts together.
             # probably no bueno
@@ -34,8 +36,8 @@ class ContractUtil:
 
         if address is not None:
             q["contractAddress"] = address
-        if name is not None:
-            q["contractName"] = name
+        if contract_name is not None:
+            q["contractName"] = contract_name
         if protocol is not None:
             q["protocol"] = protocol
         if product is not None:
