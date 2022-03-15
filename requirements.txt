@@ -53,15 +53,4 @@ varint==1.0.2
 web3 @ git+https://github.com/credmark/web3.py.git@e886bbd74f0974cb1895846550ef71ce3af167fc
 websockets==9.1
 yarl==1.7.2
-# Basic data libraries
 numpy>=1.22.1
-pandas>=1.4.0
-matplotlib>=3.5.1
-scipy>=1.8.0
-statsmodels>=0.13.2
-# Pandas' I/O
-xlrd>=2.0.1
-xlsxwriter>=3.0.3
-BeautifulSoup4>=4.10.0
-pyarrow>=7.0.0
-
