@@ -49,12 +49,16 @@ class ContractUtil:
 
         contract_q_results = self.context.run_model('contract.metadata', q)
         for contract in contract_q_results['contracts']:
-            contracts.append(Contract(_instance=None, **contract))
+            contracts.append(
+                Contract(_instance=None,
+                         address=contract.get('contract_address'),
+                         **contract))
         return contracts
 
     def load_address(self, address: str) -> Contract:
         contract_q_results = self.context.run_model(
             'contract.metadata', {'contractAddress': address})
         contract_obj = Contract(_instance=None,
+                                address=address,
                                 **(contract_q_results['contracts'][0]))
         return contract_obj
