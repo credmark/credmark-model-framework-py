@@ -332,6 +332,12 @@ FUNGIBLE_TOKEN_DATA = {
             "protocol": "aave"
         },
         {
+            "symbol": "AAVE",
+            "decimals": 18,
+            "name": "Aave Token",
+            "address": "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9",
+        },
+        {
             "symbol": "SNX",
             "decimals": 18,
             "name": "Synthetix Network Token",
