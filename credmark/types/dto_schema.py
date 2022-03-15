@@ -66,7 +66,6 @@ def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, only_required, t
                             if ret == [{var_name: node['type']}]:
                                 ret = drill_ret
                             else:
-                                # breakpoint()
                                 ret = cross_examples(ret, drill_ret, limit=limit)
 
                 return ret
