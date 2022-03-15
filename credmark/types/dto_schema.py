@@ -66,7 +66,6 @@ def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, only_required, t
                             if ret == [{var_name: node['type']}]:
                                 ret = drill_ret
                             else:
-                                # breakpoint()
                                 ret = cross_examples(ret, drill_ret, limit=limit)
 
                 return ret
@@ -168,6 +167,7 @@ def print_tree(tree, prefix, print_func):
 def print_example(examples, prefix, print_func):
     if len(examples) > 0:
         for n, l in enumerate(examples):
-            print_func(f'{prefix}#{n+1:02d}: {l}\n')
+            l_with_double_quote = l.__str__().replace("'", '"')
+            print_func(f'{prefix}#{n+1:02d}: {l_with_double_quote}\n')
     else:
         print_func(f'{prefix}{{}}\n')
