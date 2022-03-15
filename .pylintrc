@@ -95,6 +95,7 @@ disable=raw-checker-failed,
         consider-using-f-string,
         logging-not-lazy,
         wrong-import-position,
+        too-few-public-methods, # for pydantic objects
         consider-using-ternary  # consider-using-ternary gives incorrect suggestions!
 
 # Enable the message, report, category or checker with the given id(s). You can
