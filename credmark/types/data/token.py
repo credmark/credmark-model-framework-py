@@ -42,16 +42,16 @@ class Token(Contract):
     is_native_token: bool = False
     decimals: int
 
-    @classmethod
-    def native_token(cls):
-        return Token(is_native_token=True)
-
     class Config:
         schema_extra = {
             'examples': [{'symbol': 'USDC'},
                          {'symbol': 'USDC', 'decimals': 6}
                          ] + Contract.Config.schema_extra['examples']
         }
+
+    @classmethod
+    def native_token(cls):
+        return Token(is_native_token=True)
 
     def __init__(self, **data):
 
