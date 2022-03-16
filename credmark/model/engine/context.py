@@ -6,7 +6,7 @@ from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.transform import transform_data_for_dto
 from credmark.model.web3 import Web3Registry
-from credmark.types.dto import DTO
+from credmark.types.dto import DTO, EmptyInput
 from credmark.types.models.core import CoreModels
 
 
@@ -140,7 +140,7 @@ class EngineModelContext(ModelContext):
 
     def run_model(self,
                   slug,
-                  input=None,
+                  input=EmptyInput(),
                   return_type=None,
                   block_number=None,
                   version=None,
@@ -149,7 +149,7 @@ class EngineModelContext(ModelContext):
 
         Parameters:
             slug (str): the slug of the model
-            input (dict | None): an optional dictionary of
+            input (dict | DTO): an optional dictionary of
                   input data that will be passed to the model when it is run.
             block_number (int | None): optional block number to use as context.
                   If None, the block_number of the current context will be used.
@@ -184,7 +184,7 @@ class EngineModelContext(ModelContext):
 
     def _run_model(self,
                    slug: str,
-                   input: Union[dict, DTO, None],
+                   input: Union[dict, DTO],
                    block_number: Union[int, None],
                    version: Union[str, None]
                    ):

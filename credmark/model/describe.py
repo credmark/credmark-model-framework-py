@@ -3,7 +3,7 @@ import re
 from typing import Type, Union
 
 from .base import Model
-from credmark.types.dto import DTO
+from credmark.types.dto import DTO, EmptyInput
 from .errors import InvalidModelSlug, WrongModelMethodSignature
 
 DICT_SCHEMA = {"title": "Object", "type": "object", "properties": {}}
@@ -39,7 +39,7 @@ def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
              display_name: Union[str, None] = None,
              description: Union[str, None] = None,
              developer: Union[str, None] = None,
-             input: Union[Type[DTO], Type[dict], None] = None,
+             input: Union[Type[DTO], Type[dict]] = EmptyInput,
              output: Union[Type[DTO], Type[dict], None] = None):
     def wrapper(cls_in):
         def is_parent(child, parent):

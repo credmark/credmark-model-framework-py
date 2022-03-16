@@ -3,7 +3,7 @@ from typing import Any, ClassVar, Type, TypeVar, Union, overload
 from .ledger import Ledger
 from .web3 import Web3Registry
 import credmark.types
-from credmark.types.dto import DTO
+from credmark.types.dto import ( DTO, EmptyInput )
 from credmark.model.utils.contract_util import ContractUtil
 from credmark.model.utils.historical_util import HistoricalUtil
 
@@ -77,7 +77,7 @@ class ModelContext():
     @abstractmethod
     def run_model(self,
                   slug: str,
-                  input: Union[dict, DTO, None],
+                  input: Union[dict, DTO],
                   return_type: Type[DTOT],
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,
@@ -87,7 +87,7 @@ class ModelContext():
     @abstractmethod
     def run_model(self,
                   slug: str,
-                  input: Union[dict, DTO, None] = None,
+                  input: Union[dict, DTO] = EmptyInput(),
                   return_type: Union[Type[dict], None] = None,
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,
@@ -96,7 +96,7 @@ class ModelContext():
     @abstractmethod
     def run_model(self,
                   slug,
-                  input=None,
+                  input=EmptyInput(),
                   return_type=None,
                   block_number=None,
                   version=None,
@@ -105,7 +105,7 @@ class ModelContext():
 
         Parameters:
             slug (str): the slug of the model
-            input (dict | DTO | None): an optional dictionary or DTO instance of
+            input (dict | DTO): an optional dictionary or DTO instance of
                   input data that will be passed to the model when it is run.
             block_number (int | None): optional block number to use as context.
                   If None, the block_number of the current context will be used.
