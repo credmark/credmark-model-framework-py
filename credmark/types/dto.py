@@ -71,10 +71,8 @@ class IterableListGenericDTO(GenericDTO, Generic[DTOCLS]):
     def extend(self, obj):
         return getattr(self, self._iterator).extend(obj)
 
-from typing import Optional
 
 class EmptyInput(DTO):
     """
-    Model which does not require an input shall use this DTO, EmptyInput.
+    The model does not require any input. This is an empty object.
     """
-    pass
