@@ -45,6 +45,7 @@ class TransactionTable(LedgerTable):
         MAX_FEE_PER_GAS = 'max_fee_per_gas'
         MAX_PRIORITY_FEE_PER_GAS = 'max_priority_fee_per_gas'
         TRANSACTION_TYPE = 'transaction_type'
+        BLOCK_NUMBER = 'block_number'
 
 
 class TraceTable(LedgerTable):

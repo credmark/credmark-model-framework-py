@@ -70,3 +70,9 @@ class IterableListGenericDTO(GenericDTO, Generic[DTOCLS]):
 
     def extend(self, obj):
         return getattr(self, self._iterator).extend(obj)
+
+
+class EmptyInput(DTO):
+    """
+    The model does not require any input. This is an empty object.
+    """
