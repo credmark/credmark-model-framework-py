@@ -70,12 +70,10 @@ class HistoricalUtil:
             parsed_window = [self.range_timestamp(*self.parse_timerangestr(w)) for w in window]
             min_w = window[parsed_window == min(parsed_window)]
             (w_k, _) = self.parse_timerangestr(min_w)
-            print('parsed_window', parsed_window)
             window_timestamp = sum(parsed_window)
         else:
             (w_k, w_v) = self.parse_timerangestr(window)
             window_timestamp = self.range_timestamp(w_k, w_v)
-        print('window_timestamp', window_timestamp)
         
         if interval is not None:
             (i_k, i_v) = self.parse_timerangestr(interval)
