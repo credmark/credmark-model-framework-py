@@ -192,7 +192,12 @@ class HistoricalUtil:
                 f"Invalid historical time string '{time_str}': "
                 f"unit not one of {','.join(self.time_units)}")
 
-        num = int(time_str.split(' ')[0])
+        try:
+            num = int(time_str.split(' ')[0])
+        except Exception as err:
+            raise ModelRunError(
+                f"Invalid historical time string '{time_str}': "
+                f"unknown number format")
         return (key, num)
 
     def range_timestamp(self, key: str, num: int):
