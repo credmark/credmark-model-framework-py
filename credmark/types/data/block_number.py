@@ -7,8 +7,10 @@ from typing import (
     Union,
 )
 
+from credmark.model.errors import ModelInvalidStateError, ModelNoContextError, ModelRunError
 
-class BlockNumberOutOfRangeException(Exception):
+
+class BlockNumberOutOfRangeException(ModelInvalidStateError):
     def __init__(self, block_number: int, max_block_number: int, message: str):
         self.block_number = block_number
         self.max_block_number = max_block_number
@@ -18,7 +20,7 @@ class BlockNumberOutOfRangeException(Exception):
         return f'BlockNumber {self.block_number} is out of maximum range: {self.max_block_number}'
 
 
-class InvalidBlockNumberException(Exception):
+class InvalidBlockNumberException(ModelRunError):
     def __init__(self, block_number: Union[int, None], message: str):
         self.block_number = block_number
         super().__init__(message)
@@ -75,7 +77,7 @@ class BlockNumber(int):
                 if 'timestamp' in block:
                     self._timestamp = block['timestamp']
                     return self._timestamp
-            raise ValueError('No _timestamp/context to return a timestamp')
+            raise ModelNoContextError('No _timestamp/context to return a timestamp')
         else:
             return self._timestamp
 

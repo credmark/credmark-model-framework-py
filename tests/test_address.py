@@ -10,6 +10,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level='DEBUG')
 
+
 def expect_exception(func):
     got_exception = False
     try:
@@ -19,8 +20,10 @@ def expect_exception(func):
     if not got_exception:
         raise ValueError
 
+
 class PoolAddress(DTO):
     poolAddress: Address = DTOField(..., description='Address of Pool')
+
 
 class TestStringMethods(unittest.TestCase):
 
@@ -30,7 +33,8 @@ class TestStringMethods(unittest.TestCase):
         )
 
         addr1 = '0xd905e2eaebe188fc92179b6350807d8bd91db0d8'
-        self.assertEqual(Address(0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8), addr1.lower())
+        self.assertEqual(Address(0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8),  # type: ignore
+                         addr1.lower())
         self.assertEqual(Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'), addr1.lower())
         self.assertEqual(Address(addr1).checksum, '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8')
         self.assertNotEqual(Address(addr1).checksum, '0xA905e2eaeBe188fc92179b6350807D8bd91Db0D8')
@@ -56,6 +60,6 @@ class TestStringMethods(unittest.TestCase):
         addr3 = '0xd905e2eaebe188fc92179b6350807d8bd91db0d8'
         self.assertEqual(hash(Address(addr3)), hash(addr3))
 
+
 if __name__ == '__main__':
     unittest.main()
-

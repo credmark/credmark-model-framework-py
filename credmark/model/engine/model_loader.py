@@ -7,7 +7,7 @@ from typing import Union, Type, List
 from packaging import version
 from requests.structures import CaseInsensitiveDict
 from credmark.model import Model
-from credmark.model.errors import MissingModelError, WriteModelManifestError
+from credmark.model.engine.errors import MissingModelError, WriteModelManifestError
 from credmark.model.describe import validate_model_slug
 
 

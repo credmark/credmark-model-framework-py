@@ -12,8 +12,8 @@ from dotenv import load_dotenv, find_dotenv
 sys.path.append('.')
 from .model.engine.context import EngineModelContext
 from .model.engine.model_loader import ModelLoader
-from .model.errors import MaxModelRunDepthError, MissingModelError, \
-    ModelRunError, ModelRunRequestError
+from .model.errors import MaxModelRunDepthError, ModelRunError
+from .model.engine.errors import MissingModelError, ModelRunRequestError
 from .model.web3 import Web3Registry
 from .model.engine.model_api import ModelApi
 from .model.encoder import json_dump

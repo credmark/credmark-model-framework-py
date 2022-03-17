@@ -1,7 +1,7 @@
 
 from typing import Type, Union
 from .errors import ModelRunError
-from ..types.dto import DTO
+from credmark.types.dto import DTO
 
 
 def transform_data_for_dto(

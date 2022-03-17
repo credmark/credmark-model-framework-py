@@ -3,7 +3,7 @@ import os
 import logging
 import requests
 from urllib.parse import urljoin, quote
-from credmark.model.errors import MissingModelError, ModelRunRequestError
+from credmark.model.engine.errors import MissingModelError, ModelRunRequestError
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
 

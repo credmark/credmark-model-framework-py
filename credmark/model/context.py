@@ -94,7 +94,7 @@ class ModelContext():
                   ) -> dict: ...
 
     @abstractmethod
-    def run_model(self,
+    def run_model(self,  # type: ignore
                   slug,
                   input=EmptyInput(),
                   return_type=None,

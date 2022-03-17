@@ -1,7 +1,8 @@
 import logging
 from typing import Union
 from credmark.model.context import ModelContext
-from credmark.model.errors import MaxModelRunDepthError, MissingModelError, ModelRunError
+from credmark.model.engine.errors import MissingModelError
+from credmark.model.errors import MaxModelRunDepthError, ModelEngineError, ModelInvalidStateError, ModelRunError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.transform import transform_data_for_dto
@@ -67,6 +68,9 @@ class EngineModelContext(ModelContext):
                 chain_id, block_number, web3_registry,
                 run_id, depth, model_loader, api, True)
 
+            if input is None:
+                input = {}
+
             ModelContext.current_context = context
 
             # We set the block_number in the context above so we pass in
@@ -93,10 +97,11 @@ class EngineModelContext(ModelContext):
                                                None, chain_id, 0, {})
             block_number: int = output['blockNumber']
             if block_number == -1:
+                # we'll treat this as transient
                 raise ModelRunError(f'No latest block found on chain {chain_id}')
             return block_number
-        except Exception as err:
-            raise ModelRunError(f'Error looking up latest block on chain {chain_id}: {err}')
+        except ModelEngineError as err:
+            raise ModelEngineError(f'Error looking up latest block on chain {chain_id}: {err}')
 
     def __init__(self,
                  chain_id: int,
@@ -172,7 +177,7 @@ class EngineModelContext(ModelContext):
         """
 
         if block_number is not None and block_number > self.block_number:
-            raise ModelRunError(
+            raise ModelInvalidStateError(
                 f'Attempt to run model {slug} at context block {self.block_number} '
                 f'with future block {block_number}')
 

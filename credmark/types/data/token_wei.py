@@ -1,6 +1,6 @@
 
 class TokenWei(int):
-    def __new__(cls, value, decimals: int):
+    def __new__(cls, value, decimals: int):  # pylint: disable=unused-argument
         return int.__new__(cls, value)
 
     def __init__(self, value, decimals: int):

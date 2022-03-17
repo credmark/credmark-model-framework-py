@@ -109,7 +109,8 @@ def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, only_required, t
                     if len(ret) == 0:
                         ret = drill_ret
                     else:
-                        ret[0] = (ret[0][0], ret[0][1], ret[0][2] + ' | ' + drill_ret[0][2])
+                        ret[0] = (ret[0][0], ret[0][1], ret[0][2] +  # type: ignore
+                                  ' | ' + drill_ret[0][2])
                 elif ret_type == 'example':
                     if drill_ret == [{}]:
                         drill_ret = [{var_name: '{}'}]
