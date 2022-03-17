@@ -74,12 +74,19 @@ class HistoricalUtil:
         else:
             (w_k, w_v) = self.parse_timerangestr(window)
             window_timestamp = self.range_timestamp(w_k, w_v)
-        
+        if window_timestamp <= 0:
+            raise ModelRunError(
+                f"Negative window '{window}' specificied for historical.")
+
         if interval is not None:
             (i_k, i_v) = self.parse_timerangestr(interval)
             interval_timestamp = self.range_timestamp(i_k, i_v)
         else:
             interval_timestamp = self.range_timestamp(w_k, 1)
+
+        if i_v <= 0:
+            raise ModelRunError(
+                f"Negative interval '{window}' specified for historical.")
 
         if snap_clock is None and end_timestamp is None:
 
@@ -185,13 +192,7 @@ class HistoricalUtil:
                 f"Invalid historical time string '{time_str}': "
                 f"unit not one of {','.join(self.time_units)}")
 
-        try:
-            num = int(time_str.split(' ')[0])
-            if num <= 0:
-                num = 1
-        except Exception:
-            num = 1
-
+        num = int(time_str.split(' ')[0])
         return (key, num)
 
     def range_timestamp(self, key: str, num: int):
