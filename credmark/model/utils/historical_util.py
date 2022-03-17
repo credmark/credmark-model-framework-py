@@ -1,4 +1,9 @@
-from typing import Type, TypeVar, Union
+from typing import (
+    Type,
+    TypeVar,
+    Union,
+    List,
+)
 import credmark.model
 from credmark.model.errors import ModelRunError
 from credmark.types import (
@@ -38,7 +43,7 @@ class HistoricalUtil:
 
     def run_model_historical(self,
                              model_slug: str,
-                             window: str,
+                             window: Union[str, List[str]],
                              model_input: Union[dict, DTO, None] = None,
                              interval: Union[str, None] = None,
                              end_timestamp: Union[int, None] = None,
@@ -50,7 +55,7 @@ class HistoricalUtil:
 
         :param model_slug: the slug of the model to run
         :param window: a string defining a time window, ex. "30 day"
-        :param interval: a string defining a time interval, ex. "1 day"
+        :param interval: a string defining a time interval, ex. "1 day", or list of time intervals to be summed.
         :param model_input: input passed to the model being run
         :param model_return_type: the DTO class or dict for the output of the model
              being run. This will be the type of the BlockSeriesRow.output
@@ -61,8 +66,17 @@ class HistoricalUtil:
             model_input = {}
         run_return_type = BlockSeries[model_return_type]
 
-        (w_k, w_v) = self.parse_timerangestr(window)
-        window_timestamp = self.range_timestamp(w_k, w_v)
+        if isinstance(window, list):
+            parsed_window = [self.range_timestamp(*self.parse_timerangestr(w)) for w in window]
+            min_w = window[parsed_window == min(parsed_window)]
+            (w_k, _) = self.parse_timerangestr(min_w)
+            print('parsed_window', parsed_window)
+            window_timestamp = sum(parsed_window)
+        else:
+            (w_k, w_v) = self.parse_timerangestr(window)
+            window_timestamp = self.range_timestamp(w_k, w_v)
+        print('window_timestamp', window_timestamp)
+        
         if interval is not None:
             (i_k, i_v) = self.parse_timerangestr(interval)
             interval_timestamp = self.range_timestamp(i_k, i_v)
@@ -86,7 +100,6 @@ class HistoricalUtil:
             if end_timestamp is None:
                 end_timestamp = self.context.block_number.timestamp
             if snap_clock is not None:
-
                 if snap_clock == 'interval':
                     snap_sec = interval_timestamp
                 else:
