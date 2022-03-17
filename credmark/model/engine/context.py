@@ -3,7 +3,7 @@ from typing import Type, Union
 from credmark.model.base import Model
 from credmark.model.context import ModelContext
 from credmark.model.engine.errors import MissingModelError
-from credmark.model.errors import MaxModelRunDepthError, \
+from credmark.model.errors import MaxModelRunDepthError, ModelBaseError, \
     ModelEngineError, ModelInvalidStateError, ModelRunError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
@@ -265,7 +265,12 @@ class EngineModelContext(ModelContext):
                 context.is_active = True
 
                 model = model_class(context)
-                output = model.run(input)
+                try:
+                    output = model.run(input)
+                except Exception as err:
+                    if not isinstance(err, ModelBaseError):
+                        raise ModelRunError(f'Exception running model {slug}: {err}')
+                    raise
 
                 # transform to the defined outputDTO for validation of output
                 output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
