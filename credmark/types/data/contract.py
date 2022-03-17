@@ -7,7 +7,7 @@ from typing import (
 from web3.contract import Contract as Web3Contract
 
 import credmark.model
-from credmark.model.errors import ModelDataError, ModelEngineError, ModelNoContextError, ModelRunError
+from credmark.model.errors import ModelDataError, ModelNoContextError, ModelRunError
 from credmark.types.data.account import Account
 from credmark.types.dto import PrivateAttr, IterableListGenericDTO, DTOField
 

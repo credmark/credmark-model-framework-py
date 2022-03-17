@@ -8,7 +8,7 @@ from web3 import Web3
 from web3._utils.validation import (
     validate_address as eth_utils_validate_address,
 )
-from credmark.types.dto import DTO, DTOField
+from credmark.types.dto import DTOField
 
 
 def validate_address(addr: str):

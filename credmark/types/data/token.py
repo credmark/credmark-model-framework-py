@@ -8,7 +8,7 @@ from .address import Address
 from .data_content.fungible_token_data import FUNGIBLE_TOKEN_DATA
 from .data_content.erc_standard_data import ERC20_BASE_ABI
 from typing import List, Union
-from ..dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
+from ..dto import PrivateAttr, IterableListGenericDTO, DTOField
 from ..models.core import CoreModels
 
 
