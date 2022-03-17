@@ -1,8 +1,10 @@
 import logging
-from typing import Union
+from typing import Type, Union
+from credmark.model.base import Model
 from credmark.model.context import ModelContext
 from credmark.model.engine.errors import MissingModelError
-from credmark.model.errors import MaxModelRunDepthError, ModelEngineError, ModelInvalidStateError, ModelRunError
+from credmark.model.errors import MaxModelRunDepthError, \
+    ModelEngineError, ModelInvalidStateError, ModelRunError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.transform import transform_data_for_dto
@@ -185,6 +187,7 @@ class EngineModelContext(ModelContext):
 
         # The last item of the tuple is the output.
         output = res_tuple[-1]
+        # Transform to the requested return type
         return transform_data_for_dto(output, return_type, slug, 'output')
 
     def _run_model(self,
@@ -210,8 +213,30 @@ class EngineModelContext(ModelContext):
             model_class = None
 
         self.__depth += 1
-        if self.__depth >= self.max_run_depth:
-            raise MaxModelRunDepthError(f'Max model run depth hit {self.__depth}')
+
+        try:
+            if self.__depth >= self.max_run_depth:
+                raise MaxModelRunDepthError(f'Max model run depth hit {self.__depth}')
+
+            return self._run_model_with_class(
+                slug,
+                input,
+                block_number,
+                version,
+                model_class,
+                try_remote)
+        finally:
+            self.__depth -= 1
+
+    def _run_model_with_class(self,
+                              slug: str,
+                              input: Union[dict, DTO],
+                              block_number: Union[int, None],
+                              version: Union[str, None],
+                              model_class: Union[Type[Model], None],
+                              try_remote: bool):
+
+        api = self.__api
 
         if model_class is not None:
 
@@ -232,31 +257,32 @@ class EngineModelContext(ModelContext):
                                              api
                                              )
 
-            input = transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
+            try:
 
-            ModelContext.current_context = context
-            context.is_active = True
+                input = transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
 
-            model = model_class(context)
-            output = model.run(input)
+                ModelContext.current_context = context
+                context.is_active = True
 
-            output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
+                model = model_class(context)
+                output = model.run(input)
 
-            context.is_active = False
-            ModelContext.current_context = self
+                # transform to the defined outputDTO for validation of output
+                output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
 
-            # If we ran with a different context, we add its deps
-            if context != self:
-                self._add_dependencies(context.dependencies)
+            finally:
+                context.is_active = False
+                ModelContext.current_context = self
 
-            # Now we add dependency for this run
-            version = model_class.version
-            self._add_dependency(slug, version, 1)
+                # If we ran with a different context, we add its deps
+                if context != self:
+                    self._add_dependencies(context.dependencies)
 
-        elif try_remote:
-            # api is not None here or get_model_class() would have
-            # raised an error
-            assert api is not None
+                # Now we add dependency for this run
+                version = model_class.version
+                self._add_dependency(slug, version, 1)
+
+        elif try_remote and api is not None:
             slug, version, output, dependencies = api.run_model(
                 slug, version, self.chain_id,
                 block_number if block_number is not None else self.block_number,
@@ -268,7 +294,5 @@ class EngineModelContext(ModelContext):
             err = MissingModelError(slug, version)
             self.logger.error(err)
             raise err
-
-        self.__depth -= 1
 
         return slug, version, output
