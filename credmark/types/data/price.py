@@ -1,9 +1,18 @@
-from ..dto import DTO, DTOField
-from ..data.token import Token
+from typing import (
+    Union
+)
 
+from ..dto import (
+    DTO,
+    DTOField,
+)
+
+from ..data.token import (
+    Token,
+)
 
 class Price(DTO):
-    price: float = DTOField(0.0, description='Value of one Token')
+    price: Union[float, None] = DTOField(None, description='Value of one Token')
 
     class Config:
         schema_extra: dict = {
