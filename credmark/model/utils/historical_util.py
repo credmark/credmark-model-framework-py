@@ -68,7 +68,7 @@ class HistoricalUtil:
 
         if isinstance(window, list):
             parsed_window = [self.range_timestamp(*self.parse_timerangestr(w)) for w in window]
-            min_w = window[parsed_window == min(parsed_window)]
+            min_w = window[parsed_window.index(min(parsed_window))]
             (w_k, _) = self.parse_timerangestr(min_w)
             window_timestamp = sum(parsed_window)
         else:
