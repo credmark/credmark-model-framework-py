@@ -12,8 +12,6 @@ from dotenv import load_dotenv, find_dotenv
 sys.path.append('.')
 from .model.engine.context import EngineModelContext
 from .model.engine.model_loader import ModelLoader
-from .model.errors import ModelBaseError, ModelDataError, ModelRunError
-from .model.engine.errors import ModelEngineError, ModelRunRequestError
 from .model.web3 import Web3Registry
 from .model.engine.model_api import ModelApi
 from .model.encoder import json_dump
@@ -377,18 +375,14 @@ def run_model(args):
 
         json_dump(result, sys.stdout)
 
-    except ModelBaseError as e:
-        json.dump(e.dict(), sys.stdout)
-        exit_code = 1
     except Exception as e:
         # this exception would only happen have been raised
         # within this file itself
         logger.exception('Run processing error')
         msg = {
             "error": {
-                "statusCode": 500,
-                "error": "Model engine error",
-                "message": str(e)
+                "type": "ModelEngineError",
+                "message": f'Error in credmark-dev: {str(e)}'
             }
         }
         json.dump(msg, sys.stdout)
