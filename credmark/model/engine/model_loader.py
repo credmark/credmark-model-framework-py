@@ -7,7 +7,7 @@ from typing import Union, Type, List
 from packaging import version
 from requests.structures import CaseInsensitiveDict
 from credmark.model import Model
-from credmark.model.engine.errors import MissingModelError, WriteModelManifestError
+from credmark.model.engine.errors import ModelNotFoundError, ModelManifestWriteError
 from credmark.model.describe import validate_model_slug
 
 
@@ -233,7 +233,7 @@ class ModelLoader:
                 f'{slug}:{ver}')
 
         if model_class is None and raise_on_not_found:
-            err = MissingModelError(slug, ver)
+            err = ModelNotFoundError(slug, ver)
             self.logger.error(err)
             raise err
 
@@ -251,7 +251,7 @@ class ModelLoader:
                     json.dump({'credmarkModelManifest': '1.0', 'models': manifests}, fp)
                     self.logger.info(f'Saved manifest to {manifest_file}')
                 except:
-                    err = WriteModelManifestError(manifest_file)
+                    err = ModelManifestWriteError(manifest_file)
                     self.logger.error(err)
                     raise err
         except Exception as err:

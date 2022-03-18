@@ -12,7 +12,7 @@ from dotenv import load_dotenv, find_dotenv
 sys.path.append('.')
 from .model.engine.context import EngineModelContext
 from .model.engine.model_loader import ModelLoader
-from .model.errors import ModelDataError, ModelRunError
+from .model.errors import ModelBaseError, ModelDataError, ModelRunError
 from .model.engine.errors import ModelEngineError, ModelRunRequestError
 from .model.web3 import Web3Registry
 from .model.engine.model_api import ModelApi
@@ -377,23 +377,19 @@ def run_model(args):
 
         json_dump(result, sys.stdout)
 
-    except ModelRunRequestError as e:
-        sys.stdout.write(json.dumps(e.result))
-        exit_code = 1
-    except (ModelEngineError, ModelRunError, ModelDataError) as e:
-        msg = {
-            "statusCode": 500,
-            "error": "Model run error",
-            "message": str(e)
-        }
-        json.dump(msg, sys.stdout)
+    except ModelBaseError as e:
+        json.dump(e.dict(), sys.stdout)
         exit_code = 1
     except Exception as e:
-        logger.exception('Run error')
+        # this exception would only happen have been raised
+        # within this file itself
+        logger.exception('Run processing error')
         msg = {
-            "statusCode": 500,
-            "error": "Model run error",
-            "message": str(e)
+            "error": {
+                "statusCode": 500,
+                "error": "Model engine error",
+                "message": str(e)
+            }
         }
         json.dump(msg, sys.stdout)
         exit_code = 1

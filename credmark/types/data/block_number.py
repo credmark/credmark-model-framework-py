@@ -7,26 +7,37 @@ from typing import (
     Union,
 )
 
-from credmark.model.errors import ModelInvalidStateError, ModelNoContextError, ModelRunError
+from credmark.model.errors import (ModelBaseErrorDTO, DTOField,
+                                   ModelInvalidStateError,
+                                   ModelNoContextError,
+                                   ModelRunError)
 
 
-class BlockNumberOutOfRangeException(ModelInvalidStateError):
-    def __init__(self, block_number: int, max_block_number: int, message: str):
+class BlockNumberOutOfRangeErrorDTO(ModelBaseErrorDTO):
+    """
+    A block number was constructed that is out of range for the context.
+    This is a subclass of ModelInvalidStateError and ModelRunError
+    as its considered a coding error in the model.
+    """
+    blockNumber: str = DTOField(..., description='Block number')
+    maxBlockNumber: str = DTOField(..., description='Maximum block number of context')
+
+
+class BlockNumberOutOfRangeError(ModelInvalidStateError):
+    dto_class = BlockNumberOutOfRangeErrorDTO
+
+    def __init__(self, block_number: int,
+                 max_block_number: int, **_kwargs):
         self.block_number = block_number
         self.max_block_number = max_block_number
+        message = f'BlockNumber {self.block_number} is out of maximum range: {self.max_block_number}'
+        super().__init__(message, blockNumber=block_number, maxBlockNumber=max_block_number)
+
+
+class InvalidBlockNumberError(ModelRunError):
+    def __init__(self, **_kwargs):
+        message = 'BlockNumber constructed with no number or sample_timestamp'
         super().__init__(message)
-
-    def __str__(self):
-        return f'BlockNumber {self.block_number} is out of maximum range: {self.max_block_number}'
-
-
-class InvalidBlockNumberException(ModelRunError):
-    def __init__(self, block_number: Union[int, None], message: str):
-        self.block_number = block_number
-        super().__init__(message)
-
-    def __str__(self):
-        return f'BlockNumber {self.block_number} is invalid'
 
 
 class BlockNumber(int):
@@ -37,22 +48,24 @@ class BlockNumber(int):
         context = credmark.model.ModelContext.current_context
 
         if number is None:
-            if sample_timestamp is not None and context is not None:
-                get_blocknumber_result = context.run_model(
-                    'rpc.get-blocknumber', {"timestamp": sample_timestamp})
-                return BlockNumber(number=get_blocknumber_result['blockNumber'],
-                                   timestamp=get_blocknumber_result['blockTimestamp'],
-                                   sample_timestamp=sample_timestamp)
+            if sample_timestamp is not None:
+                if context is not None:
+                    get_blocknumber_result = context.run_model(
+                        'rpc.get-blocknumber', {"timestamp": sample_timestamp})
+                    return BlockNumber(number=get_blocknumber_result['blockNumber'],
+                                       timestamp=get_blocknumber_result['blockTimestamp'],
+                                       sample_timestamp=sample_timestamp)
+                else:
+                    raise ModelNoContextError('No context to return a blockNumber for timestamp')
             else:
-                raise InvalidBlockNumberException(number, "Invalid Block Number")
+                raise InvalidBlockNumberError()
         if context is not None:
             max_block_number = context.block_number
         else:
             max_block_number = None
 
         if max_block_number is not None and number > max_block_number:
-            raise BlockNumberOutOfRangeException(
-                number, max_block_number, "Block Number out of Range")
+            raise BlockNumberOutOfRangeError(number, max_block_number)
         return super().__new__(BlockNumber, number)
 
     def __init__(self,
@@ -84,11 +97,11 @@ class BlockNumber(int):
     def to_datetime(self):
         return datetime.fromtimestamp(self.__timestamp__())
 
-    @property
+    @ property
     def timestamp(self) -> Timestamp:
         return self.__timestamp__()
 
-    @property
+    @ property
     def datestring(self) -> str:
         return str(self.to_datetime())
 

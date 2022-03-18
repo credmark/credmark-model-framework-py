@@ -2,7 +2,7 @@ import logging
 from typing import Type, Union
 from credmark.model.base import Model
 from credmark.model.context import ModelContext
-from credmark.model.engine.errors import MissingModelError
+from credmark.model.engine.errors import ModelNotFoundError
 from credmark.model.errors import MaxModelRunDepthError, ModelBaseError, \
     ModelEngineError, ModelInvalidStateError, ModelRunError
 from credmark.model.engine.model_api import ModelApi
@@ -53,6 +53,7 @@ class EngineModelContext(ModelContext):
             ModelRunError if model output is not a dict-like object.
             Exception on other errors
         """
+        context: Union[EngineModelContext, None] = None
         try:
             if model_loader is None:
                 model_loader = ModelLoader(['.'])
@@ -87,10 +88,24 @@ class EngineModelContext(ModelContext):
                 'slug': result_tuple[0],
                 'version': result_tuple[1],
                 'output': output_as_dict,
-                'dependencies': context.__dependencies}
+                'dependencies': context.dependencies}
             return response
+        except ModelBaseError as err:
+            response = {
+                'slug': model_slug,
+                'version': model_version,
+                'error': err.dict(),
+                'dependencies': context.dependencies if context else {}}
+        except Exception as e:
+            err = ModelEngineError(str(e))
+            response = {
+                'slug': model_slug,
+                'version': model_version,
+                'error': err.dict(),
+                'dependencies': context.dependencies if context else {}}
         finally:
             ModelContext.current_context = None
+        return response
 
     @classmethod
     def get_latest_block_number(cls, api: ModelApi, chain_id: int):
@@ -296,7 +311,7 @@ class EngineModelContext(ModelContext):
             if dependencies:
                 self._add_dependencies(dependencies)
         else:
-            err = MissingModelError(slug, version)
+            err = ModelNotFoundError(slug, version)
             self.logger.error(err)
             raise err
 
