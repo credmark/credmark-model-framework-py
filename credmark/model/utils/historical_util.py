@@ -82,7 +82,7 @@ class HistoricalUtil:
             (i_k, i_v) = self.parse_timerangestr(interval)
             interval_timestamp = self.range_timestamp(i_k, i_v)
         else:
-            interval_timestamp = self.range_timestamp(w_k, i_v)
+            interval_timestamp = self.range_timestamp(w_k, 1)
         if interval_timestamp <= 0:
             raise ModelRunError(
                 f"Negative or zero interval '{interval}' specified for historical.")
