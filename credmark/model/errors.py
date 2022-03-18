@@ -1,9 +1,20 @@
-from typing import Union
+from typing import List, Union
 from pydantic import BaseModel as DTO, Field as DTOField
 
 
-# If you subclass this, you MUST add a doc string to your subclass
-# or it will reuse this one.
+class ModelCallStackEntry(DTO):
+    """
+    An item in an error's call stack.
+    """
+    slug: str = DTOField(..., description='Model slug')
+    version: str = DTOField(..., description='Model version')
+    chainId: Union[int, None] = DTOField(None, description='Context chain id')
+    blockNumber: Union[int, None] = DTOField(None, description='Context block number')
+
+# If you subclass ModelBaseErrorDTO, you MUST add a doc-string
+# to your subclass or it will reuse the one below in the schema.
+
+
 class ModelBaseErrorDTO(DTO):
     """
     The base error type that other errors inherit from.
@@ -15,6 +26,11 @@ class ModelBaseErrorDTO(DTO):
        for a contract at an address that does not exist will return a
        ModelDataError. This error is considered deterministic and permanent,
        in the sense that for the given context, the same error will always occur.
+
+     - ModelInputError: An error that occurs when the input data for a
+       model is being validated. Usually it is caused by missing fields,
+       fields of the wrong type, or conficting data. In the returned error
+       the last stack entry is the model whose input triggered the error.
 
      - ModelRunError: An error that occurs during the running of a model.
        This error is usually related to a model coding error or
@@ -29,6 +45,14 @@ class ModelBaseErrorDTO(DTO):
     """
     type: str = DTOField(..., description='Error type')
     message: str = DTOField(..., description='Error message')
+    stack: List[ModelCallStackEntry] = DTOField(
+        [], description='Model call stack. First element is the first '
+        'called model and last element is the model that raised the error.')
+    code: str = DTOField('generic', description='Short identifier for the type of error')
+    detail: Union[dict, None] = DTOField(
+        None, description='Arbitrary data related to the error')
+    permanent: bool = DTOField(False, description='If true, the error is permanent and '
+                               'will also give the same result for the same context.')
 
 
 class ModelBaseError(Exception):
@@ -41,12 +65,21 @@ class ModelBaseError(Exception):
     method with extra params (as needed) and **kwargs
     (for safety) and call super() with the extra args defined
     in the dto. See ModelDataError for an example.
+
+    Subclasses must be able to be initialized from a normally
+    and with their full dto json as a **kwargs. If you set
+    a custom message or other default values in your __init__,
+    be sure not to have duplicate keys.
+
+    The dto data object is accessible at error.data
     """
     class_map = {}
 
     dto_set = set()
 
-    # subclasses can set this to add more data to the error
+    # subclasses can set dto_class to a subclass of ModelBaseErrorDTO
+    # to add more fields to the error.data
+
     dto_class = ModelBaseErrorDTO
 
     def __init_subclass__(cls, **kwargs):
@@ -54,11 +87,11 @@ class ModelBaseError(Exception):
         cls.class_map[cls.__name__] = cls
         cls.dto_set.add(cls.dto_class)
 
-    @classmethod
+    @ classmethod
     def class_for_name(cls, name: str):
         return cls.class_map.get(name)
 
-    @classmethod
+    @ classmethod
     def error_schemas(cls):
         schemas = []
         for dto in cls.dto_set:
@@ -73,10 +106,12 @@ class ModelBaseError(Exception):
             schemas.append(s)
         return schemas
 
-    def __init__(self, message: str, **data):
+    def __init__(self, message: str,
+                 **data):
         super().__init__(message)
         self.data = self.dto_class(type=self.__class__.__name__,
-                                   message=message, **data)
+                                   message=message,
+                                   **data)
 
     def dict(self):
         return self.data.dict()
@@ -101,11 +136,6 @@ class ModelDataErrorDTO(ModelBaseErrorDTO):
     A model may (and often should) catch and handle ModelDataErrors
     raised from running a model.
     """
-    code: str = DTOField(..., description='Short identifier for the type of error')
-    data: Union[dict, None] = DTOField(
-        None, description='Arbitrary data related to the error')
-    chainId: int = DTOField(1, description='Context chain id')
-    blockNumber: int = DTOField(..., description='Context block number')
 
 
 class ModelDataError(ModelBaseError):
@@ -123,13 +153,11 @@ class ModelDataError(ModelBaseError):
 
     A model may (and often should) catch and handle ModelDataErrors
     raised from calls to context.run_model().
-
-    An easy way to raise from a model is: self.raise_data_error()
     """
     dto_class = ModelDataErrorDTO
 
     class ErrorCodes:
-        GENERAL = 'general'
+        GENERIC = 'generic'
         NO_DATA = 'no_data'
         CONFLICT = 'conflict'
         INVALID_INPUT = 'invalid_input'
@@ -138,16 +166,15 @@ class ModelDataError(ModelBaseError):
     # backwards compatibility.
     def __init__(self,
                  message: str,
-                 code: str,
-                 chain_id: int,
-                 block_number: int,
-                 data: Union[dict, list, str, int, float, None] = None,
-                 **_kwargs):
-        super().__init__(message,
+                 code: str = 'generic',
+                 detail: Union[dict, None] = None,
+                 **kwargs):
+        if 'permanent' not in kwargs:
+            kwargs = dict(kwargs, permanent=True)
+        super().__init__(message=message,
                          code=code,
-                         chainId=chain_id,
-                         blockNumber=block_number,
-                         data=data)
+                         detail=detail,
+                         **kwargs)
 
 
 class ModelRunError(ModelBaseError):
@@ -167,6 +194,16 @@ class ModelRunError(ModelBaseError):
     they could give a different result if run again, for example
     if the code was fixed or a web3 connection issue was resolved
     etc.
+    """
+
+
+class ModelInputError(ModelBaseError):
+    """
+    An error that occurs when invalid input is sent to a model.
+    The message describes the invalid or missing fields.
+
+    The last model on the call stack is the model that received the
+    invalid input.
     """
 
 

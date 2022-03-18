@@ -4,10 +4,10 @@ from credmark.model.base import Model
 from credmark.model.context import ModelContext
 from credmark.model.engine.errors import ModelNotFoundError
 from credmark.model.errors import MaxModelRunDepthError, ModelBaseError, \
-    ModelEngineError, ModelInvalidStateError, ModelRunError
+    ModelEngineError, ModelInputError, ModelInvalidStateError, ModelRunError, ModelCallStackEntry
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
-from credmark.model.transform import transform_data_for_dto
+from credmark.model.transform import DataTransformError, transform_data_for_dto
 from credmark.model.web3 import Web3Registry
 from credmark.types.dto import DTO, EmptyInput
 from credmark.types.models.core import CoreModels
@@ -48,10 +48,7 @@ class EngineModelContext(ModelContext):
             block_number: if None, latest block is used
             run_id (str | None): a string to identify a particular model run. It is
                 same for any other models run from within a model.
-
-        Raises:
-            ModelRunError if model output is not a dict-like object.
-            Exception on other errors
+        Catches all exceptions
         """
         context: Union[EngineModelContext, None] = None
         try:
@@ -109,16 +106,10 @@ class EngineModelContext(ModelContext):
 
     @classmethod
     def get_latest_block_number(cls, api: ModelApi, chain_id: int):
-        try:
-            _s, _v, output, _d = api.run_model(CoreModels.latest_block_number,
-                                               None, chain_id, 0, {})
-            block_number: int = output['blockNumber']
-            if block_number == -1:
-                # we'll treat this as transient
-                raise ModelRunError(f'No latest block found on chain {chain_id}')
-            return block_number
-        except ModelEngineError as err:
-            raise ModelEngineError(f'Error looking up latest block on chain {chain_id}: {err}')
+        _s, _v, output, _d = api.run_model(CoreModels.latest_block_number,
+                                           None, chain_id, 0, {})
+        block_number: int = output['blockNumber']
+        return block_number
 
     def __init__(self,
                  chain_id: int,
@@ -274,21 +265,39 @@ class EngineModelContext(ModelContext):
 
             try:
 
-                input = transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
+                try:
+                    input = transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
+                except DataTransformError as err:
+                    # We convert to an input error here to distinguish
+                    # from output transform errors below
+                    raise ModelInputError(str(err))
 
                 ModelContext.current_context = context
                 context.is_active = True
 
+                # Errors in this section will add the callee
+                # model to the call stack
+
                 model = model_class(context)
-                try:
-                    output = model.run(input)
-                except Exception as err:
-                    if not isinstance(err, ModelBaseError):
-                        raise ModelRunError(f'Exception running model {slug}: {err}')
-                    raise
+
+                output = model.run(input)
 
                 # transform to the defined outputDTO for validation of output
                 output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
+
+            except Exception as err:
+                if isinstance(err, DataTransformError):
+                    # Output transform error is a coding error of model just run
+                    err = ModelRunError(str(err))
+                elif not isinstance(err, ModelBaseError):
+                    err = ModelRunError(f'Exception running model {slug}: {err}')
+                # We add the model just run (or validated input for) to stack
+                err.data.stack.insert(0,
+                                      ModelCallStackEntry(slug=slug,
+                                                          version=model_class.version,
+                                                          chainId=context.chain_id,
+                                                          blockNumber=context.block_number))
+                raise err
 
             finally:
                 context.is_active = False
@@ -303,6 +312,7 @@ class EngineModelContext(ModelContext):
                 self._add_dependency(slug, version, 1)
 
         elif try_remote and api is not None:
+            # Any error raised will already have a call stack entry
             slug, version, output, dependencies = api.run_model(
                 slug, version, self.chain_id,
                 block_number if block_number is not None else self.block_number,
@@ -311,6 +321,7 @@ class EngineModelContext(ModelContext):
             if dependencies:
                 self._add_dependencies(dependencies)
         else:
+            # No call stack item because model not run
             err = ModelNotFoundError(slug, version)
             self.logger.error(err)
             raise err

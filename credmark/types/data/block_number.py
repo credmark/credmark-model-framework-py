@@ -7,7 +7,7 @@ from typing import (
     Union,
 )
 
-from credmark.model.errors import (ModelBaseErrorDTO, DTOField,
+from credmark.model.errors import (ModelBaseErrorDTO,
                                    ModelInvalidStateError,
                                    ModelNoContextError,
                                    ModelRunError)
@@ -18,26 +18,36 @@ class BlockNumberOutOfRangeErrorDTO(ModelBaseErrorDTO):
     A block number was constructed that is out of range for the context.
     This is a subclass of ModelInvalidStateError and ModelRunError
     as its considered a coding error in the model.
+
+    Properties of the detail object:
+    - blockNumber: the requested block number
+    - maxBlockNumber: Maximum block number of context
     """
-    blockNumber: str = DTOField(..., description='Block number')
-    maxBlockNumber: str = DTOField(..., description='Maximum block number of context')
 
 
 class BlockNumberOutOfRangeError(ModelInvalidStateError):
     dto_class = BlockNumberOutOfRangeErrorDTO
 
-    def __init__(self, block_number: int,
-                 max_block_number: int, **_kwargs):
-        self.block_number = block_number
-        self.max_block_number = max_block_number
-        message = f'BlockNumber {self.block_number} is out of maximum range: {self.max_block_number}'
-        super().__init__(message, blockNumber=block_number, maxBlockNumber=max_block_number)
+    def __init__(self, block_number: Union[int, None] = None,
+                 max_block_number: Union[int, None] = None,
+                 **kwargs):
+        if 'message' in kwargs:
+            # reconstituted from json
+            super().__init__(**kwargs)
+        else:
+            # manually created
+            message = f'BlockNumber {block_number} is out of maximum range: {max_block_number}'
+            detail = {'blockNumber': block_number, 'maxBlockNumber': max_block_number}
+            super().__init__(message=message, detail=detail, **kwargs)
 
 
 class InvalidBlockNumberError(ModelRunError):
-    def __init__(self, **_kwargs):
-        message = 'BlockNumber constructed with no number or sample_timestamp'
-        super().__init__(message)
+    def __init__(self, **kwargs):
+        if 'message' in kwargs:
+            super().__init__(**kwargs)
+        else:
+            message = 'BlockNumber constructed with no number or sample_timestamp'
+            super().__init__(message=message, **kwargs)
 
 
 class BlockNumber(int):

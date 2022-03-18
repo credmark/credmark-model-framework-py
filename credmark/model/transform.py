@@ -1,7 +1,10 @@
 
 from typing import Type, Union
-from .errors import ModelRunError
 from credmark.types.dto import DTO
+
+
+class DataTransformError(Exception):
+    pass
 
 
 def transform_data_for_dto(
@@ -56,5 +59,5 @@ def transform_data_for_dto(
                 # create dto from dict
                 return dto_class(**data)
     except Exception as e:
-        raise ModelRunError(
+        raise DataTransformError(
             f'Error validating model {slug} {data_source}: {e}, with data={data}')

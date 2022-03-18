@@ -133,7 +133,7 @@ class ModelApi:
             logger.error(
                 f'Error running api request for {slug} {self.__url}: {err}')
             raise ModelRunRequestError(
-                f'Unable to reach model runner for model {slug}', 503, 'Model runner unavailable')
+                f'Unable to reach model runner for model {slug}', '503')
         except ModelBaseError:
             raise
         except Exception as err:
@@ -149,15 +149,15 @@ class ModelApi:
                         error_result = resp.json()
                         raise ModelRunRequestError(
                             error_result.get('message', 'Error response from runner api'),
-                            error_result.get('statusCode', 500),
-                            error_result.get('error', 'Unknown error response from runner api'))
+                            str(error_result.get('statusCode', 500)),
+                        )
 
                     except Exception:
                         raise ModelRunRequestError(
-                            resp.text, resp.status_code, 'Model run error requesting runner api')
+                            f'Model run error response: {resp.text}', str(resp.status_code))
             else:
                 raise ModelRunRequestError(
-                    str(err), 503, 'Model run error requesting runner api')
+                    f'Model run request error: {str(err)}', str(503))
         finally:
             # Ensure the response is closed in case we ever don't
             # read the content.
@@ -166,9 +166,11 @@ class ModelApi:
 
     def raise_for_error_info(self, err_obj: dict):
         err_type = err_obj.get('type')
-        message = err_obj.get('message', 'Unknown model engine error')
         del err_obj['type']
-        del err_obj['message']
+
+        message = err_obj.get('message')
+        if message is None:
+            err_obj['message'] = message = 'Unknown model engine error'
 
         if err_type:
             err_class = ModelBaseError.class_for_name(err_type)
@@ -177,10 +179,11 @@ class ModelApi:
             err_class = None
 
         if err_class is not None:
+            err = None
             try:
-                err = err_class(message, **err_obj)
+                err = err_class(**err_obj)
             except Exception as e:
                 logger.error(f'Error creating error {err_type} instance: {e}')
-                err = ModelEngineError(f'{err_type}: {message}')
-            raise err
+            if err is not None:
+                raise err
         raise ModelEngineError(f'{err_type}: {message}')
