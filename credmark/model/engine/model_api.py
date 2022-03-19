@@ -3,7 +3,8 @@ import os
 import logging
 import requests
 from urllib.parse import urljoin, quote
-from credmark.model.errors import MissingModelError, ModelRunRequestError
+from credmark.model.engine.errors import ModelNotFoundError, ModelRunRequestError, SlugAndVersionDTO
+from credmark.model.errors import ModelBaseError, ModelEngineError
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
 
@@ -121,40 +122,72 @@ class ModelApi:
             resp = requests.post(url, json=req, headers=headers, timeout=RUN_REQUEST_TIMEOUT)
             resp.raise_for_status()
             resp_obj = resp.json()
+
+            err_obj = resp_obj.get('error')
+            if err_obj is not None:
+                self.raise_for_error_info(err_obj)
+
             return resp_obj['slug'], resp_obj['version'], \
                 resp_obj['output'], resp_obj['dependencies']
         except requests.exceptions.ConnectionError as err:
             logger.error(
                 f'Error running api request for {slug} {self.__url}: {err}')
-            error_result = {
-                "statusCode": 503,
-                "error": "Model runner unavailable",
-                "message": f'Unable to reach model runner for model {slug}'
-            }
             raise ModelRunRequestError(
-                'Model run request error', error_result)
+                f'Unable to reach model runner for model {slug}', '503')
+        except ModelBaseError:
+            raise
         except Exception as err:
             logger.error(
                 f'Error running api request for {slug} {self.__url}: {err}')
             if resp is not None:
                 logger.error(f'Error api response {resp.text}')
                 if resp.status_code == 404:
-                    raise MissingModelError(
+                    e = ModelNotFoundError(
                         slug, version, 'Model not found from api')
+                    print(e.data, e.data.detail, type(e.data.detail))
+                    e.transform_data_detail(SlugAndVersionDTO)
+                    print(e.data, e.data.detail, type(e.data.detail))
+                    raise e
                 else:
                     try:
                         error_result = resp.json()
+                        raise ModelRunRequestError(
+                            error_result.get('message', 'Error response from runner api'),
+                            str(error_result.get('statusCode', 500)),
+                        )
+
                     except Exception:
-                        error_result = {
-                            "statusCode": resp.status_code,
-                            "error": "Model run error",
-                            "message": resp.text
-                        }
-                    raise ModelRunRequestError(
-                        'Model run request error', error_result)
-            raise err
+                        raise ModelRunRequestError(
+                            f'Model run error response: {resp.text}', str(resp.status_code))
+            else:
+                raise ModelRunRequestError(
+                    f'Model run request error: {str(err)}', str(503))
         finally:
             # Ensure the response is closed in case we ever don't
             # read the content.
             if resp is not None:
                 resp.close()
+
+    def raise_for_error_info(self, err_obj: dict):
+        err_type = err_obj.get('type')
+        del err_obj['type']
+
+        message = err_obj.get('message')
+        if message is None:
+            err_obj['message'] = message = 'Unknown model engine error'
+
+        if err_type:
+            err_class = ModelBaseError.class_for_name(err_type)
+        else:
+            err_type = 'UnknownErrorType'
+            err_class = None
+
+        if err_class is not None:
+            err = None
+            try:
+                err = err_class(**err_obj)
+            except Exception as e:
+                logger.error(f'Error creating error {err_type} instance: {e}')
+            if err is not None:
+                raise err
+        raise ModelEngineError(f'{err_type}: {message}')

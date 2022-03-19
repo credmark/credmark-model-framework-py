@@ -1,7 +1,8 @@
 from typing import Union, List
+from credmark.model.errors import ModelRunError
 
 
-class InvalidColumnException(Exception):
+class InvalidColumnException(ModelRunError):
     def __init__(self, model_slug: str, column: str, column_list: Union[List[str], None], message: str):
         self.model_slug = model_slug
         self.name = column
@@ -13,7 +14,7 @@ class InvalidColumnException(Exception):
             f' It must be in: {self.column_list}'
 
 
-class InvalidQueryException(Exception):
+class InvalidQueryException(ModelRunError):
     def __init__(self, model_slug: str, message: str):
         self.model_slug = model_slug
         super().__init__(message)

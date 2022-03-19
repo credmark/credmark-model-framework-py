@@ -7,8 +7,9 @@ from typing import (
 from web3.contract import Contract as Web3Contract
 
 import credmark.model
+from credmark.model.errors import ModelRunError, ModelNoContextError
 from credmark.types.data.account import Account
-from credmark.types.dto import PrivateAttr, IterableListGenericDTO, DTOField
+from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField
 
 
 class Contract(Account):
@@ -50,9 +51,12 @@ class Contract(Account):
                         abi=self.abi
                     )
                 else:
-                    raise ValueError('No current context. Unable to create contract instance.')
+                    raise ModelNoContextError(
+                        'No current context. Unable to create contract instance.')
             else:
-                raise ValueError('Contract address is None. Unable to create contract instance.')
+                # This should never actually happen so we consider it a coding error
+                raise ModelRunError(
+                    'Contract address is None. Unable to create contract instance.')
         return self._instance
 
     def load(self):

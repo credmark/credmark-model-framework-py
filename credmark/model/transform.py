@@ -1,7 +1,10 @@
 
 from typing import Type, Union
-from .errors import ModelRunError
-from ..types.dto import DTO
+from credmark.dto import DTO
+
+
+class DataTransformError(Exception):
+    pass
 
 
 def transform_data_for_dto(
@@ -25,8 +28,8 @@ def transform_data_for_dto(
 
         :param data: data in the form of a dict or DTO instance
         :param dto_class: DTO subclass (or None to convert to dict)
-        :param slug: the slug of the calling model (used for errors)
-        :param data_source: short string describing source of data, ex "input" (used for errors)
+        :param slug: the slug of the calling model (used only for error messages)
+        :param data_source: short string describing source of data, ex "input" (used for error messages)
     """
     try:
         if dto_class is None:
@@ -56,5 +59,5 @@ def transform_data_for_dto(
                 # create dto from dict
                 return dto_class(**data)
     except Exception as e:
-        raise ModelRunError(
+        raise DataTransformError(
             f'Error validating model {slug} {data_source}: {e}, with data={data}')

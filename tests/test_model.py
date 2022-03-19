@@ -3,7 +3,7 @@ import logging
 import credmark.model
 from credmark.model.engine.context import EngineModelContext
 from credmark.model.engine.model_loader import ModelLoader
-from credmark.types.dto import DTO, DTOField
+from credmark.dto import DTO, DTOField
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

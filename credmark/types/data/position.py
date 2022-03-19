@@ -1,5 +1,6 @@
-from ..dto import DTO, DTOField, cross_examples
-from ..data.token import Token
+from credmark.model.errors import ModelRunError
+from credmark.dto import DTO, DTOField, cross_examples
+from .token import Token
 
 
 class Position(DTO):
@@ -22,6 +23,9 @@ class Position(DTO):
     def scaled_amount(self):
         decimals = self.token.decimals
         if decimals is None:
-            raise ValueError(
+            # Not clear if this is a ModelRunError or ModelDataError
+            # TODO: Until we have definitive token lookup, we'll consider
+            # it transient as a ModelRunError.
+            raise ModelRunError(
                 f'No position scaled_amount for token {self.token.symbol} missing decimals value')
         return self.amount / (10 ** decimals)

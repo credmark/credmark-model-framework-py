@@ -6,7 +6,7 @@ from credmark.types import BlockSeries, BlockSeriesRow, \
 from credmark.types.models.core import CoreModels
 from credmark.types.models.rpc import RpcBlockRangeOutput, \
     RpcBlockStartEndIntervalInput, RpcBlockWindowIntervalInput
-from credmark.types.dto import DTO
+from credmark.dto import DTO
 
 # These models are local versions of models that are
 # used during development. They have high version numbers
@@ -21,6 +21,9 @@ def run_model_for_block_range(context: ModelContext,
     block_series = BlockSeries[dict]()
     for block in block_range:
         block_number = block.blockNumber
+        if model_input is None:
+            model_input = {}
+
         run_output = context.run_model(
             model_slug, model_input, block_number=block_number, version=model_version)
 

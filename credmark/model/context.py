@@ -3,7 +3,7 @@ from typing import Any, ClassVar, Type, TypeVar, Union, overload
 from .ledger import Ledger
 from .web3 import Web3Registry
 import credmark.types
-from credmark.types.dto import DTO, EmptyInput
+from credmark.dto import DTO, EmptyInput
 from credmark.model.utils.contract_util import ContractUtil
 from credmark.model.utils.historical_util import HistoricalUtil
 
@@ -94,7 +94,7 @@ class ModelContext():
                   ) -> dict: ...
 
     @abstractmethod
-    def run_model(self,
+    def run_model(self,  # type: ignore
                   slug,
                   input=EmptyInput(),
                   return_type=None,

@@ -1,6 +1,6 @@
 from typing import List
 import inspect
-from credmark.types.dto import DTOField, PrivateAttr, IterableListGenericDTO
+from credmark.dto import DTOField, PrivateAttr, IterableListGenericDTO
 
 
 class LedgerModelOutput(IterableListGenericDTO[dict]):

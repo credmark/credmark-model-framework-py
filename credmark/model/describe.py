@@ -3,8 +3,17 @@ import re
 from typing import Type, Union
 
 from .base import Model
-from credmark.types.dto import DTO, EmptyInput
-from .errors import InvalidModelSlug, WrongModelMethodSignature
+from credmark.dto import DTO, EmptyInput
+from .errors import ModelDefinitionError
+
+
+class WrongModelMethodSignature(ModelDefinitionError):
+    pass
+
+
+class InvalidModelSlug(ModelDefinitionError):
+    pass
+
 
 DICT_SCHEMA = {"title": "Object", "type": "object", "properties": {}}
 

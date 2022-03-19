@@ -1,5 +1,6 @@
 
 import credmark.model
+from credmark.model.errors import ModelNoContextError, ModelRunError
 import credmark.types
 from .token_wei import TokenWei
 from .contract import Contract
@@ -7,7 +8,7 @@ from .address import Address
 from .data_content.fungible_token_data import FUNGIBLE_TOKEN_DATA
 from .data_content.erc_standard_data import ERC20_BASE_ABI
 from typing import List, Union
-from ..dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
+from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField
 from ..models.core import CoreModels
 
 
@@ -18,12 +19,16 @@ def get_fungible_token_from_configuration(
         is_native_token: bool = False):
     token_datas = [
         t for t in FUNGIBLE_TOKEN_DATA.get(chain_id, [])
-        if t.get('is_native_token', False) == is_native_token and (t.get('address', None) == address or t.get('symbol', None) == symbol)
+        if (t.get('is_native_token', False) == is_native_token and
+            (t.get('address', None) == address or
+             t.get('symbol', None) == symbol))
     ]
 
     if len(token_datas) > 1:
-        # TODO: raise a mismatched data exception of some kind
-        raise Exception
+        # TODO: Until we have definitive token lookup, we'll
+        # consider it transient as a ModelRunError.
+        raise ModelRunError('Missing fungible token data in lookup for '
+                            f'chain_id={chain_id} symbol={symbol} address={address} is_native_token={is_native_token}')
 
     if len(token_datas) == 1:
         return token_datas[0]
@@ -31,10 +36,12 @@ def get_fungible_token_from_configuration(
 
 class Token(Contract):
     """
-    Token represents a fungible Token that is either an ERC20 or a Native Token (such as ETH or MATIC)
+    Token represents a fungible Token that is either an ERC20 or
+    a Native Token (such as ETH or MATIC)
 
-    It will load a standard simplified ERC20 ABI in the case of one not existing.
-    It allows for None addresses, in the case of it being a native token.
+    It will load a standard simplified ERC20 ABI in the case of
+    one not existing. It allows for None addresses, in the case
+    of it being a native token.
     """
     address: Union[Address, None] = None
     symbol: Union[str, None] = None
@@ -61,7 +68,7 @@ class Token(Contract):
                 'name' in data):
             context = credmark.model.ModelContext.current_context
             if context is None:
-                raise ValueError(
+                raise ModelNoContextError(
                     f'No current context to look up missing token data {data}')
             token_address = None
             if data.get('address', None) is not None:
@@ -98,7 +105,7 @@ class Token(Contract):
     def price_usd(self):
         context = credmark.model.ModelContext.current_context
         if context is None:
-            raise ValueError(f'No current context to get price of token {self.symbol}')
+            raise ModelNoContextError(f'No current context to get price of token {self.symbol}')
         if self.is_native_token:
             wrapped_native = [t for t in FUNGIBLE_TOKEN_DATA.get(
                 str(context.chain_id), []) if t.get('wraps') == self.symbol][0]
@@ -125,7 +132,7 @@ class Token(Contract):
         if self.is_native_token:
             context = credmark.model.ModelContext.current_context
             if context is None:
-                raise ValueError(f'No current context to get price of token {self.symbol}')
+                raise ModelNoContextError(f'No current context to get price of token {self.symbol}')
             return TokenWei(context.web3.eth.get_balance(address), self.decimals)
         return TokenWei(self.functions.balanceOf(address).call(), self.decimals)
 
