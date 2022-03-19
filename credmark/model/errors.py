@@ -193,7 +193,6 @@ class ModelDataError(ModelBaseError):
         GENERIC = 'generic'
         NO_DATA = 'no_data'
         CONFLICT = 'conflict'
-        INVALID_INPUT = 'invalid_input'
 
     # If adding parameters, give them default values for
     # backwards compatibility.
