@@ -80,9 +80,7 @@ class ModelBaseError(Exception):
     The dto data object is accessible at error.data
     """
 
-    """
-    Map of class name to class
-    """
+    # Map of class name to class
     class_map = {}
 
     """
@@ -199,7 +197,7 @@ class ModelDataError(ModelBaseError):
     def __init__(self,
                  message: str,
                  code: str = 'generic',
-                 detail: Union[dict, None] = None,
+                 detail: Union[dict, DTO, None] = None,
                  **kwargs):
         if 'permanent' not in kwargs:
             kwargs = dict(kwargs, permanent=True)
