@@ -1,6 +1,6 @@
 
 from typing import List
-from credmark.types.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
+from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 
 
 class RpcBlockStartEndIntervalInput(DTO):

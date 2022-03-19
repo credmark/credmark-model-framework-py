@@ -3,7 +3,7 @@ import logging
 from typing import Type, Union
 
 from .context import ModelContext
-from credmark.types.dto import DTO
+from credmark.dto import DTO
 from .transform import transform_data_for_dto
 
 

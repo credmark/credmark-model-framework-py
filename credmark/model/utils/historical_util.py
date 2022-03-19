@@ -11,7 +11,7 @@ from credmark.types import (
     SeriesModelStartEndIntervalInput,
     SeriesModelWindowIntervalInput,
 )
-from credmark.types.dto import DTO
+from credmark.dto import DTO
 
 DTOCLS = TypeVar('DTOCLS')
 

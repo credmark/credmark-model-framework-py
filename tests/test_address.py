@@ -2,7 +2,7 @@ import unittest
 import logging
 
 import credmark.model
-from credmark.types.dto import DTO, DTOField
+from credmark.dto import DTO, DTOField
 from credmark.types import Address
 import functools
 

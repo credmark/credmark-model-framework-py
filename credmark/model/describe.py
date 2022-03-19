@@ -3,7 +3,7 @@ import re
 from typing import Type, Union
 
 from .base import Model
-from credmark.types.dto import DTO, EmptyInput
+from credmark.dto import DTO, EmptyInput
 from .errors import ModelDefinitionError
 
 

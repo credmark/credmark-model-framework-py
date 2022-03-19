@@ -9,7 +9,7 @@ from web3.contract import Contract as Web3Contract
 import credmark.model
 from credmark.model.errors import ModelRunError, ModelNoContextError
 from credmark.types.data.account import Account
-from credmark.types.dto import PrivateAttr, IterableListGenericDTO, DTOField
+from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField
 
 
 class Contract(Account):

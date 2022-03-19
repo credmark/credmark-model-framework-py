@@ -1,15 +1,9 @@
 from typing import (
     Union
 )
+from credmark.dto import DTO, DTOField
+from .token import Token
 
-from ..dto import (
-    DTO,
-    DTOField,
-)
-
-from ..data.token import (
-    Token,
-)
 
 class Price(DTO):
     price: Union[float, None] = DTOField(None, description='Value of one Token')

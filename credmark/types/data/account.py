@@ -1,12 +1,12 @@
 from typing import List
 from .address import Address
-from ..dto import DTO, DTOField, PrivateAttr, IterableListGenericDTO
+from credmark.dto import DTO, DTOField, PrivateAttr, IterableListGenericDTO
 
 
 class Account(DTO):
     """
-    Accounts are a way to pass addresses between models. 
-    They act as a base class to any type that requires an address object. 
+    Accounts are a way to pass addresses between models.
+    They act as a base class to any type that requires an address object.
     (e.g. Contracts, Token, etc.)
     """
     address: Address

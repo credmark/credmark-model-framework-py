@@ -6,7 +6,7 @@ from credmark.types import BlockSeries, BlockSeriesRow, \
 from credmark.types.models.core import CoreModels
 from credmark.types.models.rpc import RpcBlockRangeOutput, \
     RpcBlockStartEndIntervalInput, RpcBlockWindowIntervalInput
-from credmark.types.dto import DTO
+from credmark.dto import DTO
 
 # These models are local versions of models that are
 # used during development. They have high version numbers

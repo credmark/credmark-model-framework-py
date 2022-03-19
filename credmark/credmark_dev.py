@@ -15,7 +15,7 @@ from .model.engine.model_loader import ModelLoader
 from .model.web3 import Web3Registry
 from .model.engine.model_api import ModelApi
 from .model.encoder import json_dump
-from .types.dto import (
+from .dto import (
     print_example,
     print_tree,
     dto_schema_viz,

@@ -1,5 +1,7 @@
-from typing import List, Union
+from typing import List, Type, Union, Generic, TypeVar
 from pydantic import BaseModel as DTO, Field as DTOField
+from pydantic.generics import GenericModel as GenericDTO
+from .transform import transform_data_for_dto
 
 
 class ModelCallStackEntry(DTO):
@@ -15,7 +17,10 @@ class ModelCallStackEntry(DTO):
 # to your subclass or it will reuse the one below in the schema.
 
 
-class ModelBaseErrorDTO(DTO):
+DetailDTOClass = TypeVar('DetailDTOClass')
+
+
+class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
     """
     The base error type that other errors inherit from.
 
@@ -49,8 +54,9 @@ class ModelBaseErrorDTO(DTO):
         [], description='Model call stack. First element is the first '
         'called model and last element is the model that raised the error.')
     code: str = DTOField('generic', description='Short identifier for the type of error')
-    detail: Union[dict, None] = DTOField(
-        None, description='Arbitrary data related to the error')
+    detail: Union[DetailDTOClass, None] = DTOField(
+        None, description='Arbitrary data related to the error. '
+        'This can be a dict or a DTO instance')
     permanent: bool = DTOField(False, description='If true, the error is permanent and '
                                'will also give the same result for the same context.')
 
@@ -73,14 +79,22 @@ class ModelBaseError(Exception):
 
     The dto data object is accessible at error.data
     """
+
+    """
+    Map of class name to class
+    """
     class_map = {}
 
+    """
+    A set of of all model error DTOs used by ModelBaseError subclasses
+    """
     dto_set = set()
 
-    # subclasses can set dto_class to a subclass of ModelBaseErrorDTO
-    # to add more fields to the error.data
-
-    dto_class = ModelBaseErrorDTO
+    """
+    Subclasses can set dto_class to a subclass of ModelErrorDTO
+    to add more fields to the error.data
+    """
+    dto_class = ModelErrorDTO
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -89,6 +103,10 @@ class ModelBaseError(Exception):
 
     @ classmethod
     def class_for_name(cls, name: str):
+        """
+        Return a specific error class for a name.
+        Must be a subclass of ModelBaseError.
+        """
         return cls.class_map.get(name)
 
     @ classmethod
@@ -114,13 +132,28 @@ class ModelBaseError(Exception):
                                    **data)
 
     def dict(self):
+        """
+        Return a dict for the error DTO
+        """
         return self.data.dict()
 
     def json(self):
+        """
+        Return JSON for the error DTO
+        """
         return self.data.dict()
 
+    def transform_data_detail(self, dto_class: Union[Type[DTO], None] = None):
+        """
+        Convert the data.detail (if any) to a specific DTO subclass or
+        to a dict if dto_class is None.
+        """
+        if self.data.detail is not None:
+            self.data.detail = transform_data_for_dto(
+                self.data.detail, dto_class, self.data.type, 'detail')
 
-class ModelDataErrorDTO(ModelBaseErrorDTO):
+
+class ModelDataErrorDTO(ModelErrorDTO):
     """
     An error that occurs during the lookup, generation, or
     processing of data this is considered deterministic and

@@ -1,5 +1,5 @@
 from typing import List
-from ..dto import (
+from credmark.dto import (
     DTO,
     DTOField,
     PrivateAttr,

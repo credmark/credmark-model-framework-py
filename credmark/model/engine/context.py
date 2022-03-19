@@ -9,7 +9,7 @@ from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.transform import DataTransformError, transform_data_for_dto
 from credmark.model.web3 import Web3Registry
-from credmark.types.dto import DTO, EmptyInput
+from credmark.dto import DTO, EmptyInput
 from credmark.types.models.core import CoreModels
 
 
@@ -289,7 +289,12 @@ class EngineModelContext(ModelContext):
                 if isinstance(err, DataTransformError):
                     # Output transform error is a coding error of model just run
                     err = ModelRunError(str(err))
-                elif not isinstance(err, ModelBaseError):
+                elif isinstance(err, ModelBaseError):
+                    # For errors that have specific detail classes, we
+                    # ensure detail is a dict (as it will be over the wire)
+                    # to make local-dev identical to production.
+                    err.transform_data_detail(None)
+                else:
                     err = ModelRunError(f'Exception running model {slug}: {err}')
                 # We add the model just run (or validated input for) to stack
                 err.data.stack.insert(0,

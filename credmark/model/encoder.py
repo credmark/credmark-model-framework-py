@@ -1,5 +1,5 @@
 import json
-from credmark.types.dto import DTO
+from credmark.dto import DTO
 
 
 class PydanticJSONEncoder(json.JSONEncoder):

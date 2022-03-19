@@ -1,5 +1,5 @@
 from typing import List, Optional, TypeVar, Union, Generic
-from credmark.types.dto import DTO, GenericDTO, DTOField, PrivateAttr, IterableListGenericDTO
+from credmark.dto import DTO, GenericDTO, DTOField, PrivateAttr, IterableListGenericDTO
 
 DTOCLS = TypeVar('DTOCLS')
 

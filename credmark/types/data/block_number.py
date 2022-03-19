@@ -1,22 +1,23 @@
+from typing import Union
 from datetime import datetime
-
-import credmark.model
 from web3.types import BlockData, Timestamp
-
-from typing import (
-    Union,
-)
-
-from credmark.model.errors import (ModelBaseErrorDTO,
+from credmark.dto import DTO
+import credmark.model
+from credmark.model.errors import (ModelErrorDTO,
                                    ModelInvalidStateError,
                                    ModelNoContextError,
                                    ModelRunError)
 
 
-class BlockNumberOutOfRangeErrorDTO(ModelBaseErrorDTO):
+class BlockNumberOutOfRangeDetailDTO(DTO):
+    blockNumber: Union[int, None]
+    maxBlockNumber: Union[int, None]
+
+
+class BlockNumberOutOfRangeErrorDTO(ModelErrorDTO[BlockNumberOutOfRangeDetailDTO]):
     """
     A block number was constructed that is out of range for the context.
-    This is a subclass of ModelInvalidStateError and ModelRunError
+    This is a subclass of ModelInvalidStateError (and ModelRunError)
     as its considered a coding error in the model.
 
     Properties of the detail object:
@@ -37,7 +38,8 @@ class BlockNumberOutOfRangeError(ModelInvalidStateError):
         else:
             # manually created
             message = f'BlockNumber {block_number} is out of maximum range: {max_block_number}'
-            detail = {'blockNumber': block_number, 'maxBlockNumber': max_block_number}
+            detail = BlockNumberOutOfRangeDetailDTO(
+                blockNumber=block_number, maxBlockNumber=max_block_number)
             super().__init__(message=message, detail=detail, **kwargs)
 
 

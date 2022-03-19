@@ -3,7 +3,7 @@ import os
 import logging
 import requests
 from urllib.parse import urljoin, quote
-from credmark.model.engine.errors import ModelNotFoundError, ModelRunRequestError
+from credmark.model.engine.errors import ModelNotFoundError, ModelRunRequestError, SlugAndVersionDTO
 from credmark.model.errors import ModelBaseError, ModelEngineError
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
@@ -142,8 +142,12 @@ class ModelApi:
             if resp is not None:
                 logger.error(f'Error api response {resp.text}')
                 if resp.status_code == 404:
-                    raise ModelNotFoundError(
+                    e = ModelNotFoundError(
                         slug, version, 'Model not found from api')
+                    print(e.data, e.data.detail, type(e.data.detail))
+                    e.transform_data_detail(SlugAndVersionDTO)
+                    print(e.data, e.data.detail, type(e.data.detail))
+                    raise e
                 else:
                     try:
                         error_result = resp.json()

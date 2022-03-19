@@ -1,8 +1,14 @@
 from typing import Union
-from credmark.model.errors import ModelBaseErrorDTO, ModelEngineError
+from credmark.model.errors import ModelErrorDTO, ModelEngineError
+from credmark.dto import DTO
 
 
-class ModelNotFoundErrorDTO(ModelBaseErrorDTO):
+class SlugAndVersionDTO(DTO):
+    slug: Union[str, None]
+    version: Union[str, None]
+
+
+class ModelNotFoundErrorDTO(ModelErrorDTO[SlugAndVersionDTO]):
     """
     A model requested to run was not found.
 
@@ -26,13 +32,13 @@ class ModelNotFoundError(ModelEngineError):
                 ' version ' + version if version is not None else '',
                 message if message is not None else '')
         if 'detail' not in kwargs:
-            detail = {'slug': slug, 'version': version}
+            detail = SlugAndVersionDTO(slug=slug, version=version)
             super().__init__(message=message, detail=detail, **kwargs)
         else:
             super().__init__(message=message, **kwargs)
 
 
-class ModelRunRequestErrorDTO(ModelBaseErrorDTO):
+class ModelRunRequestErrorDTO(ModelErrorDTO):
     """
     An HTTP-related error that occurred while making a
     request for a model to run.

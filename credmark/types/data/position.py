@@ -1,6 +1,6 @@
 from credmark.model.errors import ModelRunError
-from ..dto import DTO, DTOField, cross_examples
-from ..data.token import Token
+from credmark.dto import DTO, DTOField, cross_examples
+from .token import Token
 
 
 class Position(DTO):
