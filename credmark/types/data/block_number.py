@@ -29,27 +29,20 @@ class BlockNumberOutOfRangeErrorDTO(ModelErrorDTO[BlockNumberOutOfRangeDetailDTO
 class BlockNumberOutOfRangeError(ModelInvalidStateError):
     dto_class = BlockNumberOutOfRangeErrorDTO
 
-    def __init__(self, block_number: Union[int, None] = None,
-                 max_block_number: Union[int, None] = None,
-                 **kwargs):
-        if 'message' in kwargs:
-            # reconstituted from json
-            super().__init__(**kwargs)
-        else:
-            # manually created
-            message = f'BlockNumber {block_number} is out of maximum range: {max_block_number}'
-            detail = BlockNumberOutOfRangeDetailDTO(
-                blockNumber=block_number, maxBlockNumber=max_block_number)
-            super().__init__(message=message, detail=detail, **kwargs)
+    @classmethod
+    def create(cls, block_number: int, max_block_number: int):
+        message = f'BlockNumber {block_number} is out of maximum range: {max_block_number}'
+        detail = BlockNumberOutOfRangeDetailDTO(
+            blockNumber=block_number, maxBlockNumber=max_block_number)
+        return BlockNumberOutOfRangeError(message=message, detail=detail)
 
 
 class InvalidBlockNumberError(ModelRunError):
-    def __init__(self, **kwargs):
-        if 'message' in kwargs:
-            super().__init__(**kwargs)
-        else:
-            message = 'BlockNumber constructed with no number or sample_timestamp'
-            super().__init__(message=message, **kwargs)
+
+    @classmethod
+    def create(cls):
+        return InvalidBlockNumberError(
+            message='BlockNumber constructed with no number or sample_timestamp')
 
 
 class BlockNumber(int):
@@ -70,14 +63,14 @@ class BlockNumber(int):
                 else:
                     raise ModelNoContextError('No context to return a blockNumber for timestamp')
             else:
-                raise InvalidBlockNumberError()
+                raise InvalidBlockNumberError.create()
         if context is not None:
             max_block_number = context.block_number
         else:
             max_block_number = None
 
         if max_block_number is not None and number > max_block_number:
-            raise BlockNumberOutOfRangeError(number, max_block_number)
+            raise BlockNumberOutOfRangeError.create(number, max_block_number)
         return super().__new__(BlockNumber, number)
 
     def __init__(self,

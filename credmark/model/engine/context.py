@@ -327,7 +327,7 @@ class EngineModelContext(ModelContext):
                 self._add_dependencies(dependencies)
         else:
             # No call stack item because model not run
-            err = ModelNotFoundError(slug, version)
+            err = ModelNotFoundError.create(slug, version)
             self.logger.error(err)
             raise err
 

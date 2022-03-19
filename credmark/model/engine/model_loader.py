@@ -233,7 +233,7 @@ class ModelLoader:
                 f'{slug}:{ver}')
 
         if model_class is None and raise_on_not_found:
-            err = ModelNotFoundError(slug, ver)
+            err = ModelNotFoundError.create(slug, ver)
             self.logger.error(err)
             raise err
 

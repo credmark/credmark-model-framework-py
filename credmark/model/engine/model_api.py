@@ -142,12 +142,7 @@ class ModelApi:
             if resp is not None:
                 logger.error(f'Error api response {resp.text}')
                 if resp.status_code == 404:
-                    e = ModelNotFoundError(
-                        slug, version, 'Model not found from api')
-                    print(e.data, e.data.detail, type(e.data.detail))
-                    e.transform_data_detail(SlugAndVersionDTO)
-                    print(e.data, e.data.detail, type(e.data.detail))
-                    raise e
+                    raise ModelNotFoundError.create(slug, version, 'Model not found from api')
                 else:
                     try:
                         error_result = resp.json()

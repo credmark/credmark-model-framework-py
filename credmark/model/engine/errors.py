@@ -4,7 +4,7 @@ from credmark.dto import DTO
 
 
 class SlugAndVersionDTO(DTO):
-    slug: Union[str, None]
+    slug: str
     version: Union[str, None]
 
 
@@ -21,21 +21,12 @@ class ModelNotFoundErrorDTO(ModelErrorDTO[SlugAndVersionDTO]):
 class ModelNotFoundError(ModelEngineError):
     dto_class = ModelNotFoundErrorDTO
 
-    def __init__(self,
-                 slug: Union[str, None] = None,
-                 version: Union[str, None] = None,
-                 message: Union[str, None] = None,
-                 **kwargs):
-        if message is None:
-            message = 'Missing model {0}{1} {2}'.format(
-                slug if slug else '<empty-slug>',
-                ' version ' + version if version is not None else '',
-                message if message is not None else '')
-        if 'detail' not in kwargs:
-            detail = SlugAndVersionDTO(slug=slug, version=version)
-            super().__init__(message=message, detail=detail, **kwargs)
-        else:
-            super().__init__(message=message, **kwargs)
+    @classmethod
+    def create(cls, slug: str, version: Union[str, None], message: Union[str, None] = None):
+        message = f'Missing model "{slug}" version {version if version is not None else "any"}' \
+            + (' ' + message if message is not None else '')
+        return ModelNotFoundError(message=message,
+                                  detail=SlugAndVersionDTO(slug=slug, version=version))
 
 
 class ModelRunRequestErrorDTO(ModelErrorDTO):
