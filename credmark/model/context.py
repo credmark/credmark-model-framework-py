@@ -123,6 +123,13 @@ class ModelContext():
             or a DTO instance if return_type is specified.
 
         Raises:
-            MissingModelError if requested model is not available
-            Exception on other errors
+            ModelDataError, ModelRunError, ModelNotFoundError
+            and various other sublasses of ModelBaseError.
+
+            In order for models to be consistently deterministic,
+            the ONLY type of error a model should catch and handle
+            from a call to run_model() is a ModelDataError, which is
+            considered a permanent error for the given conext.
+            All other errors are considered transient, coding errors,
+            or conditions that may change in the future.
         """
