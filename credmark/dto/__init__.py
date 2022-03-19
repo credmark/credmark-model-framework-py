@@ -1,3 +1,5 @@
+from abc import abstractproperty
+
 from .dto import (DTO,
                   DTOField,
                   GenericDTO,
@@ -12,9 +14,11 @@ from .dto import (DTO,
                   DTOExtra,
                   PrivateAttr,
                   HexStr,
-                  abstractproperty,
-                  cross_examples,
-                  dto_schema_viz,
-                  print_tree,
-                  print_example,
                   )
+
+from .dto_schema import (
+    cross_examples,
+    dto_schema_viz,
+    print_tree,
+    print_example,
+)

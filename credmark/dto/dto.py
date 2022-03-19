@@ -16,15 +16,6 @@ from pydantic import (
 # A GenericDTO is a kind of DTO: isintance(g, DTO) == True
 from pydantic.generics import GenericModel as GenericDTO
 
-from abc import abstractproperty
-
-from .dto_schema import (
-    cross_examples,
-    dto_schema_viz,
-    print_tree,
-    print_example,
-)
-
 
 def fixstr(fixed_length):
     return constr(min_length=fixed_length,
