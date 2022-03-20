@@ -1,12 +1,14 @@
 from typing import Union
 import credmark.model
 from credmark.model.context import ModelContext
+from credmark.model.errors import ModelDataError
 from credmark.types import BlockSeries, BlockSeriesRow, \
     SeriesModelStartEndIntervalInput, SeriesModelWindowIntervalInput
 from credmark.types.models.core import CoreModels
 from credmark.types.models.rpc import RpcBlockRangeOutput, \
     RpcBlockStartEndIntervalInput, RpcBlockWindowIntervalInput
 from credmark.dto import DTO
+from credmark.types.models.series import BlockSeriesErrorRow
 
 # These models are local versions of models that are
 # used during development. They have high version numbers
@@ -24,20 +26,27 @@ def run_model_for_block_range(context: ModelContext,
         if model_input is None:
             model_input = {}
 
-        run_output = context.run_model(
-            model_slug, model_input, block_number=block_number, version=model_version)
+        try:
+            run_output = context.run_model(
+                model_slug, model_input, block_number=block_number, version=model_version)
 
-        row = BlockSeriesRow[dict](blockNumber=block_number,
-                                   blockTimestamp=block.blockTimestamp,
-                                   sampleTimestamp=block.sampleTimestamp,
-                                   output=run_output)
-        block_series.append(row)
+            row = BlockSeriesRow[dict](blockNumber=block_number,
+                                       blockTimestamp=block.blockTimestamp,
+                                       sampleTimestamp=block.sampleTimestamp,
+                                       output=run_output)
+            block_series.append(row)
+        except ModelDataError as err:
+            row = BlockSeriesErrorRow(blockNumber=block_number,
+                                      blockTimestamp=block.blockTimestamp,
+                                      sampleTimestamp=block.sampleTimestamp,
+                                      error=err.data)
+            block_series.append_error(row)
 
     return block_series
 
 
 @credmark.model.describe(slug='series.time-start-end-interval',
-                         version='100.0',
+                         version='0.0',
                          display_name='Series Time Interval',
                          description='Run a model over a series of blocks specifying a time start, end, and interval',
                          developer='Credmark',
@@ -64,7 +73,7 @@ class SeriesTimeStartEndInterval(credmark.model.Model):
 
 
 @credmark.model.describe(slug='series.time-window-interval',
-                         version='100.0',
+                         version='0.0',
                          display_name='Series Time Window Interval',
                          description='Run a model over a series of blocks specifying a time window and interval',
                          developer='Credmark',
@@ -90,7 +99,7 @@ class SeriesTimeWindowInterval(credmark.model.Model):
 
 
 @credmark.model.describe(slug='series.block-start-end-interval',
-                         version='100.0',
+                         version='0.0',
                          display_name='Series Block Interval',
                          description='Run a model over a series of blocks specifying a block start, end, and interval',
                          developer='Credmark',
@@ -117,7 +126,7 @@ class SeriesBlockStartEndInterval(credmark.model.Model):
 
 
 @credmark.model.describe(slug='series.block-window-interval',
-                         version='100.0',
+                         version='0.0',
                          display_name='Series Block Window Interval',
                          description='Run a model over a series of blocks specifying a block window and interval',
                          developer='Credmark',
