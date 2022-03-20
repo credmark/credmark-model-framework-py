@@ -11,8 +11,9 @@ from credmark.dto import DTO
 from credmark.types.models.series import BlockSeriesErrorRow
 
 # These models are local versions of models that are
-# used during development. They have high version numbers
-# so they take priority over versions on the server.
+# used during development with credmark-dev.
+# Since these models call another model that might only exist
+# locally, they need to run locally.
 
 
 def run_model_for_block_range(context: ModelContext,
