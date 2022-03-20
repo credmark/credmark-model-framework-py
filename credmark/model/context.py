@@ -1,5 +1,6 @@
 from abc import abstractmethod
-from typing import Any, ClassVar, Type, TypeVar, Union, overload
+from functools import partial
+from typing import Any, ClassVar, Protocol, Type, TypeVar, Union, overload
 from .ledger import Ledger
 from .web3 import Web3Registry
 import credmark.types
@@ -8,6 +9,34 @@ from credmark.model.utils.contract_util import ContractUtil
 from credmark.model.utils.historical_util import HistoricalUtil
 
 DTOT = TypeVar('DTOT')
+
+
+class PartialRunModel(Protocol):
+    # These are partials of the context.run_model() calls
+    @overload
+    def __call__(self,
+                 input: Union[dict, DTO],
+                 return_type: Type[DTOT],
+                 block_number: Union[int, None] = None,
+                 version: Union[str, None] = None,
+                 ) -> DTOT:
+        ...
+
+    @overload
+    def __call__(self,
+                 input: Union[dict, DTO] = EmptyInput(),
+                 return_type: Union[Type[dict], None] = None,
+                 block_number: Union[int, None] = None,
+                 version: Union[str, None] = None) -> dict:
+        ...
+
+    def __call__(self,  # type: ignore
+                 input=EmptyInput(),
+                 return_type=None,
+                 block_number=None,
+                 version=None,
+                 ) -> Any:
+        ...
 
 
 class ModelContext():
@@ -26,6 +55,18 @@ class ModelContext():
     """
     current_context: ClassVar = None
 
+    class Models:
+        """
+        An instance that can run any model by accessing it as a
+        method with any "." in the model name replaced with "_".
+        """
+
+        def __init__(self, context):
+            self.__context = context
+
+        def __getattr__(self, __name: str) -> PartialRunModel:
+            return partial(self.__context.run_model, __name.replace('_', '.'))
+
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry: Web3Registry):
         # type hint
@@ -38,6 +79,13 @@ class ModelContext():
         self._ledger = None
         self._contract_util = None
         self._historical_util = None
+
+        # The models instance can be used to run models like a method
+        # with any "." in the model name replaced with "_".
+        # For example: context.run_model('example.echo')
+        # becomes context.models.example_echo()
+        # The other args to run_model() (besides slug) can be used.
+        self.models = ModelContext.Models(self)
 
     @property
     def block_number(self):
