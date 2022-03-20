@@ -1,7 +1,10 @@
 from typing import List, Type, Union, Generic, TypeVar
+import logging
 from pydantic import BaseModel as DTO, Field as DTOField
 from pydantic.generics import GenericModel as GenericDTO
 from .transform import transform_data_for_dto
+
+logger = logging.getLogger(__name__)
 
 
 class ModelCallStackEntry(DTO):
@@ -276,3 +279,25 @@ class ModelEngineError(ModelBaseError):
 
     These errors are considered transient.
     """
+
+
+def create_instance_from_error_dict(err_obj: dict) -> ModelBaseError:
+    err_type = err_obj.get('type')
+    del err_obj['type']
+
+    message = err_obj.get('message')
+    if message is None:
+        err_obj['message'] = message = 'Unknown model engine error'
+
+    if err_type:
+        err_class = ModelBaseError.class_for_name(err_type)
+    else:
+        err_type = 'UnknownErrorType'
+        err_class = None
+
+    if err_class is not None:
+        try:
+            return err_class(**err_obj)
+        except Exception as e:
+            logger.error(f'Error creating error {err_type} instance: {e}')
+    raise ModelEngineError(f'{err_type}: {message}')

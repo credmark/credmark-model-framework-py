@@ -4,7 +4,7 @@ import logging
 import requests
 from urllib.parse import urljoin, quote
 from credmark.model.engine.errors import ModelNotFoundError, ModelRunRequestError
-from credmark.model.errors import ModelBaseError, ModelEngineError
+from credmark.model.errors import ModelBaseError, ModelEngineError, create_instance_from_error_dict
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
 
@@ -125,7 +125,7 @@ class ModelApi:
 
             err_obj = resp_obj.get('error')
             if err_obj is not None:
-                self.raise_for_error_info(err_obj)
+                raise create_instance_from_error_dict(err_obj)
 
             return resp_obj['slug'], resp_obj['version'], \
                 resp_obj['output'], resp_obj['dependencies']
@@ -162,27 +162,3 @@ class ModelApi:
             # read the content.
             if resp is not None:
                 resp.close()
-
-    def raise_for_error_info(self, err_obj: dict):
-        err_type = err_obj.get('type')
-        del err_obj['type']
-
-        message = err_obj.get('message')
-        if message is None:
-            err_obj['message'] = message = 'Unknown model engine error'
-
-        if err_type:
-            err_class = ModelBaseError.class_for_name(err_type)
-        else:
-            err_type = 'UnknownErrorType'
-            err_class = None
-
-        if err_class is not None:
-            err = None
-            try:
-                err = err_class(**err_obj)
-            except Exception as e:
-                logger.error(f'Error creating error {err_type} instance: {e}')
-            if err is not None:
-                raise err
-        raise ModelEngineError(f'{err_type}: {message}')
