@@ -11,8 +11,9 @@ from credmark.model.utils.historical_util import HistoricalUtil
 DTOT = TypeVar('DTOT')
 
 
-class PartialRunModel(Protocol):
+class RunModelProtocol(Protocol):
     # These are partials of the context.run_model() calls
+    # The overloads match the run_model calls in ModelContext
     @overload
     def __call__(self,
                  input: Union[dict, DTO],
@@ -39,18 +40,77 @@ class PartialRunModel(Protocol):
         ...
 
 
-class ModelContext():
-
+class RunModelMethod:
     """
-    Base model context class
+    A run model method is callable (where the prefix is the actual
+    model name) or called with a method name (where prefix is the dot prefix
+    of the model name.)
+    """
+
+    def __init__(self, context, prefix=None):
+        self.__context = context
+        self.__prefix = prefix
+
+    # The __call__ overloads match the run_model calls in ModelContext
+    # __call__ is used for model names that have no dot prefix
+    @overload
+    def __call__(self,
+                 input: Union[dict, DTO],
+                 return_type: Type[DTOT],
+                 block_number: Union[int, None] = None,
+                 version: Union[str, None] = None,
+                 ) -> DTOT:
+        ...
+
+    @overload
+    def __call__(self,
+                 input: Union[dict, DTO] = EmptyInput(),
+                 return_type: Union[Type[dict], None] = None,
+                 block_number: Union[int, None] = None,
+                 version: Union[str, None] = None) -> dict:
+        ...
+
+    def __call__(self, input=EmptyInput(),  # type: ignore
+                 return_type=None,
+                 block_number=None,
+                 version=None,
+                 ) -> Any:
+        return self.__context.run_model(
+            f"{self.__prefix.replace('_', '-')}",
+            input, return_type, block_number, version)
+
+    # Handle method calls where the prefix is the dot prefix of a model name
+    def __getattr__(self, __name: str) -> RunModelProtocol:
+        return partial(self.__context.run_model,
+                       f"{self.__prefix}.{__name.replace('_', '-')}")
+
+
+class ModelContext:
+    """
+    Model context class
 
     Instance attributes:
         chain_id (int): chain ID, ex 1
         block_number (int): default block number
         web3 (Web3): a configured web3 instance for RPC calls
+        models: an object that has a virtual method for every model
 
     Methods:
         run_model(...) - run the specified model and return the results
+
+    Running a model:
+
+    The context.models instance can be used to run models with a method
+    call, with any "-" in the model name replaced with "_".
+
+    For example:
+    - context.run_model('example.echo') becomes context.models.example.echo()
+    - context.run_model('example.ledger-blocks') becomes context.models.example.ledger_blocks()
+    - context.run_model('var-model') becomes context.models.var_model()
+
+    The other args that you can pass to context.run_model() (besides slug) can
+    passed to the method call, for example:
+      context.models.rpc.get_blocknumber(input=dict(timestamp=1438270017))
 
     """
     current_context: ClassVar = None
@@ -58,14 +118,14 @@ class ModelContext():
     class Models:
         """
         An instance that can run any model by accessing it as a
-        method with any "." in the model name replaced with "_".
+        method with any "." or "-" in the model name replaced with "_".
         """
 
         def __init__(self, context):
             self.__context = context
 
-        def __getattr__(self, __name: str) -> PartialRunModel:
-            return partial(self.__context.run_model, __name.replace('_', '.'))
+        def __getattr__(self, __name: str) -> RunModelMethod:
+            return RunModelMethod(self.__context, __name)
 
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry: Web3Registry):
@@ -81,10 +141,6 @@ class ModelContext():
         self._historical_util = None
 
         # The models instance can be used to run models like a method
-        # with any "." in the model name replaced with "_".
-        # For example: context.run_model('example.echo')
-        # becomes context.models.example_echo()
-        # The other args to run_model() (besides slug) can be used.
         self.models = ModelContext.Models(self)
 
     @property

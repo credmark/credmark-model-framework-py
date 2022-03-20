@@ -14,16 +14,7 @@ from credmark.types.models.core import CoreModels
 
 
 class EngineModelContext(ModelContext):
-    """Model context class
-
-    Instance attributes:
-        chain_id (int): chain ID, ex 1
-        block_number (int): default block number
-        web3 (Web3): a configured web3 instance for RPC calls
-
-    Methods:
-        run_model(...) - run the specified model and return the results
-    """
+    # No doc string so it uses parent's
 
     logger = logging.getLogger(__name__)
 
