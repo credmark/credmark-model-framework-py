@@ -47,7 +47,7 @@ class RunModelMethod:
     of the model name.)
     """
 
-    def __init__(self, context, prefix=None):
+    def __init__(self, context, prefix: str):
         self.__context = context
         self.__prefix = prefix
 
@@ -82,7 +82,7 @@ class RunModelMethod:
     # Handle method calls where the prefix is the dot prefix of a model name
     def __getattr__(self, __name: str) -> RunModelProtocol:
         return partial(self.__context.run_model,
-                       f"{self.__prefix}.{__name.replace('_', '-')}")
+                       f"{self.__prefix.replace('_', '-')}.{__name.replace('_', '-')}")
 
 
 class ModelContext:
