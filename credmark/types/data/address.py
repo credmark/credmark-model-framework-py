@@ -8,13 +8,17 @@ from web3 import Web3
 from web3._utils.validation import (
     validate_address as eth_utils_validate_address,
 )
-from credmark.dto import DTOField
+
+from credmark.model.errors import ModelTypeError
 
 
 def validate_address(addr: str):
-    checksum_addr = Web3.toChecksumAddress(addr)
-    eth_utils_validate_address(checksum_addr)
-    return checksum_addr
+    try:
+        checksum_addr = Web3.toChecksumAddress(addr)
+        eth_utils_validate_address(checksum_addr)
+        return checksum_addr
+    except Exception as e:
+        raise ModelTypeError(f'Address validation error: {str(e)}')
 
 
 evm_address_regex = re.compile(r'^0x[a-fA-F0-9]{40}$')

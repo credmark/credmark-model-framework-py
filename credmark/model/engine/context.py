@@ -4,12 +4,12 @@ from credmark.model.base import Model
 from credmark.model.context import ModelContext
 from credmark.model.engine.errors import ModelNotFoundError
 from credmark.model.errors import MaxModelRunDepthError, ModelBaseError, \
-    ModelEngineError, ModelInputError, ModelInvalidStateError, ModelRunError, ModelCallStackEntry
+    ModelEngineError, ModelInputError, ModelInvalidStateError, ModelOutputError, ModelRunError, ModelCallStackEntry, ModelTypeError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.transform import DataTransformError, transform_data_for_dto
 from credmark.model.web3 import Web3Registry
-from credmark.dto import DTO, EmptyInput
+from credmark.dto import DTO, EmptyInput, DTOValidationError
 from credmark.types.models.core import CoreModels
 
 
@@ -273,13 +273,16 @@ class EngineModelContext(ModelContext):
 
                 output = model.run(input)
 
-                # transform to the defined outputDTO for validation of output
-                output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
+                try:
+                    # transform to the defined outputDTO for validation of output
+                    output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
+                except DataTransformError as err:
+                    raise ModelOutputError(str(err))
 
             except Exception as err:
-                if isinstance(err, DataTransformError):
-                    # Output transform error is a coding error of model just run
-                    err = ModelRunError(str(err))
+                if isinstance(err, (DataTransformError, DTOValidationError)):
+                    # Transform error is a coding error in model just run
+                    err = ModelTypeError(str(err))
                 elif isinstance(err, ModelBaseError):
                     # For errors that have specific detail classes, we
                     # ensure detail is a dict (as it will be over the wire)

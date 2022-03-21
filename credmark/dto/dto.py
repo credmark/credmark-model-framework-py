@@ -5,6 +5,7 @@ from typing import Any, Dict, Generic, Iterator, List, TypeVar
 from pydantic import (
     BaseModel as DTO,
     Field as DTOField,
+    ValidationError as DTOValidationError,
     constr,
     confloat,
     conint,

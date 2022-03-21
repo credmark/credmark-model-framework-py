@@ -2,6 +2,7 @@ from abc import abstractproperty
 
 from .dto import (DTO,
                   DTOField,
+                  DTOValidationError,
                   GenericDTO,
                   IterableListGenericDTO,
                   EmptyInput,

@@ -60,4 +60,4 @@ def transform_data_for_dto(
                 return dto_class(**data)
     except Exception as e:
         raise DataTransformError(
-            f'Error validating model {slug} {data_source}: {e}, with data={data}')
+            f'Error validating model {slug} {data_source}: {e}')

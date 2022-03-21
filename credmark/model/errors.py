@@ -251,6 +251,26 @@ class ModelInvalidStateError(ModelRunError):
     """
 
 
+class ModelTypeError(ModelRunError):
+    """
+    There was an error in a model while converting data to a DTO class.
+    This can happen when constructing a new DTO instance, for example
+    from a model run output.
+
+    Although these errors are permanent for a given context,
+    these are considered a logic or coding error.
+    """
+
+
+class ModelOutputError(ModelRunError):
+    """
+    There was an error validating the output of the model.
+
+    Although these errors are permanent for a given context,
+    these are considered a logic or coding error.
+    """
+
+
 class ModelNoContextError(ModelRunError):
     """
     An attempt was made to use a core data object outside
