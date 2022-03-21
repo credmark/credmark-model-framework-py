@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Set, Union
 import inspect
 from credmark.dto import DTOField, PrivateAttr, IterableListGenericDTO
 
@@ -14,7 +14,7 @@ class LedgerTable:
     class Columns:
         pass
 
-    __column_set = None
+    __column_set: Union[Set[str], None] = None
 
     @classmethod
     def columns(cls):
