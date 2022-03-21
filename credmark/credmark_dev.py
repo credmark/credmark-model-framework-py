@@ -373,6 +373,17 @@ def run_model(args):
             run_id=run_id,
             depth=depth)
 
+        if 'error' in result:
+            etype = result.get('error', {}).get('type')
+            if etype == 'ModelInputError':
+                exit_code = 2
+            elif etype == 'ModelNotFoundError':
+                exit_code = 126
+            elif etype == 'ModelDataError':
+                exit_code = 3
+            else:
+                exit_code = 1
+
         json_dump(result, sys.stdout)
 
     except Exception as e:
