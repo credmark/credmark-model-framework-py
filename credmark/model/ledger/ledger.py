@@ -1,3 +1,8 @@
+from datetime import (
+    datetime,
+    timezone,
+    date,
+)
 from typing import Type, Union, List
 from credmark.types.models.ledger import LedgerModelOutput
 
@@ -144,3 +149,32 @@ class Ledger:
                                      TokenTransferTable,
                                      columns, where, group_by,
                                      order_by, limit, offset)
+
+    def get_block_number_of_date(self, dt_in: Union[datetime, date]):
+        txn_blocks = self.Block.Columns
+        dt = datetime(dt_in.year, dt_in.month, dt_in.day, tzinfo=timezone.utc)
+        res = self.get_blocks(
+            [txn_blocks.TIMESTAMP, txn_blocks.NUMBER],
+            where=f"{txn_blocks.TIMESTAMP} >= {int(dt.timestamp())}",
+            order_by=f'{txn_blocks.TIMESTAMP} ASC',
+            limit='1')
+
+        rows = res.data
+        block_hist = rows[0].get(txn_blocks.NUMBER) if len(rows) else None
+
+        return block_hist
+
+    def get_date_of_block_number(self, block_hist: int):
+        txn_blocks = self.Block.Columns
+        res = self.get_blocks(
+            [txn_blocks.TIMESTAMP, txn_blocks.NUMBER],
+            where=f"{txn_blocks.NUMBER} = {int(block_hist)}",
+            order_by=f'{txn_blocks.TIMESTAMP} ASC',
+            limit='1')
+        rows = res.data
+        timestamp = rows[0].get(txn_blocks.TIMESTAMP) if len(rows) else None
+        if timestamp:
+            dt = datetime.fromtimestamp(timestamp, timezone.utc).date()
+        else:
+            raise ModelRunError(f'Can not get the timestamp for block={block_hist}')
+        return dt
