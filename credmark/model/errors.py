@@ -15,6 +15,7 @@ class ModelCallStackEntry(DTO):
     version: str = DTOField(..., description='Model version')
     chainId: Union[int, None] = DTOField(None, description='Context chain id')
     blockNumber: Union[int, None] = DTOField(None, description='Context block number')
+    trace: Union[str, None] = DTOField(None, description='Trace of code that generated the error')
 
 # If you subclass ModelBaseErrorDTO, you MUST add a doc-string
 # to your subclass or it will reuse the one below in the schema.

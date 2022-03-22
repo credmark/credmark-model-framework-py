@@ -1,16 +1,43 @@
 import logging
+import traceback
+import sys
 from typing import Type, Union
 from credmark.model.base import Model
 from credmark.model.context import ModelContext
-from credmark.model.engine.errors import ModelNotFoundError
+from credmark.model.engine.errors import ModelNotFoundError, ModelRunRequestError
 from credmark.model.errors import MaxModelRunDepthError, ModelBaseError, \
-    ModelEngineError, ModelInputError, ModelInvalidStateError, ModelOutputError, ModelRunError, ModelCallStackEntry, ModelTypeError
+    ModelEngineError, ModelInputError, ModelInvalidStateError, ModelOutputError, \
+    ModelRunError, ModelCallStackEntry, ModelTypeError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
 from credmark.model.transform import DataTransformError, transform_data_for_dto
 from credmark.model.web3 import Web3Registry
 from credmark.dto import DTO, EmptyInput, DTOValidationError
 from credmark.types.models.core import CoreModels
+
+
+def extract_most_recent_run_model_traceback(exc_traceback, skip=1):
+    # Extract "skip" most-recent group of frames before frames
+    # in this file (or superclass context) until it comes back to
+    # the context.
+    context_files = set([__file__,
+                         __file__.replace('credmark/model/engine/context',
+                                          'credmark/model/context')])
+    ptb = []
+    in_other_file = False
+    tb = traceback.extract_tb(exc_traceback)
+    for frame in tb[::-1][:30]:  # reversed
+        if frame.filename in context_files:
+            if in_other_file and skip == 0:
+                break
+            in_other_file = False
+        else:
+            if not in_other_file:
+                skip -= 1
+            in_other_file = True
+            if skip == 0:
+                ptb.append(frame)
+    return ''.join(traceback.format_list(ptb))
 
 
 class EngineModelContext(ModelContext):
@@ -283,7 +310,14 @@ class EngineModelContext(ModelContext):
                 if isinstance(err, (DataTransformError, DTOValidationError)):
                     # Transform error is a coding error in model just run
                     err = ModelTypeError(str(err))
+                    trace = traceback.format_exc(limit=30)
                 elif isinstance(err, ModelBaseError):
+                    _exc_type, _exc_value, exc_traceback = sys.exc_info()
+                    if isinstance(err, (ModelNotFoundError, ModelRunRequestError)):
+                        trace = extract_most_recent_run_model_traceback(exc_traceback, 2)
+                    else:
+                        trace = extract_most_recent_run_model_traceback(exc_traceback)
+
                     # For errors that have specific detail classes, we
                     # ensure detail is a dict (as it will be over the wire)
                     # to make local-dev identical to production.
@@ -292,12 +326,15 @@ class EngineModelContext(ModelContext):
                     if self.dev_mode:
                         self.logger.exception(f'Exception running model {slug}: {err}')
                     err = ModelRunError(f'Exception running model {slug}: {err}')
+                    trace = traceback.format_exc(limit=30)
                 # We add the model just run (or validated input for) to stack
                 err.data.stack.insert(0,
-                                      ModelCallStackEntry(slug=slug,
-                                                          version=model_class.version,
-                                                          chainId=context.chain_id,
-                                                          blockNumber=context.block_number))
+                                      ModelCallStackEntry(
+                                          slug=slug,
+                                          version=model_class.version,
+                                          chainId=context.chain_id,
+                                          blockNumber=context.block_number,
+                                          trace=trace[:1000] if trace is not None else None))
                 raise err
 
             finally:
