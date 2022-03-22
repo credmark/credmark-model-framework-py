@@ -83,9 +83,12 @@ class ModelDataErrorDesc(ModelErrorDesc):
         return schema
 
 
-def create_error_schema_for_error_descs(slug: str, errors: Union[List[ModelErrorDesc], None]):
+def create_error_schema_for_error_descs(slug: str, errors: Union[List[ModelErrorDesc], ModelErrorDesc, None]):
     try:
         base_error_schema = ModelBaseError.base_error_schema()
+
+        if isinstance(errors, ModelErrorDesc):
+            errors = [errors]
 
         if errors is None or len(errors) == 0:
             return base_error_schema
@@ -106,7 +109,7 @@ def create_error_schema_for_error_descs(slug: str, errors: Union[List[ModelError
                 title = schema["title"]
                 if title in definitions:
                     # handle name clash
-                    title = f'{title}_{i}'
+                    title = f'{title}_{i+1}'
                     schema['title'] = title
                 oneOf.append({'$ref': f'#/definitions/{title}'})
                 definitions[title] = schema
@@ -141,7 +144,7 @@ def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
              developer: Union[str, None] = None,
              input: Union[Type[DTO], Type[dict]] = EmptyInput,
              output: Union[Type[DTO], Type[dict], None] = None,
-             errors: Union[List[ModelErrorDesc], None] = None):
+             errors: Union[List[ModelErrorDesc], ModelErrorDesc, None] = None):
     def wrapper(cls_in):
         def is_parent(child, parent):
             found = parent in child.__bases__
