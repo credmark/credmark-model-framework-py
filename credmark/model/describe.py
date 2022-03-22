@@ -41,7 +41,7 @@ class ModelDataErrorDesc(ModelErrorDesc):
     Contains the list of possible codes and their descriptions.
     """
 
-    def __init__(self, description: str, code: Union[str, None] = None,
+    def __init__(self, description: Union[str, None] = None, code: Union[str, None] = None,
                  code_desc: Union[str, None] = None,
                  codes: Union[List[Tuple[str, str]], List[str], None] = None):
         """
@@ -53,7 +53,7 @@ class ModelDataErrorDesc(ModelErrorDesc):
         code_desc: Description of error code
         codes: List of tuples `(code, code_description)`
         """
-        self.description = description
+        self.description = description if description is not None else 'A ModelDataError'
         self.codes: List[Tuple[str, str]] = []
         if codes is not None:
             for ct in codes:
@@ -68,7 +68,9 @@ class ModelDataErrorDesc(ModelErrorDesc):
             self.__schema = schema = deepcopy(ModelDataErrorDTO.schema())
             schema['title'] = f'ModelDataError_{slug.replace(".","_").replace("-", "_")}'
             schema['description'] = self.description
+            schema['properties']['type']['description'] = "'ModelDataError'"
             code_prop = schema['properties']['code']
+            del code_prop['default']
             code_prop['enum'] = [ct[0] for ct in self.codes]
             code_desc_list = [f"\'{ct[0]}\' - {ct[1]}" for ct in self.codes]
             code_prop['description'] = f'Code values: {"; ".join(code_desc_list)}'
