@@ -4,7 +4,7 @@ import logging
 import requests
 from urllib.parse import urljoin, quote
 from credmark.model.engine.errors import ModelNotFoundError, ModelRunRequestError
-from credmark.model.errors import ModelBaseError, ModelEngineError, create_instance_from_error_dict
+from credmark.model.errors import ModelBaseError, create_instance_from_error_dict
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
 

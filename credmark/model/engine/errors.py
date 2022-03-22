@@ -24,7 +24,7 @@ class ModelNotFoundError(ModelEngineError):
     @classmethod
     def create(cls, slug: str, version: Union[str, None], message: Union[str, None] = None):
         message = f'Missing model "{slug}" version {version if version is not None else "any"}' \
-            + (' ' + message if message is not None else '')
+            + ('. ' + message if message is not None else '')
         return ModelNotFoundError(message=message,
                                   detail=SlugAndVersionDTO(slug=slug, version=version))
 
