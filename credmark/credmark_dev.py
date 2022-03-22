@@ -303,6 +303,18 @@ def print_manifests(manifests: List[dict], describe_schemas=False):
                         print(' - output example:')
                         print_example(output_examples, '   ', sys.stdout.write)
 
+                    elif i == 'errors':
+                        for e in v:
+                            title = e.get('title', 'Error')
+                            output_tree = dto_schema_viz(
+                                e, title, e, 0, 'tree', only_required=False, tag='top', limit=1)
+                            output_examples = dto_schema_viz(
+                                e, title, e, 0, 'example', only_required=False, tag='top', limit=1)
+                            print(' - error schema:')
+                            print_tree(output_tree, '   ', sys.stdout.write)
+                            print(f'   {title} {e["properties"]["code"]["description"]}')
+                            print(' - error example:')
+                            print_example(output_examples, '   ', sys.stdout.write)
                     else:
                         sys.stdout.write(f' - {i}: {v}\n')
 

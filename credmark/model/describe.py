@@ -1,10 +1,12 @@
+from abc import abstractmethod
 import inspect
 import re
-from typing import Type, Union
+from typing import List, Tuple, Type, Union
+from copy import deepcopy
 
 from .base import Model
 from credmark.dto import DTO, EmptyInput
-from .errors import ModelDefinitionError
+from .errors import ModelDataErrorDTO, ModelDefinitionError
 
 
 class WrongModelMethodSignature(ModelDefinitionError):
@@ -24,6 +26,56 @@ DICT_SCHEMA = {"title": "Object", "type": "object", "properties": {}}
 
 MAX_SLUG_LENGTH = 64
 model_slug_re = re.compile(r'^(([A-Za-z0-9]+\-)*[A-Za-z0-9]+\.)?([A-Za-z0-9]+\-)*[A-Za-z0-9]+$')
+
+
+class ModelErrorDesc:
+    @abstractmethod
+    def schema(self, slug: str):
+        pass
+
+
+class ModelDataErrorDesc(ModelErrorDesc):
+    """
+    A description of ModelDataErrors raised by a model.
+
+    Contains the list of possible codes and their descriptions.
+    """
+
+    def __init__(self, description: str, code: Union[str, None] = None,
+                 code_desc: Union[str, None] = None,
+                 codes: Union[List[Tuple[str, str]], List[str], None] = None):
+        """
+        Create a description of a ModelDataError.
+
+        Args:
+        description: Description of the error
+        code: Error code
+        code_desc: Description of error code
+        codes: List of tuples `(code, code_description)`
+        """
+        self.description = description
+        self.codes: List[Tuple[str, str]] = []
+        if codes is not None:
+            for ct in codes:
+                self.codes.append(ct if isinstance(ct, tuple) else (ct, ct))
+        if code is not None:
+            self.codes.append((code, code_desc) if code_desc is not None else (code, code))
+        self.codes.sort()
+        self.__schema = None
+
+    def schema(self, slug: str):
+        if self.__schema is None:
+            self.__schema = schema = deepcopy(ModelDataErrorDTO.schema())
+            schema['title'] = f'ModelDataError_{slug.replace(".","_").replace("-", "_")}'
+            schema['description'] = self.description
+            code_prop = schema['properties']['code']
+            code_prop['enum'] = [ct[0] for ct in self.codes]
+            code_desc_list = [f"\'{ct[0]}\' - {ct[1]}" for ct in self.codes]
+            code_prop['description'] = f'Code values: {"; ".join(code_desc_list)}'
+            required = schema['required']
+            if 'code' not in required:
+                required.append('code')
+        return self.__schema
 
 
 def validate_model_slug(slug: str, prefix: Union[str, None] = None):
@@ -49,7 +101,8 @@ def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
              description: Union[str, None] = None,
              developer: Union[str, None] = None,
              input: Union[Type[DTO], Type[dict]] = EmptyInput,
-             output: Union[Type[DTO], Type[dict], None] = None):
+             output: Union[Type[DTO], Type[dict], None] = None,
+             errors: Union[List[ModelErrorDesc], None] = None):
     def wrapper(cls_in):
         def is_parent(child, parent):
             found = parent in child.__bases__
@@ -66,6 +119,13 @@ def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
         else:
             validate_model_slug(slug)
 
+        try:
+            error_schemas = [] if errors is None or len(
+                errors) == 0 else [err_desc.schema(slug) for err_desc in errors]
+        except Exception as err:
+            raise ModelDefinitionError(
+                f'Exception processing "errors" in model {slug} describe(): {err}')
+
         attr_value = {
             'credmarkModelManifest': 'v1',
             'model': {
@@ -79,6 +139,7 @@ def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
                 else DICT_SCHEMA,
                 'output': output.schema() if output is not None and issubclass(output, DTO)
                 else DICT_SCHEMA,
+                'errors': error_schemas,
                 'class': cls.__dict__['__module__'] + '.' + cls.__name__
             }
         }
