@@ -26,7 +26,27 @@ DetailDTOClass = TypeVar('DetailDTOClass')
 
 class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
     """
-    The base error type that other errors inherit from.
+    The data fields that are common to all error types
+    such as ModelDataError, ModelRunError, ModelInputError,
+    ModelOutputError etc.
+    """
+    type: str = DTOField(..., description='Error type')
+    message: str = DTOField(..., description='Error message')
+    stack: List[ModelCallStackEntry] = DTOField(
+        [], description='Model call stack. First element is the first '
+        'called model and last element is the model that raised the error.')
+    code: str = DTOField('generic', description='Short identifier for the type of error')
+    detail: Union[DetailDTOClass, None] = DTOField(
+        None, description='Arbitrary data related to the error. '
+        'This can be a dict or a DTO instance')
+    permanent: bool = DTOField(False, description='If true, the error is permanent and '
+                               'will also give the same result for the same context.')
+
+
+class ModelBaseError(Exception):
+    """
+    Base error class for Credmark model errors.
+    You should not create instances of this class directly.
 
     The main error types are:
      - ModelDataError: An error that occurs during the lookup, generation,
@@ -51,24 +71,6 @@ class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
      - ModelEngineError: An error occurred in the model running engine.
        These errors are considered transient because they usually
        relate to network or resource issues.
-    """
-    type: str = DTOField(..., description='Error type')
-    message: str = DTOField(..., description='Error message')
-    stack: List[ModelCallStackEntry] = DTOField(
-        [], description='Model call stack. First element is the first '
-        'called model and last element is the model that raised the error.')
-    code: str = DTOField('generic', description='Short identifier for the type of error')
-    detail: Union[DetailDTOClass, None] = DTOField(
-        None, description='Arbitrary data related to the error. '
-        'This can be a dict or a DTO instance')
-    permanent: bool = DTOField(False, description='If true, the error is permanent and '
-                               'will also give the same result for the same context.')
-
-
-class ModelBaseError(Exception):
-    """
-    Base error class for Credmark model errors.
-    You should not create instances of this class directly.
 
     Subclasses can create a custom DTO class and set the
     dto_class property. They should override the __init__
@@ -112,17 +114,26 @@ class ModelBaseError(Exception):
         return cls.class_map.get(name)
 
     @ classmethod
+    def base_error_schema(cls):
+        return cls.schema_for_dto_class(cls.dto_class)
+
+    @classmethod
+    def schema_for_dto_class(cls, dto_class: Type[DTO]):
+        s = dto_class.schema()
+        # Remove DTO from the titles
+        # so they match the error types/classnames
+        title: str = s['title']
+        if title.endswith('DTO'):
+            s = s.copy()
+            title = title[:-3]
+            s['title'] = title
+        return s
+
+    @ classmethod
     def error_schemas(cls):
         schemas = []
         for dto in cls.dto_set:
-            s = dto.schema()
-            # Remove DTO from the titles
-            # so they match the error types/classnames
-            title: str = s['title']
-            if title.endswith('DTO'):
-                s = s.copy()
-                title = title[:-3]
-                s['title'] = title
+            s = cls.schema_for_dto_class(dto)
             schemas.append(s)
         return schemas
 
@@ -161,15 +172,6 @@ class ModelDataErrorDTO(ModelErrorDTO):
     processing of data this is considered deterministic and
     permanent, in the sense that for the given context, the
     same error will always occur.
-
-    A model may raise a ModelDataError in situations such as:
-     - the requested data does not exist or is not available for
-       the current context block number.
-     - the input data is incomplete, references non-existent
-       items, or cannot be processed
-
-    A model may (and often should) catch and handle ModelDataErrors
-    raised from running a model.
     """
 
 

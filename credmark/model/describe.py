@@ -6,7 +6,7 @@ from copy import deepcopy
 
 from .base import Model
 from credmark.dto import DTO, EmptyInput
-from .errors import ModelDataErrorDTO, ModelDefinitionError
+from .errors import ModelBaseError, ModelDataErrorDTO, ModelDefinitionError
 
 
 class WrongModelMethodSignature(ModelDefinitionError):
@@ -30,7 +30,7 @@ model_slug_re = re.compile(r'^(([A-Za-z0-9]+\-)*[A-Za-z0-9]+\.)?([A-Za-z0-9]+\-)
 
 class ModelErrorDesc:
     @abstractmethod
-    def schema(self, slug: str):
+    def schema(self, slug: str, include_definitions=True) -> dict:
         pass
 
 
@@ -61,23 +61,60 @@ class ModelDataErrorDesc(ModelErrorDesc):
         if code is not None:
             self.codes.append((code, code_desc) if code_desc is not None else (code, code))
         self.codes.sort()
-        self.__schema = None
 
-    def schema(self, slug: str):
-        if self.__schema is None:
-            self.__schema = schema = deepcopy(ModelDataErrorDTO.schema())
-            schema['title'] = f'ModelDataError_{slug.replace(".","_").replace("-", "_")}'
-            schema['description'] = self.description
-            schema['properties']['type']['description'] = "'ModelDataError'"
-            code_prop = schema['properties']['code']
-            del code_prop['default']
-            code_prop['enum'] = [ct[0] for ct in self.codes]
-            code_desc_list = [f"\'{ct[0]}\' - {ct[1]}" for ct in self.codes]
-            code_prop['description'] = f'Code values: {"; ".join(code_desc_list)}'
-            required = schema['required']
-            if 'code' not in required:
-                required.append('code')
-        return self.__schema
+    def schema(self, slug: str, include_definitions=True):
+        """
+        Returns a schema for the base object without the definitions.
+        """
+        schema = deepcopy(ModelDataErrorDTO.schema())
+        schema['title'] = f'ModelDataError_{slug.replace(".","_").replace("-", "_")}'
+        schema['description'] = self.description
+        schema['properties']['type']['description'] = "'ModelDataError'"
+        code_prop = schema['properties']['code']
+        del code_prop['default']
+        code_prop['enum'] = [ct[0] for ct in self.codes]
+        code_desc_list = [f"\'{ct[0]}\' - {ct[1]}" for ct in self.codes]
+        code_prop['description'] = f'Code values: {"; ".join(code_desc_list)}'
+        required = schema['required']
+        if 'code' not in required:
+            required.append('code')
+        if not include_definitions:
+            del schema['definitions']
+        return schema
+
+
+def create_error_schema_for_error_descs(slug: str, errors: Union[List[ModelErrorDesc], None]):
+    try:
+        base_error_schema = ModelBaseError.base_error_schema()
+
+        if errors is None or len(errors) == 0:
+            return base_error_schema
+        else:
+            general_error = deepcopy(base_error_schema)
+            definitions = general_error['definitions']
+            del general_error['definitions']
+            definitions[general_error['title']] = general_error
+            combined_schema = {
+                'title': f'ModelErrors_{slug.replace(".","_").replace("-", "_")}',
+                'type': 'object',
+                'oneOf': [{'$ref': f'#/definitions/{general_error["title"]}'}],
+                'definitions': definitions
+            }
+            oneOf = combined_schema['oneOf']
+            for i, err_desc in enumerate(errors):
+                schema = err_desc.schema(slug, False)
+                title = schema["title"]
+                if title in definitions:
+                    # handle name clash
+                    title = f'{title}_{i}'
+                    schema['title'] = title
+                oneOf.append({'$ref': f'#/definitions/{title}'})
+                definitions[title] = schema
+            return combined_schema
+
+    except Exception as err:
+        raise ModelDefinitionError(
+            f'Exception processing "errors" in model {slug} describe(): {err}')
 
 
 def validate_model_slug(slug: str, prefix: Union[str, None] = None):
@@ -121,13 +158,6 @@ def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
         else:
             validate_model_slug(slug)
 
-        try:
-            error_schemas = [] if errors is None or len(
-                errors) == 0 else [err_desc.schema(slug) for err_desc in errors]
-        except Exception as err:
-            raise ModelDefinitionError(
-                f'Exception processing "errors" in model {slug} describe(): {err}')
-
         attr_value = {
             'credmarkModelManifest': 'v1',
             'model': {
@@ -141,7 +171,7 @@ def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
                 else DICT_SCHEMA,
                 'output': output.schema() if output is not None and issubclass(output, DTO)
                 else DICT_SCHEMA,
-                'errors': error_schemas,
+                'error': create_error_schema_for_error_descs(slug, errors),
                 'class': cls.__dict__['__module__'] + '.' + cls.__name__
             }
         }
