@@ -289,6 +289,8 @@ class EngineModelContext(ModelContext):
                     # to make local-dev identical to production.
                     err.transform_data_detail(None)
                 else:
+                    if self.dev_mode:
+                        self.logger.exception(f'Exception running model {slug}: {err}')
                     err = ModelRunError(f'Exception running model {slug}: {err}')
                 # We add the model just run (or validated input for) to stack
                 err.data.stack.insert(0,
