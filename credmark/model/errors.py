@@ -24,23 +24,21 @@ class ModelCallStackEntry(DTO):
 DetailDTOClass = TypeVar('DetailDTOClass')
 
 
+# This is used for the general error schema so docs are short.
 class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
     """
-    The data fields that are common to all error types
-    such as ModelDataError, ModelRunError, ModelInputError,
-    ModelOutputError etc.
+    Data fields common to all error types:
+    ModelDataError, ModelRunError, ModelInputError etc.
     """
     type: str = DTOField(..., description='Error type')
     message: str = DTOField(..., description='Error message')
     stack: List[ModelCallStackEntry] = DTOField(
-        [], description='Model call stack. First element is the first '
-        'called model and last element is the model that raised the error.')
+        [], description='Model call stack. Last element is the model that raised the error.')
     code: str = DTOField('generic', description='Short identifier for the type of error')
     detail: Union[DetailDTOClass, None] = DTOField(
-        None, description='Arbitrary data related to the error. '
-        'This can be a dict or a DTO instance')
-    permanent: bool = DTOField(False, description='If true, the error is permanent and '
-                               'will also give the same result for the same context.')
+        None, description='Arbitrary data related to the error.')
+    permanent: bool = DTOField(
+        False, description='If true, the error will always give the same result for the same context.')
 
 
 class ModelBaseError(Exception):
@@ -193,7 +191,7 @@ class ModelDataError(ModelBaseError):
     """
     dto_class = ModelDataErrorDTO
 
-    class ErrorCodes:
+    class Codes:
         GENERIC = 'generic'
         NO_DATA = 'no_data'
         CONFLICT = 'conflict'
