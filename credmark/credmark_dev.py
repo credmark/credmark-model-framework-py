@@ -310,7 +310,9 @@ def print_manifests(manifests: List[dict], describe_schemas=False):
                         print(' - errors:')
                         if len(codes) > 0:
                             for ct in codes:
-                                print(f'   {ct[0]} codes={ct[1]} {ct[2]}')
+                                print(f'   {ct[0]}')
+                                print(f'     codes={ct[1]}')
+                                print(f'     {ct[2]}')
                             title = v.get('title', 'Error')
                             output_tree = dto_schema_viz(
                                 v, title, v, 0, 'tree', only_required=False, tag='top', limit=1)
