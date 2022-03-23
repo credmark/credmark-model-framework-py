@@ -9,6 +9,8 @@ from typing import (
 )
 
 from dotenv import load_dotenv, find_dotenv
+
+from credmark.dto.dto_error_schema import extract_error_codes_and_descriptions
 sys.path.append('.')
 from .model.engine.context import EngineModelContext
 from .model.engine.model_loader import ModelLoader
@@ -302,6 +304,22 @@ def print_manifests(manifests: List[dict], describe_schemas=False):
 
                         print(' - output example:')
                         print_example(output_examples, '   ', sys.stdout.write)
+
+                    elif i == 'error':
+                        codes = extract_error_codes_and_descriptions(v)
+                        print(' - errors:')
+                        if len(codes) > 0:
+                            for ct in codes:
+                                print(f'   {ct[0]} codes={ct[1]} {ct[2]}')
+                            title = v.get('title', 'Error')
+                            output_tree = dto_schema_viz(
+                                v, title, v, 0, 'tree', only_required=False, tag='top', limit=1)
+                            output_examples = dto_schema_viz(
+                                v, title, v, 0, 'example', only_required=False, tag='top', limit=1)
+                            print(' - error schema:')
+                            print_tree(output_tree, '   ', sys.stdout.write)
+                        else:
+                            print('   No defined errors')
 
                     else:
                         sys.stdout.write(f' - {i}: {v}\n')

@@ -93,9 +93,15 @@ def dto_schema_viz(head_node, var_name, node, n_iter, ret_type, only_required, t
 
             # ['type'] != 'array'
             # ordinary type
+            type_desc = node["type"]
+            if 'enum' in node:
+                q = "'" if type_desc == 'string' else ''
+                vals = f"{q},{q}".join(node["enum"])
+                type_desc = f'{type_desc} [{q}{vals}{q}]'
+
             if ret_type == 'tree':
-                return [(n_iter, var_name, node["type"])]
-            return [{var_name: node["type"]}]
+                return [(n_iter, var_name, type_desc)]
+            return [{var_name: type_desc}]
 
         # Various Union type
         elif 'anyOf' in node or 'allOf' in node or 'oneOf' in node:

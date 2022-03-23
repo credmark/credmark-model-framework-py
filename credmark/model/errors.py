@@ -17,6 +17,7 @@ class ModelCallStackEntry(DTO):
     blockNumber: Union[int, None] = DTOField(None, description='Context block number')
     trace: Union[str, None] = DTOField(None, description='Trace of code that generated the error')
 
+
 # If you subclass ModelBaseErrorDTO, you MUST add a doc-string
 # to your subclass or it will reuse the one below in the schema.
 
@@ -24,9 +25,34 @@ class ModelCallStackEntry(DTO):
 DetailDTOClass = TypeVar('DetailDTOClass')
 
 
+# This is used for the general error schema so docs are short.
 class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
     """
-    The base error type that other errors inherit from.
+    Data fields common to all error types:
+    ModelDataError, ModelRunError, ModelInputError etc.
+    """
+    type: str = DTOField(..., description='Error type')
+    message: str = DTOField(..., description='Error message')
+    stack: List[ModelCallStackEntry] = DTOField(
+        [], description='Model call stack. Last element is the model that raised the error.')
+    code: str = DTOField('generic', description='Short identifier for the type of error')
+    detail: Union[DetailDTOClass, None] = DTOField(
+        None, description='Arbitrary data related to the error.')
+    permanent: bool = DTOField(
+        False, description='If true, the error will always give the same result for the same context.')
+
+    @classmethod
+    def schema(cls):
+        schema = super().schema()
+        # Add fields that have default values to the required list in schema
+        schema['required'].extend(['stack', 'code', 'permanent'])
+        return schema
+
+
+class ModelBaseError(Exception):
+    """
+    Base error class for Credmark model errors.
+    You should not create instances of this class directly.
 
     The main error types are:
      - ModelDataError: An error that occurs during the lookup, generation,
@@ -51,24 +77,6 @@ class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
      - ModelEngineError: An error occurred in the model running engine.
        These errors are considered transient because they usually
        relate to network or resource issues.
-    """
-    type: str = DTOField(..., description='Error type')
-    message: str = DTOField(..., description='Error message')
-    stack: List[ModelCallStackEntry] = DTOField(
-        [], description='Model call stack. First element is the first '
-        'called model and last element is the model that raised the error.')
-    code: str = DTOField('generic', description='Short identifier for the type of error')
-    detail: Union[DetailDTOClass, None] = DTOField(
-        None, description='Arbitrary data related to the error. '
-        'This can be a dict or a DTO instance')
-    permanent: bool = DTOField(False, description='If true, the error is permanent and '
-                               'will also give the same result for the same context.')
-
-
-class ModelBaseError(Exception):
-    """
-    Base error class for Credmark model errors.
-    You should not create instances of this class directly.
 
     Subclasses can create a custom DTO class and set the
     dto_class property. They should override the __init__
@@ -112,17 +120,26 @@ class ModelBaseError(Exception):
         return cls.class_map.get(name)
 
     @ classmethod
+    def base_error_schema(cls):
+        return cls.schema_for_dto_class(cls.dto_class)
+
+    @classmethod
+    def schema_for_dto_class(cls, dto_class: Type[DTO]):
+        s = dto_class.schema()
+        # Remove DTO from the titles
+        # so they match the error types/classnames
+        title: str = s['title']
+        if title.endswith('DTO'):
+            s = s.copy()
+            title = title[:-3]
+            s['title'] = title
+        return s
+
+    @ classmethod
     def error_schemas(cls):
         schemas = []
         for dto in cls.dto_set:
-            s = dto.schema()
-            # Remove DTO from the titles
-            # so they match the error types/classnames
-            title: str = s['title']
-            if title.endswith('DTO'):
-                s = s.copy()
-                title = title[:-3]
-                s['title'] = title
+            s = cls.schema_for_dto_class(dto)
             schemas.append(s)
         return schemas
 
@@ -161,15 +178,6 @@ class ModelDataErrorDTO(ModelErrorDTO):
     processing of data this is considered deterministic and
     permanent, in the sense that for the given context, the
     same error will always occur.
-
-    A model may raise a ModelDataError in situations such as:
-     - the requested data does not exist or is not available for
-       the current context block number.
-     - the input data is incomplete, references non-existent
-       items, or cannot be processed
-
-    A model may (and often should) catch and handle ModelDataErrors
-    raised from running a model.
     """
 
 
@@ -191,7 +199,7 @@ class ModelDataError(ModelBaseError):
     """
     dto_class = ModelDataErrorDTO
 
-    class ErrorCodes:
+    class Codes:
         GENERIC = 'generic'
         NO_DATA = 'no_data'
         CONFLICT = 'conflict'
