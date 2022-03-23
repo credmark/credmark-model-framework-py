@@ -17,6 +17,7 @@ class ModelCallStackEntry(DTO):
     blockNumber: Union[int, None] = DTOField(None, description='Context block number')
     trace: Union[str, None] = DTOField(None, description='Trace of code that generated the error')
 
+
 # If you subclass ModelBaseErrorDTO, you MUST add a doc-string
 # to your subclass or it will reuse the one below in the schema.
 
@@ -39,6 +40,13 @@ class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
         None, description='Arbitrary data related to the error.')
     permanent: bool = DTOField(
         False, description='If true, the error will always give the same result for the same context.')
+
+    @classmethod
+    def schema(cls):
+        schema = super().schema()
+        # Add fields that have default values to the required list in schema
+        schema['required'].extend(['stack', 'code', 'permanent'])
+        return schema
 
 
 class ModelBaseError(Exception):
