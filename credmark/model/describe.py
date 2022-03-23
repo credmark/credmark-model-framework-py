@@ -53,7 +53,7 @@ class ModelDataErrorDesc(ModelErrorDesc):
         code_desc: Description of error code
         codes: List of tuples `(code, code_description)`
         """
-        self.description = description if description is not None else 'A ModelDataError'
+        self.description = description if description is not None else 'ModelDataError'
         self.codes: List[Tuple[str, str]] = []
         if codes is not None:
             for ct in codes:
@@ -69,7 +69,7 @@ class ModelDataErrorDesc(ModelErrorDesc):
         schema = deepcopy(ModelDataErrorDTO.schema())
         schema['title'] = f'ModelDataError_{slug.replace(".","_").replace("-", "_")}'
         schema['description'] = self.description
-        schema['properties']['type']['description'] = "'ModelDataError'"
+        schema['properties']['type']['description'] = "ModelDataError"
         code_prop = schema['properties']['code']
         del code_prop['default']
         code_prop['enum'] = [ct[0] for ct in self.codes]
@@ -83,7 +83,8 @@ class ModelDataErrorDesc(ModelErrorDesc):
         return schema
 
 
-def create_error_schema_for_error_descs(slug: str, errors: Union[List[ModelErrorDesc], ModelErrorDesc, None]):
+def create_error_schema_for_error_descs(slug: str,
+                                        errors: Union[List[ModelErrorDesc], ModelErrorDesc, None]):
     try:
         base_error_schema = ModelBaseError.base_error_schema()
 
@@ -99,7 +100,6 @@ def create_error_schema_for_error_descs(slug: str, errors: Union[List[ModelError
             definitions[general_error['title']] = general_error
             combined_schema = {
                 'title': f'ModelErrors_{slug.replace(".","_").replace("-", "_")}',
-                'type': 'object',
                 'oneOf': [{'$ref': f'#/definitions/{general_error["title"]}'}],
                 'definitions': definitions
             }
