@@ -306,16 +306,21 @@ def print_manifests(manifests: List[dict], describe_schemas=False):
                         print_example(output_examples, '   ', sys.stdout.write)
 
                     elif i == 'error':
-                        title = v.get('title', 'Error')
-                        output_tree = dto_schema_viz(
-                            v, title, v, 0, 'tree', only_required=False, tag='top', limit=1)
-                        output_examples = dto_schema_viz(
-                            v, title, v, 0, 'example', only_required=False, tag='top', limit=1)
-                        print(' - error schema:')
-                        print_tree(output_tree, '   ', sys.stdout.write)
                         codes = extract_error_codes_and_descriptions(v)
-                        for ct in codes:
-                            print(f'   {ct[0]} codes={ct[1]} {ct[2]}')
+                        print(' - errors:')
+                        if len(codes) > 0:
+                            for ct in codes:
+                                print(f'   {ct[0]} codes={ct[1]} {ct[2]}')
+                            title = v.get('title', 'Error')
+                            output_tree = dto_schema_viz(
+                                v, title, v, 0, 'tree', only_required=False, tag='top', limit=1)
+                            output_examples = dto_schema_viz(
+                                v, title, v, 0, 'example', only_required=False, tag='top', limit=1)
+                            print(' - error schema:')
+                            print_tree(output_tree, '   ', sys.stdout.write)
+                        else:
+                            print('   No defined errors')
+
                     else:
                         sys.stdout.write(f' - {i}: {v}\n')
 
