@@ -112,7 +112,8 @@ class BlockNumber(int):
         else:
             return self._timestamp
 
-    def to_datetime(self):
+    @property
+    def timestamp_datetime(self) -> datetime:
         return datetime.fromtimestamp(self.__timestamp__(), tz=timezone.utc)
 
     @property
@@ -121,7 +122,7 @@ class BlockNumber(int):
 
     @property
     def datestring(self) -> str:
-        return str(self.to_datetime())
+        return str(self.timestamp_datetime)
 
     # TODO: Add checking that we aren't looking into the future
     # TODO: Add BlockRange type
@@ -154,7 +155,7 @@ class BlockNumber(int):
         block_number = context.models.rpc.get_blocknumber(input=dict(timestamp=ts))['blockNumber']
         if block_number > context.block_number:
             context.logger.warn(
-                f'block_number {block_number} for {dt} is later than the current block {context.block_number} on {context.block_number.to_datetime()}. Return current block')
+                f'Returning the current block {context.block_number} on {context.block_number.timestamp_datetime}, because block {block_number} for {block_dt} is later.')
             return cls(context.block_number)
         else:
             return cls(block_number)
