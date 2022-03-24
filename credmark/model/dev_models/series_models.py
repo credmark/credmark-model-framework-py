@@ -65,7 +65,7 @@ class SeriesTimeStartEndInterval(credmark.model.Model):
         block_range = self.context.run_model(CoreModels.rpc_block_range_time_start_end_interval,
                                              rpc_input,
                                              return_type=RpcBlockRangeOutput)
-        
+
         return run_model_for_block_range(self.context,
                                          block_range,
                                          input.modelSlug,
