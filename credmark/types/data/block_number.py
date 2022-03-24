@@ -1,12 +1,30 @@
-from typing import Union
-from datetime import datetime
-from web3.types import BlockData, Timestamp
-from credmark.dto import DTO
+from typing import (
+    Union
+)
+import logging
+from datetime import (
+    datetime,
+    timezone,
+    date,
+)
+from web3.types import (
+    BlockData,
+    Timestamp,
+)
+
+from credmark.dto import (
+    DTO
+)
+
 import credmark.model
 from credmark.model.errors import (ModelErrorDTO,
+                                   ModelInputError,
                                    ModelInvalidStateError,
                                    ModelNoContextError,
                                    ModelRunError)
+
+
+logger = logging.getLogger(__name__)
 
 
 class BlockNumberOutOfRangeDetailDTO(DTO):
@@ -99,16 +117,64 @@ class BlockNumber(int):
         else:
             return self._timestamp
 
-    def to_datetime(self):
-        return datetime.fromtimestamp(self.__timestamp__())
+    @property
+    def timestamp_datetime(self) -> datetime:
+        return datetime.fromtimestamp(self.__timestamp__(), tz=timezone.utc)
 
-    @ property
+    @property
     def timestamp(self) -> Timestamp:
         return self.__timestamp__()
 
-    @ property
+    @property
     def datestring(self) -> str:
-        return str(self.to_datetime())
+        return str(self.timestamp_datetime)
 
     # TODO: Add checking that we aren't looking into the future
     # TODO: Add BlockRange type
+
+    @classmethod
+    def from_datetime(cls, datetime_date_ts: Union[datetime, date, int, float]):
+        """
+        Returns the block number from the input timestamp, datetime or date.
+        For input of timestamp and datetime, the last block before the datetime is returned.
+        For input of date, the last block of the date is returned.
+        """
+        context = credmark.model.ModelContext.current_context
+        if context is None:
+            raise ModelNoContextError('No current context for BlockNumber.from_datetime()')
+
+        if isinstance(datetime_date_ts, int):
+            dt = datetime.fromtimestamp(datetime_date_ts, tz=timezone.utc)
+        elif isinstance(datetime_date_ts, float):
+            dt = datetime.fromtimestamp(int(datetime_date_ts), tz=timezone.utc)
+        elif isinstance(datetime_date_ts, datetime):
+            if not datetime_date_ts.tzinfo:
+                raise ModelInputError(
+                    f'Input datetime {datetime_date_ts} has no tzinfo, please add.')
+            dt = datetime_date_ts
+        elif isinstance(datetime_date_ts, date):
+            dt = datetime.combine(datetime_date_ts, datetime.max.time(), tzinfo=timezone.utc)
+        else:
+            raise ModelInputError(
+                f'Invalid input for date/datetime/timestamp to query block_number {datetime_date_ts=}')
+        ts = int(dt.timestamp())
+
+        block_number = context.models.rpc.get_blocknumber(input=dict(timestamp=ts))['blockNumber']
+        if block_number > context.block_number:
+            logger.warning(
+                f'Returning the current block {context.block_number} at {context.block_number.timestamp_datetime}, '
+                f'because block {block_number} for {datetime_date_ts} is later.')
+            return cls(context.block_number)
+        else:
+            return cls(block_number)
+
+    @staticmethod
+    def datetime_of(block_number: int):
+        context = credmark.model.ModelContext.current_context
+        if context is None:
+            raise ModelNoContextError('No current context for BlockNumber.from_datetime()')
+
+        timestamp = context.models.rpc.get_block_timestamp(
+            input=dict(blockNumber=block_number))['timestamp']
+        dt = datetime.fromtimestamp(timestamp, timezone.utc).date()
+        return dt
