@@ -44,7 +44,7 @@ class Token(Contract):
         symbol: Union[str, None] = None
         name: Union[str, None] = None
         decimals: Union[int, None] = None
-        total_supply: Union[TokenWei, None] = None
+        total_supply: Union[int, None] = None
 
     _meta: TokenMetadata = PrivateAttr(default_factory=lambda: Token.TokenMetadata())
 
@@ -87,8 +87,7 @@ class Token(Contract):
         self._meta.symbol = self.functions.symbol().call()
         self._meta.name = self.functions.name().call()
         self._meta.decimals = self.functions.decimals().call()
-        self._meta.total_supply = TokenWei(
-            self.functions.totalSupply().call(), self._meta.decimals)
+        self._meta.total_supply = self.functions.totalSupply().call()
 
     @property
     def info(self):
