@@ -206,7 +206,7 @@ class HistoricalUtil:
 
         try:
             num = int(time_str.split(' ')[0])
-        except Exception as err:
+        except Exception as _err:
             raise ModelRunError(
                 f"Invalid historical time string '{time_str}': "
                 f"unknown number format")
