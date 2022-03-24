@@ -80,8 +80,8 @@ class Token(Contract):
                 self._meta = data.get("meta")
         super().__init__(**data)
 
-    def __load__(self):
-        super().__load__()
+    def __load(self):
+        super().__load()
         self._meta.symbol = self.functions.symbol().call()
         self._meta.name = self.functions.name().call()
         self._meta.decimals = self.functions.decimals().call()
@@ -91,7 +91,7 @@ class Token(Contract):
     @property
     def info(self):
         if not self._loaded:
-            self.__load__()
+            self.__load()
         info = self.dict()
         info['meta'] = self._meta.dict()
         return TokenInfo(**info)
@@ -99,25 +99,25 @@ class Token(Contract):
     @property
     def symbol(self):
         if not self._loaded:
-            self.__load__()
+            self.__load()
         return self._meta.symbol
 
     @property
     def decimals(self):
         if not self._loaded:
-            self.__load__()
+            self.__load()
         return self._meta.decimals
 
     @property
     def name(self):
         if not self._loaded:
-            self.__load__()
+            self.__load()
         return self._meta.name
 
     @property
     def total_supply(self):
         if not self._loaded:
-            self.__load__()
+            self.__load()
         return self._meta.total_supply
 
     def scaled(self, value):

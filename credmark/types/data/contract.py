@@ -51,7 +51,7 @@ class Contract(Account):
         self._instance = None
         self._proxy_for = None
 
-    def __load__(self):
+    def __load(self):
         context = credmark.model.ModelContext.current_context
         if context is not None:
             contract_q_results = context.run_model(
@@ -76,7 +76,7 @@ class Contract(Account):
             context = credmark.model.ModelContext.current_context
             if context is not None:
                 if self._meta.abi is None:
-                    self.__load__()
+                    self.__load()
                 self._instance = context.web3.eth.contract(
                     address=context.web3.toChecksumAddress(self.address),
                     abi=self._meta.abi
@@ -89,7 +89,7 @@ class Contract(Account):
     @property
     def proxy_for(self):
         if not self._loaded:
-            self.__load__()
+            self.__load()
         if self._proxy_for is None and self.is_transparent_proxy:
             if self._meta.proxy_for is not None:
                 self._proxy_for = Contract(address=self.proxy_for.address)
@@ -119,7 +119,7 @@ class Contract(Account):
     @property
     def info(self):
         if not self._loaded:
-            self.__load__()
+            self.__load()
         info = self.dict()
         info['meta'] = self._meta.dict()
         return ContractInfo(**info)
@@ -127,31 +127,31 @@ class Contract(Account):
     @ property
     def deploy_tx_hash(self):
         if not self._loaded:
-            self.__load__()
+            self.__load()
         return self._meta.deploy_tx_hash
 
     @ property
     def contract_name(self):
         if not self._loaded:
-            self.__load__()
+            self.__load()
         return self._meta.contract_name
 
     @ property
     def constructor_args(self):
         if not self._loaded:
-            self.__load__()
+            self.__load()
         return self._meta.constructor_args
 
     @ property
     def abi(self):
         if not self._loaded:
-            self.__load__()
+            self.__load()
         return self._meta.abi
 
     @ property
     def is_transparent_proxy(self):
         if not self._loaded:
-            self.__load__()
+            self.__load()
         if self._meta.contract_name == "InitializableAdminUpgradeabilityProxy":
             return True
         if self._meta.abi == UPGRADEABLE_CONTRACT_ABI:
