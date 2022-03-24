@@ -1,5 +1,6 @@
 import json
 from typing import (
+    Any,
     Union,
     List,
 )
@@ -7,20 +8,26 @@ from typing import (
 from web3.contract import Contract as Web3Contract
 
 import credmark.model
-from credmark.model.errors import ModelRunError, ModelNoContextError
+from credmark.model.errors import ModelDataError, ModelNoContextError
 from credmark.types.data.account import Account
-from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField
+from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
+from credmark.types.data.data_content.transparent_proxy_data import UPGRADEABLE_CONTRACT_ABI
 
 
 class Contract(Account):
-    contract_name: Union[str, None] = None
-    deploy_tx_hash: Union[str, None] = None
-    constructor_args: Union[str, None] = None
-    protocol: Union[str, None] = None
-    product: Union[str, None] = None
-    abi_hash: Union[str, None] = None
-    abi: Union[List[dict], str, None] = None
+
+    class ContractMetaData(DTO):
+        contract_name: Union[str, None] = None
+        deploy_tx_hash: Union[str, None] = None
+        constructor_args: Union[str, None] = None
+        abi_hash: Union[str, None] = None
+        abi: Union[List[dict], str, None] = None
+        proxy_for: Union[Account, None] = None
+
+    _meta: ContractMetaData = PrivateAttr(default=ContractMetaData())
     _instance: Union[Web3Contract, None] = PrivateAttr(default=None)
+    _proxy_for = PrivateAttr(default=None)
+    _loaded = PrivateAttr(default=False)
 
     class Config:
         arbitrary_types_allowed = True
@@ -33,48 +40,125 @@ class Contract(Account):
         }
 
     def __init__(self, **data):
-        if isinstance(data.get('abi'), str):
-            data['abi'] = json.loads(data['abi'])
+        if data.get('meta', None) is not None:
+            if isinstance(data.get('meta'), dict):
+                self._meta = self.ContractMetaData(**data.get('meta'))
+            if isinstance(data.get('meta'), self.ContractMetaData):
+                self._meta = data.get("meta")
         super().__init__(**data)
         self._instance = None
+        self._proxy_for = None
 
-    @property
-    def instance(self):
-        if self._instance is None:
-            if self.address is not None:
-                context = credmark.model.ModelContext.current_context
-                if context is not None:
-                    if self.abi is None:
-                        self.load()
-                    self._instance = context.web3.eth.contract(
-                        address=context.web3.toChecksumAddress(self.address),
-                        abi=self.abi
-                    )
-                else:
-                    raise ModelNoContextError(
-                        'No current context. Unable to create contract instance.')
-            else:
-                # This should never actually happen so we consider it a coding error
-                raise ModelRunError(
-                    'Contract address is None. Unable to create contract instance.')
-        return self._instance
-
-    def load(self):
+    def __load__(self):
         context = credmark.model.ModelContext.current_context
         if context is not None:
             contract_q_results = context.run_model(
                 'contract.metadata', {'contractAddress': self.address})
+            self._loaded = True
             if len(contract_q_results['contracts']) > 0:
                 res = contract_q_results['contracts'][0]
-                self.contract_name = res.get('contract_name')
-                self.constructor_args = res.get('constructor_args')
-                self.protocol = res.get('protocol')
-                self.product = res.get('product')
-                self.abi = res.get('abi')
+                self._meta.contract_name = res.get('contract_name')
+                self._meta.constructor_args = res.get('constructor_args')
+                self._meta.abi = res.get('abi')
+                if self.is_transparent_proxy:
+                    # TODO: can we non-circular-import-edly do this so that it's a Contract object?
+                    self._meta.proxy_for = Account(address=self.proxy_for.address)
+            else:
+                raise ModelDataError(
+                    f'abi not found for address {self.address}'
+                )
+
+    @property
+    def instance(self):
+        if self._instance is None:
+            context = credmark.model.ModelContext.current_context
+            if context is not None:
+                if self._meta.abi is None:
+                    self.__load__()
+                self._instance = context.web3.eth.contract(
+                    address=context.web3.toChecksumAddress(self.address),
+                    abi=self._meta.abi
+                )
+            else:
+                raise ModelNoContextError(
+                    'No current context. Unable to create contract instance.')
+        return self._instance
+
+    @property
+    def proxy_for(self):
+        if not self._loaded:
+            self.__load__()
+        if self._proxy_for is None and self.is_transparent_proxy:
+            if self._meta.proxy_for is not None:
+                self._proxy_for = Contract(address=self.proxy_for.address)
+            else:
+                context = credmark.model.ModelContext.current_context
+                if context is None:
+                    raise ModelNoContextError(
+                        'No current context. Unable to create contract instance.')
+                # TODO: Get this from the database, Not the RPC
+                events = self.instance.events.Upgraded.createFilter(
+                    fromBlock=0, toBlock=context.block_number).get_all_entries()
+                self._proxy_for = Contract(address=events[len(events) - 1].args.implementation)
+        return self._proxy_for
 
     @property
     def functions(self):
+        if self.proxy_for is not None:
+            return self.proxy_for.functions
         return self.instance.functions
+
+    @property
+    def events(self):
+        if self.proxy_for is not None:
+            return self.proxy_for.events
+        return self.instance.events
+
+    @property
+    def info(self):
+        if not self._loaded:
+            self.__load__()
+        info = self.dict()
+        info['meta'] = self._meta.dict()
+        return ContractInfo(**info)
+
+    @ property
+    def deploy_tx_hash(self):
+        if not self._loaded:
+            self.__load__()
+        return self._meta.deploy_tx_hash
+
+    @ property
+    def contract_name(self):
+        if not self._loaded:
+            self.__load__()
+        return self._meta.contract_name
+
+    @ property
+    def constructor_args(self):
+        if not self._loaded:
+            self.__load__()
+        return self._meta.constructor_args
+
+    @ property
+    def abi(self):
+        if not self._loaded:
+            self.__load__()
+        return self._meta.abi
+
+    @ property
+    def is_transparent_proxy(self):
+        if not self._loaded:
+            self.__load__()
+        if self._meta.contract_name == "InitializableAdminUpgradeabilityProxy":
+            return True
+        if self._meta.abi == UPGRADEABLE_CONTRACT_ABI:
+            return True
+        return False
+
+
+class ContractInfo(Contract):
+    meta: Contract.ContractMetaData
 
 
 class Contracts(IterableListGenericDTO[Contract]):

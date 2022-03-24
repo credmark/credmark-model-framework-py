@@ -6,22 +6,22 @@ from .token_wei import TokenWei
 from .contract import Contract
 from .address import Address
 from .data_content.fungible_token_data import FUNGIBLE_TOKEN_DATA
-from .data_content.erc_standard_data import ERC20_BASE_ABI
 from typing import List, Union
-from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField
-from ..models.core import CoreModels
+from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
 
 
-def get_fungible_token_from_configuration(
+def get_token_from_configuration(
         chain_id: str,
         symbol: Union[str, None] = None,
         address: Union[Address, None] = None,
-        is_native_token: bool = False):
+        is_native_token: bool = False,
+        wraps: Union[str, None] = None) -> dict:
     token_datas = [
         t for t in FUNGIBLE_TOKEN_DATA.get(chain_id, [])
         if (t.get('is_native_token', False) == is_native_token and
             (t.get('address', None) == address or
-             t.get('symbol', None) == symbol))
+             t.get('symbol', None) == symbol) or
+            (t.get('wraps', None) == wraps and wraps is not None))
     ]
 
     if len(token_datas) > 1:
@@ -36,110 +36,134 @@ def get_fungible_token_from_configuration(
 
 class Token(Contract):
     """
-    Token represents a fungible Token that is either an ERC20 or
-    a Native Token (such as ETH or MATIC)
-
-    It will load a standard simplified ERC20 ABI in the case of
-    one not existing. It allows for None addresses, in the case
-    of it being a native token.
+    Token represents a fungible Token that conforms to ERC20 
+    standards
     """
-    address: Union[Address, None] = None
-    symbol: Union[str, None] = None
-    name: Union[str, None] = None
-    is_native_token: bool = False
-    decimals: int
+
+    class TokenMetadata(Contract.ContractMetaData):
+        symbol: Union[str, None] = None
+        name: Union[str, None] = None
+        decimals: Union[int, None] = None
+        total_supply: Union[TokenWei, None] = None
+
+    _meta: TokenMetadata = PrivateAttr(default=TokenMetadata())
 
     class Config:
         schema_extra = {
-            'examples': [{'symbol': 'USDC'},
-                         {'symbol': 'USDC', 'decimals': 6}
+            'examples': [{'symbol': 'CMK'},
+                         {'symbol': 'CMK', 'decimals': 18}
                          ] + Contract.Config.schema_extra['examples']
         }
 
-    @classmethod
-    def native_token(cls):
-        return Token(is_native_token=True)
-
     def __init__(self, **data):
 
-        if not ('symbol' in data and
-                'decimals' in data and
-                'address' in data and
-                'name' in data):
+        if 'address' not in data and 'symbol' in data:
             context = credmark.model.ModelContext.current_context
             if context is None:
                 raise ModelNoContextError(
-                    f'No current context to look up missing token data {data}')
-            token_address = None
-            if data.get('address', None) is not None:
-                token_address = Address(str(data.get('address')))
+                    'No current context. Unable to create contract instance.')
 
-            token_data = get_fungible_token_from_configuration(
-                chain_id=str(context.chain_id),
-                is_native_token=data.get('is_native_token', False),
-                symbol=data.get('symbol', None),
-                address=token_address)
-
+            token_data = get_token_from_configuration(
+                chain_id=str(context.chain_id), symbol=data['symbol'])
             if token_data is not None:
-                data['is_native_token'] = token_data.get('is_native_token', False)
-                data['symbol'] = token_data.get('symbol', None)
-                data['address'] = token_data.get('address', None)
-                data['name'] = token_data.get('name', None)
-                data['decimals'] = token_data.get('decimals', None)
-                data['protocol'] = token_data.get('protocol', None)
-                data['product'] = token_data.get('product', None)
+                data['address'] = token_data['address']
+                if 'meta' not in data:
+                    data['meta'] = {}
+                data['meta']['symbol'] = token_data['symbol']
+                data['meta']['name'] = token_data['name']
+                data['meta']['decimals'] = token_data['decimals']
 
-            if data.get('address', None) is not None:
-                erc20 = Contract(address=data.get('address'), abi=ERC20_BASE_ABI)
-                if data.get('symbol', None) is None:
-                    data['symbol'] = erc20.functions.symbol().call()
-                if data.get('name', None) is None:
-                    data['name'] = erc20.functions.name().call()
-                if data.get('decimals', None) is None:
-                    data['decimals'] = erc20.functions.decimals().call()
-                # TODO: Handle the Error that this isn't an ERC20
-
+        if data.get('meta', None) is not None:
+            if isinstance(data.get('meta'), dict):
+                self._meta = self.TokenMetadata(**data.get('meta'))
+            if isinstance(data.get('meta'), self.TokenMetadata):
+                self._meta = data.get("meta")
         super().__init__(**data)
 
-    @ property
-    def price_usd(self):
+    def __load__(self):
+        super().__load__()
+        self._meta.symbol = self.functions.symbol().call()
+        self._meta.name = self.functions.name().call()
+        self._meta.decimals = self.functions.decimals().call()
+        self._meta.total_supply = TokenWei(
+            self.functions.totalSupply().call(), self._meta.decimals)
+
+    @property
+    def info(self):
+        if not self._loaded:
+            self.__load__()
+        info = self.dict()
+        info['meta'] = self._meta.dict()
+        return TokenInfo(**info)
+
+    @property
+    def symbol(self):
+        if not self._loaded:
+            self.__load__()
+        return self._meta.symbol
+
+    @property
+    def decimals(self):
+        if not self._loaded:
+            self.__load__()
+        return self._meta.decimals
+
+    @property
+    def name(self):
+        if not self._loaded:
+            self.__load__()
+        return self._meta.name
+
+    @property
+    def total_supply(self):
+        if not self._loaded:
+            self.__load__()
+        return self._meta.total_supply
+
+    def scaled(self, value):
+        return value / (10 ** self.decimals)
+
+
+class TokenInfo(Token):
+    meta: Token.TokenMetadata
+
+
+class NativeToken(DTO):
+    symbol: str = 'ETH'
+    name: str = 'ethereum'
+    decimals: int = 18
+
+    def __init__(self, **data) -> None:
         context = credmark.model.ModelContext.current_context
         if context is None:
-            raise ModelNoContextError(f'No current context to get price of token {self.symbol}')
-        if self.is_native_token:
-            wrapped_native = [t for t in FUNGIBLE_TOKEN_DATA.get(
-                str(context.chain_id), []) if t.get('wraps') == self.symbol][0]
-            return context.run_model(CoreModels.token_price, Token(**wrapped_native),
-                                     return_type=credmark.types.Price).price
-        return context.run_model(CoreModels.token_price, self,
-                                 return_type=credmark.types.Price).price
+            raise ModelNoContextError(
+                'No current context. Unable to create contract instance.')
 
-    @ property
-    def instance(self):
-        try:
-            return super().instance
-        except Exception:
-            if self.abi is None:
-                self.abi = ERC20_BASE_ABI
-        return super().instance
+        token_data = get_token_from_configuration(
+            chain_id=str(context.chain_id), is_native_token=True)
 
-    def total_supply(self) -> TokenWei:
-        if self.is_native_token:
-            return TokenWei(0, self.decimals)
-        return TokenWei(self.functions.totalSupply().call(), self.decimals)
+        data['symbol'] = token_data.get('symbol')
+        data['decimals'] = token_data.get('decimals')
+        data['name'] = token_data.get('name')
+        super().__init__(**data)
 
-    def balance_of(self, address: Address) -> TokenWei:
-        if self.is_native_token:
-            context = credmark.model.ModelContext.current_context
-            if context is None:
-                raise ModelNoContextError(f'No current context to get price of token {self.symbol}')
-            return TokenWei(context.web3.eth.get_balance(address), self.decimals)
-        return TokenWei(self.functions.balanceOf(address).call(), self.decimals)
+    def scaled(self, value):
+        return value / (10 ** self.decimals)
 
-    def allowance(self, owner: Address, spender: Address) -> TokenWei:
-        if self.is_native_token:
-            return TokenWei(0, self.decimals)
-        return TokenWei(self.functions.allowance(owner, spender).call(), self.decimals)
+    def wrapped(self):
+        context = credmark.model.ModelContext.current_context
+        if context is None:
+            raise ModelNoContextError(
+                'No current context. Unable to create contract instance.')
+        token_data = get_token_from_configuration(
+            chain_id=str(context.chain_id), wraps=self.symbol)
+        return Token(address=token_data['address'])
+
+
+class NonFungibleToken(Contract):
+    def __init__(self, **data):
+        raise NotImplementedError()
+        super().__init__(**data)
 
 
 class Tokens(IterableListGenericDTO[Token]):

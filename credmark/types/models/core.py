@@ -2,7 +2,7 @@
 class CoreModels:
 
     """Get price of a token"""
-    token_price = 'price'
+    token_price = 'token.price'
 
     latest_block_number = 'rpc.get-latest-blocknumber'
     rpc_block_range_time_start_end_interval = 'rpc.get-block-range-time-start-end-interval'
