@@ -65,8 +65,8 @@ class Contract(Account):
                 self._meta.contract_name = res.get('contract_name')
                 self._meta.constructor_args = res.get('constructor_args')
                 self._meta.abi = res.get('abi')
+                self._loaded = True
                 if self.is_transparent_proxy:
-                    # TODO: can we non-circular-import-edly do this so that it's a Contract object?
                     self._meta.proxy_for = Account(address=self.proxy_for.address)
             else:
                 if self._meta.abi is None:
@@ -94,17 +94,14 @@ class Contract(Account):
         if not self._loaded:
             self._load()
         if self._proxy_for is None and self.is_transparent_proxy:
-            if self._meta.proxy_for is not None:
-                self._proxy_for = Contract(address=self.proxy_for.address)
-            else:
-                context = credmark.model.ModelContext.current_context
-                if context is None:
-                    raise ModelNoContextError(
-                        'No current context. Unable to create contract instance.')
-                # TODO: Get this from the database, Not the RPC
-                events = self.instance.events.Upgraded.createFilter(
-                    fromBlock=0, toBlock=context.block_number).get_all_entries()
-                self._proxy_for = Contract(address=events[len(events) - 1].args.implementation)
+            context = credmark.model.ModelContext.current_context
+            if context is None:
+                raise ModelNoContextError(
+                    'No current context. Unable to create contract instance.')
+            # TODO: Get this from the database, Not the RPC
+            events = self.instance.events.Upgraded.createFilter(
+                fromBlock=0, toBlock=context.block_number).get_all_entries()
+            self._proxy_for = Contract(address=events[len(events) - 1].args.implementation)
         return self._proxy_for
 
     @property
@@ -152,8 +149,6 @@ class Contract(Account):
 
     @ property
     def is_transparent_proxy(self):
-        if not self._loaded:
-            self._load()
         if self._meta.contract_name == "InitializableAdminUpgradeabilityProxy":
             return True
         if self._meta.abi == UPGRADEABLE_CONTRACT_ABI:
