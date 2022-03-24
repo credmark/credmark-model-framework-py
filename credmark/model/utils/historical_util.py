@@ -10,6 +10,7 @@ from credmark.types import (
     BlockSeries,
     SeriesModelStartEndIntervalInput,
     SeriesModelWindowIntervalInput,
+    BlockNumber,
 )
 from credmark.dto import DTO
 
@@ -49,7 +50,8 @@ class HistoricalUtil:
                              end_timestamp: Union[int, None] = None,
                              snap_clock: Union[str, None] = 'interval',
                              model_return_type: Type[DTOCLS] = dict,
-                             model_version: Union[str, None] = None) -> BlockSeries[DTOCLS]:
+                             model_version: Union[str, None] = None,
+                             block_number: Union[int, None] = None) -> BlockSeries[DTOCLS]:
         """
         Run a model over a series of historical blocks.
 
@@ -98,11 +100,15 @@ class HistoricalUtil:
             )
             return self.context.run_model('series.time-window-interval',
                                           input,
-                                          return_type=run_return_type)  # type: ignore
+                                          return_type=run_return_type,
+                                          block_number=block_number)  # type: ignore
         else:
 
             if end_timestamp is None:
-                end_timestamp = self.context.block_number.timestamp
+                if block_number is None:
+                    end_timestamp = self.context.block_number.timestamp
+                else:
+                    end_timestamp = BlockNumber(block_number).timestamp
             if snap_clock is not None:
                 if snap_clock == 'interval':
                     snap_sec = interval_timestamp
@@ -123,7 +129,8 @@ class HistoricalUtil:
 
             return self.context.run_model('series.time-start-end-interval',
                                           input,
-                                          return_type=run_return_type)  # type: ignore
+                                          return_type=run_return_type,
+                                          block_number=block_number)  # type: ignore
 
     def run_model_historical_blocks(self,
                                     model_slug: str,
@@ -133,7 +140,8 @@ class HistoricalUtil:
                                     end_block: Union[int, None] = None,
                                     snap_block: Union[int, None] = None,
                                     model_return_type: Type[DTOCLS] = dict,
-                                    model_version: Union[str, None] = None) -> BlockSeries[DTOCLS]:
+                                    model_version: Union[str, None] = None,
+                                    block_number: Union[int, None] = None) -> BlockSeries[DTOCLS]:
         """
         Run a model over a series of historical blocks.
 
@@ -160,10 +168,14 @@ class HistoricalUtil:
             )
             return self.context.run_model('series.block-window-interval',
                                           series_input,
-                                          return_type=run_return_type)  # type: ignore
+                                          return_type=run_return_type,
+                                          block_number=block_number)  # type: ignore
         else:
             if end_block is None:
-                end_block = self.context.block_number
+                if block_number is None:
+                    end_block = self.context.block_number
+                else:
+                    end_block = block_number
             if snap_block is not None:
                 end_block = end_block - (end_block % snap_block)
 
@@ -177,7 +189,8 @@ class HistoricalUtil:
             )
             return self.context.run_model('series.block-start-end-interval',
                                           series_input,
-                                          return_type=run_return_type)  # type: ignore
+                                          return_type=run_return_type,
+                                          block_number=block_number)  # type: ignore
 
     def parse_timerangestr(self, time_str: str):
         key = None
