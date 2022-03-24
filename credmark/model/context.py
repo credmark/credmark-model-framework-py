@@ -22,11 +22,16 @@ class RunModelMethod:
         self.__prefix = prefix
         self.__block_number = block_number
 
-    # __call__ is used for model names that have no dot prefix
-    def __call__(self, **kwargs) -> dict:
+    # run a model. args can be a positional DTO or dict or kwargs
+    def __call__(self, input: Union[DTO, dict, None] = None, **kwargs) -> dict:
+        if isinstance(input, DTO):
+            input = input.dict()
+        elif input is None:
+            input = kwargs
+
         return self.__context.run_model(
             f"{self.__prefix.replace('_', '-')}",
-            kwargs, block_number=self.__block_number)
+            input, block_number=self.__block_number)
 
     # Handle method calls where the prefix is the dot prefix of a model name
     def __getattr__(self, __name: str):
