@@ -1,13 +1,17 @@
 
 import credmark.model
-from credmark.model.errors import ModelNoContextError, ModelRunError
+from credmark.model.errors import ModelDataError, ModelNoContextError, ModelRunError
 import credmark.types
+
 from .token_wei import TokenWei
 from .contract import Contract
 from .address import Address
 from .data_content.fungible_token_data import FUNGIBLE_TOKEN_DATA
 from typing import List, Union
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
+from web3.exceptions import (
+    BadFunctionCallOutput,
+)
 
 
 def get_token_from_configuration(
@@ -73,6 +77,8 @@ class Token(Contract):
                 data['meta']['name'] = token_data['name']
                 data['meta']['decimals'] = token_data['decimals']
 
+        if data['address'] == Address.null():
+            raise ModelDataError(f'NULL address ({Address.null()}) is not a valid Token Address')
         if data.get('meta', None) is not None:
             if isinstance(data.get('meta'), dict):
                 self._meta = self.TokenMetadata(**data.get('meta'))
@@ -84,10 +90,25 @@ class Token(Contract):
         if self._loaded:
             return
         super()._load()
-        self._meta.symbol = self.functions.symbol().call()
-        self._meta.name = self.functions.name().call()
-        self._meta.decimals = self.functions.decimals().call()
-        self._meta.total_supply = self.functions.totalSupply().call()
+        try:
+            self._meta.symbol = self.functions.symbol().call()
+        except BadFunctionCallOutput:
+            raise ModelDataError(
+                f'No symbol function on token {self.address}, non ERC20 Conforming')
+        try:
+            self._meta.name = self.functions.name().call()
+        except BadFunctionCallOutput:
+            raise ModelDataError(f'No name function on token {self.address}, non ERC20 Conforming')
+        try:
+            self._meta.decimals = self.functions.decimals().call()
+        except BadFunctionCallOutput:
+            raise ModelDataError(
+                f'No decimals function on token {self.address}, non ERC20 Conforming')
+
+            self._meta.total_supply = self.functions.totalSupply().call()
+        except BadFunctionCallOutput:
+            raise ModelDataError(
+                f'No totalSupply function on token {self.address}, non ERC20 Conforming')
 
     @property
     def info(self):
