@@ -104,7 +104,7 @@ class Token(Contract):
         except BadFunctionCallOutput:
             raise ModelDataError(
                 f'No decimals function on token {self.address}, non ERC20 Conforming')
-
+        try:
             self._meta.total_supply = self.functions.totalSupply().call()
         except BadFunctionCallOutput:
             raise ModelDataError(
