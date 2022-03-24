@@ -329,4 +329,7 @@ def create_instance_from_error_dict(err_obj: dict) -> ModelBaseError:
             return err_class(**err_obj)
         except Exception as e:
             logger.error(f'Error creating error {err_type} instance: {e}')
+    else:
+        logger.error(f'Missing error class for error type {err_type}')
+
     raise ModelEngineError(f'{err_type}: {message}')
