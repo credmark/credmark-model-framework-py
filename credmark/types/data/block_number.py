@@ -140,16 +140,21 @@ class BlockNumber(int):
         elif isinstance(datetime_date_ts, float):
             dt = datetime.fromtimestamp(int(datetime_date_ts), tz=timezone.utc)
         elif isinstance(datetime_date_ts, datetime):
-            dt = datetime_date_ts.replace(tzinfo=timezone.utc)
+            if not datetime_date_ts.tzinfo:
+                raise ModelInputError(
+                    f'Input datetime {datetime_date_ts} has no tzinfo, please add.')
+            ts = int(datetime_date_ts.timestamp())
         elif isinstance(datetime_date_ts, date):
             dt = datetime.combine(datetime_date_ts, datetime.max.time(), tzinfo=timezone.utc)
         else:
-            raise ModelInputError(f'Invalid input for date/datetime/timestamp to query block_number {datetime_date_ts=}')
+            raise ModelInputError(
+                f'Invalid input for date/datetime/timestamp to query block_number {datetime_date_ts=}')
         ts = int(dt.timestamp())
 
         block_number = context.models.rpc.get_blocknumber(input=dict(timestamp=ts))['blockNumber']
         if block_number > context.block_number:
-            context.logger.warn(f'block_number {block_number} for {dt} is later than the current block {context.block_number} on {context.block_number.to_datetime()}. Return current block')
+            context.logger.warn(
+                f'block_number {block_number} for {dt} is later than the current block {context.block_number} on {context.block_number.to_datetime()}. Return current block')
             return cls(context.block_number)
         else:
             return cls(block_number)
@@ -158,7 +163,8 @@ class BlockNumber(int):
     def datetime_of(block_number: int):
         context = credmark.model.ModelContext.current_context
         breakpoint()
-        timestamp = context.models.rpc.get_block_timestamp(input=dict(blockNumber=block_number))['timestamp']
+        timestamp = context.models.rpc.get_block_timestamp(
+            input=dict(blockNumber=block_number))['timestamp']
         breakpoint()
         dt = datetime.fromtimestamp(timestamp, timezone.utc).date()
         return dt
