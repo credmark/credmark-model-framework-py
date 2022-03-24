@@ -1,6 +1,5 @@
-import json
+
 from typing import (
-    Any,
     Union,
     List,
 )
@@ -24,7 +23,8 @@ class Contract(Account):
         abi: Union[List[dict], str, None] = None
         proxy_for: Union[Account, None] = None
 
-    _meta: ContractMetaData = PrivateAttr(default=ContractMetaData())
+    _meta: ContractMetaData = PrivateAttr(
+        default_factory=lambda: Contract.ContractMetaData())
     _instance: Union[Web3Contract, None] = PrivateAttr(default=None)
     _proxy_for = PrivateAttr(default=None)
     _loaded = PrivateAttr(default=False)

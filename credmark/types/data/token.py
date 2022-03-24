@@ -46,7 +46,7 @@ class Token(Contract):
         decimals: Union[int, None] = None
         total_supply: Union[TokenWei, None] = None
 
-    _meta: TokenMetadata = PrivateAttr(default=TokenMetadata())
+    _meta: TokenMetadata = PrivateAttr(default_factory=lambda: Token.TokenMetadata())
 
     class Config:
         schema_extra = {
