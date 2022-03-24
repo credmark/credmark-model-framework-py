@@ -40,14 +40,15 @@ class Contract(Account):
         }
 
     def __init__(self, **data):
-        if isinstance(data.get('meta', {}).get('abi'), str):
-            data['meta']['abi'] = json.loads(data['abi'])
+        super().__init__(**data)
+
+        if isinstance(data.get('abi'), str):
+            self._meta.abi = json.loads(data['abi'])
         if data.get('meta', None) is not None:
             if isinstance(data.get('meta'), dict):
                 self._meta = self.ContractMetaData(**data.get('meta'))
             if isinstance(data.get('meta'), self.ContractMetaData):
                 self._meta = data.get("meta")
-        super().__init__(**data)
         self._instance = None
         self._proxy_for = None
 
@@ -58,7 +59,7 @@ class Contract(Account):
         if context is not None:
             contract_q_results = context.run_model(
                 'contract.metadata', {'contractAddress': self.address})
-            self._loaded = True
+
             if len(contract_q_results['contracts']) > 0:
                 res = contract_q_results['contracts'][0]
                 self._meta.contract_name = res.get('contract_name')
@@ -68,9 +69,9 @@ class Contract(Account):
                     # TODO: can we non-circular-import-edly do this so that it's a Contract object?
                     self._meta.proxy_for = Account(address=self.proxy_for.address)
             else:
-                raise ModelDataError(
-                    f'abi not found for address {self.address}'
-                )
+                if self._meta.abi is None:
+                    raise ModelDataError(f'abi not available for address {self.address}')
+        self._loaded = True
 
     @property
     def instance(self):
