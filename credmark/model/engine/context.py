@@ -305,6 +305,9 @@ class EngineModelContext(ModelContext):
                 try:
                     # transform to the defined outputDTO for validation of output
                     output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
+                    # then transform to dict for serialization over the wire
+                    # (we do this here to ensure dev is same as production)
+                    output = transform_data_for_dto(output, None, slug, 'output')
                 except DataTransformError as err:
                     raise ModelOutputError(str(err))
 
