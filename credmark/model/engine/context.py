@@ -10,7 +10,7 @@ from credmark.model.errors import MaxModelRunDepthError, ModelBaseError, \
     ModelRunError, ModelCallStackEntry, ModelTypeError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
-from credmark.model.transform import DataTransformError, transform_data_for_dto
+from credmark.dto.transform import DataTransformError, transform_data_for_dto
 from credmark.model.web3 import Web3Registry
 from credmark.dto import DTO, EmptyInput, DTOValidationError
 from credmark.types.models.core import CoreModels
@@ -22,7 +22,9 @@ def extract_most_recent_run_model_traceback(exc_traceback, skip=1):
     # the context.
     context_files = set([__file__,
                          __file__.replace('credmark/model/engine/context',
-                                          'credmark/model/context')])
+                                          'credmark/model/context'),
+                         __file__.replace('credmark/model/engine/context',
+                                          'credmark/model/engine/model_api')])
     ptb = []
     in_other_file = False
     tb = traceback.extract_tb(exc_traceback)

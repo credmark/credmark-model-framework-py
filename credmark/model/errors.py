@@ -2,7 +2,7 @@ from typing import List, Type, Union, Generic, TypeVar
 import logging
 from pydantic import BaseModel as DTO, Field as DTOField
 from pydantic.generics import GenericModel as GenericDTO
-from .transform import transform_data_for_dto
+from credmark.dto.transform import transform_data_for_dto
 
 logger = logging.getLogger(__name__)
 
@@ -329,4 +329,7 @@ def create_instance_from_error_dict(err_obj: dict) -> ModelBaseError:
             return err_class(**err_obj)
         except Exception as e:
             logger.error(f'Error creating error {err_type} instance: {e}')
+    else:
+        logger.error(f'Missing error class for error type {err_type}')
+
     raise ModelEngineError(f'{err_type}: {message}')

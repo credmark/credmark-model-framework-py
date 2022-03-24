@@ -2,7 +2,9 @@ from typing import Any, ClassVar, Union
 import os
 import logging
 import requests
+import json
 from urllib.parse import urljoin, quote
+from credmark.dto.encoder import json_dumps
 from credmark.model.engine.errors import ModelNotFoundError, ModelRunRequestError
 from credmark.model.errors import ModelBaseError, create_instance_from_error_dict
 
@@ -99,11 +101,18 @@ class ModelApi:
                   run_id: Union[str, None] = None,
                   depth: Union[int, None] = None) -> \
             tuple[str, str, dict[str, Any], dict[str, Any]]:
+
+        # We use json_dumps to ensure any DTOs embedded in a dict
+        # are serialized properly. If we just set the input in the
+        # req object and let requests serializes, any embedded DTOs
+        # would fail.
+        input_json = json_dumps(input) if input is not None else '{}'
+
         req = {
             'slug': slug,
             'chainId': chain_id,
             'blockNumber': block_number,
-            'input': input if input is not None else {},
+            'input': json.loads(input_json),
         }
         if version is not None:
             req['version'] = version
