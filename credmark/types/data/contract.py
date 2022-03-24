@@ -5,7 +5,7 @@ from typing import (
 )
 
 from web3.contract import Contract as Web3Contract
-
+import json
 import credmark.model
 from credmark.model.errors import ModelDataError, ModelNoContextError
 from credmark.types.data.account import Account
@@ -40,6 +40,8 @@ class Contract(Account):
         }
 
     def __init__(self, **data):
+        if isinstance(data.get('meta', {}).get('abi'), str):
+            data['meta']['abi'] = json.loads(data['abi'])
         if data.get('meta', None) is not None:
             if isinstance(data.get('meta'), dict):
                 self._meta = self.ContractMetaData(**data.get('meta'))
