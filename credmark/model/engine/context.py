@@ -10,7 +10,7 @@ from credmark.model.errors import MaxModelRunDepthError, ModelBaseError, \
     ModelRunError, ModelCallStackEntry, ModelTypeError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
-from credmark.model.transform import DataTransformError, transform_data_for_dto
+from credmark.dto.transform import DataTransformError, transform_data_for_dto
 from credmark.model.web3 import Web3Registry
 from credmark.dto import DTO, EmptyInput, DTOValidationError
 from credmark.types.models.core import CoreModels

@@ -1,6 +1,6 @@
 
 from typing import Type, Union
-from credmark.dto import DTO
+from .dto import DTO
 
 
 class DataTransformError(Exception):
@@ -23,7 +23,7 @@ def transform_data_for_dto(
         Note that if you have a data structure such as a dict or list
         that contains DTOs, the transformation is not deep so the embedded
         values will remain as DTOs. In this case, to serialize the
-        data you can use credmark.model.encoder.json_dump or
+        data you can use credmark.dto.json_dump or
         json_dumps.
 
         :param data: data in the form of a dict or DTO instance

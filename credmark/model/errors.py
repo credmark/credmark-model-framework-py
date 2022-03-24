@@ -2,7 +2,7 @@ from typing import List, Type, Union, Generic, TypeVar
 import logging
 from pydantic import BaseModel as DTO, Field as DTOField
 from pydantic.generics import GenericModel as GenericDTO
-from .transform import transform_data_for_dto
+from credmark.dto.transform import transform_data_for_dto
 
 logger = logging.getLogger(__name__)
 
