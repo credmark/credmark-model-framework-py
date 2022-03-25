@@ -1,11 +1,11 @@
 from credmark.model.errors import ModelRunError
 from credmark.dto import DTO, DTOField, cross_examples
-from .token import Token
-
+from .token import Token, NativeToken
+from typing import Union
 
 class Position(DTO):
     amount: float = DTOField(0.0, description='Quantity of token held')
-    token: Token = DTOField(..., description='Token')
+    token: Union[NativeToken,Token] = DTOField(..., description='Token')
 
     class Config:
         schema_extra = {
