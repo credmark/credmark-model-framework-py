@@ -208,11 +208,13 @@ def list_models(args):
             else:
                 print_no_models_found(model_slug)
 
+    error_count = len(model_loader.errors)
+    warning_count = len(model_loader.warnings)
     if not json_output:
         sys.stdout.write('\n')
         sys.stdout.write(
-            f'{len(model_loader.errors)} errors, {len(model_loader.warnings)} warnings\n\n')
-    sys.exit(0)
+            f'{error_count} errors, {warning_count} warnings\n\n')
+    sys.exit(0 if error_count == 0 else 1)
 
 
 def create_model_api(args):
