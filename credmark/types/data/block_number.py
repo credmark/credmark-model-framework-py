@@ -98,8 +98,6 @@ class BlockNumber(int):
     def datestring(self) -> str:
         return str(self.to_datetime())
 
-    # TODO: Add BlockRange type
-
     @classmethod
     def from_timestamp(cls, timestamp: int):
         """
