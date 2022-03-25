@@ -1,7 +1,9 @@
+import json
 import logging
 import traceback
 import sys
 from typing import Type, Union
+from credmark.dto.encoder import json_dumps
 from credmark.model.base import Model
 from credmark.model.context import ModelContext
 from credmark.model.engine.errors import ModelNotFoundError, ModelRunRequestError
@@ -10,7 +12,7 @@ from credmark.model.errors import MaxModelRunDepthError, ModelBaseError, \
     ModelRunError, ModelCallStackEntry, ModelTypeError
 from credmark.model.engine.model_api import ModelApi
 from credmark.model.engine.model_loader import ModelLoader
-from credmark.model.transform import DataTransformError, transform_data_for_dto
+from credmark.dto.transform import DataTransformError, transform_data_for_dto
 from credmark.model.web3 import Web3Registry
 from credmark.dto import DTO, EmptyInput, DTOValidationError
 from credmark.types.models.core import CoreModels
@@ -22,7 +24,9 @@ def extract_most_recent_run_model_traceback(exc_traceback, skip=1):
     # the context.
     context_files = set([__file__,
                          __file__.replace('credmark/model/engine/context',
-                                          'credmark/model/context')])
+                                          'credmark/model/context'),
+                         __file__.replace('credmark/model/engine/context',
+                                          'credmark/model/engine/model_api')])
     ptb = []
     in_other_file = False
     tb = traceback.extract_tb(exc_traceback)
@@ -89,7 +93,7 @@ class EngineModelContext(ModelContext):
             if input is None:
                 input = {}
 
-            ModelContext.current_context = context
+            ModelContext._current_context = context
 
             # We set the block_number in the context above so we pass in
             # None for block_number to the run_model method.
@@ -119,7 +123,7 @@ class EngineModelContext(ModelContext):
                 'error': err.dict(),
                 'dependencies': context.dependencies if context else {}}
         finally:
-            ModelContext.current_context = None
+            ModelContext._current_context = None
         return response
 
     @classmethod
@@ -290,7 +294,7 @@ class EngineModelContext(ModelContext):
                     # from output transform errors below
                     raise ModelInputError(str(err))
 
-                ModelContext.current_context = context
+                ModelContext._current_context = context
                 context.is_active = True
 
                 # Errors in this section will add the callee
@@ -303,6 +307,11 @@ class EngineModelContext(ModelContext):
                 try:
                     # transform to the defined outputDTO for validation of output
                     output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
+                    if self.dev_mode:
+                        # In dev mode we do a deep transform to dicts (convert all DTOs)
+                        # We do this to ensure dev is same as production.
+                        # Production mode will serialize all input and output.
+                        output = json.loads(json_dumps(output))
                 except DataTransformError as err:
                     raise ModelOutputError(str(err))
 
@@ -339,7 +348,7 @@ class EngineModelContext(ModelContext):
 
             finally:
                 context.is_active = False
-                ModelContext.current_context = self
+                ModelContext._current_context = self
 
                 # If we ran with a different context, we add its deps
                 if context != self:

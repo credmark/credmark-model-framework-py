@@ -1,10 +1,16 @@
 from typing import Type, Union, List
 from credmark.types.models.ledger import LedgerModelOutput
 
-from .errors import InvalidColumnException, InvalidQueryException
-from credmark.types.models.ledger import BlockTable, ContractTable, \
-    LogTable, ReceiptTable, TokenTable, TokenTransferTable, \
+from .errors import (
+    InvalidColumnException,
+    InvalidQueryException,
+)
+
+from credmark.types.models.ledger import (
+    BlockTable, ContractTable,
+    LogTable, ReceiptTable, TokenTable, TokenTransferTable,
     TraceTable, TransactionTable, LedgerTable
+)
 
 
 class Ledger:

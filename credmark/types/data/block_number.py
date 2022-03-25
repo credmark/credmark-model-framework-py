@@ -1,12 +1,23 @@
-from typing import Union
-from datetime import datetime
-from web3.types import BlockData, Timestamp
-from credmark.dto import DTO
+from typing import (
+    Union
+)
+from datetime import (
+    datetime,
+    timezone,
+)
+from web3.types import (
+    BlockData,
+    Timestamp,
+)
+
+from credmark.dto import (
+    DTO
+)
+
 import credmark.model
 from credmark.model.errors import (ModelErrorDTO,
                                    ModelInvalidStateError,
-                                   ModelNoContextError,
-                                   ModelRunError)
+                                   ModelInputError)
 
 
 class BlockNumberOutOfRangeDetailDTO(DTO):
@@ -37,44 +48,27 @@ class BlockNumberOutOfRangeError(ModelInvalidStateError):
         return BlockNumberOutOfRangeError(message=message, detail=detail)
 
 
-class InvalidBlockNumberError(ModelRunError):
-
-    @classmethod
-    def create(cls):
-        return InvalidBlockNumberError(
-            message='BlockNumber constructed with no number or sample_timestamp')
-
-
 class BlockNumber(int):
     def __new__(cls,
-                number: Union[int, None] = None,
+                number: int,
                 timestamp: Union[Timestamp, None] = None,  # pylint: disable=unused-argument
-                sample_timestamp: Union[Timestamp, None] = None):
-        context = credmark.model.ModelContext.current_context
+                sample_timestamp: Union[Timestamp, None] = None):  # pylint: disable=unused-argument
 
-        if number is None:
-            if sample_timestamp is not None:
-                if context is not None:
-                    get_blocknumber_result = context.run_model(
-                        'rpc.get-blocknumber', {"timestamp": sample_timestamp})
-                    return BlockNumber(number=get_blocknumber_result['blockNumber'],
-                                       timestamp=get_blocknumber_result['blockTimestamp'],
-                                       sample_timestamp=sample_timestamp)
-                else:
-                    raise ModelNoContextError('No context to return a blockNumber for timestamp')
-            else:
-                raise InvalidBlockNumberError.create()
-        if context is not None:
-            max_block_number = context.block_number
-        else:
-            max_block_number = None
+        context = credmark.model.ModelContext.get_current_context()
+        if context is not None and number > context.block_number:
+            raise BlockNumberOutOfRangeError.create(number, context.block_number)
 
-        if max_block_number is not None and number > max_block_number:
-            raise BlockNumberOutOfRangeError.create(number, max_block_number)
+        if number < 0:
+            raise BlockNumberOutOfRangeError(
+                message=f'BlockNumber {number} is less than 0',
+                detail=BlockNumberOutOfRangeDetailDTO(
+                    blockNumber=number,
+                    maxBlockNumber=context.block_number if context is not None else None))
+
         return super().__new__(BlockNumber, number)
 
     def __init__(self,
-                 number: Union[int, None] = None,  # pylint: disable=unused-argument
+                 number: int,  # pylint: disable=unused-argument
                  timestamp: Union[Timestamp, None] = None,
                  sample_timestamp: Union[Timestamp, None] = None) -> None:
         self._timestamp = timestamp
@@ -87,28 +81,47 @@ class BlockNumber(int):
     def __sub__(self, number):
         return BlockNumber(super().__sub__(number))
 
-    def __timestamp__(self) -> Timestamp:
+    @property
+    def timestamp(self) -> int:
         if self._timestamp is None:
-            context = credmark.model.ModelContext.current_context
-            if context is not None:
-                block: BlockData = context.web3.eth.get_block(self.__int__())
-                if 'timestamp' in block:
-                    self._timestamp = block['timestamp']
-                    return self._timestamp
-            raise ModelNoContextError('No _timestamp/context to return a timestamp')
+            context = credmark.model.ModelContext.current_context()
+
+            block: BlockData = context.web3.eth.get_block(self.__int__())
+            if 'timestamp' not in block:
+                raise ModelInputError(f'No timestamp for block {self.__int__()}')
+            self._timestamp = block['timestamp']
+
+        return self._timestamp
+
+    @property
+    def timestamp_datetime(self) -> datetime:
+        return datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
+
+    @classmethod
+    def from_timestamp(cls, timestamp: Union[datetime, int, float]):
+        """
+        Returns the block number from the input timestamp.
+        For input of timestamp and datetime, the last block before the datetime is returned.
+
+        The timestamp here will be used as the sample_timestamp on the resulting BlockNumber.
+        """
+
+        context = credmark.model.ModelContext.current_context()
+
+        if isinstance(timestamp, int):
+            pass
+        elif isinstance(timestamp, float):
+            timestamp = int(timestamp)
+        elif isinstance(timestamp, datetime):
+            if not timestamp.tzinfo:
+                raise ModelInputError(f'Input datetime {timestamp} has no tzinfo.')
+            timestamp = int(timestamp.timestamp())
         else:
-            return self._timestamp
+            raise ModelInputError(
+                f'Invalid input for date/datetime/timestamp to query block_number {timestamp}')
 
-    def to_datetime(self):
-        return datetime.fromtimestamp(self.__timestamp__())
+        get_blocknumber_result = context.models.rpc.get_blocknumber(timestamp=timestamp)
 
-    @ property
-    def timestamp(self) -> Timestamp:
-        return self.__timestamp__()
-
-    @ property
-    def datestring(self) -> str:
-        return str(self.to_datetime())
-
-    # TODO: Add checking that we aren't looking into the future
-    # TODO: Add BlockRange type
+        return BlockNumber(number=get_blocknumber_result['blockNumber'],
+                           timestamp=get_blocknumber_result['blockTimestamp'],
+                           sample_timestamp=get_blocknumber_result['sampleTimestamp'])

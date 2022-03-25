@@ -1,6 +1,7 @@
 from abc import abstractmethod
-from functools import partial
-from typing import Any, ClassVar, Protocol, Type, TypeVar, Union, overload
+from typing import Any, ClassVar, Type, TypeVar, Union, overload
+
+from credmark.model.errors import ModelNoContextError
 from .ledger import Ledger
 from .web3 import Web3Registry
 import credmark.types
@@ -11,78 +12,34 @@ from credmark.model.utils.historical_util import HistoricalUtil
 DTOT = TypeVar('DTOT')
 
 
-class RunModelProtocol(Protocol):
-    # These are partials of the context.run_model() calls
-    # The overloads match the run_model calls in ModelContext
-    @overload
-    def __call__(self,
-                 input: Union[dict, DTO],
-                 return_type: Type[DTOT],
-                 block_number: Union[int, None] = None,
-                 version: Union[str, None] = None,
-                 ) -> DTOT:
-        ...
-
-    @overload
-    def __call__(self,
-                 input: Union[dict, DTO] = EmptyInput(),
-                 return_type: Union[Type[dict], None] = None,
-                 block_number: Union[int, None] = None,
-                 version: Union[str, None] = None) -> dict:
-        ...
-
-    def __call__(self,  # type: ignore
-                 input=EmptyInput(),
-                 return_type=None,
-                 block_number=None,
-                 version=None,
-                 ) -> Any:
-        ...
-
-
 class RunModelMethod:
     """
     A run model method is callable (where the prefix is the actual
-    model name) or called with a method name (where prefix is the dot prefix
-    of the model name.)
+    model name) or called with a method name (where prefix is the
+    dot prefix of the model name.)
     """
 
-    def __init__(self, context, prefix: str):
+    def __init__(self, context, prefix: str, block_number: Union[int, None] = None):
         self.__context = context
         self.__prefix = prefix
+        self.__block_number = block_number
 
-    # The __call__ overloads match the run_model calls in ModelContext
-    # __call__ is used for model names that have no dot prefix
-    @overload
-    def __call__(self,
-                 input: Union[dict, DTO],
-                 return_type: Type[DTOT],
-                 block_number: Union[int, None] = None,
-                 version: Union[str, None] = None,
-                 ) -> DTOT:
-        ...
+    # run a model. args can be a positional DTO or dict or kwargs
+    def __call__(self, input: Union[DTO, dict, None] = None, **kwargs) -> dict:
+        if isinstance(input, DTO):
+            input = input.dict()
+        elif input is None:
+            input = kwargs
 
-    @overload
-    def __call__(self,
-                 input: Union[dict, DTO] = EmptyInput(),
-                 return_type: Union[Type[dict], None] = None,
-                 block_number: Union[int, None] = None,
-                 version: Union[str, None] = None) -> dict:
-        ...
-
-    def __call__(self, input=EmptyInput(),  # type: ignore
-                 return_type=None,
-                 block_number=None,
-                 version=None,
-                 ) -> Any:
         return self.__context.run_model(
             f"{self.__prefix.replace('_', '-')}",
-            input, return_type, block_number, version)
+            input, block_number=self.__block_number)
 
     # Handle method calls where the prefix is the dot prefix of a model name
-    def __getattr__(self, __name: str) -> RunModelProtocol:
-        return partial(self.__context.run_model,
-                       f"{self.__prefix.replace('_', '-')}.{__name.replace('_', '-')}")
+    def __getattr__(self, __name: str):
+        return RunModelMethod(
+            self.__context, f"{self.__prefix}.{__name}",
+            block_number=self.__block_number)
 
 
 class ModelContext:
@@ -113,24 +70,47 @@ class ModelContext:
       context.models.rpc.get_blocknumber(input=dict(timestamp=1438270017))
 
     """
-    current_context: ClassVar = None
+    _current_context: ClassVar = None
+
+    @classmethod
+    def current_context(cls) -> 'ModelContext':
+        """
+        Get the current context and raise a ModelNoContextError
+        exception if there is no current context.
+        """
+        context = cls._current_context
+        if context is None:
+            raise ModelNoContextError("No current ModelContext")
+        return context
+
+    @classmethod
+    def get_current_context(cls) -> Union['ModelContext', None]:
+        """
+        Get the current context, which could be None.
+        Normally you should use current_context() instead.
+        """
+        return cls._current_context
 
     class Models:
         """
         An instance that can run any model by accessing it as a
-        method with any "." or "-" in the model name replaced with "_".
+        method with any "-" in the model name replaced with "_".
         """
 
-        def __init__(self, context):
+        def __init__(self, context, block_number: Union[int, None] = None):
             self.__context = context
+            self.__block_number = block_number
 
         def __getattr__(self, __name: str) -> RunModelMethod:
-            return RunModelMethod(self.__context, __name)
+            return RunModelMethod(self.__context, __name, block_number=self.__block_number)
+
+        def __call__(self, block_number=None):
+            return ModelContext.Models(self.__context, block_number=block_number)
 
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry: Web3Registry):
         # type hint
-        ModelContext.current_context: Union[ModelContext, None]
+        ModelContext._current_context: Union[ModelContext, None]
 
         self.chain_id = chain_id
         self._block_number = credmark.types.BlockNumber(block_number)
@@ -141,6 +121,8 @@ class ModelContext:
         self._historical_util = None
 
         # The models instance can be used to run models like a method
+        # We don't pass the block_number so it uses the default
+        # (our context) block number.
         self.models = ModelContext.Models(self)
 
     @property
