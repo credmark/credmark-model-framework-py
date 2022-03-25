@@ -1,6 +1,6 @@
 
 import credmark.model
-from credmark.model.errors import ModelNoContextError, ModelRunError
+from credmark.model.errors import ModelRunError
 import credmark.types
 from .token_wei import TokenWei
 from .contract import Contract
@@ -66,10 +66,7 @@ class Token(Contract):
                 'decimals' in data and
                 'address' in data and
                 'name' in data):
-            context = credmark.model.ModelContext.current_context
-            if context is None:
-                raise ModelNoContextError(
-                    f'No current context to look up missing token data {data}')
+            context = credmark.model.ModelContext.current_context()
             token_address = None
             if data.get('address', None) is not None:
                 token_address = Address(str(data.get('address')))
@@ -103,9 +100,7 @@ class Token(Contract):
 
     @ property
     def price_usd(self):
-        context = credmark.model.ModelContext.current_context
-        if context is None:
-            raise ModelNoContextError(f'No current context to get price of token {self.symbol}')
+        context = credmark.model.ModelContext.current_context()
         if self.is_native_token:
             wrapped_native = [t for t in FUNGIBLE_TOKEN_DATA.get(
                 str(context.chain_id), []) if t.get('wraps') == self.symbol][0]
@@ -130,9 +125,7 @@ class Token(Contract):
 
     def balance_of(self, address: Address) -> TokenWei:
         if self.is_native_token:
-            context = credmark.model.ModelContext.current_context
-            if context is None:
-                raise ModelNoContextError(f'No current context to get price of token {self.symbol}')
+            context = credmark.model.ModelContext.current_context()
             return TokenWei(context.web3.eth.get_balance(address), self.decimals)
         return TokenWei(self.functions.balanceOf(address).call(), self.decimals)
 

@@ -1,5 +1,7 @@
 from abc import abstractmethod
 from typing import Any, ClassVar, Type, TypeVar, Union, overload
+
+from credmark.model.errors import ModelNoContextError
 from .ledger import Ledger
 from .web3 import Web3Registry
 import credmark.types
@@ -68,7 +70,26 @@ class ModelContext:
       context.models.rpc.get_blocknumber(input=dict(timestamp=1438270017))
 
     """
-    current_context: ClassVar = None
+    _current_context: ClassVar = None
+
+    @classmethod
+    def current_context(cls) -> 'ModelContext':
+        """
+        Get the current context and raise a ModelNoContextError
+        exception if there is no current context.
+        """
+        context = cls._current_context
+        if context is None:
+            raise ModelNoContextError("No current ModelContext")
+        return context
+
+    @classmethod
+    def get_current_context(cls) -> Union['ModelContext', None]:
+        """
+        Get the current context, which could be None.
+        Normally you should use current_context() instead.
+        """
+        return cls._current_context
 
     class Models:
         """
@@ -89,7 +110,7 @@ class ModelContext:
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry: Web3Registry):
         # type hint
-        ModelContext.current_context: Union[ModelContext, None]
+        ModelContext._current_context: Union[ModelContext, None]
 
         self.chain_id = chain_id
         self._block_number = credmark.types.BlockNumber(block_number)

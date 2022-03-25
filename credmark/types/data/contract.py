@@ -7,7 +7,7 @@ from typing import (
 from web3.contract import Contract as Web3Contract
 
 import credmark.model
-from credmark.model.errors import ModelRunError, ModelNoContextError
+from credmark.model.errors import ModelRunError
 from credmark.types.data.account import Account
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField
 
@@ -42,17 +42,13 @@ class Contract(Account):
     def instance(self):
         if self._instance is None:
             if self.address is not None:
-                context = credmark.model.ModelContext.current_context
-                if context is not None:
-                    if self.abi is None:
-                        self.load()
-                    self._instance = context.web3.eth.contract(
-                        address=context.web3.toChecksumAddress(self.address),
-                        abi=self.abi
-                    )
-                else:
-                    raise ModelNoContextError(
-                        'No current context. Unable to create contract instance.')
+                context = credmark.model.ModelContext.current_context()
+                if self.abi is None:
+                    self.load()
+                self._instance = context.web3.eth.contract(
+                    address=context.web3.toChecksumAddress(self.address),
+                    abi=self.abi
+                )
             else:
                 # This should never actually happen so we consider it a coding error
                 raise ModelRunError(
@@ -60,17 +56,16 @@ class Contract(Account):
         return self._instance
 
     def load(self):
-        context = credmark.model.ModelContext.current_context
-        if context is not None:
-            contract_q_results = context.run_model(
-                'contract.metadata', {'contractAddress': self.address})
-            if len(contract_q_results['contracts']) > 0:
-                res = contract_q_results['contracts'][0]
-                self.contract_name = res.get('contract_name')
-                self.constructor_args = res.get('constructor_args')
-                self.protocol = res.get('protocol')
-                self.product = res.get('product')
-                self.abi = res.get('abi')
+        context = credmark.model.ModelContext.current_context()
+        contract_q_results = context.run_model(
+            'contract.metadata', {'contractAddress': self.address})
+        if len(contract_q_results['contracts']) > 0:
+            res = contract_q_results['contracts'][0]
+            self.contract_name = res.get('contract_name')
+            self.constructor_args = res.get('constructor_args')
+            self.protocol = res.get('protocol')
+            self.product = res.get('product')
+            self.abi = res.get('abi')
 
     @property
     def functions(self):

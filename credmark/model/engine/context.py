@@ -93,7 +93,7 @@ class EngineModelContext(ModelContext):
             if input is None:
                 input = {}
 
-            ModelContext.current_context = context
+            ModelContext._current_context = context
 
             # We set the block_number in the context above so we pass in
             # None for block_number to the run_model method.
@@ -123,7 +123,7 @@ class EngineModelContext(ModelContext):
                 'error': err.dict(),
                 'dependencies': context.dependencies if context else {}}
         finally:
-            ModelContext.current_context = None
+            ModelContext._current_context = None
         return response
 
     @classmethod
@@ -294,7 +294,7 @@ class EngineModelContext(ModelContext):
                     # from output transform errors below
                     raise ModelInputError(str(err))
 
-                ModelContext.current_context = context
+                ModelContext._current_context = context
                 context.is_active = True
 
                 # Errors in this section will add the callee
@@ -348,7 +348,7 @@ class EngineModelContext(ModelContext):
 
             finally:
                 context.is_active = False
-                ModelContext.current_context = self
+                ModelContext._current_context = self
 
                 # If we ran with a different context, we add its deps
                 if context != self:
