@@ -17,7 +17,8 @@ from credmark.dto import (
 import credmark.model
 from credmark.model.errors import (ModelErrorDTO,
                                    ModelInvalidStateError,
-                                   ModelNoContextError)
+                                   ModelNoContextError,
+                                   ModelInputError)
 
 
 class BlockNumberOutOfRangeDetailDTO(DTO):
@@ -87,21 +88,34 @@ class BlockNumber(int):
 
         return self._timestamp
 
-    def to_datetime(self) -> datetime:
+    @property
+    def timestamp_datetime(self) -> datetime:
         return datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
 
-    @property
-    def datestring(self) -> str:
-        return str(self.to_datetime())
-
     @classmethod
-    def from_timestamp(cls, timestamp: int):
+    def from_timestamp(cls, timestamp: Union[datetime, int, float]):
         """
+        Returns the block number from the input timestamp.
+        For input of timestamp and datetime, the last block before the datetime is returned.
+        For input of date, the last block of the date is returned.
         Returns the BlockNumber from the input timestamp.
         """
+
         context = credmark.model.ModelContext.current_context
         if context is None:
-            raise ModelNoContextError('No current context for BlockNumber.from_timestamp()')
+            raise ModelNoContextError('No current context for BlockNumber.from_datetime()')
+
+        if isinstance(timestamp, int):
+            pass
+        elif isinstance(timestamp, float):
+            timestamp = int(timestamp)
+        elif isinstance(timestamp, datetime):
+            if not timestamp.tzinfo:
+                raise ModelInputError(f'Input datetime {timestamp} has no tzinfo.')
+            timestamp = int(timestamp.timestamp())
+        else:
+            raise ModelInputError(
+                f'Invalid input for date/datetime/timestamp to query block_number {timestamp}')
 
         get_blocknumber_result = context.models.rpc.get_blocknumber(input=dict(timestamp=timestamp))
         if get_blocknumber_result['blockNumber'] > context.block_number:
