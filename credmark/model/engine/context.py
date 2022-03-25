@@ -1,7 +1,9 @@
+import json
 import logging
 import traceback
 import sys
 from typing import Type, Union
+from credmark.dto.encoder import json_dumps
 from credmark.model.base import Model
 from credmark.model.context import ModelContext
 from credmark.model.engine.errors import ModelNotFoundError, ModelRunRequestError
@@ -305,9 +307,11 @@ class EngineModelContext(ModelContext):
                 try:
                     # transform to the defined outputDTO for validation of output
                     output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
-                    # then transform to dict for serialization over the wire
-                    # (we do this here to ensure dev is same as production)
-                    output = transform_data_for_dto(output, None, slug, 'output')
+                    if self.dev_mode:
+                        # In dev mode we do a deep transform to dicts (convert all DTOs)
+                        # We do this to ensure dev is same as production.
+                        # Production mode will serialize all input and output.
+                        output = json.loads(json_dumps(output))
                 except DataTransformError as err:
                     raise ModelOutputError(str(err))
 
