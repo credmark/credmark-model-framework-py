@@ -70,7 +70,8 @@ class Contract(Account):
                 self._meta.abi = res.get('abi')
                 self._loaded = True
                 if self.is_transparent_proxy:
-                    self._meta.proxy_for = Account(address=self.proxy_for.address)
+                    if self.proxy_for is not None:
+                        self._meta.proxy_for = Account(address=self.proxy_for.address)
             else:
                 if self._meta.abi is None:
                     raise ModelDataError(f'abi not available for address {self.address}')
@@ -127,7 +128,7 @@ class Contract(Account):
         if isinstance(self, ContractInfo):
             return self
         self._load()
-        return ContractInfo(**self.dict(), meta=self._meta.dict())
+        return ContractInfo(**self.dict(), meta=self._meta)
 
     @ property
     def deploy_tx_hash(self):

@@ -15,10 +15,6 @@ class Position(DTO):
                                        limit=10)
         }
 
-    def value_usd(self):
-        # TODO: Figure out for non-ERC20 Tokens
-        return self.token.price_usd * self.scaled_amount
-
     @ property
     def scaled_amount(self):
         decimals = self.token.decimals
