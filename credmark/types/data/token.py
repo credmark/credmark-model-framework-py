@@ -1,27 +1,31 @@
 
 import credmark.model
-from credmark.model.errors import ModelRunError
+from credmark.model.errors import ModelDataError, ModelNoContextError, ModelRunError
 import credmark.types
-from .token_wei import TokenWei
+
 from .contract import Contract
 from .address import Address
 from .data_content.fungible_token_data import FUNGIBLE_TOKEN_DATA
-from .data_content.erc_standard_data import ERC20_BASE_ABI
 from typing import List, Union
-from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField
-from ..models.core import CoreModels
+from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO  # type: ignore
+from web3.exceptions import (
+    BadFunctionCallOutput,
+    ABIFunctionNotFound
+)
 
 
-def get_fungible_token_from_configuration(
+def get_token_from_configuration(
         chain_id: str,
         symbol: Union[str, None] = None,
         address: Union[Address, None] = None,
-        is_native_token: bool = False):
+        is_native_token: bool = False,
+        wraps: Union[str, None] = None) -> Union[dict, None]:
     token_datas = [
         t for t in FUNGIBLE_TOKEN_DATA.get(chain_id, [])
         if (t.get('is_native_token', False) == is_native_token and
             (t.get('address', None) == address or
-             t.get('symbol', None) == symbol))
+             t.get('symbol', None) == symbol) or
+            (t.get('wraps', None) == wraps and wraps is not None))
     ]
 
     if len(token_datas) > 1:
@@ -36,103 +40,147 @@ def get_fungible_token_from_configuration(
 
 class Token(Contract):
     """
-    Token represents a fungible Token that is either an ERC20 or
-    a Native Token (such as ETH or MATIC)
-
-    It will load a standard simplified ERC20 ABI in the case of
-    one not existing. It allows for None addresses, in the case
-    of it being a native token.
+    Token represents a fungible Token that conforms to ERC20 
+    standards
     """
-    address: Union[Address, None] = None
-    symbol: Union[str, None] = None
-    name: Union[str, None] = None
-    is_native_token: bool = False
-    decimals: int
+
+    class TokenMetadata(Contract.ContractMetaData):
+        symbol: Union[str, None] = None
+        name: Union[str, None] = None
+        decimals: Union[int, None] = None
+        total_supply: Union[int, None] = None
+
+    _meta: TokenMetadata = PrivateAttr(default_factory=lambda: Token.TokenMetadata())
 
     class Config:
         schema_extra = {
-            'examples': [{'symbol': 'USDC'},
-                         {'symbol': 'USDC', 'decimals': 6}
+            'examples': [{'address': '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9'},
+                         {'symbol': 'AAVE'}
                          ] + Contract.Config.schema_extra['examples']
         }
 
-    @classmethod
-    def native_token(cls):
-        return Token(is_native_token=True)
-
     def __init__(self, **data):
 
-        if not ('symbol' in data and
-                'decimals' in data and
-                'address' in data and
-                'name' in data):
+        if 'address' not in data and 'symbol' in data:
             context = credmark.model.ModelContext.current_context()
-            token_address = None
-            if data.get('address', None) is not None:
-                token_address = Address(str(data.get('address')))
 
-            token_data = get_fungible_token_from_configuration(
-                chain_id=str(context.chain_id),
-                is_native_token=data.get('is_native_token', False),
-                symbol=data.get('symbol', None),
-                address=token_address)
-
+            token_data = get_token_from_configuration(
+                chain_id=str(context.chain_id), symbol=data['symbol'])
             if token_data is not None:
-                data['is_native_token'] = token_data.get('is_native_token', False)
-                data['symbol'] = token_data.get('symbol', None)
-                data['address'] = token_data.get('address', None)
-                data['name'] = token_data.get('name', None)
-                data['decimals'] = token_data.get('decimals', None)
-                data['protocol'] = token_data.get('protocol', None)
-                data['product'] = token_data.get('product', None)
+                data['address'] = token_data['address']
+                if 'meta' not in data:
+                    data['meta'] = {}
+                data['meta']['symbol'] = token_data['symbol']
+                data['meta']['name'] = token_data['name']
+                data['meta']['decimals'] = token_data['decimals']
 
-            if data.get('address', None) is not None:
-                erc20 = Contract(address=data.get('address'), abi=ERC20_BASE_ABI)
-                if data.get('symbol', None) is None:
-                    data['symbol'] = erc20.functions.symbol().call()
-                if data.get('name', None) is None:
-                    data['name'] = erc20.functions.name().call()
-                if data.get('decimals', None) is None:
-                    data['decimals'] = erc20.functions.decimals().call()
-                # TODO: Handle the Error that this isn't an ERC20
+        if data['address'] == Address.null():
+            raise ModelDataError(f'NULL address ({Address.null()}) is not a valid Token Address')
 
+        meta = data.get('meta', None)
+        if meta is not None:
+            if isinstance(meta, dict):
+                self._meta = self.TokenMetadata(**data.get('meta'))
+            elif isinstance(meta, self.TokenMetadata):
+                self._meta = meta
+                
         super().__init__(**data)
 
-    @ property
-    def price_usd(self):
-        context = credmark.model.ModelContext.current_context()
-        if self.is_native_token:
-            wrapped_native = [t for t in FUNGIBLE_TOKEN_DATA.get(
-                str(context.chain_id), []) if t.get('wraps') == self.symbol][0]
-            return context.run_model(CoreModels.token_price, Token(**wrapped_native),
-                                     return_type=credmark.types.Price).price
-        return context.run_model(CoreModels.token_price, self,
-                                 return_type=credmark.types.Price).price
-
-    @ property
-    def instance(self):
+    def _load(self):
+        if self._loaded:
+            return
+        super()._load()
         try:
-            return super().instance
-        except Exception:
-            if self.abi is None:
-                self.abi = ERC20_BASE_ABI
-        return super().instance
+            self._meta.symbol = self.functions.symbol().call()
+        except (BadFunctionCallOutput, ABIFunctionNotFound):
+            raise ModelDataError(
+                f'No symbol function on token {self.address}, non ERC20 Compliant')
+        try:
+            self._meta.name = self.functions.name().call()
+        except (BadFunctionCallOutput, ABIFunctionNotFound):
+            raise ModelDataError(f'No name function on token {self.address}, non ERC20 Compliant')
+        try:
+            self._meta.decimals = self.functions.decimals().call()
+        except (BadFunctionCallOutput, ABIFunctionNotFound):
+            raise ModelDataError(
+                f'No decimals function on token {self.address}, non ERC20 Compliant')
+        try:
+            self._meta.total_supply = self.functions.totalSupply().call()
+        except (BadFunctionCallOutput, ABIFunctionNotFound):
+            raise ModelDataError(
+                f'No totalSupply function on token {self.address}, non ERC20 Compliant')
 
-    def total_supply(self) -> TokenWei:
-        if self.is_native_token:
-            return TokenWei(0, self.decimals)
-        return TokenWei(self.functions.totalSupply().call(), self.decimals)
+    @property
+    def info(self):
+        if isinstance(self, TokenInfo):
+            return self
+        self._load()
+        
+        return TokenInfo(**self.dict(), meta=self._meta)
 
-    def balance_of(self, address: Address) -> TokenWei:
-        if self.is_native_token:
-            context = credmark.model.ModelContext.current_context()
-            return TokenWei(context.web3.eth.get_balance(address), self.decimals)
-        return TokenWei(self.functions.balanceOf(address).call(), self.decimals)
+    @property
+    def symbol(self):
+        self._load()
+        return self._meta.symbol
 
-    def allowance(self, owner: Address, spender: Address) -> TokenWei:
-        if self.is_native_token:
-            return TokenWei(0, self.decimals)
-        return TokenWei(self.functions.allowance(owner, spender).call(), self.decimals)
+    @property
+    def decimals(self):
+        self._load()
+        return self._meta.decimals
+
+    @property
+    def name(self):
+        self._load()
+        return self._meta.name
+
+    @property
+    def total_supply(self):
+        self._load()
+        return self._meta.total_supply
+
+    def scaled(self, value):
+        if self.decimals is not None:
+            return value / (10 ** self.decimals)
+        return ModelDataError("Token.decimals is None")
+
+
+class TokenInfo(Token):
+    meta: Token.TokenMetadata
+
+
+class NativeToken(DTO):
+    symbol: str = 'ETH'
+    name: str = 'ethereum'
+    decimals: int = 18
+
+    def __init__(self, **data) -> None:
+        context = credmark.model.ModelContext.current_context()
+
+        token_data = get_token_from_configuration(
+            chain_id=str(context.chain_id), is_native_token=True)
+        if token_data is not None:
+            data['symbol'] = token_data.get('symbol')
+            data['decimals'] = token_data.get('decimals')
+            data['name'] = token_data.get('name')
+        super().__init__(**data)
+
+    def scaled(self, value):
+        return value / (10 ** self.decimals)
+
+    def wrapped(self) -> Union[Token, None]:
+        context = credmark.model.ModelContext.current_context()
+
+        token_data = get_token_from_configuration(
+            chain_id=str(context.chain_id), wraps=self.symbol)
+        if token_data is not None:
+            return Token(address=token_data['address'])
+        return None
+
+
+class NonFungibleToken(Contract):
+    def __init__(self, **data):
+        raise NotImplementedError()
+        super().__init__(**data)
 
 
 class Tokens(IterableListGenericDTO[Token]):
