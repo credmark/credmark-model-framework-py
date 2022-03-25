@@ -124,9 +124,11 @@ class Token(Contract):
         return self._meta.symbol
 
     @property
-    def decimals(self):
+    def decimals(self) -> int:
         self._load()
-        return self._meta.decimals
+        if self._meta.decimals is not None:
+            return self._meta.decimals
+        raise ModelDataError("Token.decimals is None")
 
     @property
     def name(self):
@@ -139,9 +141,8 @@ class Token(Contract):
         return self._meta.total_supply
 
     def scaled(self, value):
-        if self.decimals is not None:
-            return value / (10 ** self.decimals)
-        return ModelDataError("Token.decimals is None")
+        return value / (10 ** self.decimals)
+        
 
 
 class TokenInfo(Token):
