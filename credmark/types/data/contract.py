@@ -44,11 +44,14 @@ class Contract(Account):
 
         if isinstance(data.get('abi'), str):
             self._meta.abi = json.loads(data['abi'])
-        if data.get('meta', None) is not None:
-            if isinstance(data.get('meta'), dict):
-                self._meta = self.ContractMetaData(**data.get('meta'))
-            if isinstance(data.get('meta'), self.ContractMetaData):
-                self._meta = data.get("meta")
+
+        meta = data.get('meta', None)
+        if meta is not None:
+            if isinstance(meta, dict):
+                self._meta = self.ContractMetaData(**meta)
+            if isinstance(meta, self.ContractMetaData):
+                self._meta = meta
+
         self._instance = None
         self._proxy_for = None
 
