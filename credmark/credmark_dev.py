@@ -334,6 +334,9 @@ def print_manifests(manifests: List[dict], describe_schemas=False):
 
 def write_manifest_file(args):
     config_logging(args, 'INFO')
+    manifest_file = args.get('manifest_file')
+    ModelLoader.remove_manifest_file(manifest_file)
+
     model_loader = load_models(args)
 
     models = model_loader.loaded_model_version_lists()
