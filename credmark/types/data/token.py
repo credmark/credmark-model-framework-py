@@ -62,10 +62,7 @@ class Token(Contract):
     def __init__(self, **data):
 
         if 'address' not in data and 'symbol' in data:
-            context = credmark.model.ModelContext.current_context
-            if context is None:
-                raise ModelNoContextError(
-                    'No current context. Unable to create contract instance.')
+            context = credmark.model.ModelContext.current_context()
 
             token_data = get_token_from_configuration(
                 chain_id=str(context.chain_id), symbol=data['symbol'])
@@ -157,10 +154,7 @@ class NativeToken(DTO):
     decimals: int = 18
 
     def __init__(self, **data) -> None:
-        context = credmark.model.ModelContext.current_context
-        if context is None:
-            raise ModelNoContextError(
-                'No current context. Unable to create contract instance.')
+        context = credmark.model.ModelContext.current_context()
 
         token_data = get_token_from_configuration(
             chain_id=str(context.chain_id), is_native_token=True)
@@ -174,10 +168,8 @@ class NativeToken(DTO):
         return value / (10 ** self.decimals)
 
     def wrapped(self) -> Union[Token, None]:
-        context = credmark.model.ModelContext.current_context
-        if context is None:
-            raise ModelNoContextError(
-                'No current context. Unable to create contract instance.')
+        context = credmark.model.ModelContext.current_context()
+
         token_data = get_token_from_configuration(
             chain_id=str(context.chain_id), wraps=self.symbol)
         if token_data is not None:
