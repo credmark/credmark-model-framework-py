@@ -56,10 +56,7 @@ class BlockNumber(int):
                 sample_timestamp: Union[Timestamp, None] = None):  # pylint: disable=unused-argument
 
         context = credmark.model.ModelContext.current_context
-        if context is None:
-            return super().__new__(BlockNumber, number)
-
-        if number > context.block_number:
+        if context is not None and number > context.block_number:
             raise BlockNumberOutOfRangeError.create(number, context.block_number)
 
         return super().__new__(BlockNumber, number)
