@@ -119,7 +119,7 @@ class BlockNumber(int):
             raise ModelInputError(
                 f'Invalid input for date/datetime/timestamp to query block_number {timestamp}')
 
-        get_blocknumber_result = context.models.rpc.get_blocknumber(input=dict(timestamp=timestamp))
+        get_blocknumber_result = context.models.rpc.get_blocknumber(timestamp=timestamp)
 
         return BlockNumber(number=get_blocknumber_result['blockNumber'],
                            timestamp=get_blocknumber_result['blockTimestamp'],
