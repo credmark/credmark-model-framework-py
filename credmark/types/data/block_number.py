@@ -1,7 +1,6 @@
 from typing import (
     Union
 )
-import logging
 from datetime import (
     datetime,
     timezone,
@@ -19,9 +18,6 @@ import credmark.model
 from credmark.model.errors import (ModelErrorDTO,
                                    ModelInvalidStateError,
                                    ModelNoContextError)
-
-
-logger = logging.getLogger(__name__)
 
 
 class BlockNumberOutOfRangeDetailDTO(DTO):
