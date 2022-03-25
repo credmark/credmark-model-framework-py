@@ -59,6 +59,10 @@ class BlockNumber(int):
         if context is not None and number > context.block_number:
             raise BlockNumberOutOfRangeError.create(number, context.block_number)
 
+        if number < 0:
+            raise BlockNumberOutOfRangeError(message=f'BlockNumber {number} is less than 0',
+                                             detail=BlockNumberOutOfRangeDetailDTO(blockNumber=number, maxBlockNumber=context.block_number))
+
         return super().__new__(BlockNumber, number)
 
     def __init__(self,
@@ -84,9 +88,9 @@ class BlockNumber(int):
                     "credmark.model.ModelContext.current_context cannot be None")
 
             block: BlockData = context.web3.eth.get_block(self.__int__())
-            if 'timestamp' in block:
-                self._timestamp = block['timestamp']
-                return self._timestamp
+            if 'timestamp' not in block:
+                raise ModelInputError(f'No timestamp for block {self.__int__()}')
+            self._timestamp = block['timestamp']
 
         return self._timestamp
 
