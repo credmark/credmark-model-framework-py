@@ -95,21 +95,21 @@ class Token(Contract):
             self._meta.symbol = self.functions.symbol().call()
         except (BadFunctionCallOutput, ABIFunctionNotFound):
             raise ModelDataError(
-                f'No symbol function on token {self.address}, non ERC20 Conforming')
+                f'No symbol function on token {self.address}, non ERC20 Compliant')
         try:
             self._meta.name = self.functions.name().call()
         except (BadFunctionCallOutput, ABIFunctionNotFound):
-            raise ModelDataError(f'No name function on token {self.address}, non ERC20 Conforming')
+            raise ModelDataError(f'No name function on token {self.address}, non ERC20 Compliant')
         try:
             self._meta.decimals = self.functions.decimals().call()
         except (BadFunctionCallOutput, ABIFunctionNotFound):
             raise ModelDataError(
-                f'No decimals function on token {self.address}, non ERC20 Conforming')
+                f'No decimals function on token {self.address}, non ERC20 Compliant')
         try:
             self._meta.total_supply = self.functions.totalSupply().call()
         except (BadFunctionCallOutput, ABIFunctionNotFound):
             raise ModelDataError(
-                f'No totalSupply function on token {self.address}, non ERC20 Conforming')
+                f'No totalSupply function on token {self.address}, non ERC20 Compliant')
 
     @property
     def info(self):
