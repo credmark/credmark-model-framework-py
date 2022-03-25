@@ -103,7 +103,7 @@ class Contract(Account):
                 fromBlock=0, toBlock=context.block_number).get_all_entries()
             if len(events) > 0:
                 self._proxy_for = Contract(address=events[len(events) - 1].args.implementation)
-            elif self.constructor_args is not None:
+            elif self.constructor_args is not None and len(self.constructor_args) >= 40:
                 self._proxy_for = Contract(address=Address('0x' + self.constructor_args[-40:]))
         return self._proxy_for
 
