@@ -3,12 +3,11 @@ import credmark.model
 from credmark.model.errors import ModelDataError, ModelNoContextError, ModelRunError
 import credmark.types
 
-from .token_wei import TokenWei
 from .contract import Contract
 from .address import Address
 from .data_content.fungible_token_data import FUNGIBLE_TOKEN_DATA
 from typing import List, Union
-from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
+from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO  # type: ignore
 from web3.exceptions import (
     BadFunctionCallOutput,
     ABIFunctionNotFound
@@ -20,7 +19,7 @@ def get_token_from_configuration(
         symbol: Union[str, None] = None,
         address: Union[Address, None] = None,
         is_native_token: bool = False,
-        wraps: Union[str, None] = None) -> dict:
+        wraps: Union[str, None] = None) -> Union[dict, None]:
     token_datas = [
         t for t in FUNGIBLE_TOKEN_DATA.get(chain_id, [])
         if (t.get('is_native_token', False) == is_native_token and
@@ -80,11 +79,14 @@ class Token(Contract):
 
         if data['address'] == Address.null():
             raise ModelDataError(f'NULL address ({Address.null()}) is not a valid Token Address')
-        if data.get('meta', None) is not None:
-            if isinstance(data.get('meta'), dict):
+
+        meta = data.get('meta', None)
+        if meta is not None:
+            if isinstance(meta, dict):
                 self._meta = self.TokenMetadata(**data.get('meta'))
-            if isinstance(data.get('meta'), self.TokenMetadata):
-                self._meta = data.get("meta")
+            elif isinstance(meta, self.TokenMetadata):
+                self._meta = meta
+                
         super().__init__(**data)
 
     def _load(self):
@@ -116,7 +118,8 @@ class Token(Contract):
         if isinstance(self, TokenInfo):
             return self
         self._load()
-        return TokenInfo(**self.dict(), meta=self._meta.dict())
+        
+        return TokenInfo(**self.dict(), meta=self._meta)
 
     @property
     def symbol(self):
@@ -139,7 +142,9 @@ class Token(Contract):
         return self._meta.total_supply
 
     def scaled(self, value):
-        return value / (10 ** self.decimals)
+        if self.decimals is not None:
+            return value / (10 ** self.decimals)
+        return ModelDataError("Token.decimals is None")
 
 
 class TokenInfo(Token):
@@ -159,23 +164,25 @@ class NativeToken(DTO):
 
         token_data = get_token_from_configuration(
             chain_id=str(context.chain_id), is_native_token=True)
-
-        data['symbol'] = token_data.get('symbol')
-        data['decimals'] = token_data.get('decimals')
-        data['name'] = token_data.get('name')
+        if token_data is not None:
+            data['symbol'] = token_data.get('symbol')
+            data['decimals'] = token_data.get('decimals')
+            data['name'] = token_data.get('name')
         super().__init__(**data)
 
     def scaled(self, value):
         return value / (10 ** self.decimals)
 
-    def wrapped(self):
+    def wrapped(self) -> Union[Token, None]:
         context = credmark.model.ModelContext.current_context
         if context is None:
             raise ModelNoContextError(
                 'No current context. Unable to create contract instance.')
         token_data = get_token_from_configuration(
             chain_id=str(context.chain_id), wraps=self.symbol)
-        return Token(address=token_data['address'])
+        if token_data is not None:
+            return Token(address=token_data['address'])
+        return None
 
 
 class NonFungibleToken(Contract):
