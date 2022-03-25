@@ -8,7 +8,7 @@ from web3.contract import Contract as Web3Contract
 import json
 import credmark.model
 from credmark.model.errors import ModelDataError, ModelNoContextError
-from credmark.types.data.account import Account
+from credmark.types.data.account import Account, Address
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
 from credmark.types.data.data_content.transparent_proxy_data import UPGRADEABLE_CONTRACT_ABI
 
@@ -101,22 +101,25 @@ class Contract(Account):
             # TODO: Get this from the database, Not the RPC
             events = self.instance.events.Upgraded.createFilter(
                 fromBlock=0, toBlock=context.block_number).get_all_entries()
-            self._proxy_for = Contract(address=events[len(events) - 1].args.implementation)
+            if len(events) > 0:
+                self._proxy_for = Contract(address=events[len(events) - 1].args.implementation)
+            elif self.constructor_args is not None:
+                self._proxy_for = Contract(address=Address('0x' + self.constructor_args[-40:]))
         return self._proxy_for
 
-    @property
+    @ property
     def functions(self):
         if self.proxy_for is not None:
             return self.proxy_for.functions
         return self.instance.functions
 
-    @property
+    @ property
     def events(self):
         if self.proxy_for is not None:
             return self.proxy_for.events
         return self.instance.events
 
-    @property
+    @ property
     def info(self):
         if isinstance(self, ContractInfo):
             return self
@@ -150,6 +153,8 @@ class Contract(Account):
     @ property
     def is_transparent_proxy(self):
         if self._meta.contract_name == "InitializableAdminUpgradeabilityProxy":
+            return True
+        if self._meta.contract_name == "AdminUpgradeabilityProxy":
             return True
         if self._meta.abi == UPGRADEABLE_CONTRACT_ABI:
             return True

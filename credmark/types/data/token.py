@@ -11,6 +11,7 @@ from typing import List, Union
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
 from web3.exceptions import (
     BadFunctionCallOutput,
+    ABIFunctionNotFound
 )
 
 
@@ -54,8 +55,8 @@ class Token(Contract):
 
     class Config:
         schema_extra = {
-            'examples': [{'symbol': 'CMK'},
-                         {'symbol': 'CMK', 'decimals': 18}
+            'examples': [{'address': '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9'},
+                         {'symbol': 'AAVE'}
                          ] + Contract.Config.schema_extra['examples']
         }
 
@@ -92,21 +93,21 @@ class Token(Contract):
         super()._load()
         try:
             self._meta.symbol = self.functions.symbol().call()
-        except BadFunctionCallOutput:
+        except BadFunctionCallOutput or ABIFunctionNotFound:
             raise ModelDataError(
                 f'No symbol function on token {self.address}, non ERC20 Conforming')
         try:
             self._meta.name = self.functions.name().call()
-        except BadFunctionCallOutput:
+        except BadFunctionCallOutput or ABIFunctionNotFound:
             raise ModelDataError(f'No name function on token {self.address}, non ERC20 Conforming')
         try:
             self._meta.decimals = self.functions.decimals().call()
-        except BadFunctionCallOutput:
+        except BadFunctionCallOutput or ABIFunctionNotFound:
             raise ModelDataError(
                 f'No decimals function on token {self.address}, non ERC20 Conforming')
         try:
             self._meta.total_supply = self.functions.totalSupply().call()
-        except BadFunctionCallOutput:
+        except BadFunctionCallOutput or ABIFunctionNotFound:
             raise ModelDataError(
                 f'No totalSupply function on token {self.address}, non ERC20 Conforming')
 
