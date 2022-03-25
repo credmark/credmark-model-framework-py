@@ -54,10 +54,14 @@ class BlockNumber(int):
                 number: int,
                 timestamp: Union[Timestamp, None] = None,  # pylint: disable=unused-argument
                 sample_timestamp: Union[Timestamp, None] = None):  # pylint: disable=unused-argument
+
         context = credmark.model.ModelContext.current_context
-        if context is not None:
-            if number > context.block_number:
-                raise BlockNumberOutOfRangeError.create(number, context.block_number)
+        if context is None:
+            raise ModelNoContextError("credmark.model.ModelContext.current_context cannot be None")
+
+        if number > context.block_number:
+            raise BlockNumberOutOfRangeError.create(number, context.block_number)
+
         return super().__new__(BlockNumber, number)
 
     def __init__(self,
@@ -75,11 +79,12 @@ class BlockNumber(int):
         return BlockNumber(super().__sub__(number))
 
     @property
-    def timestamp(self) -> Timestamp:
+    def timestamp(self) -> int:
         if self._timestamp is None:
             context = credmark.model.ModelContext.current_context
             if context is None:
-                raise ModelNoContextError('No _timestamp/context to return a timestamp')
+                raise ModelNoContextError(
+                    "credmark.model.ModelContext.current_context cannot be None")
 
             block: BlockData = context.web3.eth.get_block(self.__int__())
             if 'timestamp' in block:
@@ -97,13 +102,13 @@ class BlockNumber(int):
         """
         Returns the block number from the input timestamp.
         For input of timestamp and datetime, the last block before the datetime is returned.
-        For input of date, the last block of the date is returned.
-        Returns the BlockNumber from the input timestamp.
+
+        The timestamp here will be used as the sample_timestamp on the resulting BlockNumber.
         """
 
         context = credmark.model.ModelContext.current_context
         if context is None:
-            raise ModelNoContextError('No current context for BlockNumber.from_datetime()')
+            raise ModelNoContextError("credmark.model.ModelContext.current_context cannot be None")
 
         if isinstance(timestamp, int):
             pass
@@ -118,9 +123,6 @@ class BlockNumber(int):
                 f'Invalid input for date/datetime/timestamp to query block_number {timestamp}')
 
         get_blocknumber_result = context.models.rpc.get_blocknumber(input=dict(timestamp=timestamp))
-        if get_blocknumber_result['blockNumber'] > context.block_number:
-            raise BlockNumberOutOfRangeError.create(
-                get_blocknumber_result['blockNumber'], context.block_number)
 
         return BlockNumber(number=get_blocknumber_result['blockNumber'],
                            timestamp=get_blocknumber_result['blockTimestamp'],
