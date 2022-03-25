@@ -1,11 +1,12 @@
+from typing import Union
 from credmark.model.errors import ModelRunError
 from credmark.dto import DTO, DTOField, cross_examples
 from .token import Token, NativeToken
-from typing import Union
+
 
 class Position(DTO):
     amount: float = DTOField(0.0, description='Quantity of token held')
-    token: Union[NativeToken,Token] = DTOField(..., description='Token')
+    asset: Token
 
     class Config:
         schema_extra = {
@@ -17,7 +18,7 @@ class Position(DTO):
 
     @ property
     def scaled_amount(self):
-        decimals = self.token.decimals
+        decimals = self.asset.decimals
         if decimals is None:
             # Not clear if this is a ModelRunError or ModelDataError
             # TODO: Until we have definitive token lookup, we'll consider
@@ -25,3 +26,9 @@ class Position(DTO):
             raise ModelRunError(
                 f'No position scaled_amount for token {self.token.symbol} missing decimals value')
         return self.amount / (10 ** decimals)
+
+class TokenPosition(Position):
+    asset: Token
+
+class NativePosition(Position):
+    asset: NativeToken

@@ -21,5 +21,5 @@ from .models.rpc import (
 )
 
 from .data.portfolio import Portfolio
-from .data.position import Position
+from .data.position import Position, NativePosition, TokenPosition
 from .data.price import Price, TokenPairPrice
