@@ -24,7 +24,7 @@ class Contract(Account):
         proxy_for: Union[Account, None] = None
 
     _meta: ContractMetaData = PrivateAttr(
-        default_factory=lambda: Contract.ContractMetaData())
+        default_factory=lambda: Contract.ContractMetaData())  # pylint: disable=unnecessary-lambda
     _instance: Union[Web3Contract, None] = PrivateAttr(default=None)
     _proxy_for = PrivateAttr(default=None)
     _loaded = PrivateAttr(default=False)
@@ -59,7 +59,7 @@ class Contract(Account):
         if self._loaded:
             return
         context = credmark.model.ModelContext.current_context()
-    
+
         contract_q_results = context.run_model(
             'contract.metadata', {'contractAddress': self.address})
 
@@ -89,7 +89,6 @@ class Contract(Account):
             )
         return self._instance
 
-
     @property
     def proxy_for(self):
         if not self._loaded:
@@ -105,7 +104,7 @@ class Contract(Account):
                 self._proxy_for = Contract(address=events[len(events) - 1].args.implementation)
             elif self.constructor_args is not None and len(self.constructor_args) >= 40:
                 self._proxy_for = Contract(address=Address('0x' + self.constructor_args[-40:]))
-            
+
         return self._proxy_for
 
     @ property
