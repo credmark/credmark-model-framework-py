@@ -57,7 +57,7 @@ class BlockNumber(int):
 
         context = credmark.model.ModelContext.current_context
         if context is None:
-            raise ModelNoContextError("credmark.model.ModelContext.current_context cannot be None")
+            return super().__new__(BlockNumber, number)
 
         if number > context.block_number:
             raise BlockNumberOutOfRangeError.create(number, context.block_number)
