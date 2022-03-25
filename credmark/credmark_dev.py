@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+from distutils.log import error
 import sys
 import argparse
 import logging
@@ -334,10 +335,10 @@ def print_manifests(manifests: List[dict], describe_schemas=False):
 def write_manifest_file(args):
     config_logging(args, 'INFO')
     model_loader = load_models(args)
-    model_loader.write_manifest_file()
 
     models = model_loader.loaded_model_version_lists()
-    sys.stdout.write(f'\nManifest contains {len(models)} models:\n')
+    sys.stdout.write(f'\nLoaded {len(models)} models:\n')
+
     slugs = list(models.keys())
     slugs.sort()
     if len(slugs) > 0:
@@ -348,6 +349,12 @@ def write_manifest_file(args):
     error_count = len(model_loader.errors)
     warning_count = len(model_loader.warnings)
     sys.stdout.write(f'{error_count} errors, {warning_count} warnings\n\n')
+
+    if error_count == 0:
+        model_loader.write_manifest_file()
+    else:
+        sys.stdout.write('** Not writing manifest due to errors.\n')
+
     sys.exit(0 if error_count == 0 else 1)
 
 
