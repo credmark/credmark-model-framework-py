@@ -256,3 +256,5 @@ ERC721_BASE_ABI = [
 ]
 ERC1155_BASE_ABI = []
 ERC777_BASE_ABI = []
+
+# pylint: enable=line-too-long

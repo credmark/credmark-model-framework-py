@@ -39,7 +39,7 @@ class Ledger:
                     model_slug,
                     column, list(column_set), "invalid column name")
 
-    def _send_cwgo_query(self,
+    def _send_cwgo_query(self,  # pylint: disable=too-many-arguments
                          model_slug: str,
                          table_def: Type[LedgerTable],
                          columns: List[str],

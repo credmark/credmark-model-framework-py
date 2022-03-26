@@ -53,7 +53,7 @@ class EngineModelContext(ModelContext):
     max_run_depth = 20
 
     @classmethod
-    def create_context_and_run_model(cls,
+    def create_context_and_run_model(cls,  # pylint: disable=too-many-arguments,too-many-locals
                                      chain_id: int,
                                      block_number: Union[int, None],
                                      model_slug: str,
@@ -133,7 +133,7 @@ class EngineModelContext(ModelContext):
         block_number: int = output['blockNumber']
         return block_number
 
-    def __init__(self,
+    def __init__(self,  # pylint: disable=too-many-arguments
                  chain_id: int,
                  block_number: int,
                  web3_registry: Web3Registry,
@@ -256,7 +256,7 @@ class EngineModelContext(ModelContext):
         finally:
             self.__depth -= 1
 
-    def _run_model_with_class(self,
+    def _run_model_with_class(self,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
                               slug: str,
                               input: Union[dict, DTO],
                               block_number: Union[int, None],

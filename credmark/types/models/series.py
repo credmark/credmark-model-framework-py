@@ -40,13 +40,16 @@ class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS
     For example: blockSeries = BlockSeries[MyOutputClass](**data)
     where blockSeries.series[0].output will be an instance of MyOutputClass
 
-    If a permanent error occurs during a model run, the block and error will be added to the errors array.
-    If a non-permament error occurs during a model run, the entire series will generate an error.
+    If a permanent error occurs during a model run, the block and error
+    will be added to the errors array.
+    If a non-permament error occurs during a model run, the entire series
+    will generate an error.
     """
     series: List[BlockSeriesRow[DTOCLS]] = DTOField(
         default=[], description='List of series block outputs')
     errors: Union[List[BlockSeriesErrorRow], None] = DTOField(
-        default=None, description='If any permanent (deterministic) errors were returned from model runs, '
+        default=None,
+        description='If any permanent (deterministic) errors were returned from model runs, '
         'this array will contain blocks with errors')
     _iterator: str = PrivateAttr('series')
 
@@ -59,8 +62,9 @@ class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS
         if block_number is not None:
             return next((x for x in self.series if x.blockNumber == block_number), None)
         if timestamp is not None:
-            return self.get(block_number=max(s.blockNumber for s in
-                                             [s for s in self.series if s.blockTimestamp <= timestamp]))
+            return self.get(
+                block_number=max(s.blockNumber for s in
+                                 [s for s in self.series if s.blockTimestamp <= timestamp]))
         return None
 
 

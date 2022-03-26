@@ -1,4 +1,3 @@
-from typing import Union
 from credmark.model.errors import ModelRunError
 from credmark.dto import DTO, DTOField, cross_examples
 from .token import Token, NativeToken
@@ -27,8 +26,10 @@ class Position(DTO):
                 f'No position scaled_amount for token {self.token.symbol} missing decimals value')
         return self.amount / (10 ** decimals)
 
+
 class TokenPosition(Position):
     asset: Token
+
 
 class NativePosition(Position):
     asset: NativeToken

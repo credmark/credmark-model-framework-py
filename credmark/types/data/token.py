@@ -1,6 +1,6 @@
 
 import credmark.model
-from credmark.model.errors import ModelDataError, ModelNoContextError, ModelRunError
+from credmark.model.errors import ModelDataError, ModelRunError
 import credmark.types
 
 from .contract import Contract
@@ -31,8 +31,10 @@ def get_token_from_configuration(
     if len(token_datas) > 1:
         # TODO: Until we have definitive token lookup, we'll
         # consider it transient as a ModelRunError.
-        raise ModelRunError('Missing fungible token data in lookup for '
-                            f'chain_id={chain_id} symbol={symbol} address={address} is_native_token={is_native_token}')
+        raise ModelRunError(
+            'Missing fungible token data in lookup for '
+            f'chain_id={chain_id} symbol={symbol} '
+            f'address={address} is_native_token={is_native_token}')
 
     if len(token_datas) == 1:
         return token_datas[0]
@@ -40,7 +42,7 @@ def get_token_from_configuration(
 
 class Token(Contract):
     """
-    Token represents a fungible Token that conforms to ERC20 
+    Token represents a fungible Token that conforms to ERC20
     standards
     """
 
@@ -50,7 +52,8 @@ class Token(Contract):
         decimals: Union[int, None] = None
         total_supply: Union[int, None] = None
 
-    _meta: TokenMetadata = PrivateAttr(default_factory=lambda: Token.TokenMetadata())
+    _meta: TokenMetadata = PrivateAttr(
+        default_factory=lambda: Token.TokenMetadata())  # pylint: disable=unnecessary-lambda
 
     class Config:
         schema_extra = {
@@ -83,7 +86,7 @@ class Token(Contract):
                 self._meta = self.TokenMetadata(**data.get('meta'))
             elif isinstance(meta, self.TokenMetadata):
                 self._meta = meta
-                
+
         super().__init__(**data)
 
     def _load(self):
@@ -115,7 +118,7 @@ class Token(Contract):
         if isinstance(self, TokenInfo):
             return self
         self._load()
-        
+
         return TokenInfo(**self.dict(), meta=self._meta)
 
     @property
@@ -142,7 +145,6 @@ class Token(Contract):
 
     def scaled(self, value):
         return value / (10 ** self.decimals)
-        
 
 
 class TokenInfo(Token):

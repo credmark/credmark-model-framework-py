@@ -1,6 +1,3 @@
-# pylint: disable=line-too-long
-from typing import Union
-from credmark.types.data.address import Address
 
 
 FUNGIBLE_TOKEN_DATA = {
@@ -357,4 +354,3 @@ FUNGIBLE_TOKEN_DATA = {
         "native_token": True
     }
 }
-# pylint: enable=line-too-long

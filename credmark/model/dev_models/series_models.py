@@ -49,7 +49,8 @@ def run_model_for_block_range(context: ModelContext,
 @credmark.model.describe(slug='series.time-start-end-interval',
                          version='0.0',
                          display_name='Series Time Interval',
-                         description='Run a model over a series of blocks specifying a time start, end, and interval',
+                         description='Run a model over a series of blocks specifying '
+                         'a time start, end, and interval',
                          developer='Credmark',
                          input=SeriesModelStartEndIntervalInput,
                          output=BlockSeries[dict])
@@ -76,7 +77,8 @@ class SeriesTimeStartEndInterval(credmark.model.Model):
 @credmark.model.describe(slug='series.time-window-interval',
                          version='0.0',
                          display_name='Series Time Window Interval',
-                         description='Run a model over a series of blocks specifying a time window and interval',
+                         description='Run a model over a series of blocks specifying '
+                         'a time window and interval',
                          developer='Credmark',
                          input=SeriesModelWindowIntervalInput,
                          output=BlockSeries[dict])
@@ -102,7 +104,8 @@ class SeriesTimeWindowInterval(credmark.model.Model):
 @credmark.model.describe(slug='series.block-start-end-interval',
                          version='0.0',
                          display_name='Series Block Interval',
-                         description='Run a model over a series of blocks specifying a block start, end, and interval',
+                         description='Run a model over a series of blocks specifying '
+                         'a block start, end, and interval',
                          developer='Credmark',
                          input=SeriesModelStartEndIntervalInput,
                          output=BlockSeries[dict])
@@ -129,7 +132,8 @@ class SeriesBlockStartEndInterval(credmark.model.Model):
 @credmark.model.describe(slug='series.block-window-interval',
                          version='0.0',
                          display_name='Series Block Window Interval',
-                         description='Run a model over a series of blocks specifying a block window and interval',
+                         description='Run a model over a series of blocks specifying '
+                         'a block window and interval',
                          developer='Credmark',
                          input=SeriesModelWindowIntervalInput,
                          output=BlockSeries[dict])

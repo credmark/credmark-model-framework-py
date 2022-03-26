@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-from distutils.log import error
 import sys
 import argparse
 import logging
@@ -77,7 +76,8 @@ def main():
     parser_models.set_defaults(func=list_deployed_models)
 
     parser_list = subparsers.add_parser(
-        'describe', help='Show documentation for local and deployed models', aliases=['describe-models', 'man'])
+        'describe', help='Show documentation for local and deployed models',
+        aliases=['describe-models', 'man'])
     parser_list.add_argument('model-slug', nargs='?', default=None, type=str,
                              help='Slug or partial slug to describe.')
     add_api_url_arg(parser_list)
@@ -172,7 +172,7 @@ def print_no_models_found(model_slug):
         print('No models found')
 
 
-def list_models(args):
+def list_models(args):  # pylint: disable=too-many-branches
     config_logging(args)
 
     model_loader = load_models(args, True)
@@ -236,7 +236,7 @@ def merge_manifests(manifests: List[dict], extra_manifests: List[dict]):
     return merged
 
 
-def list_deployed_models(args):
+def list_deployed_models(args):  # pylint: disable=too-many-branches
     config_logging(args)
     json_output = args.get('json')
     model_slug = args.get('model-slug')
@@ -275,7 +275,7 @@ def list_deployed_models(args):
 
 
 def print_manifests(manifests: List[dict], describe_schemas=False):
-    for m in manifests:
+    for m in manifests:  # pylint: disable=too-many-nested-blocks
         for i, v in m.items():
             if i == 'slug':
                 sys.stdout.write(f'{v}\n')
@@ -286,9 +286,11 @@ def print_manifests(manifests: List[dict], describe_schemas=False):
                 else:
                     if i == 'input':
                         input_tree = dto_schema_viz(
-                            v, v.get('title', 'Object'), v, 0, 'tree', only_required=False, tag='top', limit=10)
+                            v, v.get('title', 'Object'), v, 0, 'tree',
+                            only_required=False, tag='top', limit=10)
                         input_examples = dto_schema_viz(
-                            v, v.get('title', 'Object'), v, 0, 'example', only_required=False, tag='top', limit=10)
+                            v, v.get('title', 'Object'), v, 0, 'example',
+                            only_required=False, tag='top', limit=10)
 
                         print(' - input schema (* for required field):')
                         print_tree(input_tree, '   ', sys.stdout.write)
@@ -298,9 +300,11 @@ def print_manifests(manifests: List[dict], describe_schemas=False):
 
                     elif i == 'output':
                         output_tree = dto_schema_viz(
-                            v, v.get('title', 'Object'), v, 0, 'tree', only_required=False, tag='top', limit=1)
+                            v, v.get('title', 'Object'), v, 0, 'tree',
+                            only_required=False, tag='top', limit=1)
                         output_examples = dto_schema_viz(
-                            v, v.get('title', 'Object'), v, 0, 'example', only_required=True, tag='top', limit=1)
+                            v, v.get('title', 'Object'), v, 0, 'example',
+                            only_required=True, tag='top', limit=1)
 
                         print(' - output schema (* for required field):')
                         print_tree(output_tree, '   ', sys.stdout.write)
@@ -368,7 +372,7 @@ def remove_manifest_file(args):
     sys.exit(0)
 
 
-def run_model(args):
+def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,too-many-locals
     exit_code = 0
 
     try:

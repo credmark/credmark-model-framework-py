@@ -41,7 +41,7 @@ class HistoricalUtil:
     def __init__(self, context) -> None:
         self.context: credmark.model.ModelContext = context
 
-    def run_model_historical(self,
+    def run_model_historical(self,  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
                              model_slug: str,
                              window: Union[str, List[str]],
                              model_input: Union[dict, DTO, None] = None,
@@ -55,7 +55,8 @@ class HistoricalUtil:
 
         :param model_slug: the slug of the model to run
         :param window: a string defining a time window, ex. "30 day"
-        :param interval: a string defining a time interval, ex. "1 day", or list of time intervals to be summed.
+        :param interval: a string defining a time interval, ex. "1 day",
+                         or list of time intervals to be summed.
         :param model_input: input passed to the model being run
         :param model_return_type: the DTO class or dict for the output of the model
              being run. This will be the type of the BlockSeriesRow.output
@@ -125,7 +126,7 @@ class HistoricalUtil:
                                           input,
                                           return_type=run_return_type)  # type: ignore
 
-    def run_model_historical_blocks(self,
+    def run_model_historical_blocks(self,  # pylint: disable=too-many-arguments
                                     model_slug: str,
                                     window: int,
                                     interval: int,
@@ -193,7 +194,7 @@ class HistoricalUtil:
 
         try:
             num = int(time_str.split(' ')[0])
-        except Exception as err:
+        except Exception as _err:
             raise ModelRunError(
                 f"Invalid historical time string '{time_str}': "
                 f"unknown number format")

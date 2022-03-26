@@ -10,7 +10,7 @@ class Web3Registry:
     # Cache of urls to providers that are reused
     # We don't cache chainId to providers because that
     # can change from request to request when running in a lambda
-    _url_to_web3_provider: dict[str, HTTPProvider] = dict()
+    _url_to_web3_provider: dict[str, HTTPProvider] = {}
 
     @classmethod
     def web3_for_provider_url(cls, provider_url: str):

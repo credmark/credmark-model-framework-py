@@ -24,12 +24,13 @@ class ContractUtil:
         if contract_name is None and address is None and abi is None:
             raise Exception
 
-            # TODO: name needs to be contract_name to avoid confusion with name().call() which is on ERC20s
+            # TODO: name needs to be contract_name to avoid confusion with
+            # name().call() which is on ERC20s
 
             # This means we can end up with different KINDS of contracts together.
             # probably no bueno
-            # we could do it if we could return a contract that is a subclass of web3.contract.Contract
-            # but I don't understand how to do that with a web3 context
+            # we could do it if we could return a contract that is a subclass of
+            # web3.contract.Contract but I don't understand how to do that with a web3 context
 
         contracts: List[Contract] = []
         q = {}

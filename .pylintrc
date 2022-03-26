@@ -96,7 +96,10 @@ disable=raw-checker-failed,
         logging-not-lazy,
         wrong-import-position,
         too-few-public-methods, # for pydantic objects
-        consider-using-ternary  # consider-using-ternary gives incorrect suggestions!
+        consider-using-ternary,  # consider-using-ternary gives incorrect suggestions!
+        no-else-return,
+        no-self-use,
+        fixme # TODO in comment
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -322,7 +325,7 @@ ignore-docstrings=yes
 ignore-imports=no
 
 # Signatures are removed from the similarity computation
-ignore-signatures=no
+ignore-signatures=yes
 
 # Minimum lines number of a similarity.
 min-similarity-lines=4
@@ -542,10 +545,10 @@ exclude-too-few-public-methods=
 ignored-parents=
 
 # Maximum number of arguments for function / method.
-max-args=5
+max-args=7
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=7
+max-attributes=10
 
 # Maximum number of boolean expressions in an if statement (see R0916).
 max-bool-expr=5

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 class ModelApi:
 
-    _url_to_api: ClassVar = dict()
+    _url_to_api: ClassVar = {}
 
     @classmethod
     def api_for_url(cls, url: Union[str, None] = None):
@@ -92,7 +92,7 @@ class ModelApi:
         url = urljoin(self.__url, path)
         return self._get(url)
 
-    def run_model(self,
+    def run_model(self,  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
                   slug: str,
                   version: Union[str, None],
                   chain_id: int,
@@ -152,20 +152,20 @@ class ModelApi:
                 logger.error(f'Error api response {resp.text}')
                 if resp.status_code == 404:
                     raise ModelNotFoundError.create(slug, version, 'Model not found from api')
-                else:
-                    try:
-                        error_result = resp.json()
-                        raise ModelRunRequestError(
-                            error_result.get('message', 'Error response from runner api'),
-                            str(error_result.get('statusCode', 500)),
-                        )
 
-                    except Exception:
-                        raise ModelRunRequestError(
-                            f'Model run error response: {resp.text}', str(resp.status_code))
-            else:
+                try:
+                    error_result = resp.json()
+                except Exception:
+                    raise ModelRunRequestError(
+                        f'Model run error response: {resp.text}', str(resp.status_code))
+
                 raise ModelRunRequestError(
-                    f'Model run request error: {str(err)}', str(503))
+                    error_result.get('message', 'Error response from runner api'),
+                    str(error_result.get('statusCode', 500)),
+                )
+
+            raise ModelRunRequestError(
+                f'Model run request error: {str(err)}', str(503))
         finally:
             # Ensure the response is closed in case we ever don't
             # read the content.

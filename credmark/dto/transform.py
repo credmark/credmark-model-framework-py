@@ -7,7 +7,7 @@ class DataTransformError(Exception):
     pass
 
 
-def transform_data_for_dto(
+def transform_data_for_dto(  # pylint: disable=too-many-return-statements
         data: Union[dict, DTO, None],
         dto_class: Union[Type[DTO], None],
         slug: str,
@@ -29,7 +29,8 @@ def transform_data_for_dto(
         :param data: data in the form of a dict or DTO instance
         :param dto_class: DTO subclass (or None to convert to dict)
         :param slug: the slug of the calling model (used only for error messages)
-        :param data_source: short string describing source of data, ex "input" (used for error messages)
+        :param data_source: short string describing source of data,
+                            ex "input" (used for error messages)
     """
     try:
         if dto_class is None:

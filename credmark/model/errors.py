@@ -39,7 +39,8 @@ class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
     detail: Union[DetailDTOClass, None] = DTOField(
         None, description='Arbitrary data related to the error.')
     permanent: bool = DTOField(
-        False, description='If true, the error will always give the same result for the same context.')
+        False,
+        description='If true, the error will always give the same result for the same context.')
 
     @classmethod
     def schema(cls):

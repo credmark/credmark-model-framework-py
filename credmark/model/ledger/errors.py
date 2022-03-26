@@ -3,7 +3,11 @@ from credmark.model.errors import ModelRunError
 
 
 class InvalidColumnException(ModelRunError):
-    def __init__(self, model_slug: str, column: str, column_list: Union[List[str], None], message: str):
+    def __init__(self,
+                 model_slug: str,
+                 column: str,
+                 column_list: Union[List[str], None],
+                 message: str):
         self.model_slug = model_slug
         self.name = column
         self.column_list = column_list
