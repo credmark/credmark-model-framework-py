@@ -96,16 +96,11 @@ class Token(Contract):
                     f'No symbol function on token {self.address}, non ERC20 Compliant')
         if self._meta.name is None:
             try:
-                print(self.functions.name().call(), self.address)
-                print(self.instance.address, self.instance.abi)
-                if self.proxy_for:
-                    print(self.proxy_for.address)
                 self._meta.name = self.functions.name().call()
             except (BadFunctionCallOutput, ABIFunctionNotFound):
                 raise ModelDataError(f'No name function on token {self.address}, non ERC20 Compliant')
         if self._meta.decimals is None:
             try:
-                print(self.functions.decimals().call(), self.address)
                 self._meta.decimals = self.functions.decimals().call()
             except (BadFunctionCallOutput, ABIFunctionNotFound):
                 raise ModelDataError(
