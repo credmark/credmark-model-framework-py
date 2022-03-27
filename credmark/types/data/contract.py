@@ -152,9 +152,12 @@ class Contract(Account):
 
     @ property
     def is_transparent_proxy(self):
+        # TODO : Find a more definitive token proxy identification mechanism
         if self._meta.contract_name == "InitializableAdminUpgradeabilityProxy":
             return True
         if self._meta.contract_name == "AdminUpgradeabilityProxy":
+            return True
+        if self._meta.contract_name == "FiatTokenProxy":
             return True
         if self._meta.abi == UPGRADEABLE_CONTRACT_ABI:
             return True
