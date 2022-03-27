@@ -5,7 +5,7 @@ import credmark.types
 
 from .contract import Contract
 from .address import Address
-from .data_content.fungible_token_data import FUNGIBLE_TOKEN_DATA
+from .data_content.fungible_token_data import FUNGIBLE_TOKEN_DATA, ERC20_GENERIC_ABI
 from typing import List, Union
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO  # type: ignore
 from web3.exceptions import (
@@ -85,6 +85,8 @@ class Token(Contract):
     def _load(self):
         if self._loaded:
             return
+        if self._meta.abi is None:
+            self._meta.abi = ERC20_GENERIC_ABI
         super()._load()
         if self._meta.symbol is None:
             try:
@@ -94,11 +96,16 @@ class Token(Contract):
                     f'No symbol function on token {self.address}, non ERC20 Compliant')
         if self._meta.name is None:
             try:
+                print(self.functions.name().call(), self.address)
+                print(self.instance.address, self.instance.abi)
+                if self.proxy_for:
+                    print(self.proxy_for.address)
                 self._meta.name = self.functions.name().call()
             except (BadFunctionCallOutput, ABIFunctionNotFound):
                 raise ModelDataError(f'No name function on token {self.address}, non ERC20 Compliant')
         if self._meta.decimals is None:
             try:
+                print(self.functions.decimals().call(), self.address)
                 self._meta.decimals = self.functions.decimals().call()
             except (BadFunctionCallOutput, ABIFunctionNotFound):
                 raise ModelDataError(
