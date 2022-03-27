@@ -80,38 +80,35 @@ class Token(Contract):
         if data['address'] == Address.null():
             raise ModelDataError(f'NULL address ({Address.null()}) is not a valid Token Address')
 
-        meta = data.get('meta', None)
-        if meta is not None:
-            if isinstance(meta, dict):
-                self._meta = self.TokenMetadata(**data.get('meta'))
-            elif isinstance(meta, self.TokenMetadata):
-                self._meta = meta
-
         super().__init__(**data)
 
     def _load(self):
         if self._loaded:
             return
         super()._load()
-        try:
-            self._meta.symbol = self.functions.symbol().call()
-        except (BadFunctionCallOutput, ABIFunctionNotFound):
-            raise ModelDataError(
-                f'No symbol function on token {self.address}, non ERC20 Compliant')
-        try:
-            self._meta.name = self.functions.name().call()
-        except (BadFunctionCallOutput, ABIFunctionNotFound):
-            raise ModelDataError(f'No name function on token {self.address}, non ERC20 Compliant')
-        try:
-            self._meta.decimals = self.functions.decimals().call()
-        except (BadFunctionCallOutput, ABIFunctionNotFound):
-            raise ModelDataError(
-                f'No decimals function on token {self.address}, non ERC20 Compliant')
-        try:
-            self._meta.total_supply = self.functions.totalSupply().call()
-        except (BadFunctionCallOutput, ABIFunctionNotFound):
-            raise ModelDataError(
-                f'No totalSupply function on token {self.address}, non ERC20 Compliant')
+        if self._meta.symbol is None:
+            try:
+                self._meta.symbol = self.functions.symbol().call()
+            except (BadFunctionCallOutput, ABIFunctionNotFound):
+                raise ModelDataError(
+                    f'No symbol function on token {self.address}, non ERC20 Compliant')
+        if self._meta.name is None:
+            try:
+                self._meta.name = self.functions.name().call()
+            except (BadFunctionCallOutput, ABIFunctionNotFound):
+                raise ModelDataError(f'No name function on token {self.address}, non ERC20 Compliant')
+        if self._meta.decimals is None:
+            try:
+                self._meta.decimals = self.functions.decimals().call()
+            except (BadFunctionCallOutput, ABIFunctionNotFound):
+                raise ModelDataError(
+                    f'No decimals function on token {self.address}, non ERC20 Compliant')
+        if self._meta.total_supply is None:
+            try:
+                self._meta.total_supply = self.functions.totalSupply().call()
+            except (BadFunctionCallOutput, ABIFunctionNotFound):
+                raise ModelDataError(
+                    f'No totalSupply function on token {self.address}, non ERC20 Compliant')
 
     @property
     def info(self):

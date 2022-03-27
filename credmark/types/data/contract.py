@@ -48,8 +48,8 @@ class Contract(Account):
         meta = data.get('meta', None)
         if meta is not None:
             if isinstance(meta, dict):
-                self._meta = self.ContractMetaData(**meta)
-            if isinstance(meta, self.ContractMetaData):
+                self._meta = type(self._meta)(**meta)
+            if isinstance(meta, type(self._meta)):
                 self._meta = meta
 
         self._instance = None
