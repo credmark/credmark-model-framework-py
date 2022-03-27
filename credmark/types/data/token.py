@@ -39,6 +39,8 @@ def get_token_from_configuration(
     if len(token_datas) == 1:
         return token_datas[0]
 
+    return None
+
 
 class Token(Contract):
     """
@@ -98,7 +100,8 @@ class Token(Contract):
             try:
                 self._meta.name = self.functions.name().call()
             except (BadFunctionCallOutput, ABIFunctionNotFound):
-                raise ModelDataError(f'No name function on token {self.address}, non ERC20 Compliant')
+                raise ModelDataError(
+                    f'No name function on token {self.address}, non ERC20 Compliant')
         if self._meta.decimals is None:
             try:
                 self._meta.decimals = self.functions.decimals().call()
@@ -181,8 +184,8 @@ class NativeToken(DTO):
 
 class NonFungibleToken(Contract):
     def __init__(self, **data):
-        raise NotImplementedError()
         super().__init__(**data)
+        raise NotImplementedError()
 
 
 class Tokens(IterableListGenericDTO[Token]):
