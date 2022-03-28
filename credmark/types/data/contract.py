@@ -42,16 +42,15 @@ class Contract(Account):
     def __init__(self, **data):
         super().__init__(**data)
 
-        if isinstance(data.get('abi'), str):
-            self._meta.abi = json.loads(data['abi'])
-
         meta = data.get('meta', None)
         if meta is not None:
             if isinstance(meta, dict):
-                self._meta = self.ContractMetaData(**meta)
-            if isinstance(meta, self.ContractMetaData):
+                self._meta = type(self._meta)(**meta)
+            if isinstance(meta, type(self._meta)):
                 self._meta = meta
 
+        if isinstance(data.get('abi'), str):
+            self._meta.abi = json.loads(data['abi'])
         self._instance = None
         self._proxy_for = None
 
@@ -110,13 +109,21 @@ class Contract(Account):
     @ property
     def functions(self):
         if self.proxy_for is not None:
-            return self.proxy_for.functions
+            context = credmark.model.ModelContext.current_context()
+            return context.web3.eth.contract(
+                address=context.web3.toChecksumAddress(self.address),
+                abi=self.proxy_for.abi
+            ).functions
         return self.instance.functions
 
     @ property
     def events(self):
         if self.proxy_for is not None:
-            return self.proxy_for.events
+            context = credmark.model.ModelContext.current_context()
+            return context.web3.eth.contract(
+                address=context.web3.toChecksumAddress(self.address),
+                abi=self.proxy_for.abi
+            ).events
         return self.instance.events
 
     @ property
@@ -152,9 +159,12 @@ class Contract(Account):
 
     @ property
     def is_transparent_proxy(self):
+        # TODO : Find a more definitive token proxy identification mechanism
         if self._meta.contract_name == "InitializableAdminUpgradeabilityProxy":
             return True
         if self._meta.contract_name == "AdminUpgradeabilityProxy":
+            return True
+        if self._meta.contract_name == "FiatTokenProxy":
             return True
         if self._meta.abi == UPGRADEABLE_CONTRACT_ABI:
             return True

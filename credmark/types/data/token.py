@@ -5,7 +5,7 @@ import credmark.types
 
 from .contract import Contract
 from .address import Address
-from .data_content.fungible_token_data import FUNGIBLE_TOKEN_DATA
+from .data_content.fungible_token_data import FUNGIBLE_TOKEN_DATA, ERC20_GENERIC_ABI
 from typing import List, Union
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO  # type: ignore
 from web3.exceptions import (
@@ -38,6 +38,8 @@ def get_token_from_configuration(
 
     if len(token_datas) == 1:
         return token_datas[0]
+
+    return None
 
 
 class Token(Contract):
@@ -80,38 +82,38 @@ class Token(Contract):
         if data['address'] == Address.null():
             raise ModelDataError(f'NULL address ({Address.null()}) is not a valid Token Address')
 
-        meta = data.get('meta', None)
-        if meta is not None:
-            if isinstance(meta, dict):
-                self._meta = self.TokenMetadata(**data.get('meta'))
-            elif isinstance(meta, self.TokenMetadata):
-                self._meta = meta
-
         super().__init__(**data)
 
     def _load(self):
         if self._loaded:
             return
+        if self._meta.abi is None:
+            self._meta.abi = ERC20_GENERIC_ABI
         super()._load()
-        try:
-            self._meta.symbol = self.functions.symbol().call()
-        except (BadFunctionCallOutput, ABIFunctionNotFound):
-            raise ModelDataError(
-                f'No symbol function on token {self.address}, non ERC20 Compliant')
-        try:
-            self._meta.name = self.functions.name().call()
-        except (BadFunctionCallOutput, ABIFunctionNotFound):
-            raise ModelDataError(f'No name function on token {self.address}, non ERC20 Compliant')
-        try:
-            self._meta.decimals = self.functions.decimals().call()
-        except (BadFunctionCallOutput, ABIFunctionNotFound):
-            raise ModelDataError(
-                f'No decimals function on token {self.address}, non ERC20 Compliant')
-        try:
-            self._meta.total_supply = self.functions.totalSupply().call()
-        except (BadFunctionCallOutput, ABIFunctionNotFound):
-            raise ModelDataError(
-                f'No totalSupply function on token {self.address}, non ERC20 Compliant')
+        if self._meta.symbol is None:
+            try:
+                self._meta.symbol = self.functions.symbol().call()
+            except (BadFunctionCallOutput, ABIFunctionNotFound):
+                raise ModelDataError(
+                    f'No symbol function on token {self.address}, non ERC20 Compliant')
+        if self._meta.name is None:
+            try:
+                self._meta.name = self.functions.name().call()
+            except (BadFunctionCallOutput, ABIFunctionNotFound):
+                raise ModelDataError(
+                    f'No name function on token {self.address}, non ERC20 Compliant')
+        if self._meta.decimals is None:
+            try:
+                self._meta.decimals = self.functions.decimals().call()
+            except (BadFunctionCallOutput, ABIFunctionNotFound):
+                raise ModelDataError(
+                    f'No decimals function on token {self.address}, non ERC20 Compliant')
+        if self._meta.total_supply is None:
+            try:
+                self._meta.total_supply = self.functions.totalSupply().call()
+            except (BadFunctionCallOutput, ABIFunctionNotFound):
+                raise ModelDataError(
+                    f'No totalSupply function on token {self.address}, non ERC20 Compliant')
 
     @property
     def info(self):
@@ -182,8 +184,8 @@ class NativeToken(DTO):
 
 class NonFungibleToken(Contract):
     def __init__(self, **data):
-        raise NotImplementedError()
         super().__init__(**data)
+        raise NotImplementedError()
 
 
 class Tokens(IterableListGenericDTO[Token]):
