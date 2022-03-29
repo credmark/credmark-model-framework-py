@@ -96,7 +96,7 @@ class Contract(Account):
                 raise ModelDataError(f'abi not available for address {self.address}')
         self._loaded = True
 
-    @ property
+    @property
     def instance(self):
         if self._instance is None:
             context = credmark.model.ModelContext.current_context()
@@ -111,6 +111,7 @@ class Contract(Account):
     def proxy_for(self):
         if not self._loaded:
             self._load()
+
         if self._proxy_for is None and self.is_transparent_proxy and self.instance is not None:
             context = credmark.model.ModelContext.current_context()
 
@@ -164,9 +165,10 @@ class Contract(Account):
                 address=context.web3.toChecksumAddress(self.address),
                 abi=self.proxy_for.abi
             ).functions
-        return self.instance.functions
+        if self.instance is not None:
+            return self.instance.functions
 
-    @ property
+    @property
     def events(self):
         if self.proxy_for is not None:
             context = credmark.model.ModelContext.current_context()
@@ -174,7 +176,8 @@ class Contract(Account):
                 address=context.web3.toChecksumAddress(self.address),
                 abi=self.proxy_for.abi
             ).events
-        return self.instance.events
+        if self.instance is not None:
+            return self.instance.events
 
     @ property
     def info(self):
@@ -207,7 +210,7 @@ class Contract(Account):
             self._load()
         return self._meta.abi
 
-    @ property
+    @property
     def is_transparent_proxy(self):
         # TODO : Find a more definitive token proxy identification mechanism
         if self._meta.contract_name == "InitializableAdminUpgradeabilityProxy":
