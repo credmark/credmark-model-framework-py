@@ -132,8 +132,11 @@ def config_logging(args, default_level='WARNING'):
 
 def load_models(args, load_dev_models=False):
     manifest_file = args.get('manifest_file')
-    model_path = args['model_path']
-    model_paths = [model_path] if model_path is not None else None
+    model_path: str = args['model_path']
+    if model_path is not None:
+        model_paths = model_path.split(';')
+    else:
+        model_paths = None
     model_loader = ModelLoader(model_paths, manifest_file, load_dev_models)
     model_loader.log_errors()
     return model_loader
