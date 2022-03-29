@@ -7,10 +7,12 @@ from .token import Token
 
 class Price(DTO):
     price: Union[float, None] = DTOField(None, description='Value of one Token')
+    src: Union[str, None] = DTOField(None, description='Source')
 
     class Config:
         schema_extra: dict = {
-            'examples': [{'price': 4.2}]
+            'examples': [{'price': 4.2},
+                         {'price': 4.2, 'src': 'uniswap-v3'}]
         }
 
 
