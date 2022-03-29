@@ -46,14 +46,15 @@ def run_model_for_block_range(context: ModelContext,
     return block_series
 
 
-@credmark.model.describe(slug='series.time-start-end-interval',
-                         version='0.0',
-                         display_name='Series Time Interval',
-                         description='Run a model over a series of blocks specifying '
-                         'a time start, end, and interval',
-                         developer='Credmark',
-                         input=SeriesModelStartEndIntervalInput,
-                         output=BlockSeries[dict])
+@credmark.model.describe(
+    slug='series.time-start-end-interval',
+    version='0.0',
+    display_name='Series Time Interval',
+    description='Run a model over a series of blocks specifying '
+    'a time start, end, and interval',
+    developer='Credmark',
+    input=SeriesModelStartEndIntervalInput,
+    output=BlockSeries[dict])
 class SeriesTimeStartEndInterval(credmark.model.Model):
 
     def run(self, input: SeriesModelStartEndIntervalInput) -> BlockSeries[dict]:

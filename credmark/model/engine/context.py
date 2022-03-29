@@ -339,7 +339,7 @@ class EngineModelContext(ModelContext):
                             f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M%S}')
                     err = ModelRunError(
                         f'Exception running model {slug}: {err} on '
-                        f'{context.block_number}/'
+                        f'block {context.block_number}/'
                         f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M%S}')
                     trace = traceback.format_exc(limit=30)
                 # We add the model just run (or validated input for) to stack
