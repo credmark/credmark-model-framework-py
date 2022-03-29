@@ -1,7 +1,6 @@
 import unittest
 import logging
 
-import credmark.model
 from credmark.dto import DTO, DTOField
 from credmark.types import Address
 import functools
@@ -33,6 +32,10 @@ class TestStringMethods(unittest.TestCase):
         )
 
         addr1 = '0xd905e2eaebe188fc92179b6350807d8bd91db0d8'
+
+        self.assertEqual(Address(0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8),
+                         Address(0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8))
+
         self.assertEqual(Address(0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8),  # type: ignore
                          addr1.lower())
         self.assertEqual(Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'), addr1.lower())

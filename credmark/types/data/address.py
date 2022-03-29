@@ -2,6 +2,7 @@ import re
 from typing import (
     Dict,
     Any,
+    Union,
 )
 
 from web3 import Web3
@@ -67,7 +68,7 @@ class Address(str):
             raise TypeError('Address instance must be created with a string or int')
         return str.__new__(cls, addr.lower())
 
-    def __init__(self, _addr: str):
+    def __init__(self, _addr: Union[int, str]):
         super().__init__()
         self._checksum = validate_address(self)
 
