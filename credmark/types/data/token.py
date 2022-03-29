@@ -87,9 +87,12 @@ class Token(Contract):
     def _load(self):
         if self._loaded:
             return
+
         if self._meta.abi is None:
             self._meta.abi = ERC20_GENERIC_ABI
+
         super()._load()
+
         if self._meta.symbol is None:
             try:
                 self._meta.symbol = self.functions.symbol().call()

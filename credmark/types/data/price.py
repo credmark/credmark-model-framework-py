@@ -1,8 +1,15 @@
 from typing import (
-    Union
+    Union,
+    List,
 )
-from credmark.dto import DTO, DTOField
+from credmark.dto import (
+    DTO,
+    DTOField,
+    IterableListGenericDTO,
+    PrivateAttr,
+)
 from .token import Token
+from .address import Address
 
 
 class Price(DTO):
@@ -25,4 +32,17 @@ class TokenPairPrice(Price):
     class Config:
         schema_extra: dict = {
             'examples': [{'token': Token.Config.schema_extra['examples']}]
+        }
+
+
+class PriceList(IterableListGenericDTO[float]):
+    prices: List[float] = DTOField(default=[], description='List of prices')
+    tokenAddress: Address
+    src: Union[str, None] = DTOField(None, description='Source')
+    _iterator: str = PrivateAttr('prices')
+
+    class Config:
+        schema_extra: dict = {
+            'examples': [{'prices': [4.2, 2.3],
+                          'tokenAddress': '0x6B175474E89094C44Da98b954EedeAC495271d0F'}]
         }

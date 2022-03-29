@@ -17,7 +17,7 @@ from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
 from credmark.types.data.data_content.transparent_proxy_data import UPGRADEABLE_CONTRACT_ABI
 
 
-class Singleton(object):
+class Singleton:
     def __new__(cls, *args, **kw):
         if not hasattr(cls, '_instance'):
             orig = super(Singleton, cls)
