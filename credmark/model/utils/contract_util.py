@@ -21,6 +21,9 @@ class ContractUtil:
                          product: Union[str, None] = None,
                          abi: Union[dict, None] = None,
                          tags: Union[dict, None] = None) -> List[Contract]:
+        """
+        Load a list of contracts based on metadata.
+        """
         if contract_name is None and address is None and abi is None:
             raise Exception
 
@@ -57,6 +60,9 @@ class ContractUtil:
         return contracts
 
     def load_address(self, address: str) -> Contract:
+        """
+        Load a contract instance based on the address.
+        """
         contract_q_results = self.context.run_model(
             'contract.metadata', {'contractAddress': address})
         contract_obj = Contract(_instance=None,

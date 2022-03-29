@@ -48,8 +48,11 @@ class ModelContext:
 
     Instance attributes:
         chain_id (int): chain ID, ex 1
+
         block_number (int): default block number
+
         web3 (Web3): a configured web3 instance for RPC calls
+
         models: an object that has a virtual method for every model
 
     Methods:
@@ -61,13 +64,17 @@ class ModelContext:
     call, with any "-" in the model name replaced with "_".
 
     For example:
+
     - context.run_model('example.echo') becomes context.models.example.echo()
+
     - context.run_model('example.ledger-blocks') becomes context.models.example.ledger_blocks()
+
     - context.run_model('var-model') becomes context.models.var_model()
 
     The other args that you can pass to context.run_model() (besides slug) can
     passed to the method call, for example:
-      context.models.rpc.get_blocknumber(input=dict(timestamp=1438270017))
+
+      context.models.rpc.get_blocknumber(timestamp=1438270017)
 
     """
     _current_context: ClassVar = None
@@ -112,7 +119,7 @@ class ModelContext:
         # type hint
         ModelContext._current_context: Union[ModelContext, None]
 
-        self.chain_id = chain_id
+        self._chain_id = chain_id
         self._block_number = credmark.types.BlockNumber(block_number)
         self._web3 = None
         self._web3_registry = web3_registry
@@ -126,7 +133,17 @@ class ModelContext:
         self.models = ModelContext.Models(self)
 
     @property
+    def chain_id(self):
+        """
+        Context chain id as an integer
+        """
+        return self._chain_id
+
+    @property
     def block_number(self):
+        """
+        Context block number. A credmark.types.BlockNumber instance.
+        """
         return self._block_number
 
     @block_number.setter
@@ -135,6 +152,9 @@ class ModelContext:
 
     @property
     def web3(self):
+        """
+        A configured web3 instance
+        """
         if self._web3 is None:
             self._web3 = self._web3_registry.web3_for_chain_id(self.chain_id)
             self._web3.eth.default_block = self.block_number if \
