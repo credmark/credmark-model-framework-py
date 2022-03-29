@@ -127,16 +127,16 @@ def validate_model_slug(slug: str, prefix: Union[str, None] = None):
     if model_slug_re.match(slug) is None or len(slug) > MAX_SLUG_LENGTH:
         quoted_prefix = f'"{prefix}"' if prefix else ''
         raise InvalidModelSlug(
-            f'Invalid model slug "{slug}". ' +
-            (f'Following the prefix {quoted_prefix}' if prefix else 'Following a prefix and dot') +
-            ', slugs must start and end with a letter or number and may contain hyphens.')
+            f'Invalid model slug "{slug}". '
+            f'{"Following the prefix " + quoted_prefix if prefix else "Following a prefix and dot"}, '
+            'slugs must start and end with a letter or number and may contain hyphens.')
     if len(slug) > MAX_SLUG_LENGTH:
         raise InvalidModelSlug(
             f'Invalid model slug "{slug}". '
             'Slugs must be not more than {MAX_SLUG_LENGTH} characters.')
 
 
-def describe(slug: str,   # pylint: disable=too-many-arguments
+def describe(slug: str,   # pylint: disable=locally-disabled, invalid-name
              version: str,
              tags: Union[list[str], None] = None,
              display_name: Union[str, None] = None,
@@ -161,10 +161,6 @@ def describe(slug: str,   # pylint: disable=too-many-arguments
         else:
             validate_model_slug(slug)
 
-        model_desc = description
-        if model_desc is None:
-            model_desc = cls.__doc__.strip() if cls.__doc__ is not None else None
-
         attr_value = {
             'credmarkModelManifest': 'v1',
             'model': {
@@ -172,7 +168,7 @@ def describe(slug: str,   # pylint: disable=too-many-arguments
                 'version': version,
                 'tags': tags,
                 'display_name': display_name,
-                'description': model_desc,
+                'description': description,
                 'developer': developer if developer is not None else '',
                 'input': input.schema() if input is not None and issubclass(input, DTO)
                 else DICT_SCHEMA,

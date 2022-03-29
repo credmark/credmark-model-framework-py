@@ -335,10 +335,12 @@ class EngineModelContext(ModelContext):
                     if self.dev_mode:
                         self.logger.exception(
                             f'Exception running model {slug}: {err} on '
-                            f'block {context.block_number}/{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M%S}')
+                            f'block {context.block_number}/'
+                            f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M%S}')
                     err = ModelRunError(
                         f'Exception running model {slug}: {err} on '
-                        f'{context.block_number}/{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M%S}')
+                        f'{context.block_number}/'
+                        f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M%S}')
                     trace = traceback.format_exc(limit=30)
                 # We add the model just run (or validated input for) to stack
                 err.data.stack.insert(0,

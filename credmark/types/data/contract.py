@@ -138,7 +138,7 @@ class Contract(Account):
                         abi_codec=context.web3.codec,
                         event_abi=event_abi,
                         address=self.address.checksum,
-                        fromBlock=0,
+                        fromBlock=context.block_number - 10,
                         toBlock=context.block_number
                     )
                     events = context.web3.eth.get_logs(event_filter_params)
@@ -167,8 +167,10 @@ class Contract(Account):
             ).functions
         if self.instance is not None:
             return self.instance.functions
+        else:
+            raise ModelDataError('Unable to load the instance of the contract')
 
-    @property
+    @ property
     def events(self):
         if self.proxy_for is not None:
             context = credmark.model.ModelContext.current_context()
@@ -178,6 +180,8 @@ class Contract(Account):
             ).events
         if self.instance is not None:
             return self.instance.events
+        else:
+            raise ModelDataError('Unable to load the instance of the contract')
 
     @ property
     def info(self):
@@ -210,7 +214,7 @@ class Contract(Account):
             self._load()
         return self._meta.abi
 
-    @property
+    @ property
     def is_transparent_proxy(self):
         # TODO : Find a more definitive token proxy identification mechanism
         if self._meta.contract_name == "InitializableAdminUpgradeabilityProxy":
