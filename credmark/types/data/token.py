@@ -23,7 +23,7 @@ def get_token_from_configuration(
     token_datas = [
         t for t in FUNGIBLE_TOKEN_DATA.get(chain_id, [])
         if (t.get('is_native_token', False) == is_native_token and
-            (t.get('address', None) == address or
+            (('address' in t and Address(t['address']) == address) or
              t.get('symbol', None) == symbol) or
             (t.get('wraps', None) == wraps and wraps is not None))
     ]
@@ -65,7 +65,6 @@ class Token(Contract):
         }
 
     def __init__(self, **data):
-
         if 'address' in data or 'symbol' in data:
             context = credmark.model.ModelContext.current_context()
 
@@ -78,6 +77,8 @@ class Token(Contract):
                 data['address'] = token_data['address']
                 if 'meta' not in data:
                     data['meta'] = {}
+                elif isinstance(data['meta'], self.TokenMetadata):
+                    data['meta'] = data['meta'].dict()
                 data['meta']['symbol'] = token_data['symbol']
                 data['meta']['name'] = token_data['name']
                 data['meta']['decimals'] = token_data['decimals']
