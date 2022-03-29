@@ -66,11 +66,14 @@ class Token(Contract):
 
     def __init__(self, **data):
 
-        if 'address' not in data and 'symbol' in data:
+        if 'address' in data or 'symbol' in data:
             context = credmark.model.ModelContext.current_context()
 
             token_data = get_token_from_configuration(
-                chain_id=str(context.chain_id), symbol=data['symbol'])
+                chain_id=str(context.chain_id),
+                symbol=data.get('symbol', None),
+                address=data.get('address', None))
+
             if token_data is not None:
                 data['address'] = token_data['address']
                 if 'meta' not in data:

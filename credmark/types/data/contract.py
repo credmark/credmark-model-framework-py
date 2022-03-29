@@ -101,7 +101,7 @@ class Contract(Account):
     def instance(self):
         if self._instance is None:
             context = credmark.model.ModelContext.current_context()
-            if self.abi is not None:  # call .abi() to ._load()
+            if self.abi is not None:  # calling .abi() would call ._load()
                 self._instance = context.web3.eth.contract(
                     address=context.web3.toChecksumAddress(self.address),
                     abi=self.abi
