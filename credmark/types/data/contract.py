@@ -98,15 +98,19 @@ class Contract(Account):
         self._loaded = True
 
     @property
-    def instance(self):
+    def instance(self) -> Web3Contract:
         if self._instance is None:
-            context = credmark.model.ModelContext.current_context()
             if self.abi is not None:  # calling .abi() would call ._load()
+                context = credmark.model.ModelContext.current_context()
                 self._instance = context.web3.eth.contract(
                     address=context.web3.toChecksumAddress(self.address),
                     abi=self.abi
                 )
-        return self._instance
+                return self._instance
+            else:
+                raise ModelDataError('Unable to load the ABI of the contract')
+        else:
+            return self._instance
 
     @ property
     def proxy_for(self):
@@ -116,47 +120,47 @@ class Contract(Account):
         if self._proxy_for is None and self.is_transparent_proxy and self.instance is not None:
             context = credmark.model.ModelContext.current_context()
 
-            # TODO: Get this from the database, Not the RPC
-            try:
-                events = self.instance.events.Upgraded.createFilter(
-                    fromBlock=0, toBlock=context.block_number).get_all_entries()
-
-                if len(events) > 0:
-                    self._proxy_for = Contract(address=events[len(events) - 1].args.implementation)
-                elif self.constructor_args is not None and len(self.constructor_args) >= 40:
-                    self._proxy_for = Contract(address=Address('0x' + self.constructor_args[-40:]))
-
-            except ValueError:
-                # Some Eth node does not support the newer eth_newFilter method
-                # But event filter runs slow. Restricted below to look at last 100 number blocks.
-                # Alternatively, use the protected method.
-                # self.instance.events.Upgraded._get_event_abi()
+            if self.constructor_args is not None:
+                if len(self.constructor_args) <= 40:
+                    # if eip-1967 compliant
+                    proxy_address = context.web3.eth.getStorageAt(self.address,
+                                                                  '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc')
+                    self._proxy_for = Contract(address=Address(
+                        '0x' + proxy_address.hex()[-40:]))
+            else:
+                # TODO: Get this from the database, Not the RPC
                 try:
-                    event_abi = [x for x in self.instance.events.abi
-                                 if 'name' in x and x['name'] == 'Upgraded' and
-                                 'type' in x and x['type'] == 'event'][0]
-
-                    __data_filter_set, event_filter_params = construct_event_filter_params(
-                        abi_codec=context.web3.codec,
-                        event_abi=event_abi,
-                        address=self.address.checksum,
-                        fromBlock=context.block_number - 100,
-                        toBlock=context.block_number
-                    )
-                    events = context.web3.eth.get_logs(event_filter_params)
-                    events = [get_event_data(context.web3.codec, event_abi, s) for s in events]
+                    events = self.instance.events.Upgraded.createFilter(
+                        fromBlock=0, toBlock=context.block_number).get_all_entries()
 
                     if len(events) > 0:
                         self._proxy_for = Contract(
-                            address=events[-1]['args']['implementation'])
-                    elif self.constructor_args is not None and len(self.constructor_args) >= 40:
-                        self._proxy_for = Contract(address=Address(
-                            '0x' + self.constructor_args[-40:]))
-                except (ReadTimeoutError, ReadTimeout):
-                    if self.constructor_args is not None and len(self.constructor_args) >= 40:
-                        self._proxy_for = Contract(address=Address(
-                            '0x' + self.constructor_args[-40:]))
-                    else:
+                            address=events[len(events) - 1].args.implementation)
+                except ValueError:
+                    # Some Eth node does not support the newer eth_newFilter method
+                    # But event filter runs slow. Restricted below to look at last 100 number blocks.
+                    # Alternatively, use the protected method.
+                    # self.instance.events.Upgraded._get_event_abi()
+                    try:
+                        event_abi = [x for x in self.instance.events.abi
+                                     if 'name' in x and x['name'] == 'Upgraded' and
+                                     'type' in x and x['type'] == 'event'][0]
+
+                        __data_filter_set, event_filter_params = construct_event_filter_params(
+                            abi_codec=context.web3.codec,
+                            event_abi=event_abi,
+                            address=self.address.checksum,
+                            fromBlock=context.block_number - 100,
+                            toBlock=context.block_number
+                        )
+                        events = context.web3.eth.get_logs(event_filter_params)
+                        events = [get_event_data(context.web3.codec, event_abi, s)
+                                  for s in events]
+
+                        if len(events) > 0:
+                            self._proxy_for = Contract(
+                                address=events[-1]['args']['implementation'])
+                    except (ReadTimeoutError, ReadTimeout):
                         raise ModelDataError('Unable to retrieve abi for proxy')
         return self._proxy_for
 
@@ -168,10 +172,8 @@ class Contract(Account):
                 address=context.web3.toChecksumAddress(self.address),
                 abi=self.proxy_for.abi
             ).functions
-        if self.instance is not None:
-            return self.instance.functions
         else:
-            raise ModelDataError('Unable to load the instance of the contract')
+            return self.instance.functions
 
     @ property
     def events(self):
@@ -225,6 +227,8 @@ class Contract(Account):
         if self._meta.contract_name == "AdminUpgradeabilityProxy":
             return True
         if self._meta.contract_name == "FiatTokenProxy":
+            return True
+        if self._meta.contract_name == "RenERC20Proxy":  # eip-1967
             return True
         if self._meta.abi == UPGRADEABLE_CONTRACT_ABI:
             return True
