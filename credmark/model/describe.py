@@ -161,6 +161,10 @@ def describe(slug: str,   # pylint: disable=too-many-arguments
         else:
             validate_model_slug(slug)
 
+        model_desc = description
+        if model_desc is None:
+            model_desc = cls.__doc__.strip() if cls.__doc__ is not None else None
+
         attr_value = {
             'credmarkModelManifest': 'v1',
             'model': {
@@ -168,7 +172,7 @@ def describe(slug: str,   # pylint: disable=too-many-arguments
                 'version': version,
                 'tags': tags,
                 'display_name': display_name,
-                'description': description,
+                'description': model_desc,
                 'developer': developer if developer is not None else '',
                 'input': input.schema() if input is not None and issubclass(input, DTO)
                 else DICT_SCHEMA,
