@@ -433,7 +433,7 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
             else:
                 exit_code = 1
 
-        json_dump(result, sys.stdout)
+        json_dump(result, sys.stdout, indent=4)
 
     except Exception as e:
         # this exception would only happen have been raised

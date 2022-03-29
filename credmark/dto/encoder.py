@@ -17,9 +17,9 @@ class PydanticJSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
-def json_dump(obj, fp):  # pylint: disable=invalid-name
+def json_dump(obj, fp, post_proc=lambda x:x, *a, **b):  # pylint: disable=invalid-name
     """Dump an obj that may contain embedded DTOs to json"""
-    return json.dump(obj, fp, cls=PydanticJSONEncoder)
+    return post_proc(json.dump(obj, fp, cls=PydanticJSONEncoder, *a, **b))
 
 
 def json_dumps(obj):
