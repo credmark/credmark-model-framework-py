@@ -58,6 +58,8 @@ def main():
         'list', help='List models in this repo', aliases=['list-models'])
     parser_list.add_argument('--manifests', action='store_true', default=False,
                              help="Show full manifests")
+    parser_list.add_argument('--include_dev_models', action='store_true',
+                             default=False, help=argparse.SUPPRESS)
     parser_list.add_argument('--json', action='store_true',
                              default=False, help="Output as json")
     parser_list.add_argument('model-slug', nargs='?', default=None, type=str,
@@ -75,13 +77,13 @@ def main():
     add_api_url_arg(parser_models)
     parser_models.set_defaults(func=list_deployed_models)
 
-    parser_list = subparsers.add_parser(
+    parser_desc = subparsers.add_parser(
         'describe', help='Show documentation for local and deployed models',
         aliases=['describe-models', 'man'])
-    parser_list.add_argument('model-slug', nargs='?', default=None, type=str,
+    parser_desc.add_argument('model-slug', nargs='?', default=None, type=str,
                              help='Slug or partial slug to describe.')
-    add_api_url_arg(parser_list)
-    parser_list.set_defaults(func=describe_models)
+    add_api_url_arg(parser_desc)
+    parser_desc.set_defaults(func=describe_models)
 
     parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
     parser_run.add_argument('-b', '--block_number', type=int, required=False, default=None,
@@ -178,7 +180,7 @@ def print_no_models_found(model_slug):
 def list_models(args):  # pylint: disable=too-many-branches
     config_logging(args)
 
-    model_loader = load_models(args, True)
+    model_loader = load_models(args, args.get('include_dev_models', False))
     json_output = args.get('json')
     model_slug = args.get('model-slug')
 
