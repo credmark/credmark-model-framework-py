@@ -110,7 +110,6 @@ class Token(Contract):
             except (BadFunctionCallOutput, ABIFunctionNotFound):
                 raise ModelDataError(
                     f'No symbol function on token {self.address}, non ERC20 Compliant')
-
         return self._meta.symbol
 
     @property

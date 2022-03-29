@@ -100,7 +100,7 @@ class Contract(Account):
     def instance(self):
         if self._instance is None:
             context = credmark.model.ModelContext.current_context()
-            if self.abi is not None:
+            if self.abi is not None:  # call .abi() to ._load()
                 self._instance = context.web3.eth.contract(
                     address=context.web3.toChecksumAddress(self.address),
                     abi=self.abi
@@ -126,7 +126,8 @@ class Contract(Account):
                     self._proxy_for = Contract(address=Address('0x' + self.constructor_args[-40:]))
 
             except ValueError:
-                # Some node server does not support the newer eth_newFilter method
+                # Some Eth node does not support the newer eth_newFilter method
+                # But event filter runs slow. Restricted below to look at last 100 number blocks.
                 # Alternatively, use the protected method.
                 # self.instance.events.Upgraded._get_event_abi()
                 try:
@@ -138,7 +139,7 @@ class Contract(Account):
                         abi_codec=context.web3.codec,
                         event_abi=event_abi,
                         address=self.address.checksum,
-                        fromBlock=context.block_number - 10,
+                        fromBlock=context.block_number - 100,
                         toBlock=context.block_number
                     )
                     events = context.web3.eth.get_logs(event_filter_params)
@@ -154,6 +155,8 @@ class Contract(Account):
                     if self.constructor_args is not None and len(self.constructor_args) >= 40:
                         self._proxy_for = Contract(address=Address(
                             '0x' + self.constructor_args[-40:]))
+                    else:
+                        raise ModelDataError('Unable to retrieve abi for proxy')
 
         return self._proxy_for
 
