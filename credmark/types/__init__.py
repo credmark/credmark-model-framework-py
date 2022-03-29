@@ -20,6 +20,6 @@ from .models.rpc import (
     RpcBlockRangeOutput
 )
 
-from .data.portfolio import Portfolio
+from .data.portfolio import (Portfolio, PriceList)
 from .data.position import Position, NativePosition, TokenPosition
 from .data.price import Price, TokenPairPrice

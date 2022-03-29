@@ -4,11 +4,9 @@ from credmark.dto import (
     DTOField,
     PrivateAttr,
     IterableListGenericDTO,
-    cross_examples
 )
-from .account import Account
+
 from .address import Address
-from .price import Price
 
 from .position import Position
 
@@ -24,11 +22,11 @@ class Portfolio(IterableListGenericDTO[Position]):
 
 
 class PriceList(DTO):
-    price: Price
-    token: Address
+    prices: List[float]
+    tokenAddress: Address
 
     class Config:
         schema_extra: dict = {
-            'examples': cross_examples(Price.Config.schema_extra['examples'],
-                                       Account.Config.schema_extra['examples'])
+            'examples': [{'prices': [4.2, 2.3],
+                          'tokenAddress': '0x6B175474E89094C44Da98b954EedeAC495271d0F'}]
         }
