@@ -1,16 +1,32 @@
-
 from typing import (
     Union,
     List,
 )
 
 from web3.contract import Contract as Web3Contract
+from web3._utils.filters import construct_event_filter_params
+from web3._utils.events import get_event_data
+from urllib3.exceptions import ReadTimeoutError
+from requests.exceptions import ReadTimeout
+
 import json
 import credmark.model
 from credmark.model.errors import ModelDataError
 from credmark.types.data.account import Account, Address
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
 from credmark.types.data.data_content.transparent_proxy_data import UPGRADEABLE_CONTRACT_ABI
+
+
+class Singleton(object):
+    def __new__(cls, *args, **kw):
+        if not hasattr(cls, '_instance'):
+            orig = super(Singleton, cls)
+            cls._instance = orig.__new__(cls, *args, **kw)
+        return cls._instance
+
+
+class ContractMetaCache(Singleton):
+    cache = {}
 
 
 class Contract(Account):
@@ -59,8 +75,12 @@ class Contract(Account):
             return
         context = credmark.model.ModelContext.current_context()
 
-        contract_q_results = context.run_model(
-            'contract.metadata', {'contractAddress': self.address})
+        if self.address not in ContractMetaCache().cache:
+            contract_q_results = context.run_model('contract.metadata',
+                                                   {'contractAddress': self.address})
+            ContractMetaCache().cache[self.address] = contract_q_results
+        else:
+            contract_q_results = ContractMetaCache().cache[self.address]
 
         if len(contract_q_results['contracts']) > 0:
             res = contract_q_results['contracts'][0]
@@ -76,7 +96,7 @@ class Contract(Account):
                 raise ModelDataError(f'abi not available for address {self.address}')
         self._loaded = True
 
-    @property
+    @ property
     def instance(self):
         if self._instance is None:
             context = credmark.model.ModelContext.current_context()
@@ -88,7 +108,7 @@ class Contract(Account):
             )
         return self._instance
 
-    @property
+    @ property
     def proxy_for(self):
         if not self._loaded:
             self._load()
@@ -96,13 +116,44 @@ class Contract(Account):
             context = credmark.model.ModelContext.current_context()
 
             # TODO: Get this from the database, Not the RPC
-            events = self.instance.events.Upgraded.createFilter(
-                fromBlock=0, toBlock=context.block_number).get_all_entries()
+            try:
+                events = self.instance.events.Upgraded.createFilter(
+                    fromBlock=0, toBlock=context.block_number).get_all_entries()
 
-            if len(events) > 0:
-                self._proxy_for = Contract(address=events[len(events) - 1].args.implementation)
-            elif self.constructor_args is not None and len(self.constructor_args) >= 40:
-                self._proxy_for = Contract(address=Address('0x' + self.constructor_args[-40:]))
+                if len(events) > 0:
+                    self._proxy_for = Contract(address=events[len(events) - 1].args.implementation)
+                elif self.constructor_args is not None and len(self.constructor_args) >= 40:
+                    self._proxy_for = Contract(address=Address('0x' + self.constructor_args[-40:]))
+
+            except ValueError:
+                # Some node server does not support the newer eth_newFilter method
+                # Alternatively, use the protected method.
+                # self.instance.events.Upgraded._get_event_abi()
+                try:
+                    event_abi = [x for x in self.instance.events.abi
+                                 if 'name' in x and x['name'] == 'Upgraded' and
+                                 'type' in x and x['type'] == 'event'][0]
+
+                    __data_filter_set, event_filter_params = construct_event_filter_params(
+                        abi_codec=context.web3.codec,
+                        event_abi=event_abi,
+                        address=self.address.checksum,
+                        fromBlock=0,
+                        toBlock=context.block_number
+                    )
+                    events = context.web3.eth.get_logs(event_filter_params)
+                    events = [get_event_data(context.web3.codec, event_abi, s) for s in events]
+
+                    if len(events) > 0:
+                        self._proxy_for = Contract(
+                            address=events[-1]['args']['implementation'])
+                    elif self.constructor_args is not None and len(self.constructor_args) >= 40:
+                        self._proxy_for = Contract(address=Address(
+                            '0x' + self.constructor_args[-40:]))
+                except (ReadTimeoutError, ReadTimeout):
+                    if self.constructor_args is not None and len(self.constructor_args) >= 40:
+                        self._proxy_for = Contract(address=Address(
+                            '0x' + self.constructor_args[-40:]))
 
         return self._proxy_for
 
