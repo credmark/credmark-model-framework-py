@@ -110,6 +110,8 @@ class Token(Contract):
             except (BadFunctionCallOutput, ABIFunctionNotFound):
                 raise ModelDataError(
                     f'No symbol function on token {self.address}, non ERC20 Compliant')
+            if self._meta.symbol is None:
+                raise ModelDataError("Token.symbol is None")
         return self._meta.symbol
 
     @property
@@ -134,6 +136,8 @@ class Token(Contract):
             except (BadFunctionCallOutput, ABIFunctionNotFound):
                 raise ModelDataError(
                     f'No name function on token {self.address}, non ERC20 Compliant')
+            if self._meta.name is None:
+                raise ModelDataError("Token.name is None")
         return self._meta.name
 
     @property
@@ -145,6 +149,8 @@ class Token(Contract):
             except (BadFunctionCallOutput, ABIFunctionNotFound):
                 raise ModelDataError(
                     f'No totalSupply function on token {self.address}, non ERC20 Compliant')
+            if self._meta.total_supply is None:
+                raise ModelDataError("Token.total_supply is None")
         return self._meta.total_supply
 
     def scaled(self, value):

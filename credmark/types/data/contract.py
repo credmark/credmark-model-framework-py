@@ -94,6 +94,7 @@ class Contract(Account):
         else:
             if self._meta.abi is None:
                 raise ModelDataError(f'abi not available for address {self.address}')
+
         self._loaded = True
 
     @property
@@ -157,7 +158,6 @@ class Contract(Account):
                             '0x' + self.constructor_args[-40:]))
                     else:
                         raise ModelDataError('Unable to retrieve abi for proxy')
-
         return self._proxy_for
 
     @ property
