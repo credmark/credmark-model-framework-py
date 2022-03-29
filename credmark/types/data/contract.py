@@ -100,19 +100,18 @@ class Contract(Account):
     def instance(self):
         if self._instance is None:
             context = credmark.model.ModelContext.current_context()
-            if self.abi is None:
-                self._load()
-            self._instance = context.web3.eth.contract(
-                address=context.web3.toChecksumAddress(self.address),
-                abi=self.abi
-            )
+            if self.abi is not None:
+                self._instance = context.web3.eth.contract(
+                    address=context.web3.toChecksumAddress(self.address),
+                    abi=self.abi
+                )
         return self._instance
 
     @ property
     def proxy_for(self):
         if not self._loaded:
             self._load()
-        if self._proxy_for is None and self.is_transparent_proxy:
+        if self._proxy_for is None and self.is_transparent_proxy and self.instance is not None:
             context = credmark.model.ModelContext.current_context()
 
             # TODO: Get this from the database, Not the RPC
