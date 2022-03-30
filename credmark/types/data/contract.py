@@ -112,7 +112,7 @@ class Contract(Account):
         else:
             return self._instance
 
-    @ property
+    @property
     def proxy_for(self):
         if not self._loaded:
             self._load()
@@ -120,51 +120,78 @@ class Contract(Account):
         if self._proxy_for is None and self.is_transparent_proxy and self.instance is not None:
             context = credmark.model.ModelContext.current_context()
 
+            default_proxy_address = ''.join(['0'] * 40)
+            proxy_address = default_proxy_address
+
+            # get it from implementation storage lot
             if self.constructor_args is not None:
-                if len(self.constructor_args) <= 40:
-                    # if eip-1967 compliant
-                    proxy_address = context.web3.eth.getStorageAt(self.address,
-                                                                  '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc')
+                if self._meta.contract_name in ["RenERC20Proxy",
+                                                "InitializableAdminUpgradeabilityProxy",
+                                                "InitializableImmutableAdminUpgradeabilityProxy"]:
+                    # if eip-1967 compliant, https://eips.ethereum.org/EIPS/eip-1967
+                    proxy_address = context.web3.eth.get_storage_at(
+                        self.address,
+                        '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc').hex()
+                elif self._meta.contract_name in ["AdminUpgradeabilityProxy", 'FiatTokenProxy']:
+                    proxy_address = context.web3.eth.get_storage_at(
+                        self.address,
+                        '0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3').hex()
+                elif self._meta.contract_name in ['OwnedUpgradeabilityProxy']:
+                    if self.address == '0x0000000000085d4780B73119b644AE5ecd22b376':
+                        proxy_address = context.web3.eth.get_storage_at(
+                            self.address,
+                            context.web3.keccak(text="trueUSD.proxy.implementation").hex()).hex()
+                elif len(self.constructor_args) >= 40:
+                    proxy_address = self.constructor_args[-40:]
+
+                if proxy_address[-40:] != default_proxy_address:
                     self._proxy_for = Contract(address=Address(
-                        '0x' + proxy_address.hex()[-40:]))
-            else:
-                # TODO: Get this from the database, Not the RPC
+                        '0x' + proxy_address[-40:]))
+                    return self._proxy_for
+
+            # TODO: Get this from the database, Not the RPC
+            try:
+                events = self.instance.events.Upgraded.createFilter(
+                    fromBlock=0, toBlock=context.block_number).get_all_entries()
+
+                if len(events) > 0:
+                    self._proxy_for = Contract(
+                        address=events[len(events) - 1].args.implementation)
+                    return self._proxy_for
+            except ValueError:
+                # Some Eth node does not support the newer eth_newFilter method
+                # But event filter runs slow.
+                # Restricted below to look at last 100 number blocks.
+                # Alternatively, use the protected method.
+                # self.instance.events.Upgraded._get_event_abi()
                 try:
-                    events = self.instance.events.Upgraded.createFilter(
-                        fromBlock=0, toBlock=context.block_number).get_all_entries()
+                    event_abi = [x for x in self.instance.events.abi
+                                 if 'name' in x and x['name'] == 'Upgraded' and
+                                 'type' in x and x['type'] == 'event'][0]
+
+                    __data_filter_set, event_filter_params = construct_event_filter_params(
+                        abi_codec=context.web3.codec,
+                        event_abi=event_abi,
+                        address=self.address.checksum,
+                        fromBlock=context.block_number - 100,
+                        toBlock=context.block_number
+                    )
+                    events = context.web3.eth.get_logs(event_filter_params)
+                    events = [get_event_data(context.web3.codec, event_abi, s)
+                              for s in events]
 
                     if len(events) > 0:
                         self._proxy_for = Contract(
-                            address=events[len(events) - 1].args.implementation)
-                except ValueError:
-                    # Some Eth node does not support the newer eth_newFilter method
-                    # But event filter runs slow. Restricted below to look at last 100 number blocks.
-                    # Alternatively, use the protected method.
-                    # self.instance.events.Upgraded._get_event_abi()
-                    try:
-                        event_abi = [x for x in self.instance.events.abi
-                                     if 'name' in x and x['name'] == 'Upgraded' and
-                                     'type' in x and x['type'] == 'event'][0]
+                            address=events[-1]['args']['implementation'])
+                        return self._proxy_for
+                except (ReadTimeoutError, ReadTimeout):
+                    pass
 
-                        __data_filter_set, event_filter_params = construct_event_filter_params(
-                            abi_codec=context.web3.codec,
-                            event_abi=event_abi,
-                            address=self.address.checksum,
-                            fromBlock=context.block_number - 100,
-                            toBlock=context.block_number
-                        )
-                        events = context.web3.eth.get_logs(event_filter_params)
-                        events = [get_event_data(context.web3.codec, event_abi, s)
-                                  for s in events]
+            raise ModelDataError(f'Unable to retrieve abi for proxy for {self.address}')
 
-                        if len(events) > 0:
-                            self._proxy_for = Contract(
-                                address=events[-1]['args']['implementation'])
-                    except (ReadTimeoutError, ReadTimeout):
-                        raise ModelDataError('Unable to retrieve abi for proxy')
         return self._proxy_for
 
-    @ property
+    @property
     def functions(self):
         if self.proxy_for is not None:
             context = credmark.model.ModelContext.current_context()
@@ -221,14 +248,28 @@ class Contract(Account):
 
     @ property
     def is_transparent_proxy(self):
+        """
+        Determines proxy type by contract_name / abi
+        """
+
         # TODO : Find a more definitive token proxy identification mechanism
         if self._meta.contract_name == "InitializableAdminUpgradeabilityProxy":
+            # Example: 0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9 Aave Token (AAVE)
+            return True
+        if self._meta.contract_name == "InitializableImmutableAdminUpgradeabilityProxy":
+            # Example: 0x6C5024Cd4F8A59110119C56f8933403A539555EB, Aave interest bearing SUSD (aSUSD)
             return True
         if self._meta.contract_name == "AdminUpgradeabilityProxy":
+            # Example: 0xD46bA6D942050d489DBd938a2C909A5d5039A161, Ampleforth (AMPL)
             return True
         if self._meta.contract_name == "FiatTokenProxy":
+            # Example: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 USDC
             return True
         if self._meta.contract_name == "RenERC20Proxy":  # eip-1967
+            # Example: 0xD5147bc8e386d91Cc5DBE72099DAC6C9b99276F5 renFIL
+            return True
+        if self._meta.contract_name == 'OwnedUpgradeabilityProxy':
+            # Example: 0x0000000000085d4780B73119b644AE5ecd22b376 TrueUSD
             return True
         if self._meta.abi == UPGRADEABLE_CONTRACT_ABI:
             return True
