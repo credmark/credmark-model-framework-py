@@ -70,6 +70,8 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+# The autosummary generated doc files:
+docs/source/reference
 
 # PyBuilder
 target/
@@ -132,3 +134,4 @@ dmypy.json
 
 # model manifest
 models.json
+

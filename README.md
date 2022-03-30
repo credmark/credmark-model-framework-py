@@ -23,3 +23,40 @@ Run tests with:
 ```
 python -m unittest discover tests
 ```
+
+## Docs
+
+You can run docs locally.
+
+- Create a virtual env
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+- Install packages:
+
+```bash
+pip install -r requirements.txt
+pip install -r docs/requirements.txt
+pip install sphinx-rtd-theme
+```
+
+- Build docs
+
+```bash
+cd docs
+make html
+```
+
+- View docs
+
+Open `docs/build/html/index.html` in a browser
+
+### Details
+
+The docs are using sphinx with the `autosummary` extension.
+This automatically generates docs for the files in the package and puts the generated files in `docs/source/reference`. This folder is not stored in git.
+
+Note that it currently doesn't seem to crawl folders that are namespace modules (ie folders without a `__init__.py` file.)

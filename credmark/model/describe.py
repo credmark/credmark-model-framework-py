@@ -29,6 +29,9 @@ model_slug_re = re.compile(r'^(([A-Za-z0-9]+\-)*[A-Za-z0-9]+\.)?([A-Za-z0-9]+\-)
 
 
 class ModelErrorDesc:
+    """
+    Model error description base class.
+    """
     @abstractmethod
     def schema(self, slug: str, include_definitions=True) -> dict:
         pass
@@ -145,6 +148,12 @@ def describe(slug: str,   # pylint: disable=too-many-arguments
              input: Union[Type[DTO], Type[dict]] = EmptyInput,
              output: Union[Type[DTO], Type[dict], None] = None,
              errors: Union[List[ModelErrorDesc], ModelErrorDesc, None] = None):
+    """
+    Decorator for base credmark.model.base.Model subclasses to describe the model.
+
+    If description is not set, the doc string (__doc__) of the model class
+    is used instead.
+    """
     def wrapper(cls_in):
         def is_parent(child, parent):
             found = parent in child.__bases__
