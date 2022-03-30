@@ -334,11 +334,11 @@ class EngineModelContext(ModelContext):
                 else:
                     if self.dev_mode:
                         self.logger.exception(
-                            f'Exception running model {slug}: {err} on '
+                            f'Exception running model {slug}({input}) with {err} on '
                             f'block {context.block_number}/'
                             f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M%S}')
                     err = ModelRunError(
-                        f'Exception running model {slug}: {err} on '
+                        f'Exception running model {slug}({input}) with {err} on '
                         f'block {context.block_number}/'
                         f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M%S}')
                     trace = traceback.format_exc(limit=30)
