@@ -15,7 +15,9 @@ from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.dto.transform import DataTransformError, transform_data_for_dto
 from credmark.cmf.engine.web3 import Web3Registry
 from credmark.dto import DTO, EmptyInput, DTOValidationError
-from credmark.cmf.model.slugs import CoreModels
+
+
+RPC_GET_LATEST_BLOCK_NUMBER_SLUG = 'rpc.get-latest-blocknumber'
 
 
 def extract_most_recent_run_model_traceback(exc_traceback, skip=1):
@@ -128,7 +130,7 @@ class EngineModelContext(ModelContext):
 
     @classmethod
     def get_latest_block_number(cls, api: ModelApi, chain_id: int):
-        _s, _v, output, _d = api.run_model(CoreModels.latest_block_number,
+        _s, _v, output, _d = api.run_model(RPC_GET_LATEST_BLOCK_NUMBER_SLUG,
                                            None, chain_id, 0, {})
         block_number: int = output['blockNumber']
         return block_number

@@ -5,10 +5,29 @@ from credmark.cmf.model.errors import ModelDataError
 from credmark.cmf.types.series import BlockSeries, BlockSeriesRow, \
     SeriesModelStartEndIntervalInput, SeriesModelWindowIntervalInput, \
     BlockSeriesErrorRow
-from credmark.cmf.model.slugs import CoreModels
 from credmark.cmf.types.rpc import RpcBlockRangeOutput, \
     RpcBlockStartEndIntervalInput, RpcBlockWindowIntervalInput
 from credmark.dto import DTO
+
+
+class RpcModelSlugs:
+
+    rpc_block_range_time_start_end_interval = 'rpc.get-block-range-time-start-end-interval'
+    """
+    Get a range of blocks by start and end time and interval
+    """
+    rpc_block_range_time_window_interval = 'rpc.get-block-range-time-window-interval'
+    """
+    Get a range of blocks by time window and interval
+    """
+    rpc_block_range_block_start_end_interval = 'rpc.get-block-range-block-start-end-interval'
+    """
+    Get a range of blocks by start and end block number and interval
+    """
+    rpc_block_range_block_window_interval = 'rpc.get-block-range-block-window-interval'
+    """
+    Get a range of blocks by block number window and interval
+    """
 
 # These models are local versions of models that are
 # used during development with credmark-dev.
@@ -63,7 +82,7 @@ class SeriesTimeStartEndInterval(Model):
             interval=input.interval
         )
 
-        block_range = self.context.run_model(CoreModels.rpc_block_range_time_start_end_interval,
+        block_range = self.context.run_model(RpcModelSlugs.rpc_block_range_time_start_end_interval,
                                              rpc_input,
                                              return_type=RpcBlockRangeOutput)
 
@@ -90,7 +109,7 @@ class SeriesTimeWindowInterval(Model):
             interval=input.interval
         )
 
-        block_range = self.context.run_model(CoreModels.rpc_block_range_time_window_interval,
+        block_range = self.context.run_model(RpcModelSlugs.rpc_block_range_time_window_interval,
                                              rpc_input,
                                              return_type=RpcBlockRangeOutput)
 
@@ -118,7 +137,7 @@ class SeriesBlockStartEndInterval(Model):
             interval=input.interval
         )
 
-        block_range = self.context.run_model(CoreModels.rpc_block_range_block_start_end_interval,
+        block_range = self.context.run_model(RpcModelSlugs.rpc_block_range_block_start_end_interval,
                                              rpc_input,
                                              return_type=RpcBlockRangeOutput)
 
@@ -145,7 +164,7 @@ class SeriesBlockWindowInterval(Model):
             interval=input.interval
         )
 
-        block_range = self.context.run_model(CoreModels.rpc_block_range_block_window_interval,
+        block_range = self.context.run_model(RpcModelSlugs.rpc_block_range_block_window_interval,
                                              rpc_input,
                                              return_type=RpcBlockRangeOutput)
 

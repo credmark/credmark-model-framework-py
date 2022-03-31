@@ -10,6 +10,8 @@ from credmark.cmf.model import Model
 from credmark.cmf.engine.errors import ModelNotFoundError, ModelManifestWriteError
 from credmark.cmf.model import validate_model_slug
 
+DEV_MODELS_PATH = 'credmark/cmf/engine/dev_models/series_models'
+
 
 class ModelLoader:
     logger = logging.getLogger(__name__)
@@ -48,8 +50,7 @@ class ModelLoader:
 
         if load_dev_models:
             self.logger.debug('Loading dev models')
-            self._try_model_module('credmark.cmf.model.dev_models.series_models',
-                                   'credmark/cmf/model/dev_models/series_models')
+            self._try_model_module(DEV_MODELS_PATH.replace('/', '.'), DEV_MODELS_PATH)
 
         self.__model_manifest_list.sort(key=lambda m: m['slug'])
 
