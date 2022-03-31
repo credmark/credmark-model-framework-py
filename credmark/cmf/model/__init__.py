@@ -247,7 +247,7 @@ class Model:
     Available instance variables:
 
     - ``logger`` - a logger for messages related to the model
-    - ``context`` - a model context instance
+    - ``context`` - a ``ModelContext`` instance
     """
 
     @classmethod

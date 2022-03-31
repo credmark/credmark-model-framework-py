@@ -14,6 +14,8 @@ DTOT = TypeVar('DTOT')
 
 class RunModelMethod:
     """
+    This class is used interally by the context.
+
     A run model method is callable (where the prefix is the actual
     model name) or called with a method name (where prefix is the
     dot prefix of the model name.)
@@ -61,20 +63,24 @@ class ModelContext:
     Running a model:
 
     The context.models instance can be used to run models with a method
-    call, with any "-" in the model name replaced with "_".
+    call, with any ``-`` in the model slug replaced with ``_``.
 
     For example:
 
-    - context.run_model('example.echo') becomes context.models.example.echo()
+    - ``context.run_model('example.echo')`` becomes ``context.models.example.echo()``
 
-    - context.run_model('example.ledger-blocks') becomes context.models.example.ledger_blocks()
+    - ``context.run_model('example.ledger-blocks')`` becomes ``context.models.example.ledger_blocks()``
 
-    - context.run_model('var-model') becomes context.models.var_model()
+    - ``context.run_model('var-model')`` becomes ``context.models.var_model()``
 
-    The other args that you can pass to context.run_model() (besides slug) can
-    passed to the method call, for example:
+    The input that you pass to ``context.run_model()`` can be
+    passed to the method call as keyword (named) args, for example::
 
-      context.models.rpc.get_blocknumber(timestamp=1438270017)
+        context.models.rpc.get_blocknumber(timestamp=1438270017)
+
+    Or as an input ``DTO`` or dict::
+
+        context.models.example.echo(input_dto)
 
     """
     _current_context: ClassVar = None
@@ -100,8 +106,14 @@ class ModelContext:
 
     class Models:
         """
-        An instance that can run any model by accessing it as a
-        method with any "-" in the model name replaced with "_".
+        The ``context.models`` property is an instance of this class.
+
+        An instance can run any model by accessing it as a
+        method with any ``-`` in the model slug replaced with ``_``.
+
+        For example::
+
+            context.models.example.echo(message="Hello world")
         """
 
         def __init__(self, context, block_number: Union[int, None] = None):
