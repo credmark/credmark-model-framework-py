@@ -69,7 +69,8 @@ class ModelContext:
 
     - ``context.run_model('example.echo')`` becomes ``context.models.example.echo()``
 
-    - ``context.run_model('example.ledger-blocks')`` becomes ``context.models.example.ledger_blocks()``
+    - ``context.run_model('example.ledger-blocks')`` becomes
+      ``context.models.example.ledger_blocks()``
 
     - ``context.run_model('var-model')`` becomes ``context.models.var_model()``
 

@@ -1,6 +1,4 @@
-from typing import Union
 from credmark.cmf.model.errors import ModelErrorDTO, ModelEngineError
-from credmark.dto import DTO
 
 
 class ModelRunRequestErrorDTO(ModelErrorDTO):
