@@ -12,11 +12,11 @@ from dotenv import load_dotenv, find_dotenv
 
 from credmark.dto.dto_error_schema import extract_error_codes_and_descriptions
 sys.path.append('.')
-from .model.engine.context import EngineModelContext
-from .model.engine.model_loader import ModelLoader
-from .model.web3 import Web3Registry
-from .model.engine.model_api import ModelApi
-from .dto import (
+from .engine.context import EngineModelContext
+from .engine.model_loader import ModelLoader
+from .engine.web3 import Web3Registry
+from .engine.model_api import ModelApi
+from credmark.dto import (
     json_dump,
     print_example,
     print_tree,

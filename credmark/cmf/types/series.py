@@ -1,6 +1,6 @@
 from typing import List, Optional, TypeVar, Union, Generic
 from credmark.dto import DTO, GenericDTO, DTOField, PrivateAttr, IterableListGenericDTO
-from credmark.model.errors import ModelErrorDTO
+from credmark.cmf.model.errors import ModelErrorDTO
 
 DTOCLS = TypeVar('DTOCLS')
 
@@ -10,8 +10,8 @@ class BlockSeriesRow(GenericDTO, Generic[DTOCLS]):
     A data row in a block series.
     The generic type specifies the class to use as the output.
 
-    For example: row = BlockSeriesRow[MyOutputClass](**data)
-    where row.output will be an instance of MyOutputClass
+    For example ``row = BlockSeriesRow[MyOutputClass](**data)``
+    where ``row.output`` will be an instance of ``MyOutputClass``
     """
     blockNumber: int = DTOField(..., description='Block number in the series')
     blockTimestamp: int = DTOField(..., description='The Timestamp of the Block')
@@ -35,10 +35,10 @@ class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS
     model over a series of blocks.
 
     The generic type specifies the class to use as the output
-    in the BlockSeriesRow.
+    in the ``BlockSeriesRow``.
 
-    For example: blockSeries = BlockSeries[MyOutputClass](**data)
-    where blockSeries.series[0].output will be an instance of MyOutputClass
+    For example ``blockSeries = BlockSeries[MyOutputClass](**data)``
+    where ``blockSeries.series[0].output`` will be an instance of ``MyOutputClass``
 
     If a permanent error occurs during a model run, the block and error
     will be added to the errors array.

@@ -1,14 +1,14 @@
 from typing import Union
-import credmark.model
-from credmark.model.context import ModelContext
-from credmark.model.errors import ModelDataError
-from credmark.types import BlockSeries, BlockSeriesRow, \
-    SeriesModelStartEndIntervalInput, SeriesModelWindowIntervalInput
-from credmark.types.models.core import CoreModels
-from credmark.types.models.rpc import RpcBlockRangeOutput, \
+from credmark.cmf.model import Model
+from credmark.cmf.model.context import ModelContext
+from credmark.cmf.model.errors import ModelDataError
+from credmark.cmf.types.series import BlockSeries, BlockSeriesRow, \
+    SeriesModelStartEndIntervalInput, SeriesModelWindowIntervalInput, \
+    BlockSeriesErrorRow
+from credmark.cmf.model.slugs import CoreModels
+from credmark.cmf.types.rpc import RpcBlockRangeOutput, \
     RpcBlockStartEndIntervalInput, RpcBlockWindowIntervalInput
 from credmark.dto import DTO
-from credmark.types.models.series import BlockSeriesErrorRow
 
 # These models are local versions of models that are
 # used during development with credmark-dev.
@@ -46,15 +46,15 @@ def run_model_for_block_range(context: ModelContext,
     return block_series
 
 
-@credmark.model.describe(slug='series.time-start-end-interval',
-                         version='0.0',
-                         display_name='Series Time Interval',
-                         description='Run a model over a series of blocks specifying '
-                         'a time start, end, and interval',
-                         developer='Credmark',
-                         input=SeriesModelStartEndIntervalInput,
-                         output=BlockSeries[dict])
-class SeriesTimeStartEndInterval(credmark.model.Model):
+@Model.describe(slug='series.time-start-end-interval',
+                version='0.0',
+                display_name='Series Time Interval',
+                description='Run a model over a series of blocks specifying '
+                'a time start, end, and interval',
+                             developer='Credmark',
+                             input=SeriesModelStartEndIntervalInput,
+                             output=BlockSeries[dict])
+class SeriesTimeStartEndInterval(Model):
 
     def run(self, input: SeriesModelStartEndIntervalInput) -> BlockSeries[dict]:
         rpc_input = RpcBlockStartEndIntervalInput(
@@ -74,15 +74,15 @@ class SeriesTimeStartEndInterval(credmark.model.Model):
                                          input.modelVersion)
 
 
-@credmark.model.describe(slug='series.time-window-interval',
-                         version='0.0',
-                         display_name='Series Time Window Interval',
-                         description='Run a model over a series of blocks specifying '
-                         'a time window and interval',
-                         developer='Credmark',
-                         input=SeriesModelWindowIntervalInput,
-                         output=BlockSeries[dict])
-class SeriesTimeWindowInterval(credmark.model.Model):
+@Model.describe(slug='series.time-window-interval',
+                version='0.0',
+                display_name='Series Time Window Interval',
+                description='Run a model over a series of blocks specifying '
+                'a time window and interval',
+                developer='Credmark',
+                input=SeriesModelWindowIntervalInput,
+                output=BlockSeries[dict])
+class SeriesTimeWindowInterval(Model):
 
     def run(self, input: SeriesModelWindowIntervalInput) -> BlockSeries[dict]:
         rpc_input = RpcBlockWindowIntervalInput(
@@ -101,15 +101,15 @@ class SeriesTimeWindowInterval(credmark.model.Model):
                                          input.modelVersion)
 
 
-@credmark.model.describe(slug='series.block-start-end-interval',
-                         version='0.0',
-                         display_name='Series Block Interval',
-                         description='Run a model over a series of blocks specifying '
-                         'a block start, end, and interval',
-                         developer='Credmark',
-                         input=SeriesModelStartEndIntervalInput,
-                         output=BlockSeries[dict])
-class SeriesBlockStartEndInterval(credmark.model.Model):
+@Model.describe(slug='series.block-start-end-interval',
+                version='0.0',
+                display_name='Series Block Interval',
+                description='Run a model over a series of blocks specifying '
+                'a block start, end, and interval',
+                developer='Credmark',
+                input=SeriesModelStartEndIntervalInput,
+                output=BlockSeries[dict])
+class SeriesBlockStartEndInterval(Model):
 
     def run(self, input: SeriesModelStartEndIntervalInput) -> BlockSeries[dict]:
         rpc_input = RpcBlockStartEndIntervalInput(
@@ -129,15 +129,15 @@ class SeriesBlockStartEndInterval(credmark.model.Model):
                                          input.modelVersion)
 
 
-@credmark.model.describe(slug='series.block-window-interval',
-                         version='0.0',
-                         display_name='Series Block Window Interval',
-                         description='Run a model over a series of blocks specifying '
-                         'a block window and interval',
-                         developer='Credmark',
-                         input=SeriesModelWindowIntervalInput,
-                         output=BlockSeries[dict])
-class SeriesBlockWindowInterval(credmark.model.Model):
+@Model.describe(slug='series.block-window-interval',
+                version='0.0',
+                display_name='Series Block Window Interval',
+                description='Run a model over a series of blocks specifying '
+                'a block window and interval',
+                developer='Credmark',
+                input=SeriesModelWindowIntervalInput,
+                output=BlockSeries[dict])
+class SeriesBlockWindowInterval(Model):
 
     def run(self, input: SeriesModelWindowIntervalInput) -> BlockSeries[dict]:
         rpc_input = RpcBlockWindowIntervalInput(

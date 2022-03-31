@@ -1,13 +1,13 @@
 from abc import abstractmethod
 from typing import Any, ClassVar, Type, TypeVar, Union, overload
+from web3 import Web3
 
-from credmark.model.errors import ModelNoContextError
+from .errors import ModelNoContextError
 from .ledger import Ledger
-from .web3 import Web3Registry
-import credmark.types
+import credmark.cmf.types
 from credmark.dto import DTO, EmptyInput
-from credmark.model.utils.contract_util import ContractUtil
-from credmark.model.utils.historical_util import HistoricalUtil
+from .utils.contract_util import ContractUtil
+from .utils.historical_util import HistoricalUtil
 
 DTOT = TypeVar('DTOT')
 
@@ -115,12 +115,12 @@ class ModelContext:
             return ModelContext.Models(self.__context, block_number=block_number)
 
     def __init__(self, chain_id: int, block_number: int,
-                 web3_registry: Web3Registry):
+                 web3_registry):
         # type hint
         ModelContext._current_context: Union[ModelContext, None]
 
         self._chain_id = chain_id
-        self._block_number = credmark.types.BlockNumber(block_number)
+        self._block_number = credmark.cmf.types.BlockNumber(block_number)
         self._web3 = None
         self._web3_registry = web3_registry
         self._ledger = None
@@ -142,16 +142,16 @@ class ModelContext:
     @property
     def block_number(self):
         """
-        Context block number. A credmark.types.BlockNumber instance.
+        Context block number. A credmark.cmf.types.BlockNumber instance.
         """
         return self._block_number
 
     @block_number.setter
     def block_number(self, block_number: int):
-        self._block_number = credmark.types.BlockNumber(block_number)
+        self._block_number = credmark.cmf.types.BlockNumber(block_number)
 
     @property
-    def web3(self):
+    def web3(self) -> Web3:
         """
         A configured web3 instance
         """
@@ -207,7 +207,9 @@ class ModelContext:
                   block_number=None,
                   version=None,
                   ) -> Any:
-        """Run a model by slug and optional version.
+        """
+        Run a model by slug and optional version.
+
 
         Parameters:
             slug (str): the slug of the model

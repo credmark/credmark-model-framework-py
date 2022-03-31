@@ -1,11 +1,13 @@
 from abc import abstractmethod
+import logging
 import inspect
 import re
-from typing import List, Tuple, Type, Union
 from copy import deepcopy
+from typing import List, Tuple, Type, Union
 
-from .base import Model
-from credmark.dto import DTO, EmptyInput
+from .context import ModelContext
+from credmark.dto import DTO, EmptyInput, transform_data_for_dto
+
 from .errors import ModelBaseError, ModelDataErrorDTO, ModelDefinitionError
 
 
@@ -148,12 +150,6 @@ def describe(slug: str,   # pylint: disable=too-many-arguments
              input: Union[Type[DTO], Type[dict]] = EmptyInput,
              output: Union[Type[DTO], Type[dict], None] = None,
              errors: Union[List[ModelErrorDesc], ModelErrorDesc, None] = None):
-    """
-    Decorator for base credmark.model.base.Model subclasses to describe the model.
-
-    If description is not set, the doc string (__doc__) of the model class
-    is used instead.
-    """
     def wrapper(cls_in):
         def is_parent(child, parent):
             found = parent in child.__bases__
@@ -234,3 +230,85 @@ def describe(slug: str,   # pylint: disable=too-many-arguments
         return cls
 
     return wrapper
+
+
+class Model:
+    """
+    The base model class.
+
+    Models should subclass this class and override the
+    run() method. They may also override init().
+
+    Available instance variables:
+
+    logger - a logger for messages related to the model
+    context - a model context instance
+    """
+
+    @classmethod
+    def describe(cls, slug: str,   # pylint: disable=too-many-arguments
+                 version: str,
+                 tags: Union[list[str], None] = None,
+                 display_name: Union[str, None] = None,
+                 description: Union[str, None] = None,
+                 developer: Union[str, None] = None,
+                 input: Union[Type[DTO], Type[dict]] = EmptyInput,
+                 output: Union[Type[DTO], Type[dict], None] = None,
+                 errors: Union[List[ModelErrorDesc], ModelErrorDesc, None] = None):
+        """
+        Decorator for base credmark.cmf.model.Model subclasses to describe the model.
+
+        If description is not set, the doc string (__doc__) of the model class
+        is used instead.
+        """
+        return describe(slug,
+                        version,
+                        tags,
+                        display_name,
+                        description,
+                        developer,
+                        input,
+                        output,
+                        errors)
+
+    # These class variables will be set automatically by
+    # the loader or decorator
+    slug: str
+    version: str
+    _manifest: dict
+    inputDTO: Union[Type[DTO], None]
+    outputDTO: Union[Type[DTO], None]
+
+    def __init__(self, context: ModelContext):
+        self.context = context
+        # Configure our logger.
+        self.logger = logging.getLogger(
+            'credmark.cmf.model.{0}'.format(self.slug))
+        self.init()
+
+    def init(self):
+        """
+        Subclasses may override this method to do
+        any model instance initiation
+        """
+
+    @ abstractmethod
+    def run(self, input: Union[dict, DTO]) -> Union[dict, DTO]:
+        """
+        Subclasses must override this method to run
+        the model.
+
+        Model instances may be reused so keep in mind that run()
+        may be called multiple times. If you are using global
+        data structures, make sure they are reset or cleared
+        after each model run.
+        """
+
+    def convert_dict_to_dto(self,
+                            data: dict,
+                            dto_class: Type[DTO]):
+        """
+        A model can call this method to convert a dict
+        of data in a known format into a DTO instance.
+        """
+        return transform_data_for_dto(data, dto_class, self.slug, 'transform')

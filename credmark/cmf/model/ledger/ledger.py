@@ -1,15 +1,14 @@
 from typing import Type, Union, List
-from credmark.types.models.ledger import LedgerModelOutput
 
 from .errors import (
     InvalidColumnException,
     InvalidQueryException,
 )
 
-from credmark.types.models.ledger import (
+from credmark.cmf.types.ledger import (
     BlockTable, ContractTable,
     LogTable, ReceiptTable, TokenTable, TokenTransferTable,
-    TraceTable, TransactionTable, LedgerTable
+    TraceTable, TransactionTable, LedgerTable, LedgerModelOutput
 )
 
 
@@ -69,6 +68,9 @@ class Ledger:
                          order_by: Union[str, None] = None,
                          limit: Union[str, None] = None,
                          offset: Union[str, None] = None):
+        """
+        Query data from the Transactions table.
+        """
         return self._send_cwgo_query('ledger.transaction_data',
                                      TransactionTable,
                                      columns, where, group_by,
@@ -80,6 +82,9 @@ class Ledger:
                    order_by: Union[str, None] = None,
                    limit: Union[str, None] = None,
                    offset: Union[str, None] = None):
+        """
+        Query data from the Traces table.
+        """
         return self._send_cwgo_query('ledger.trace_data',
                                      TraceTable,
                                      columns, where, group_by,
@@ -91,6 +96,9 @@ class Ledger:
                  order_by: Union[str, None] = None,
                  limit: Union[str, None] = None,
                  offset: Union[str, None] = None):
+        """
+        Query data from the Logs table.
+        """
         return self._send_cwgo_query('ledger.log_data',
                                      LogTable,
                                      columns, where, group_by,
@@ -102,6 +110,9 @@ class Ledger:
                       order_by: Union[str, None] = None,
                       limit: Union[str, None] = None,
                       offset: Union[str, None] = None):
+        """
+        Query data from the Contracts table.
+        """
         return self._send_cwgo_query('ledger.contract_data',
                                      ContractTable,
                                      columns, where, group_by,
@@ -113,6 +124,9 @@ class Ledger:
                    order_by: Union[str, None] = None,
                    limit: Union[str, None] = None,
                    offset: Union[str, None] = None):
+        """
+        Query data from the Blocks table.
+        """
         return self._send_cwgo_query('ledger.block_data',
                                      BlockTable,
                                      columns, where, group_by,
@@ -124,6 +138,9 @@ class Ledger:
                      order_by: Union[str, None] = None,
                      limit: Union[str, None] = None,
                      offset: Union[str, None] = None):
+        """
+        Query data from the Receipts table.
+        """
         return self._send_cwgo_query('ledger.receipt_data',
                                      ReceiptTable,
                                      columns, where, group_by,
@@ -135,6 +152,9 @@ class Ledger:
                          order_by: Union[str, None] = None,
                          limit: Union[str, None] = None,
                          offset: Union[str, None] = None):
+        """
+        Query data from the ERC20 Tokens table.
+        """
         return self._send_cwgo_query('ledger.erc20_token_data',
                                      TokenTable,
                                      columns, where, group_by,
@@ -146,6 +166,9 @@ class Ledger:
                             order_by: Union[str, None] = None,
                             limit: Union[str, None] = None,
                             offset: Union[str, None] = None):
+        """
+        Query data from the ERC20 Token Transfers table.
+        """
         return self._send_cwgo_query('ledger.erc20_token_transfer_data',
                                      TokenTransferTable,
                                      columns, where, group_by,

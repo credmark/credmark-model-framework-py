@@ -1,5 +1,5 @@
 from typing import Union
-from credmark.model.errors import ModelErrorDTO, ModelEngineError
+from credmark.cmf.model.errors import ModelErrorDTO, ModelEngineError
 from credmark.dto import DTO
 
 

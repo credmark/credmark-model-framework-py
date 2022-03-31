@@ -6,9 +6,9 @@ import json
 from typing import Union, Type, List
 from packaging import version
 from requests.structures import CaseInsensitiveDict
-from credmark.model import Model
-from credmark.model.engine.errors import ModelNotFoundError, ModelManifestWriteError
-from credmark.model.describe import validate_model_slug
+from credmark.cmf.model import Model
+from credmark.cmf.engine.errors import ModelNotFoundError, ModelManifestWriteError
+from credmark.cmf.model import validate_model_slug
 
 
 class ModelLoader:
@@ -48,8 +48,8 @@ class ModelLoader:
 
         if load_dev_models:
             self.logger.debug('Loading dev models')
-            self._try_model_module('credmark.model.dev_models.series_models',
-                                   'credmark/model/dev_models/series_models')
+            self._try_model_module('credmark.cmf.model.dev_models.series_models',
+                                   'credmark/cmf/model/dev_models/series_models')
 
         self.__model_manifest_list.sort(key=lambda m: m['slug'])
 

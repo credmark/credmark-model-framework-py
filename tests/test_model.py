@@ -1,8 +1,8 @@
 import unittest
 import logging
-import credmark.model
-from credmark.model.engine.context import EngineModelContext
-from credmark.model.engine.model_loader import ModelLoader
+from credmark.cmf.model import Model
+from credmark.cmf.engine.context import EngineModelContext
+from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.dto import DTO, DTOField
 
 logging.basicConfig(
@@ -15,14 +15,14 @@ class Car(DTO):
     color: str = DTOField(..., description='Color of car')
 
 
-@credmark.model.describe(slug='testmodel',
-                         version='1.0',
-                         display_name='Test Model',
-                         description='SDK Test Model',
-                         developer='Credmark',
-                         input=Car,
-                         output=Car)
-class PIModel(credmark.model.Model):
+@Model.describe(slug='testmodel',
+                version='1.0',
+                display_name='Test Model',
+                description='SDK Test Model',
+                developer='Credmark',
+                input=Car,
+                output=Car)
+class AModel(Model):
 
     def run(self, input: Car) -> Car:
         return input

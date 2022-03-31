@@ -36,7 +36,7 @@ setup(
     install_requires=required,
     entry_points={
         'console_scripts': [
-            'credmark-dev = credmark.credmark_dev:main'
+            'credmark-dev = credmark.cmf.credmark_dev:main'
         ]
     },
     license="MIT",

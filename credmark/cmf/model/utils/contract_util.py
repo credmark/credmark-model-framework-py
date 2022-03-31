@@ -1,5 +1,5 @@
-from credmark.types import Contract, Address
-import credmark.model
+import credmark.cmf.types
+import credmark.cmf.model
 
 from typing import (
     Union,
@@ -12,15 +12,15 @@ class ContractUtil:
     def __init__(self,
                  context,
                  ) -> None:
-        self.context: credmark.model.ModelContext = context
+        self.context: credmark.cmf.model.ModelContext = context
 
     def load_description(self,
-                         address: Union[Address, None] = None,
+                         address: Union['credmark.cmf.types.Address', None] = None,
                          contract_name: Union[str, None] = None,
                          protocol: Union[str, None] = None,
                          product: Union[str, None] = None,
                          abi: Union[dict, None] = None,
-                         tags: Union[dict, None] = None) -> List[Contract]:
+                         tags: Union[dict, None] = None) -> List['credmark.cmf.types.Contract']:
         """
         Load a list of contracts based on metadata.
         """
@@ -35,7 +35,7 @@ class ContractUtil:
             # we could do it if we could return a contract that is a subclass of
             # web3.contract.Contract but I don't understand how to do that with a web3 context
 
-        contracts: List[Contract] = []
+        contracts: List[credmark.cmf.types.Contract] = []
         q = {}
 
         if address is not None:
@@ -54,18 +54,18 @@ class ContractUtil:
         contract_q_results = self.context.run_model('contract.metadata', q)
         for contract in contract_q_results['contracts']:
             contracts.append(
-                Contract(_instance=None,
-                         address=contract.get('contract_address'),
-                         **contract))
+                credmark.cmf.types.Contract(_instance=None,
+                                            address=contract.get('contract_address'),
+                                            **contract))
         return contracts
 
-    def load_address(self, address: str) -> Contract:
+    def load_address(self, address: str) -> 'credmark.cmf.types.Contract':
         """
         Load a contract instance based on the address.
         """
         contract_q_results = self.context.run_model(
             'contract.metadata', {'contractAddress': address})
-        contract_obj = Contract(_instance=None,
-                                address=address,
-                                **(contract_q_results['contracts'][0]))
+        contract_obj = credmark.cmf.types.Contract(_instance=None,
+                                                   address=address,
+                                                   **(contract_q_results['contracts'][0]))
         return contract_obj

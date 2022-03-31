@@ -1,9 +1,9 @@
 import unittest
 import logging
 
-import credmark.model
+import credmark.cmf.model
 from credmark.dto import DTO, DTOField
-from credmark.types import Address
+from credmark.cmf.types import Address
 import functools
 
 logging.basicConfig(

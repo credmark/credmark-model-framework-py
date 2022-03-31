@@ -1,5 +1,5 @@
 from typing import Union, List
-from credmark.model.errors import ModelRunError
+from credmark.cmf.model.errors import ModelRunError
 
 
 class InvalidColumnException(ModelRunError):

@@ -21,7 +21,9 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
-    'sphinx_autodoc_typehints',
+    # 'sphinx_autodoc_typehints', # causes problems with pydantic and forward refs
+    'sphinx.ext.napoleon',
+    'sphinxcontrib.autodoc_pydantic',
     'myst_parser',
 ]
 
@@ -33,13 +35,16 @@ myst_enable_extensions = [
 autosummary_generate = True
 autosummary_imported_members = False
 
-autoclass_content = "both"  # Add __init__ doc (ie. params) to class summaries
+# "class" shows class doc only, "both" will Add __init__ doc (ie. params) to class summaries
+autoclass_content = "class"
 html_show_sourcelink = False  # Remove 'view source code' from top of page (for html, not python)
 autodoc_inherit_docstrings = False  # If no docstring, inherit from base class
 set_type_checking_flag = True  # Enable 'expensive' imports for sphinx_autodoc_typehints
-# autodoc_typehints = "description" # Sphinx-native method. Not as good as sphinx_autodoc_typehints
+autodoc_typehints = "description"  # Sphinx-native method. Not as good as sphinx_autodoc_typehints
 add_module_names = False  # Remove namespaces from class/method signatures
 
+autodoc_pydantic_model_show_json = True
+autodoc_pydantic_field_doc_policy = 'both'  # 'docstring' | 'description' | 'both'
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
@@ -52,6 +57,12 @@ templates_path = ['_templates']
 # -- Options for HTML output
 
 html_theme = 'sphinx_rtd_theme'
+
+html_theme_options = {
+    'navigation_depth': 10,  # sidebar maxdepth, -1 infinite
+    'includehidden': False,  # default is True
+
+}
 
 html_css_files = ["readthedocs-custom.css"]  # Override some CSS settings
 

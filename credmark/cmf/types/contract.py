@@ -6,11 +6,11 @@ from typing import (
 
 from web3.contract import Contract as Web3Contract
 import json
-import credmark.model
-from credmark.model.errors import ModelDataError
-from credmark.types.data.account import Account, Address
+import credmark.cmf.model
+from credmark.cmf.model.errors import ModelDataError
+from .account import Account, Address
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
-from credmark.types.data.data_content.transparent_proxy_data import UPGRADEABLE_CONTRACT_ABI
+from .data.transparent_proxy_data import UPGRADEABLE_CONTRACT_ABI
 
 
 class Contract(Account):
@@ -57,7 +57,7 @@ class Contract(Account):
     def _load(self):
         if self._loaded:
             return
-        context = credmark.model.ModelContext.current_context()
+        context = credmark.cmf.model.ModelContext.current_context()
 
         contract_q_results = context.run_model(
             'contract.metadata', {'contractAddress': self.address})
@@ -79,7 +79,7 @@ class Contract(Account):
     @property
     def instance(self):
         if self._instance is None:
-            context = credmark.model.ModelContext.current_context()
+            context = credmark.cmf.model.ModelContext.current_context()
             if self.abi is None:
                 self._load()
             self._instance = context.web3.eth.contract(
@@ -93,7 +93,7 @@ class Contract(Account):
         if not self._loaded:
             self._load()
         if self._proxy_for is None and self.is_transparent_proxy:
-            context = credmark.model.ModelContext.current_context()
+            context = credmark.cmf.model.ModelContext.current_context()
 
             # TODO: Get this from the database, Not the RPC
             events = self.instance.events.Upgraded.createFilter(
@@ -109,7 +109,7 @@ class Contract(Account):
     @ property
     def functions(self):
         if self.proxy_for is not None:
-            context = credmark.model.ModelContext.current_context()
+            context = credmark.cmf.model.ModelContext.current_context()
             return context.web3.eth.contract(
                 address=context.web3.toChecksumAddress(self.address),
                 abi=self.proxy_for.abi
@@ -119,7 +119,7 @@ class Contract(Account):
     @ property
     def events(self):
         if self.proxy_for is not None:
-            context = credmark.model.ModelContext.current_context()
+            context = credmark.cmf.model.ModelContext.current_context()
             return context.web3.eth.contract(
                 address=context.web3.toChecksumAddress(self.address),
                 abi=self.proxy_for.abi

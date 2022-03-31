@@ -14,10 +14,10 @@ from credmark.dto import (
     DTO
 )
 
-import credmark.model
-from credmark.model.errors import (ModelErrorDTO,
-                                   ModelInvalidStateError,
-                                   ModelInputError)
+import credmark.cmf.model
+from credmark.cmf.model.errors import (ModelErrorDTO,
+                                       ModelInvalidStateError,
+                                       ModelInputError)
 
 
 class BlockNumberOutOfRangeDetailDTO(DTO):
@@ -28,10 +28,10 @@ class BlockNumberOutOfRangeDetailDTO(DTO):
 class BlockNumberOutOfRangeErrorDTO(ModelErrorDTO[BlockNumberOutOfRangeDetailDTO]):
     """
     A block number was constructed that is out of range for the context.
-    This is a subclass of ModelInvalidStateError (and ModelRunError)
+    This is a subclass of ``ModelInvalidStateError`` (and ``ModelRunError``)
     as its considered a coding error in the model.
 
-    Properties of the detail object:
+    Properties of the ``detail`` object:
     - blockNumber: the requested block number
     - maxBlockNumber: Maximum block number of context
     """
@@ -54,7 +54,7 @@ class BlockNumber(int):
                 timestamp: Union[Timestamp, None] = None,  # pylint: disable=unused-argument
                 sample_timestamp: Union[Timestamp, None] = None):  # pylint: disable=unused-argument
 
-        context = credmark.model.ModelContext.get_current_context()
+        context = credmark.cmf.model.ModelContext.get_current_context()
         if context is not None and number > context.block_number:
             raise BlockNumberOutOfRangeError.create(number, context.block_number)
 
@@ -84,7 +84,7 @@ class BlockNumber(int):
     @property
     def timestamp(self) -> int:
         if self._timestamp is None:
-            context = credmark.model.ModelContext.current_context()
+            context = credmark.cmf.model.ModelContext.current_context()
 
             block: BlockData = context.web3.eth.get_block(self.__int__())
             if 'timestamp' not in block:
@@ -106,7 +106,7 @@ class BlockNumber(int):
         The timestamp here will be used as the sample_timestamp on the resulting BlockNumber.
         """
 
-        context = credmark.model.ModelContext.current_context()
+        context = credmark.cmf.model.ModelContext.current_context()
 
         if isinstance(timestamp, int):
             pass

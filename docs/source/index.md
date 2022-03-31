@@ -14,6 +14,8 @@ This project is under active development.
 ## Contents
 
 ```{toctree}
+:maxdepth: 20
+
 usage
 api
 model

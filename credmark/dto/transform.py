@@ -1,6 +1,6 @@
 
 from typing import Type, Union
-from .dto import DTO
+from . import DTO
 
 
 class DataTransformError(Exception):

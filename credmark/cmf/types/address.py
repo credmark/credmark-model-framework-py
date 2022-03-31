@@ -9,7 +9,7 @@ from web3._utils.validation import (
     validate_address as eth_utils_validate_address,
 )
 
-from credmark.model.errors import ModelTypeError
+from credmark.cmf.model.errors import ModelTypeError
 
 
 def validate_address(addr: str):
