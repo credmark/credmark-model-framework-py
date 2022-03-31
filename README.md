@@ -84,3 +84,5 @@ The `autodoc_pydantic` doesn't seem to handle models with generics properly so b
 #### Custom Templates
 
 We also use custom autosummary templates that use the `toctree` so the full module tree is navigable.
+
+The templates are based on https://github.com/sphinx-doc/sphinx/issues/7912 extended for pydantic_model types.
