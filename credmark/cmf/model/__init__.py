@@ -143,13 +143,18 @@ def validate_model_slug(slug: str, prefix: Union[str, None] = None):
 
 def describe(slug: str,   # pylint: disable=too-many-arguments
              version: str,
-             tags: Union[list[str], None] = None,
              display_name: Union[str, None] = None,
              description: Union[str, None] = None,
              developer: Union[str, None] = None,
+             tags: Union[list[str], None] = None,
              input: Union[Type[DTO], Type[dict]] = EmptyInput,
              output: Union[Type[DTO], Type[dict], None] = None,
              errors: Union[List[ModelErrorDesc], ModelErrorDesc, None] = None):
+    """
+    Decorator for a model.
+
+    Deprecated. Use ``Model.describe``
+    """
     def wrapper(cls_in):
         def is_parent(child, parent):
             found = parent in child.__bases__
@@ -175,10 +180,10 @@ def describe(slug: str,   # pylint: disable=too-many-arguments
             'model': {
                 'slug': slug,
                 'version': version,
-                'tags': tags,
                 'display_name': display_name,
                 'description': model_desc,
                 'developer': developer if developer is not None else '',
+                'tags': tags,
                 'input': input.schema() if input is not None and issubclass(input, DTO)
                 else DICT_SCHEMA,
                 'output': output.schema() if output is not None and issubclass(output, DTO)
@@ -241,32 +246,62 @@ class Model:
 
     Available instance variables:
 
-    logger - a logger for messages related to the model
-    context - a model context instance
+    - ``logger`` - a logger for messages related to the model
+    - ``context`` - a model context instance
     """
 
     @classmethod
-    def describe(cls, slug: str,   # pylint: disable=too-many-arguments
+    def describe(cls,  # pylint: disable=too-many-arguments
+                 slug: str,
                  version: str,
-                 tags: Union[list[str], None] = None,
                  display_name: Union[str, None] = None,
                  description: Union[str, None] = None,
                  developer: Union[str, None] = None,
+                 tags: Union[list[str], None] = None,
                  input: Union[Type[DTO], Type[dict]] = EmptyInput,
                  output: Union[Type[DTO], Type[dict], None] = None,
                  errors: Union[List[ModelErrorDesc], ModelErrorDesc, None] = None):
         """
-        Decorator for base credmark.cmf.model.Model subclasses to describe the model.
+        Decorator for credmark.cmf.model.Model subclasses to describe the model.
 
-        If description is not set, the doc string (__doc__) of the model class
-        is used instead.
+        Example usage::
+
+            from credmark.cmf.model import Model
+
+            @Model.describe(slug='example.echo',
+                            version='1.0',
+                            display_name='Echo',
+                            description="A test model to echo the message property sent in input.",
+                            input=EchoDto,
+                            output=EchoDto)
+            class EchoModel(Model):
+
+
+        Parameters:
+            slug: slug (short unique name) for the model. Can contain alpha-numeric and
+                  and underscores. Contributor slugs must start with ``"contrib."``
+                  Once submitted, the model slug cannot be changed.
+            version: version string, ex. ``"1.0"``. The version number can be incremented
+                  when the model code is updated.
+            display_name: Name for the model
+            description: Description of the model. If description is not set,
+                        the doc string (``__doc__``) of the model class is used instead.
+            developer: Name or nickname of the developer
+            tags: optional list of string tags describing the model
+            input: Type that model uses as input; a ``DTO`` subclass or dict.
+                   Defaults to ``EmptyInput`` object.
+            output: Type that the model run returns; a ``DTO`` subclass or dict.
+                   Defaults to None which will provide no output schema.
+            errors: If the model raises ``ModelDataError``, set this to a configured
+                   ``ModelDataErrorDesc`` instance (or a list of instances) describing the
+                   errors. Defaults to None.
         """
         return describe(slug,
                         version,
-                        tags,
                         display_name,
                         description,
                         developer,
+                        tags,
                         input,
                         output,
                         errors)
@@ -289,14 +324,14 @@ class Model:
     def init(self):
         """
         Subclasses may override this method to do
-        any model instance initiation
+        any model instance initiation.
         """
 
     @ abstractmethod
     def run(self, input: Union[dict, DTO]) -> Union[dict, DTO]:
         """
-        Subclasses must override this method to run
-        the model.
+        Subclasses **must** override this method to perform the work
+        of running the model.
 
         Model instances may be reused so keep in mind that run()
         may be called multiple times. If you are using global
