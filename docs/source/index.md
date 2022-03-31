@@ -17,6 +17,6 @@ This project is under active development.
 :maxdepth: 20
 
 usage
-api
 model
+api
 ```
