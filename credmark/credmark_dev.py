@@ -97,9 +97,12 @@ def main():
     parser_run.add_argument('--provider_url_map', required=False, default=None,
                             help='JSON object of chain id to Web3 provider HTTP URL. '
                             'Overrides settings in env vars.')
+    parser_run.add_argument('--format_json', action='store_true', default=False,
+                            help='format json in print')
     add_api_url_arg(parser_run)
     parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
     parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
+
     parser_run.add_argument('model-slug', default='(missing model-slug arg)',
                             help='Slug for the model to run.')
     parser_run.set_defaults(func=run_model, depth=0)
@@ -403,6 +406,7 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
         api_url: Union[str, None] = args['api_url']
         run_id: Union[str, None] = args['run_id']
         depth: int = args['depth']
+        format_json: bool = args['format_json']
 
         if args['input'] != '-':
             input = json.loads(args['input'])
@@ -433,7 +437,10 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
             else:
                 exit_code = 1
 
-        json_dump(result, sys.stdout, indent=4)
+        if format_json:
+            json_dump(result, sys.stdout, indent=4)
+        else:
+            json_dump(result, sys.stdout)
 
     except Exception as e:
         # this exception would only happen have been raised
