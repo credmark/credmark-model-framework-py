@@ -37,6 +37,9 @@ myst_enable_extensions = [
 
 autosummary_generate = True  # Set to True to generate new rst files.
 autosummary_imported_members = False
+autosummary_mock_imports = [
+    'credmark.cmf.credmark_dev',  # this will be excluded from docs
+]
 
 # "class" shows class doc only, "both" will Add __init__ doc (ie. params) to class summaries
 autoclass_content = "class"
