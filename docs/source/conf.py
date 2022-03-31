@@ -4,6 +4,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))  # Source code dir relative to this file
+sys.path.insert(1, os.path.abspath('../ext'))  # Source code dir relative to this file
 
 project = 'Credmark Model Framework'
 copyright = '2022, Credmark'
@@ -18,7 +19,9 @@ extensions = [
     'sphinx.ext.duration',
     'sphinx.ext.doctest',
     'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
+    # We use credmark_autosummary instead of sphinx.ext.autosummary
+    # 'sphinx.ext.autosummary',
+    'credmark_autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     # 'sphinx_autodoc_typehints', # causes problems with pydantic and forward refs
@@ -32,7 +35,7 @@ myst_enable_extensions = [
     'colon_fence',
 ]
 
-autosummary_generate = True
+autosummary_generate = True  # Set to True to generate new rst files.
 autosummary_imported_members = False
 
 # "class" shows class doc only, "both" will Add __init__ doc (ie. params) to class summaries
@@ -45,6 +48,8 @@ add_module_names = False  # Remove namespaces from class/method signatures
 
 autodoc_pydantic_model_show_json = True
 autodoc_pydantic_field_doc_policy = 'both'  # 'docstring' | 'description' | 'both'
+autodoc_pydantic_model_hide_paramlist = False
+autodoc_pydantic_model_signature_prefix = 'DTO class'
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),

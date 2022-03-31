@@ -8,12 +8,3 @@
 
    credmark
 ```
-
-```{eval-rst}
-.. autosummary::
-   :toctree: reference
-   :template: custom-dto-template.rst
-   :recursive:
-
-   credmark.cmf.model.errors.ModelErrorDTO
-```
