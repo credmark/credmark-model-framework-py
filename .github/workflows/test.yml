@@ -34,4 +34,4 @@ jobs:
 
       - name: Run credmark-dev
         run: |
-          python -m credmark.credmark_dev list
+          python -m credmark.cmf.credmark_dev list

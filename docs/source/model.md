@@ -1,13 +1,15 @@
 # Create a Model
 
-Create a class for your model that inherits from the base {class}`credmark.model.base.Model` class and then decorate it with the `@describe` decorator:
+Create a class for your model that inherits from the base {class}`credmark.cmf.model.Model` class and then decorate it with the `@describe` decorator:
 
 ```{eval-rst}
-.. autodecorator:: credmark.model.describe.describe
+.. autodecorator:: credmark.cmf.model.describe
+   :noindex:
 ```
 
 ```{eval-rst}
-.. automodule:: credmark.model.describe
+.. automodule:: credmark.cmf.model
    :members:
+   :noindex:
    :exclude-members: describe
 ```

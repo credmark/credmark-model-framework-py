@@ -56,7 +56,20 @@ Open `docs/build/html/index.html` in a browser
 
 ### Details
 
-The docs are using sphinx with the `autosummary` extension.
-This automatically generates docs for the files in the package and puts the generated files in `docs/source/reference`. This folder is not stored in git.
+#### credmark_autosummary
 
-Note that it currently doesn't seem to crawl folders that are namespace modules (ie folders without a `__init__.py` file.)
+The docs are using sphinx with the `credmark_autosummary` extension. This is a modified version of `sphinx.ext.autosummary`. It is used to automatically generate reference docs for the files in the package.
+
+Unfortunately `sphinx.ext.autosummary` has some issues:
+
+- It currently doesn't seem to crawl folders that are namespace modules (ie folders without a `__init__.py` file.) This isn't really a problem right now and in fact, we use it to avoid generating docs for the `engine` folder.
+
+- It doesn't work well with `sphinxcontrib.autodoc_pydantic` which is another extension we use for pydantic BaseModel subclasses. The `credmark_autosummary` extension handles the pydantic object types properly.
+
+#### Pydantic Generics
+
+The `autodoc_pydantic` doesn't seem to handle models with generics properly so building the docs will generate many warnings (and some errors `Content block expected for the "raw" directive; none found`) related to generic DTOs. The docs for specific generic types won't be generated but they will be listed in the module DTO list.
+
+#### Custom Templates
+
+We also use custom autosummary templates that use the `toctree` so the full module tree is navigable.

@@ -4,10 +4,9 @@
 
    {% block attributes %}
    {% if attributes %}
-   .. rubric:: Module attributes
+   .. rubric:: {{ _('Module Attributes') }}
 
    .. autosummary::
-      :toctree:
    {% for item in attributes %}
       {{ item }}
    {%- endfor %}
@@ -19,8 +18,6 @@
    .. rubric:: {{ _('Functions') }}
 
    .. autosummary::
-      :toctree:
-      :nosignatures:
    {% for item in functions %}
       {{ item }}
    {%- endfor %}
@@ -32,9 +29,6 @@
    .. rubric:: {{ _('Classes') }}
 
    .. autosummary::
-      :toctree:
-      :template: custom-class-template.rst
-      :nosignatures:
    {% for item in classes %}
       {{ item }}
    {%- endfor %}
@@ -46,7 +40,6 @@
    .. rubric:: {{ _('Exceptions') }}
 
    .. autosummary::
-      :toctree:
    {% for item in exceptions %}
       {{ item }}
    {%- endfor %}
@@ -55,13 +48,21 @@
 
 {% block pydantic_models %}
 {% if pydantic_models %}
-.. rubric:: {{ _('DTO Classes') }}
+.. rubric:: {{ _('Models') }}
 
 .. autosummary::
-   :toctree:
-   :template: custom-dto-template.rst
-   :nosignatures:
 {% for item in pydantic_models %}
+   {{ item }}
+{%- endfor %}
+{% endif %}
+{% endblock %}
+
+{% block pydantic_settings %}
+{% if pydantic_settings %}
+.. rubric:: {{ _('Settings') }}
+
+.. autosummary::
+{% for item in pydantic_settings %}
    {{ item }}
 {%- endfor %}
 {% endif %}
@@ -69,11 +70,10 @@
 
 {% block modules %}
 {% if modules %}
-.. rubric:: {{ _('Modules') }}
+.. rubric:: Modules
 
 .. autosummary::
    :toctree:
-   :template: custom-module-template.rst
    :recursive:
 {% for item in modules %}
    {{ item }}
