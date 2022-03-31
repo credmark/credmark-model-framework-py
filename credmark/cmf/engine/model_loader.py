@@ -7,7 +7,8 @@ from typing import Union, Type, List
 from packaging import version
 from requests.structures import CaseInsensitiveDict
 from credmark.cmf.model import Model
-from credmark.cmf.engine.errors import ModelNotFoundError, ModelManifestWriteError
+from credmark.cmf.engine.errors import ModelManifestWriteError
+from credmark.cmf.model.errors import ModelNotFoundError
 from credmark.cmf.model import validate_model_slug
 
 DEV_MODELS_PATH = 'credmark/cmf/engine/dev_models/series_models'

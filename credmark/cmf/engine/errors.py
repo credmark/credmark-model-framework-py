@@ -3,32 +3,6 @@ from credmark.cmf.model.errors import ModelErrorDTO, ModelEngineError
 from credmark.dto import DTO
 
 
-class SlugAndVersionDTO(DTO):
-    slug: str
-    version: Union[str, None]
-
-
-class ModelNotFoundErrorDTO(ModelErrorDTO[SlugAndVersionDTO]):
-    """
-    A model requested to run was not found.
-
-    The detail contains the fields:
-    - slug: Slug of model not found
-    - version: Version of model not found
-    """
-
-
-class ModelNotFoundError(ModelEngineError):
-    dto_class = ModelNotFoundErrorDTO
-
-    @classmethod
-    def create(cls, slug: str, version: Union[str, None], message: Union[str, None] = None):
-        message = f'Missing model "{slug}" version {version if version is not None else "any"}' \
-            + ('. ' + message if message is not None else '')
-        return ModelNotFoundError(message=message,
-                                  detail=SlugAndVersionDTO(slug=slug, version=version))
-
-
 class ModelRunRequestErrorDTO(ModelErrorDTO):
     """
     An HTTP-related error that occurred while making a

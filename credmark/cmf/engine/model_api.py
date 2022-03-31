@@ -5,8 +5,8 @@ import requests
 import json
 from urllib.parse import urljoin, quote
 from credmark.dto.encoder import json_dumps
-from credmark.cmf.engine.errors import ModelNotFoundError, ModelRunRequestError
-from credmark.cmf.model.errors import ModelBaseError, create_instance_from_error_dict
+from credmark.cmf.engine.errors import ModelRunRequestError
+from credmark.cmf.model.errors import ModelBaseError, ModelNotFoundError, create_instance_from_error_dict
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
 

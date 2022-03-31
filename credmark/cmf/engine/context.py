@@ -6,10 +6,10 @@ from typing import Type, Union
 from credmark.dto.encoder import json_dumps
 from credmark.cmf.model import Model
 from credmark.cmf.model.context import ModelContext
-from credmark.cmf.engine.errors import ModelNotFoundError, ModelRunRequestError
+from credmark.cmf.engine.errors import ModelRunRequestError
 from credmark.cmf.model.errors import MaxModelRunDepthError, ModelBaseError, \
-    ModelEngineError, ModelInputError, ModelInvalidStateError, ModelOutputError, \
-    ModelRunError, ModelCallStackEntry, ModelTypeError
+    ModelEngineError, ModelInputError, ModelNotFoundError, ModelInvalidStateError, \
+    ModelOutputError, ModelRunError, ModelCallStackEntry, ModelTypeError
 from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.dto.transform import DataTransformError, transform_data_for_dto
