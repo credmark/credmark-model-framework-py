@@ -162,7 +162,7 @@ class Contract(Account):
             return self._instance
 
     @ property
-    def proxy_for(self):
+    def proxy_for(self):  # pylint:disable = too-many-branches
         if not self._loaded:
             self._load()
 
@@ -302,7 +302,7 @@ class Contract(Account):
         return self._meta.abi
 
     @ property
-    def is_transparent_proxy(self):
+    def is_transparent_proxy(self):  # pylint:disable= too-many-return-statements
         """
         Determines proxy type by contract_name / abi
         """
@@ -312,7 +312,8 @@ class Contract(Account):
             # Example: 0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9 Aave Token (AAVE)
             return True
         if self._meta.contract_name == "InitializableImmutableAdminUpgradeabilityProxy":
-            # Example: 0x6C5024Cd4F8A59110119C56f8933403A539555EB, Aave interest bearing SUSD (aSUSD)
+            # Example: 0x6C5024Cd4F8A59110119C56f8933403A539555EB,
+            # Aave interest bearing SUSD (aSUSD)
             return True
         if self._meta.contract_name == "AdminUpgradeabilityProxy":
             # Example: 0xD46bA6D942050d489DBd938a2C909A5d5039A161, Ampleforth (AMPL)
