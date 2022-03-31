@@ -17,11 +17,11 @@ class PydanticJSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
-def json_dump(obj, handle, format_json=lambda x: x, **json_dump_args):
+def json_dump(obj, handle, **json_dump_args):
     """Dump an obj that may contain embedded DTOs to json"""
-    return format_json(json.dump(obj, handle, cls=PydanticJSONEncoder, **json_dump_args))
+    return json.dump(obj, handle, cls=PydanticJSONEncoder, **json_dump_args)
 
 
-def json_dumps(obj):
+def json_dumps(obj, format_json=lambda x: x, **json_dump_args):
     """Dump an obj that may contain embedded DTOs to json string"""
-    return json.dumps(obj, cls=PydanticJSONEncoder)
+    return format_json(json.dumps(obj, cls=PydanticJSONEncoder, **json_dump_args))

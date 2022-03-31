@@ -18,6 +18,7 @@ from .model.web3 import Web3Registry
 from .model.engine.model_api import ModelApi
 from .dto import (
     json_dump,
+    json_dumps,
     print_example,
     print_tree,
     dto_schema_viz,
@@ -438,7 +439,9 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
                 exit_code = 1
 
         if format_json:
-            json_dump(result, sys.stdout, indent=4)
+            print(json_dumps(result,
+                             format_json=lambda x: x.replace('\\n', '\n').replace('\\"', '\"'),
+                             indent=4))
         else:
             json_dump(result, sys.stdout)
 
