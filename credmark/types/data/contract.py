@@ -14,7 +14,9 @@ import credmark.model
 from credmark.model.errors import ModelDataError
 from credmark.types.data.account import Account, Address
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
-from credmark.types.data.data_content.transparent_proxy_data import UPGRADEABLE_CONTRACT_ABI
+
+from .data_content.transparent_proxy_data import UPGRADEABLE_CONTRACT_ABI
+from .data_content.fungible_token_data import ERC20_GENERIC_ABI
 
 
 class Singleton:
@@ -145,8 +147,14 @@ class Contract(Account):
                     proxy_address = self.constructor_args[-40:]
 
                 if proxy_address[-40:] != default_proxy_address:
-                    self._proxy_for = Contract(address=Address(
-                        '0x' + proxy_address[-40:]))
+                    # TODO: some proxy's abi is still missing in DB.
+                    # e.g. 0x019ff0619e1d8cd2d550940ec743fde6d268afe2
+                    if self.__class__.__name__ == 'Token':
+                        self._proxy_for = Contract(address=Address(
+                            '0x' + proxy_address[-40:]), abi=ERC20_GENERIC_ABI)
+                    else:
+                        self._proxy_for = Contract(address=Address(
+                            '0x' + proxy_address[-40:]))
                     return self._proxy_for
 
             # TODO: Get this from the database, Not the RPC
