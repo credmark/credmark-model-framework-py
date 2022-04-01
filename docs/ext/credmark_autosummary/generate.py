@@ -361,6 +361,9 @@ def generate_autosummary_content(name: str, obj: Any, parent: Any,
             get_members(obj, {'method'}, ['__init__'])
         ns['attributes'], ns['all_attributes'] = \
             get_members(obj, {'attribute', 'property'})
+        # credmark_autosummary
+        ns['is_int'] = issubclass(obj, int)
+        ns['is_str'] = issubclass(obj, str)
 
     if modname is None or qualname is None:
         modname, qualname = split_full_qualified_name(name)
