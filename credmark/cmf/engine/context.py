@@ -54,6 +54,9 @@ class EngineModelContext(ModelContext):
     dev_mode = False
     max_run_depth = 20
 
+    # Set of model slugs to use the server-side version when in dev_mode.
+    dev_mode_use_server_models = {'token.price'}
+
     @classmethod
     def create_context_and_run_model(cls,  # pylint: disable=too-many-arguments,too-many-locals
                                      chain_id: int,
@@ -229,7 +232,8 @@ class EngineModelContext(ModelContext):
 
         is_cli = self.dev_mode and not self.run_id
         is_top_level_inactive = self.__is_top_level and not self.is_active
-        try_local = is_top_level_inactive or self.dev_mode
+        try_local = is_top_level_inactive or (
+            self.dev_mode and slug not in self.dev_mode_use_server_models)
         try_remote = not is_top_level_inactive or is_cli
 
         api = self.__api
