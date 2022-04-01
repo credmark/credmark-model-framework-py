@@ -3,25 +3,18 @@ import sys
 import argparse
 import logging
 import json
-from typing import (
-    List,
-    Union,
-)
-
+from typing import List, Union
+from importlib.metadata import version
 from dotenv import load_dotenv, find_dotenv
 
-from credmark.dto.dto_error_schema import extract_error_codes_and_descriptions
 sys.path.append('.')
 from .engine.context import EngineModelContext
 from .engine.model_loader import ModelLoader
 from .engine.web3 import Web3Registry
 from .engine.model_api import ModelApi
-from credmark.dto import (
-    json_dump,
-    print_example,
-    print_tree,
-    dto_schema_viz,
-)
+from credmark.dto import json_dump, print_example, print_tree, dto_schema_viz
+from credmark.dto.dto_error_schema import extract_error_codes_and_descriptions
+
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +46,10 @@ def main():
     subparsers = parser.add_subparsers(title='Commands',
                                        description='Supported commands',
                                        help='additional help')
+
+    parser_version = subparsers.add_parser(
+        'version', help='Show version of the framework', aliases=[])
+    parser_version.set_defaults(func=show_version)
 
     parser_list = subparsers.add_parser(
         'list', help='List models in this repo', aliases=['list-models'])
@@ -144,7 +141,13 @@ def load_models(args, load_dev_models=False):
     return model_loader
 
 
-def describe_models(args, ):
+def show_version(_args):
+    ver = version('credmark-model-framework')
+    print(f'credmark-model-framework version {ver}')
+    sys.exit(0)
+
+
+def describe_models(args):
     config_logging(args)
     model_api = create_model_api(args)
     model_loader = load_models(args, True)
@@ -166,8 +169,11 @@ def describe_models(args, ):
     print('')
     if len(manifests) > 0:
         print_manifests(manifests, True)
+        exit_code = 0
     else:
         print_no_models_found(model_slug)
+        exit_code = 1
+    sys.exit(exit_code)
 
 
 def print_no_models_found(model_slug):
