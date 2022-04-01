@@ -65,6 +65,12 @@ make html
 
 Open `docs/build/html/index.html` in a browser
 
+### Editing Docs
+
+Sphinx is configured to use markdown or rst. The files are in `docs/source`. Nothing in the `docs/source/reference` folder should be edited since it's auto-generated. New md/rst files can be added to the source folder and then referenced in the `index.md` toctree.
+
+The napoleon extension is installed so you can use the Google style docstrings described at [https://www.sphinx-doc.org/en/master/usage/extensions/example_google.html](https://www.sphinx-doc.org/en/master/usage/extensions/example_google.html).
+
 ### Details
 
 #### credmark_autosummary
@@ -76,6 +82,8 @@ Unfortunately `sphinx.ext.autosummary` has some issues:
 - It currently doesn't seem to crawl folders that are namespace modules (ie folders without a `__init__.py` file.) This isn't really a problem right now and in fact, we use it to avoid generating docs for the `engine` folder.
 
 - It doesn't work well with `sphinxcontrib.autodoc_pydantic` which is another extension we use for pydantic BaseModel subclasses. The `credmark_autosummary` extension handles the pydantic object types properly.
+
+- Doesn't have fine control over showing/hiding superclass methods and attributes in a class.
 
 #### Pydantic Generics
 
