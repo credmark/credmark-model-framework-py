@@ -12,7 +12,7 @@ from .engine.context import EngineModelContext
 from .engine.model_loader import ModelLoader
 from .engine.web3 import Web3Registry
 from .engine.model_api import ModelApi
-from credmark.dto import json_dump, print_example, print_tree, dto_schema_viz
+from credmark.dto import json_dump, json_dumps, print_example, print_tree, dto_schema_viz
 from credmark.dto.dto_error_schema import extract_error_codes_and_descriptions
 
 
@@ -97,6 +97,8 @@ def main():
                             help='JSON object of chain id to Web3 provider HTTP URL. '
                             'Overrides settings in env vars.')
     add_api_url_arg(parser_run)
+    parser_run.add_argument('-j', '--format_json', action='store_true', default=False,
+                            help='Format output json to be more readable')
     parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
     parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
     parser_run.add_argument('model-slug', default='(missing model-slug arg)',
@@ -414,6 +416,7 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
         api_url: Union[str, None] = args['api_url']
         run_id: Union[str, None] = args['run_id']
         depth: int = args['depth']
+        format_json: bool = args['format_json']
 
         if args['input'] != '-':
             input = json.loads(args['input'])
@@ -444,7 +447,10 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
             else:
                 exit_code = 1
 
-        json_dump(result, sys.stdout)
+        if format_json:
+            print(json_dumps(result, indent=4).replace('\\n', '\n').replace('\\"', '\''))
+        else:
+            json_dump(result, sys.stdout)
 
     except Exception as e:
         # this exception would only happen have been raised
