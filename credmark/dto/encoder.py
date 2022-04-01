@@ -22,6 +22,6 @@ def json_dump(obj, handle, **json_dump_args):
     return json.dump(obj, handle, cls=PydanticJSONEncoder, **json_dump_args)
 
 
-def json_dumps(obj, format_json=lambda x: x, **json_dump_args):
+def json_dumps(obj, **json_dump_args):
     """Dump an obj that may contain embedded DTOs to json string"""
-    return format_json(json.dumps(obj, cls=PydanticJSONEncoder, **json_dump_args))
+    return json.dumps(obj, cls=PydanticJSONEncoder, **json_dump_args)

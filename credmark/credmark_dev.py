@@ -439,9 +439,7 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
                 exit_code = 1
 
         if format_json:
-            print(json_dumps(result,
-                             format_json=lambda x: x.replace('\\n', '\n').replace('\\"', '\"'),
-                             indent=4))
+            print(json_dumps(result, indent=4).replace('\\n', '\n').replace('\\"', '\"'))
         else:
             json_dump(result, sys.stdout)
 
