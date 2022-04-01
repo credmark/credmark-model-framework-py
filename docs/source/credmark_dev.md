@@ -2,7 +2,7 @@
 
 `credmark-dev` is a command-line tool installed with the `credmark-model-framework`. It can be used to list, run, and get docs for models.
 
-```bash
+```
 $ credmark-dev --help
 
 usage: credmark-dev [-h] [--log_level LOG_LEVEL] [--model_path MODEL_PATH]
