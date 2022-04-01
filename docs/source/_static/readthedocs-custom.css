@@ -1,9 +1,10 @@
 /* Override nav bar color */
-/*.wy-side-nav-search {
-    background-color: #fbfbb6;
+.wy-side-nav-search {
+  background-color: rgb(59 0 101);
 }
+/*
 .wy-side-nav-search > a {
-    color: #b2355c
+  color: #b2355c;
 }*/
 
 /* Override text bar color */

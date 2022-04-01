@@ -69,7 +69,7 @@ html_theme = 'sphinx_rtd_theme'
 html_theme_options = {
     'navigation_depth': 10,  # sidebar maxdepth, -1 infinite
     'includehidden': False,  # default is True
-
+    'logo_only': True,
 }
 
 html_css_files = ["readthedocs-custom.css"]  # Override some CSS settings
@@ -78,6 +78,8 @@ html_css_files = ["readthedocs-custom.css"]  # Override some CSS settings
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+html_logo = "_static/logo-white-full.svg"
+html_favicon = '_static/favicon.ico'
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
