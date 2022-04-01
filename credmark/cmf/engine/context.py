@@ -338,10 +338,16 @@ class EngineModelContext(ModelContext):
                     # to make local-dev identical to production.
                     err.transform_data_detail(None)
                 else:
+                    err_msg = f'Exception running model {slug}({input}) on ' \
+                        f'chain {context.chain_id} ' \
+                        f'block {context.block_number} (' \
+                        f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M:%S}) ' \
+                        f'with {err}'
                     if self.dev_mode:
-                        self.logger.exception(f'Exception running model {slug}: {err}')
-                    err = ModelRunError(f'Exception running model {slug}: {err}')
+                        self.logger.exception(err_msg)
+                    err = ModelRunError(err_msg)
                     trace = traceback.format_exc(limit=30)
+
                 # We add the model just run (or validated input for) to stack
                 err.data.stack.insert(0,
                                       ModelCallStackEntry(
