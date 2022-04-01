@@ -4,9 +4,10 @@
 
 ```bash
 $ credmark-dev --help
+
 usage: credmark-dev [-h] [--log_level LOG_LEVEL] [--model_path MODEL_PATH]
                     [--manifest_file MANIFEST_FILE]
-                    {list,list-models,models,deployed-models,describe,describe-models,man,run,run-model,build,build-manifest,clean,remove-manifest}
+                    {version,list,list-models,models,deployed-models,describe,describe-models,man,run,run-model,build,build-manifest,clean,remove-manifest}
                     ...
 
 Credmark developer tool
@@ -25,8 +26,9 @@ optional arguments:
 Commands:
   Supported commands
 
-  {list,list-models,models,deployed-models,describe,describe-models,man,run,run-model,build,build-manifest,clean,remove-manifest}
+  {version,list,list-models,models,deployed-models,describe,describe-models,man,run,run-model,build,build-manifest,clean,remove-manifest}
                         additional help
+    version             Show version of the framework
     list (list-models)  List models in this repo
     models (deployed-models)
                         List models deployed on server
