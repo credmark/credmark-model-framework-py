@@ -133,8 +133,8 @@ def validate_model_slug(slug: str, prefix: Union[str, None] = None):
     if model_slug_re.match(slug) is None or len(slug) > MAX_SLUG_LENGTH:
         quoted_prefix = f'"{prefix}"' if prefix else ''
         raise InvalidModelSlug(
-            f'Invalid model slug "{slug}". ' +
-            (f'Following the prefix {quoted_prefix}' if prefix else 'Following a prefix and dot') +
+            f'Invalid model slug "{slug}". '
+            f'Following the prefix {quoted_prefix}' if prefix else 'Following a prefix and dot'
             ', slugs must start and end with a letter or number and may contain hyphens.')
     if len(slug) > MAX_SLUG_LENGTH:
         raise InvalidModelSlug(
@@ -142,7 +142,7 @@ def validate_model_slug(slug: str, prefix: Union[str, None] = None):
             'Slugs must be not more than {MAX_SLUG_LENGTH} characters.')
 
 
-def describe(slug: str,   # pylint: disable=too-many-arguments
+def describe(slug: str,  # pylint: disable=too-many-arguments
              version: str,
              display_name: Union[str, None] = None,
              description: Union[str, None] = None,
