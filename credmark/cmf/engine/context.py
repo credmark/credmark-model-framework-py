@@ -232,11 +232,18 @@ class EngineModelContext(ModelContext):
 
         is_cli = self.dev_mode and not self.run_id
         is_top_level_inactive = self.__is_top_level and not self.is_active
-        use_local = is_top_level_inactive or slug in self.use_local_models_slugs
+        force_local = slug in self.use_local_models_slugs
+        use_local = is_top_level_inactive or force_local
         # when using the cli, we allow running remote models as top level
         try_remote = not is_top_level_inactive or is_cli
 
-        model_class = self.__model_loader.get_model_class(slug, version, False)
+        try:
+            model_class = self.__model_loader.get_model_class(slug, version, force_local)
+        except Exception:
+            self.logger.error(
+                f'Requested local model not found locally: slug {slug} '
+                f'version {version if version is not None else "any"}')
+            raise
 
         self.__depth += 1
 
