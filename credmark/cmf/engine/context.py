@@ -267,7 +267,7 @@ class EngineModelContext(ModelContext):
         finally:
             self.__depth -= 1
 
-    def _run_model_with_class(self,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+    def _run_model_with_class(self,  # pylint: disable=too-many-locals,too-many-arguments
                               slug: str,
                               input: Union[dict, DTO],
                               block_number: Union[int, None],
