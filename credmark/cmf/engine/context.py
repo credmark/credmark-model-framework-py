@@ -2,7 +2,7 @@ import json
 import logging
 import traceback
 import sys
-from typing import Type, Union
+from typing import Set, Type, Union
 from credmark.dto.encoder import json_dumps
 from credmark.cmf.model import Model
 from credmark.cmf.model.context import ModelContext
@@ -55,7 +55,7 @@ class EngineModelContext(ModelContext):
     max_run_depth = 20
 
     # Set of model slugs to use the local version.
-    use_local_models_slugs = {}
+    use_local_models_slugs: Set[str] = set()
 
     @classmethod
     def create_context_and_run_model(cls,  # pylint: disable=too-many-arguments,too-many-locals
