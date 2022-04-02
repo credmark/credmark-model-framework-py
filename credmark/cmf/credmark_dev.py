@@ -426,7 +426,7 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
 
         if use_local_models is not None and len(use_local_models):
             local_model_slugs = use_local_models.split(',')
-            logger.debug(f'Using local models {local_model_slugs}')
+            logger.debug(f'Use local models {local_model_slugs}')
             EngineModelContext.use_local_models_slugs.update(local_model_slugs)
 
         if args['input'] != '-':

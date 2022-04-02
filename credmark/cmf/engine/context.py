@@ -86,6 +86,11 @@ class EngineModelContext(ModelContext):
 
             web3_registry = Web3Registry(chain_to_provider_url)
 
+            EngineModelContext.use_local_models_slugs.update(model_loader.loaded_dev_model_slugs())
+            cls.logger.debug(
+                'Using local models (requested + dev models): '
+                f'{EngineModelContext.use_local_models_slugs}')
+
             if block_number is None:
                 # Lookup latest block number if none specified
                 block_number = cls.get_latest_block_number(api, chain_id)

@@ -3,7 +3,7 @@ import os
 import importlib
 import inspect
 import json
-from typing import Union, Type, List
+from typing import Set, Union, Type, List
 from packaging import version
 from requests.structures import CaseInsensitiveDict
 from credmark.cmf.model import Model
@@ -39,6 +39,9 @@ class ModelLoader:
 
         self.manifest_file = manifest_file
 
+        self.__loading_dev_models = False
+        self.__dev_model_slugs: Set[str] = set()
+
         if manifest_file is not None and os.path.isfile(manifest_file):
             self.logger.debug(f'Loading manifest from {manifest_file}')
             manifest = self._load_json_file(manifest_file)
@@ -51,7 +54,9 @@ class ModelLoader:
 
         if load_dev_models:
             self.logger.debug('Loading dev models')
+            self.__loading_dev_models = True
             self._try_model_module(DEV_MODELS_PATH.replace('/', '.'), DEV_MODELS_PATH)
+            self.__loading_dev_models = False
 
         self.__model_manifest_list.sort(key=lambda m: m['slug'])
 
@@ -81,6 +86,9 @@ class ModelLoader:
 
     def loaded_model_manifests(self):
         return self.__model_manifest_list
+
+    def loaded_dev_model_slugs(self):
+        return self.__dev_model_slugs
 
     def _search_paths_for_model_files(self, paths: List[str]):
         for path in paths:
@@ -179,21 +187,32 @@ class ModelLoader:
         except version.InvalidVersion:
             raise Exception(f'${model_class} has invalid version ({ver})')
 
-        slug_ver = f'{slug}:{ver}'
+        self._add_slug_version_model_class(slug, pver, model_class)
+
+    def _add_slug_version_model_class(self,
+                                      slug: str,
+                                      ver: version.Version,
+                                      model_class: Type[Model]):
+        slug_ver = f'{slug}:{str(ver)}'
+
         if slug_ver in self.__slug_version_to_class_dict:
             raise Exception(
                 f'Duplicate model slug ({slug}) and version ({ver}) found. Skipping duplicate.')
 
-        self.logger.debug(f'Added model {slug} {ver}')
+        self.logger.debug(
+            f'Added {"dev " if self.__loading_dev_models else ""}model {slug} {str(ver)}')
 
-        self.__slug_version_to_class_dict[f'{slug}:{ver}'] = model_class
+        self.__slug_version_to_class_dict[slug_ver] = model_class
 
         verlist = self.__slug_to_versions_dict.get(slug)
         if verlist is not None:
-            verlist.append(pver)
+            verlist.append(ver)
             verlist.sort()
         else:
-            self.__slug_to_versions_dict[slug] = [pver]
+            self.__slug_to_versions_dict[slug] = [ver]
+
+        if self.__loading_dev_models:
+            self.__dev_model_slugs.add(slug)
 
     def _load_module_class(self, modulename, name):
         """ Import a named object from a module in the context of this function.
