@@ -93,12 +93,17 @@ def main():
                             'if value is "-" it will read input JSON from stdin.')
     parser_run.add_argument('-v', '--model_version', default=None, required=False,
                             help='Version of the model to run. Defaults to latest.')
+    parser_run.add_argument('-j', '--format_json', action='store_true', default=False,
+                            help='Format output json to be more readable')
+    parser_run.add_argument(
+        '-l', '--use_local_models', default=None,
+        help='Comma-separated list of model slugs for models that should '
+        'favor use of the local version. This is only required when a model is '
+        'calling another model.')
     parser_run.add_argument('--provider_url_map', required=False, default=None,
                             help='JSON object of chain id to Web3 provider HTTP URL. '
                             'Overrides settings in env vars.')
     add_api_url_arg(parser_run)
-    parser_run.add_argument('-j', '--format_json', action='store_true', default=False,
-                            help='Format output json to be more readable')
     parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
     parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
     parser_run.add_argument('model-slug', default='(missing model-slug arg)',
@@ -417,6 +422,12 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
         run_id: Union[str, None] = args['run_id']
         depth: int = args['depth']
         format_json: bool = args['format_json']
+        use_local_models: Union[str, None] = args['use_local_models']
+
+        if use_local_models is not None and len(use_local_models):
+            local_model_slugs = use_local_models.split(',')
+            logger.debug(f'Use local models {local_model_slugs}')
+            EngineModelContext.use_local_models_slugs.update(local_model_slugs)
 
         if args['input'] != '-':
             input = json.loads(args['input'])
