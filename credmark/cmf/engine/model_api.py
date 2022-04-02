@@ -45,6 +45,7 @@ class ModelApi:
         self.__url = url
         self.__internal_api = internal_api
         self.__api_key = api_key
+        self.__session = requests.Session()
 
     def _get(self, url):
         """
@@ -56,7 +57,7 @@ class ModelApi:
         resp = None
 
         try:
-            resp = requests.get(url, headers=headers)
+            resp = self.__session.get(url, headers=headers)
             resp.raise_for_status()
             return resp.json()
         except requests.exceptions.ConnectionError as err:
@@ -129,7 +130,7 @@ class ModelApi:
         resp_obj = None
         url = urljoin(self.__url, RUN_MODEL_PATH)
         try:
-            resp = requests.post(url, json=req, headers=headers, timeout=RUN_REQUEST_TIMEOUT)
+            resp = self.__session.post(url, json=req, headers=headers, timeout=RUN_REQUEST_TIMEOUT)
             resp.raise_for_status()
             resp_obj = resp.json()
 
