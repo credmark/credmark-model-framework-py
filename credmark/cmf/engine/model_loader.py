@@ -11,6 +11,11 @@ from credmark.cmf.engine.errors import ModelManifestWriteError
 from credmark.cmf.model.errors import ModelNotFoundError
 from credmark.cmf.model import validate_model_slug
 
+# "Dev models" are models that are implemented on the server
+# but we have a local version used for development (dev_mode).
+# Typically they are models that call other models and they run
+# locally so they can call other local-only models.
+
 DEV_MODELS_PATH = 'credmark/cmf/engine/dev_models/series_models'
 
 
