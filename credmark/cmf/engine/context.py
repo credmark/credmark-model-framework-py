@@ -25,10 +25,10 @@ def extract_most_recent_run_model_traceback(exc_traceback, skip=1):
     # in this file (or superclass context) until it comes back to
     # the context.
     context_files = set([__file__,
-                         __file__.replace('credmark/model/engine/context',
-                                          'credmark/model/context'),
-                         __file__.replace('credmark/model/engine/context',
-                                          'credmark/model/engine/model_api')])
+                         __file__.replace('credmark/cmf/engine/context',
+                                          'credmark/cmf/model/context'),
+                         __file__.replace('credmark/cmf/engine/context',
+                                          'credmark/cmf/engine/model_api')])
     ptb = []
     in_other_file = False
     tb = traceback.extract_tb(exc_traceback)
