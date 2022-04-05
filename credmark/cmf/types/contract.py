@@ -1,5 +1,6 @@
 
 from typing import (
+    Any,
     Union,
     List,
 )
@@ -8,9 +9,8 @@ from web3.contract import Contract as Web3Contract
 import json
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError
-from .account import Account, Address
+from .account import Account
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
-from .data.transparent_proxy_data import UPGRADEABLE_CONTRACT_ABI
 
 
 class Contract(Account):
@@ -21,12 +21,13 @@ class Contract(Account):
         constructor_args: Union[str, None] = None
         abi_hash: Union[str, None] = None
         abi: Union[List[dict], str, None] = None
-        proxy_for: Union[Account, None] = None
+        is_transparent_proxy: Union[bool, None] = None
+        proxy_implementation: Union[Any, None] = None
 
     _meta: ContractMetaData = PrivateAttr(
         default_factory=lambda: Contract.ContractMetaData())  # pylint: disable=unnecessary-lambda
     _instance: Union[Web3Contract, None] = PrivateAttr(default=None)
-    _proxy_for = PrivateAttr(default=None)
+    _proxy_implementation = PrivateAttr(default=None)
     _loaded = PrivateAttr(default=False)
 
     class Config:
@@ -52,7 +53,7 @@ class Contract(Account):
         if isinstance(data.get('abi'), str):
             self._meta.abi = json.loads(data['abi'])
         self._instance = None
-        self._proxy_for = None
+        self._proxy_implementation = None
 
     def _load(self):
         if self._loaded:
@@ -67,10 +68,11 @@ class Contract(Account):
             self._meta.contract_name = res.get('contract_name')
             self._meta.constructor_args = res.get('constructor_args')
             self._meta.abi = res.get('abi')
+            self._meta.is_transparent_proxy = res.get('proxy', 0) == "1"
+            # TODO: Implementation needs to be validated on the db
+            if self._meta.is_transparent_proxy:
+                self._meta.proxy_implementation = Contract(address=res.get('implementation'))
             self._loaded = True
-            if self.is_transparent_proxy:
-                if self.proxy_for is not None:
-                    self._meta.proxy_for = Account(address=self.proxy_for.address)
         else:
             if self._meta.abi is None:
                 raise ModelDataError(f'abi not available for address {self.address}')
@@ -92,38 +94,18 @@ class Contract(Account):
     def proxy_for(self):
         if not self._loaded:
             self._load()
-        if self._proxy_for is None and self.is_transparent_proxy:
-            context = credmark.cmf.model.ModelContext.current_context()
-
-            # TODO: Get this from the database, Not the RPC
-            events = self.instance.events.Upgraded.createFilter(
-                fromBlock=0, toBlock=context.block_number).get_all_entries()
-
-            if len(events) > 0:
-                self._proxy_for = Contract(address=events[len(events) - 1].args.implementation)
-            elif self.constructor_args is not None and len(self.constructor_args) >= 40:
-                self._proxy_for = Contract(address=Address('0x' + self.constructor_args[-40:]))
-
-        return self._proxy_for
+        return self._meta.proxy_implementation
 
     @ property
     def functions(self):
-        if self.proxy_for is not None:
-            context = credmark.cmf.model.ModelContext.current_context()
-            return context.web3.eth.contract(
-                address=context.web3.toChecksumAddress(self.address),
-                abi=self.proxy_for.abi
-            ).functions
+        if isinstance(self.proxy_for, Contract):
+            return self.proxy_for.functions
         return self.instance.functions
 
     @ property
     def events(self):
-        if self.proxy_for is not None:
-            context = credmark.cmf.model.ModelContext.current_context()
-            return context.web3.eth.contract(
-                address=context.web3.toChecksumAddress(self.address),
-                abi=self.proxy_for.abi
-            ).events
+        if isinstance(self.proxy_for, Contract):
+            return self.proxy_for.events
         return self.instance.events
 
     @ property
@@ -159,16 +141,9 @@ class Contract(Account):
 
     @ property
     def is_transparent_proxy(self):
-        # TODO : Find a more definitive token proxy identification mechanism
-        if self._meta.contract_name == "InitializableAdminUpgradeabilityProxy":
-            return True
-        if self._meta.contract_name == "AdminUpgradeabilityProxy":
-            return True
-        if self._meta.contract_name == "FiatTokenProxy":
-            return True
-        if self._meta.abi == UPGRADEABLE_CONTRACT_ABI:
-            return True
-        return False
+        if not self._loaded:
+            self._load()
+        return self._meta.is_transparent_proxy
 
 
 class ContractInfo(Contract):
