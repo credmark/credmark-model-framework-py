@@ -68,7 +68,7 @@ class Contract(Account):
             self._meta.contract_name = res.get('contract_name')
             self._meta.constructor_args = res.get('constructor_args')
             self._meta.abi = res.get('abi')
-            self._meta.is_transparent_proxy = res.get('proxy', 0) == 1
+            self._meta.is_transparent_proxy = res.get('proxy', 0) == "1"
             # TODO: Implementation needs to be validated on the db
             if self._meta.is_transparent_proxy:
                 self._meta.proxy_implementation = Contract(address=res.get('implementation'))
