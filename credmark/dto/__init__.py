@@ -1,21 +1,74 @@
-from abc import abstractproperty
+# pylint: disable=locally-disabled, unused-import
 
-from .dto import (DTO,
-                  DTOField,
-                  DTOValidationError,
-                  GenericDTO,
-                  IterableListGenericDTO,
-                  EmptyInput,
-                  fixstr,
-                  constr,
-                  confloat,
-                  conint,
-                  validator,
-                  DTOJson,
-                  DTOExtra,
-                  PrivateAttr,
-                  HexStr,
-                  )
+import re
+from typing import Any, Dict, Generic, Iterator, List, TypeVar
+from pydantic import (
+    BaseModel as DTO,
+    Field as DTOField,
+    ValidationError as DTOValidationError,
+    constr,
+    confloat,
+    conint,
+    validator,
+    Json as DTOJson,
+    Extra as DTOExtra,
+    PrivateAttr,
+)
+# A GenericDTO is a kind of DTO: isintance(g, DTO) == True
+from pydantic.generics import GenericModel as GenericDTO
+
+
+def fixstr(fixed_length):
+    return constr(min_length=fixed_length,
+                  max_length=fixed_length)
+
+
+class HexStr(str):
+    """
+    Hex string DTO field
+    """
+    @classmethod
+    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
+        field_schema.update(type='string', format='hex-string')
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, hex_str: str) -> str:
+        r_hex = r'(0x)?[0-9a-fA-F]+'
+
+        m = re.fullmatch(r_hex, hex_str)
+        if not m:
+            raise ValueError('Invalid hex string: {hex_str}')
+        return hex_str
+
+
+DTOCLS = TypeVar('DTOCLS')
+
+
+class IterableListGenericDTO(GenericDTO, Generic[DTOCLS]):
+    _iterator: str
+
+    def __iter__(self) -> Iterator[DTOCLS]:
+        return getattr(self, self._iterator).__iter__()
+
+    def __getitem__(self, key) -> DTOCLS:
+        return getattr(self, self._iterator).__getitem__(key)
+
+    def append(self, obj):
+        return getattr(self, self._iterator).append(obj)
+
+    def extend(self, obj):
+        return getattr(self, self._iterator).extend(obj)
+
+
+class EmptyInput(DTO):
+    """
+    The model does not require any input. This is an empty object.
+    """
+
 
 from .dto_schema import (
     cross_examples,
@@ -24,5 +77,7 @@ from .dto_schema import (
     print_example,
 )
 
-from .encoder import json_dump, json_dumps
-from .transform import transform_data_for_dto
+from .encoder import (
+    json_dump,
+    json_dumps
+)

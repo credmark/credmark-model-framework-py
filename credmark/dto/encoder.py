@@ -17,11 +17,11 @@ class PydanticJSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
-def json_dump(obj, fp):  # pylint: disable=invalid-name
+def json_dump(obj, fp, **json_dump_args):  # pylint: disable=invalid-name
     """Dump an obj that may contain embedded DTOs to json"""
-    return json.dump(obj, fp, cls=PydanticJSONEncoder)
+    return json.dump(obj, fp, cls=PydanticJSONEncoder, **json_dump_args)
 
 
-def json_dumps(obj):
+def json_dumps(obj, **json_dump_args):
     """Dump an obj that may contain embedded DTOs to json string"""
-    return json.dumps(obj, cls=PydanticJSONEncoder)
+    return json.dumps(obj, cls=PydanticJSONEncoder, **json_dump_args)
