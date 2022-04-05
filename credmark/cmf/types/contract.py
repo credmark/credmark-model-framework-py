@@ -9,7 +9,7 @@ from web3.contract import Contract as Web3Contract
 import json
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError
-from .account import Account, Address
+from .account import Account
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
 
 
