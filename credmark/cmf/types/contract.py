@@ -11,6 +11,60 @@ import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError
 from .account import Account
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
+import logging
+
+
+class Singleton:
+    def __new__(cls, *args, **kw):
+        if not hasattr(cls, '_instance'):
+            orig = super(Singleton, cls)
+            cls._instance = orig.__new__(cls, *args, **kw)
+        return cls._instance
+
+
+class ContractMetaCache(Singleton):
+    _cache = {}
+    _trace = False
+
+    def get(self, chain_id, block_number, address):
+        if chain_id not in self._cache:
+            # print(f'[Cache] Not found in cache {chain_id=}/{address}/{block_number}')
+            return False, {}
+
+        needle = self._cache[chain_id].get(address, None)
+        if needle is None:
+            if self._trace:
+                logging.info(f'[Cache] Not found in cache {chain_id=}/{address}/{block_number}')
+            return False, {}
+
+        if needle['block_number'] <= block_number:
+            # print(f'[Cache] Return from cache {chain_id=}/{address}/{block_number}')
+            return True, needle['meta']
+
+        if self._trace:
+            logging.info(
+                f'[Cache] Not return from cache has a larger block_number '
+                f'{chain_id=}/{address}/{block_number} > {needle["block_number"]}')
+        return False, {}
+
+    def put(self, chain_id, block_number, address, meta):
+        if chain_id not in self._cache:
+            self._cache[chain_id] = {}
+
+        if address not in self._cache[chain_id]:
+            if self._trace:
+                logging.info(f'[Cache] Save to cache {chain_id=}/{address}/{block_number}')
+            self._cache[chain_id][address] = {'meta': meta, 'block_number': block_number}
+            return
+        else:
+            if self._cache[chain_id][address]['block_number'] > block_number:
+                if self._trace:
+                    logging.info(
+                        f'[Cache] Save to cache {chain_id=}/{address}/{block_number} '
+                        f'updated to earlier {block_number}')
+                self._cache[chain_id][address]['block_number'] = block_number
+                assert self._cache[chain_id][address]['meta'] == meta
+            return
 
 
 class Contract(Account):
@@ -60,8 +114,19 @@ class Contract(Account):
             return
         context = credmark.cmf.model.ModelContext.current_context()
 
-        contract_q_results = context.run_model(
-            'contract.metadata', {'contractAddress': self.address})
+        in_cache, cached_meta = ContractMetaCache().get(
+            context.chain_id,
+            context.block_number,
+            self.address)
+        if in_cache:
+            contract_q_results = cached_meta
+        else:
+            contract_q_results = context.run_model('contract.metadata',
+                                                   {'contractAddress': self.address})
+            ContractMetaCache().put(context.chain_id,
+                                    context.block_number,
+                                    self.address,
+                                    contract_q_results)
 
         if len(contract_q_results['contracts']) > 0:
             res = contract_q_results['contracts'][0]
@@ -78,17 +143,20 @@ class Contract(Account):
                 raise ModelDataError(f'abi not available for address {self.address}')
         self._loaded = True
 
-    @property
-    def instance(self):
+    @ property
+    def instance(self) -> Web3Contract:
         if self._instance is None:
-            context = credmark.cmf.model.ModelContext.current_context()
-            if self.abi is None:
-                self._load()
-            self._instance = context.web3.eth.contract(
-                address=context.web3.toChecksumAddress(self.address),
-                abi=self.abi
-            )
-        return self._instance
+            if self.abi is not None:
+                context = credmark.cmf.model.ModelContext.current_context()
+                self._instance = context.web3.eth.contract(
+                    address=context.web3.toChecksumAddress(self.address),
+                    abi=self.abi
+                )
+                return self._instance
+            else:
+                raise ModelDataError('Unable to load the ABI of the contract')
+        else:
+            return self._instance
 
     @property
     def proxy_for(self):
@@ -96,11 +164,16 @@ class Contract(Account):
             self._load()
         return self._meta.proxy_implementation
 
-    @ property
+    @property
     def functions(self):
-        if isinstance(self.proxy_for, Contract):
-            return self.proxy_for.functions
-        return self.instance.functions
+        if self.proxy_for is not None:
+            context = credmark.cmf.model.ModelContext.current_context()
+            return context.web3.eth.contract(
+                address=context.web3.toChecksumAddress(self.address),
+                abi=self.proxy_for.abi
+            ).functions
+        else:
+            return self.instance.functions
 
     @ property
     def events(self):
