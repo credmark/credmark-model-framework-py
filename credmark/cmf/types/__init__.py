@@ -6,6 +6,6 @@ from .block_number import BlockNumber
 from .contract import Contract, Contracts
 from .portfolio import Portfolio
 from .position import Position, NativePosition, TokenPosition
-from .price import Price, TokenPairPrice
+from .price import Price, TokenPairPrice, PriceList
 from .token_wei import TokenWei
 from .token import Token, Tokens, NativeToken
