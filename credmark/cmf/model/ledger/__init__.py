@@ -1,5 +1,7 @@
 from typing import Type, Union, List
 
+from credmark.dto import DTO, DTOField
+
 from .errors import (
     InvalidColumnException,
     InvalidQueryException,
@@ -12,6 +14,15 @@ from credmark.cmf.types.ledger import (
 )
 
 
+class LedgerAggregate(DTO):
+    """
+    An aggregate column in a query, defined by an expression and
+    the name to use as the column name in the returned data.
+    """
+    expression: str = DTOField(..., description='Aggregate expression, for example "MAX(GAS_USED)"')
+    asName: str = DTOField(..., description='Returned as data column name')
+
+
 class Ledger:
 
     Transaction = TransactionTable
@@ -22,6 +33,14 @@ class Ledger:
     Receipt = ReceiptTable
     Token = TokenTable
     TokenTransfer = TokenTransferTable
+
+    @classmethod
+    def Aggregate(cls, expression: str, as_name: str):  # pylint: disable=invalid-name
+        """
+        Return a new LedgerAggregate instance that can be used in
+        an aggregates list.
+        """
+        return LedgerAggregate(expression=expression, asName=as_name)
 
     def __init__(self, context):
         # We type the property here to avoid circular ref
@@ -41,135 +60,179 @@ class Ledger:
     def _send_cwgo_query(self,  # pylint: disable=too-many-arguments
                          model_slug: str,
                          table_def: Type[LedgerTable],
-                         columns: List[str],
+                         columns: Union[List[str], None] = None,
                          where: Union[str, None] = None,
                          group_by: Union[str, None] = None,
                          order_by: Union[str, None] = None,
                          limit: Union[str, None] = None,
-                         offset: Union[str, None] = None) -> LedgerModelOutput:
-        self._validate_columns(model_slug, columns, table_def)
-
-        if where is None and limit is None:
+                         offset: Union[str, None] = None,
+                         aggregates: Union[List[LedgerAggregate], None] = None,
+                         having: Union[str, None] = None) -> LedgerModelOutput:
+        if not columns and not aggregates:
             raise InvalidQueryException(
-                model_slug, f'{model_slug} call must have a where or limit value set.')
+                model_slug, f'{model_slug} call must have at least one column or aggregate.')
+
+        if columns is None:
+            columns = []
+        else:
+            self._validate_columns(model_slug, columns, table_def)
+
+        if where is None and limit is None and not aggregates:
+            raise InvalidQueryException(
+                model_slug,
+                f'{model_slug} call must have a where or limit value for non-aggregate queries.')
 
         return self.context.run_model(model_slug,
                                       {'columns': columns,
+                                       'aggregates': aggregates,
                                        'where': where,
                                        'groupBy': group_by,
+                                       'having': having,
                                        'orderBy': order_by,
                                        'limit': limit,
                                        'offset': offset},
                                       return_type=LedgerModelOutput)
 
-    def get_transactions(self, columns: List[str],
+    def get_transactions(self,  # pylint: disable=too-many-arguments
+                         columns: Union[List[str], None] = None,
                          where: Union[str, None] = None,
                          group_by: Union[str, None] = None,
                          order_by: Union[str, None] = None,
                          limit: Union[str, None] = None,
-                         offset: Union[str, None] = None):
+                         offset: Union[str, None] = None,
+                         aggregates: Union[List[LedgerAggregate], None] = None,
+                         having: Union[str, None] = None):
         """
         Query data from the Transactions table.
         """
         return self._send_cwgo_query('ledger.transaction_data',
                                      TransactionTable,
                                      columns, where, group_by,
-                                     order_by, limit, offset)
+                                     order_by, limit, offset,
+                                     aggregates, having)
 
-    def get_traces(self, columns: List[str],
+    def get_traces(self,  # pylint: disable=too-many-arguments
+                   columns: Union[List[str], None] = None,
                    where: Union[str, None] = None,
                    group_by: Union[str, None] = None,
                    order_by: Union[str, None] = None,
                    limit: Union[str, None] = None,
-                   offset: Union[str, None] = None):
+                   offset: Union[str, None] = None,
+                   aggregates: Union[List[LedgerAggregate], None] = None,
+                   having: Union[str, None] = None):
         """
         Query data from the Traces table.
         """
         return self._send_cwgo_query('ledger.trace_data',
                                      TraceTable,
                                      columns, where, group_by,
-                                     order_by, limit, offset)
+                                     order_by, limit, offset,
+                                     aggregates, having)
 
-    def get_logs(self, columns: List[str],
+    def get_logs(self,  # pylint: disable=too-many-arguments
+                 columns: Union[List[str], None] = None,
                  where: Union[str, None] = None,
                  group_by: Union[str, None] = None,
                  order_by: Union[str, None] = None,
                  limit: Union[str, None] = None,
-                 offset: Union[str, None] = None):
+                 offset: Union[str, None] = None,
+                 aggregates: Union[List[LedgerAggregate], None] = None,
+                 having: Union[str, None] = None):
         """
         Query data from the Logs table.
         """
         return self._send_cwgo_query('ledger.log_data',
                                      LogTable,
                                      columns, where, group_by,
-                                     order_by, limit, offset)
+                                     order_by, limit, offset,
+                                     aggregates, having)
 
-    def get_contracts(self, columns: List[str],
+    def get_contracts(self,  # pylint: disable=too-many-arguments
+                      columns: Union[List[str], None] = None,
                       where: Union[str, None] = None,
                       group_by: Union[str, None] = None,
                       order_by: Union[str, None] = None,
                       limit: Union[str, None] = None,
-                      offset: Union[str, None] = None):
+                      offset: Union[str, None] = None,
+                      aggregates: Union[List[LedgerAggregate], None] = None,
+                      having: Union[str, None] = None):
         """
         Query data from the Contracts table.
         """
         return self._send_cwgo_query('ledger.contract_data',
                                      ContractTable,
                                      columns, where, group_by,
-                                     order_by, limit, offset)
+                                     order_by, limit, offset,
+                                     aggregates, having)
 
-    def get_blocks(self, columns: List[str],
+    def get_blocks(self,  # pylint: disable=too-many-arguments
+                   columns: Union[List[str], None] = None,
                    where: Union[str, None] = None,
                    group_by: Union[str, None] = None,
                    order_by: Union[str, None] = None,
                    limit: Union[str, None] = None,
-                   offset: Union[str, None] = None):
+                   offset: Union[str, None] = None,
+                   aggregates: Union[List[LedgerAggregate], None] = None,
+                   having: Union[str, None] = None):
         """
         Query data from the Blocks table.
         """
         return self._send_cwgo_query('ledger.block_data',
                                      BlockTable,
                                      columns, where, group_by,
-                                     order_by, limit, offset)
+                                     order_by, limit, offset,
+                                     aggregates, having)
 
-    def get_receipts(self, columns: List[str],
+    def get_receipts(self,  # pylint: disable=too-many-arguments
+                     columns: Union[List[str], None] = None,
                      where: Union[str, None] = None,
                      group_by: Union[str, None] = None,
                      order_by: Union[str, None] = None,
                      limit: Union[str, None] = None,
-                     offset: Union[str, None] = None):
+                     offset: Union[str, None] = None,
+                     aggregates: Union[List[LedgerAggregate], None] = None,
+                     having: Union[str, None] = None):
         """
         Query data from the Receipts table.
         """
         return self._send_cwgo_query('ledger.receipt_data',
                                      ReceiptTable,
                                      columns, where, group_by,
-                                     order_by, limit, offset)
+                                     order_by, limit, offset,
+                                     aggregates, having)
 
-    def get_erc20_tokens(self, columns: List[str],
+    def get_erc20_tokens(self,  # pylint: disable=too-many-arguments
+                         columns: Union[List[str], None] = None,
                          where: Union[str, None] = None,
                          group_by: Union[str, None] = None,
                          order_by: Union[str, None] = None,
                          limit: Union[str, None] = None,
-                         offset: Union[str, None] = None):
+                         offset: Union[str, None] = None,
+                         aggregates: Union[List[LedgerAggregate], None] = None,
+                         having: Union[str, None] = None):
         """
         Query data from the ERC20 Tokens table.
         """
         return self._send_cwgo_query('ledger.erc20_token_data',
                                      TokenTable,
                                      columns, where, group_by,
-                                     order_by, limit, offset)
+                                     order_by, limit, offset,
+                                     aggregates, having)
 
-    def get_erc20_transfers(self, columns: List[str],
+    def get_erc20_transfers(self,  # pylint: disable=too-many-arguments
+                            columns: Union[List[str], None] = None,
                             where: Union[str, None] = None,
                             group_by: Union[str, None] = None,
                             order_by: Union[str, None] = None,
                             limit: Union[str, None] = None,
-                            offset: Union[str, None] = None):
+                            offset: Union[str, None] = None,
+                            aggregates: Union[List[LedgerAggregate], None] = None,
+                            having: Union[str, None] = None):
         """
         Query data from the ERC20 Token Transfers table.
         """
         return self._send_cwgo_query('ledger.erc20_token_transfer_data',
                                      TokenTransferTable,
                                      columns, where, group_by,
-                                     order_by, limit, offset)
+                                     order_by, limit, offset,
+                                     aggregates, having)
