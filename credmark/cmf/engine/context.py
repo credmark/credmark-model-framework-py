@@ -407,7 +407,7 @@ class EngineModelContext(ModelContext):
                                       version=model_class.version,
                                       chainId=context.chain_id,
                                       blockNumber=context.block_number,
-                                      trace=trace[:1000] if trace is not None else None))
+                                      trace=trace if trace is not None else None))
             raise err
 
         finally:
