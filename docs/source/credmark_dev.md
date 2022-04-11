@@ -3,6 +3,7 @@
 `credmark-dev` is a command-line tool installed with the `credmark-model-framework`. It can be used to list, run, and get docs for models.
 
 ## `help` command
+
 ```
 $ credmark-dev --help
 
@@ -41,12 +42,13 @@ Commands:
     clean (remove-manifest)
                         Clean model manifest
 ```
+
 ## `run` command
 
 Below -h command shows the details of options available for run commands.
 
 ```
->credmark-dev run -h
+$ credmark-dev run -h
 
 usage: credmark-dev run [-h] [-b BLOCK_NUMBER] [-c CHAIN_ID] [-i INPUT] [-v MODEL_VERSION] [--provider_url_map PROVIDER_URL_MAP] [--api_url API_URL] model-slug
 
@@ -80,7 +82,7 @@ Note: if chain ID is not mentioned explicitly in the parameter, it defaults to 1
 See the example below. Here, we are running the model “cmk.circulating-supply” at block_number 14000000.
 
 ```
->Credmark-dev run -b 14000000 cmk.circulating-supply -i "{}"
+$ credmark-dev run -b 14000000 cmk.circulating-supply -i "{}"
 
 {"slug": "cmk.circulating-supply", "version": "1.0", "output": {"result": 28314402605762084044696668}, "dependencies": {"cmk.total-supply": {"1.0": 1}, "cmk.circulating-supply": {"1.0": 1}}}
 ```
@@ -90,7 +92,7 @@ See the example below. Here, we are running the model “cmk.circulating-supply�
 Below `-h` command shows the details of options available for list commands.
 
 ```
->credmark-dev list -h
+$ credmark-dev list -h
 
 usage: credmark-dev list [-h] [--manifests] [--json]
 
