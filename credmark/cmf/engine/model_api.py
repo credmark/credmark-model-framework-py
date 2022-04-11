@@ -152,8 +152,6 @@ class ModelApi:
                 f'Error running api request for {slug} {self.__url}: {err}')
             if resp is not None:
                 logger.error(f'Error api response {resp.text}')
-                if resp.status_code == 404:
-                    raise ModelNotFoundError.create(slug, version, 'Model not found from api')
 
                 try:
                     error_result = resp.json()
