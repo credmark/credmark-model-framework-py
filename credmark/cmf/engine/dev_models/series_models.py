@@ -40,11 +40,14 @@ def run_model_for_block_range(context: ModelContext,
                               model_slug: str,
                               model_input: Union[DTO, dict, None],
                               model_version: Union[str, None]):
+    if model_input is None:
+        model_input = {}
+    if model_version == '':
+        model_version = None
+
     block_series = BlockSeries[dict]()
     for block in block_range:
         block_number = block.blockNumber
-        if model_input is None:
-            model_input = {}
 
         try:
             run_output = context.run_model(
