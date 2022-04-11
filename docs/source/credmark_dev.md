@@ -2,6 +2,8 @@
 
 `credmark-dev` is a command-line tool installed with the `credmark-model-framework`. It can be used to list, run, and get docs for models.
 
+## `help` command
+
 ```
 $ credmark-dev --help
 
@@ -40,3 +42,82 @@ Commands:
     clean (remove-manifest)
                         Clean model manifest
 ```
+
+## `run` command
+
+Below -h command shows the details of options available for run commands.
+
+```
+$ credmark-dev run -h
+
+usage: credmark-dev run [-h] [-b BLOCK_NUMBER] [-c CHAIN_ID] [-i INPUT] [-v MODEL_VERSION] [--provider_url_map PROVIDER_URL_MAP] [--api_url API_URL] model-slug
+
+positional arguments:
+  model-slug            Slug for the model to run.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -b BLOCK_NUMBER, --block_number BLOCK_NUMBER
+                        Block number used for the context of the model run. If not specified, it is set to the latest block of the chain.
+  -c CHAIN_ID, --chain_id CHAIN_ID
+                        [OPTIONAL] The chain ID. Defaults to 1.
+  -i INPUT, --input INPUT
+                        [OPTIONAL] Input JSON or if value is "-" it will read input JSON from stdin.
+  -v MODEL_VERSION, --model_version MODEL_VERSION
+                        [OPTIONAL] Version of the model to run. Defaults to latest.
+  --provider_url_map PROVIDER_URL_MAP
+                        [OPTIONAL] JSON object of chain id to Web3 provider HTTP URL. Overrides settings in env vars.
+  --api_url API_URL     [OPTIONAL] Credmark API url. Defaults to the standard API gateway. You do not normally need to set this.
+  --api_url API_URL     [OPTIONAL] Credmark API url
+```
+
+To call any model we can specify the output by providing below parameters (they're not necessarily required):
+
+- `-b` or `–block_number` : to define against which block number the model should run. If not specified, it uses the "latest" block from our ledger db.
+- `-i` or `–input` : to provide input for a model in a predefined structure.(you can run command `credmark-dev list --manifests` to see the input format required for each model. See example below). If not provided it will default to “{}”.
+  Model-slug: Name of the model (slug) to call the model.
+
+Note: if chain ID is not mentioned explicitly in the parameter, it defaults to 1. If the model is using web 3 instance then chain id (and blockchain) will be picked from the .env file we defined during setup (refer to “configure environment variable” section). If the model is using Credmark database then, by default, it will refer to the Ethereum blockchain.
+
+See the example below. Here, we are running the model “cmk.circulating-supply” at block_number 14000000.
+
+```
+$ credmark-dev run -b 14000000 cmk.circulating-supply -i "{}"
+
+{"slug": "cmk.circulating-supply", "version": "1.0", "output": {"result": 28314402605762084044696668}, "dependencies": {"cmk.total-supply": {"1.0": 1}, "cmk.circulating-supply": {"1.0": 1}}}
+```
+
+## `list` command
+
+Below `-h` command shows the details of options available for list commands.
+
+```
+$ credmark-dev list -h
+
+usage: credmark-dev list [-h] [--manifests] [--json]
+
+optional arguments:
+  -h, --help   show this help message and exit
+  --manifests
+  --json
+```
+
+Note: You can also run `list-models` command alternatively.
+
+Example below shows simple output (list of all models and their version) of list command:
+
+```
+>credmark-dev list -h
+
+Loaded models:
+
+ - var: ['1.0']
+ - cmk.total-supply: ['1.0']
+ - cmk.circulating-supply: ['1.0']
+ - xcmk.total-supply: ['1.0']
+[...]
+```
+
+You can also get the list result in different formats using `--json` or `--manifest`.
+
+**Note:** the commands `build` and `clean` does not need to be used.
