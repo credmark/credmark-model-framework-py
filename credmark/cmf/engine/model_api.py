@@ -162,7 +162,7 @@ class ModelApi:
                         f'Model run error response: {resp.text}', str(resp.status_code))
 
                 raise ModelRunRequestError(
-                    error_result.get('message', 'Error response from runner api'),
+                    str(error_result.get('message', 'Error response from runner api')),
                     str(error_result.get('statusCode', 500)),
                 )
 
