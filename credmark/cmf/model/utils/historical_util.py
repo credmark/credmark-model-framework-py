@@ -61,8 +61,6 @@ class HistoricalUtil:
         :param model_return_type: the DTO class or dict for the output of the model
              being run. This will be the type of the BlockSeriesRow.output
         """
-        if model_version is None:
-            model_version = ''
         if model_input is None:
             model_input = {}
         run_return_type = BlockSeries[model_return_type]
