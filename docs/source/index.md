@@ -20,6 +20,7 @@ usage
 how_to
 credmark_dev
 components
+errors
 model_docs
 gateway_api
 api
