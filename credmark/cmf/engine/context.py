@@ -9,7 +9,8 @@ from credmark.cmf.model.context import ModelContext
 from credmark.cmf.engine.errors import ModelRunRequestError
 from credmark.cmf.model.errors import MaxModelRunDepthError, ModelBaseError, \
     ModelEngineError, ModelInputError, ModelNotFoundError, ModelInvalidStateError, \
-    ModelOutputError, ModelRunError, ModelCallStackEntry, ModelTypeError
+    ModelOutputError, ModelRunError, ModelCallStackEntry, ModelTypeError, \
+    create_instance_from_error_dict
 from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.dto.transform import DataTransformError, transform_data_for_dto
@@ -140,8 +141,11 @@ class EngineModelContext(ModelContext):
 
     @classmethod
     def get_latest_block_number(cls, api: ModelApi, chain_id: int):
-        _s, _v, output, _d = api.run_model(RPC_GET_LATEST_BLOCK_NUMBER_SLUG,
-                                           None, chain_id, 0, {})
+        _s, _v, output, _e, _d = api.run_model(RPC_GET_LATEST_BLOCK_NUMBER_SLUG,
+                                               None, chain_id, 0, {}, raise_error_results=True)
+        if output is None:
+            raise Exception('Error response getting latest block number')
+
         block_number: int = output['blockNumber']
         return block_number
 
@@ -291,14 +295,19 @@ class EngineModelContext(ModelContext):
 
         elif try_remote and api is not None:
             try:
-                # Any error raised will already have a call stack entry
-                slug, version, output, dependencies = api.run_model(
+                slug, version, output, error, dependencies = api.run_model(
                     slug, version, self.chain_id,
                     block_number if block_number is not None else self.block_number,
                     input if input is None or isinstance(input, dict) else input.dict(),
                     self.run_id, self.__depth)
+
                 if dependencies:
                     self._add_dependencies(dependencies)
+
+                # Any error raised will already have a call stack entry
+                if error is not None:
+                    raise create_instance_from_error_dict(error)
+
             except ModelNotFoundError:
                 # We always fallback to local if model not found on server.
                 if model_class is not None:

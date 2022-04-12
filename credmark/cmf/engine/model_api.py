@@ -100,8 +100,10 @@ class ModelApi:
                   block_number: int,
                   input: Union[dict, None],
                   run_id: Union[str, None] = None,
-                  depth: Union[int, None] = None) -> \
-            tuple[str, str, dict[str, Any], dict[str, Any]]:
+                  depth: Union[int, None] = None,
+                  raise_error_results=False) -> \
+            tuple[str, str, Union[dict[str, Any], None],
+                  Union[dict[str, Any], None], dict[str, Any]]:
 
         # We use json_dumps to ensure any DTOs embedded in a dict
         # are serialized properly. If we just set the input in the
@@ -133,12 +135,17 @@ class ModelApi:
             resp.raise_for_status()
             resp_obj = resp.json()
 
-            err_obj = resp_obj.get('error')
-            if err_obj is not None:
-                raise create_instance_from_error_dict(err_obj)
+            if raise_error_results:
+                err_obj = resp_obj.get('error')
+                if err_obj is not None:
+                    raise create_instance_from_error_dict(err_obj)
+
+            if 'output' not in resp_obj and 'error' not in resp_obj:
+                raise ModelRunRequestError(
+                    f'Model {slug} run request response missing both output and error', str(201))
 
             return resp_obj['slug'], resp_obj['version'], \
-                resp_obj['output'], resp_obj['dependencies']
+                resp_obj.get('output'), resp_obj.get('error'), resp_obj['dependencies']
         except requests.exceptions.ConnectionError as err:
             logger.error(
                 f'Error running api request for {slug} {self.__url}: {err}')
