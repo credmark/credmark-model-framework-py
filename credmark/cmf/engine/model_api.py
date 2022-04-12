@@ -2,6 +2,7 @@ from typing import Any, ClassVar, Union
 import os
 import logging
 import requests
+from requests.adapters import HTTPAdapter, Retry
 import json
 from urllib.parse import urljoin, quote
 from credmark.dto.encoder import json_dumps
@@ -45,6 +46,10 @@ class ModelApi:
         self.__internal_api = internal_api
         self.__api_key = api_key
         self.__session = requests.Session()
+        retries = Retry(total=5, backoff_factor=1, method_whitelist=None,
+                        status_forcelist=[429, 502], respect_retry_after_header=True)
+        self.__session.mount('http://', HTTPAdapter(max_retries=retries))
+        self.__session.mount('https://', HTTPAdapter(max_retries=retries))
 
     def _get(self, url):
         """
