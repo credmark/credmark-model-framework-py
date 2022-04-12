@@ -19,8 +19,9 @@ This project is under active development.
 usage
 how_to
 credmark_dev
-model
-api
+components
+errors
 model_docs
 gateway_api
+api
 ```
