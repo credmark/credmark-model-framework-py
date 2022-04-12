@@ -70,6 +70,7 @@ optional arguments:
   -v MODEL_VERSION, --model_version MODEL_VERSION
                         Version of the model to run. Defaults to latest.
   -j, --format_json     Format output json to be more readable
+  -d, --debug           Log debug info for model run input and output
   -l USE_LOCAL_MODELS, --use_local_models USE_LOCAL_MODELS
                         Comma-separated list of model slugs for models that should favor
                         use of the local version. This is only required when a model is
