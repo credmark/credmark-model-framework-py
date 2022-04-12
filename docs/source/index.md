@@ -22,4 +22,5 @@ credmark_dev
 model
 api
 model_docs
+gateway_api
 ```
