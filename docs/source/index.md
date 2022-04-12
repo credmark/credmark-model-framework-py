@@ -17,6 +17,7 @@ This project is under active development.
 :maxdepth: 20
 
 usage
+how_to
 credmark_dev
 model
 api
