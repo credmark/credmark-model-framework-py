@@ -295,6 +295,11 @@ class EngineModelContext(ModelContext):
 
         elif try_remote and api is not None:
             try:
+                debug_log = self.logger.isEnabledFor(logging.DEBUG)
+
+                if debug_log:
+                    self.logger.debug(f'>>> Run API model {slug} input: {input}')
+
                 slug, version, output, error, dependencies = api.run_model(
                     slug, version, self.chain_id,
                     block_number if block_number is not None else self.block_number,
@@ -306,7 +311,12 @@ class EngineModelContext(ModelContext):
 
                 # Any error raised will already have a call stack entry
                 if error is not None:
+                    if debug_log:
+                        self.logger.debug(f'<<< Run API model {slug} error: {error}')
                     raise create_instance_from_error_dict(error)
+
+                if debug_log:
+                    self.logger.debug(f'<<< Run API model {slug} output: {output}')
 
             except ModelNotFoundError:
                 # We always fallback to local if model not found on server.
@@ -334,6 +344,8 @@ class EngineModelContext(ModelContext):
                                     block_number: Union[int, None],
                                     version: Union[str, None],
                                     model_class: Type[Model]):
+
+        debug_log = self.logger.isEnabledFor(logging.DEBUG)
 
         if not self.is_active:
             # At top level, we use this context
@@ -369,6 +381,9 @@ class EngineModelContext(ModelContext):
 
             model = model_class(context)
 
+            if debug_log:
+                self.logger.debug(f'>>> Run model {slug} input: {input}')
+
             output = model.run(input)
 
             try:
@@ -382,11 +397,17 @@ class EngineModelContext(ModelContext):
             except DataTransformError as err:
                 raise ModelOutputError(str(err))
 
+            if debug_log:
+                self.logger.debug(f'<<< Run model {slug} output: {output}')
+
         except Exception as err:
             if isinstance(err, (DataTransformError, DTOValidationError)):
                 # Transform error is a coding error in model just run
                 err = ModelTypeError(str(err))
                 trace = traceback.format_exc(limit=30)
+                if debug_log:
+                    self.logger.debug(f'<<< Run model {slug} error: {err}')
+
             elif isinstance(err, ModelBaseError):
                 _exc_type, _exc_value, exc_traceback = sys.exc_info()
                 if isinstance(err, (ModelNotFoundError, ModelRunRequestError)):
@@ -398,6 +419,9 @@ class EngineModelContext(ModelContext):
                 # ensure detail is a dict (as it will be over the wire)
                 # to make local-dev identical to production.
                 err.transform_data_detail(None)
+
+                if debug_log:
+                    self.logger.debug(f'<<< Run model {slug} error: {err}')
             else:
                 err_msg = f'Exception running model {slug}({input}) on ' \
                     f'chain {context.chain_id} ' \
@@ -406,6 +430,9 @@ class EngineModelContext(ModelContext):
                     f'with {err}'
                 if self.dev_mode:
                     self.logger.exception(err_msg)
+                elif debug_log:
+                    self.logger.debug(f'<<< Run model {slug} error: {err_msg}')
+
                 err = ModelRunError(err_msg)
                 trace = traceback.format_exc(limit=30)
 
