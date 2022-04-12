@@ -50,7 +50,10 @@ Below -h command shows the details of options available for run commands.
 ```
 $ credmark-dev run -h
 
-usage: credmark-dev run [-h] [-b BLOCK_NUMBER] [-c CHAIN_ID] [-i INPUT] [-v MODEL_VERSION] [--provider_url_map PROVIDER_URL_MAP] [--api_url API_URL] model-slug
+usage: credmark-dev run [-h] [-b BLOCK_NUMBER] [-c CHAIN_ID] [-i INPUT] [-v MODEL_VERSION]
+                        [-j] [-l USE_LOCAL_MODELS] [--provider_url_map PROVIDER_URL_MAP]
+                        [--api_url API_URL]
+                        model-slug
 
 positional arguments:
   model-slug            Slug for the model to run.
@@ -58,17 +61,24 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -b BLOCK_NUMBER, --block_number BLOCK_NUMBER
-                        Block number used for the context of the model run. If not specified, it is set to the latest block of the chain.
+                        Block number used for the context of the model run. If not
+                        specified, it is set to the latest block of the chain.
   -c CHAIN_ID, --chain_id CHAIN_ID
-                        [OPTIONAL] The chain ID. Defaults to 1.
+                        Chain ID. Defaults to 1.
   -i INPUT, --input INPUT
-                        [OPTIONAL] Input JSON or if value is "-" it will read input JSON from stdin.
+                        Input JSON or if value is "-" it will read input JSON from stdin.
   -v MODEL_VERSION, --model_version MODEL_VERSION
-                        [OPTIONAL] Version of the model to run. Defaults to latest.
+                        Version of the model to run. Defaults to latest.
+  -j, --format_json     Format output json to be more readable
+  -l USE_LOCAL_MODELS, --use_local_models USE_LOCAL_MODELS
+                        Comma-separated list of model slugs for models that should favor
+                        use of the local version. This is only required when a model is
+                        calling another model.
   --provider_url_map PROVIDER_URL_MAP
-                        [OPTIONAL] JSON object of chain id to Web3 provider HTTP URL. Overrides settings in env vars.
-  --api_url API_URL     [OPTIONAL] Credmark API url. Defaults to the standard API gateway. You do not normally need to set this.
-  --api_url API_URL     [OPTIONAL] Credmark API url
+                        JSON object of chain id to Web3 provider HTTP URL. Overrides
+                        settings in env vars.
+  --api_url API_URL     Credmark API url. Defaults to the standard API
+                        gateway. You do not normally need to set this.
 ```
 
 To call any model we can specify the output by providing below parameters (they're not necessarily required):
@@ -107,7 +117,7 @@ Note: You can also run `list-models` command alternatively.
 Example below shows simple output (list of all models and their version) of list command:
 
 ```
->credmark-dev list -h
+$ credmark-dev list
 
 Loaded models:
 
@@ -120,4 +130,50 @@ Loaded models:
 
 You can also get the list result in different formats using `--json` or `--manifest`.
 
-**Note:** the commands `build` and `clean` does not need to be used.
+## `describe` command
+
+The describe command shows details on one or more models.
+
+```
+credmark-dev describe [model-slug]
+```
+
+The model-slug can be a slug or slug prefix string.
+
+For example:
+
+```
+$ credmark-dev describe example.echo
+
+example.echo
+ - slug: example.echo
+ - version: 1.0
+ - display_name: Echo
+ - description: A test model to echo the message property sent in input.
+ - developer: Credmark
+ - tags: None
+ - input schema (* for required field):
+   EchoDto(EchoDto(*))
+     └─message(string)
+ - input example:
+   #01: {"message": "string"}
+ - output schema (* for required field):
+   EchoDto(EchoDto(*))
+     └─message(string)
+ - output example:
+   #01: {"message": "string"}
+ - errors:
+   No defined errors
+ - class: models.examples.echo_example.EchoModel
+```
+
+## `version` command
+
+The version command shows the current version of the `credmark-model-framework`:
+
+```
+$ credmark-dev version
+credmark-model-framework version 0.0.0
+```
+
+**Note:** the commands `build` and `clean` do not need to be used during model development.
