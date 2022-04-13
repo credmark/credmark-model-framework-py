@@ -46,6 +46,7 @@ class ModelApi:
         self.__internal_api = internal_api
         self.__api_key = api_key
         self.__session = requests.Session()
+        self.__session.headers.update({'User-Agent': 'credmark-model-framework'})
         retries = Retry(total=5, backoff_factor=1, method_whitelist=None,
                         status_forcelist=[429, 502], respect_retry_after_header=True)
         self.__session.mount('http://', HTTPAdapter(max_retries=retries))
