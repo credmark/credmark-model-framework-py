@@ -5,7 +5,7 @@ building models that run on the Credmark Data Platform.
 
 Check out the {doc}`usage` section to get started building models!
 
-Check out the {doc}`api` section for further information on the how to use the model framework and data classes.
+Check out the {doc}`reference` section for further information on the how to use the model framework and data classes.
 
 :::{note}
 This project is under active development.
@@ -22,6 +22,6 @@ credmark_dev
 components
 errors
 model_docs
-gateway_api
 api
+reference
 ```
