@@ -10,6 +10,7 @@ from dotenv import load_dotenv, find_dotenv
 sys.path.append('.')
 from .engine.context import EngineModelContext
 from .engine.model_loader import ModelLoader
+from .engine.mocks import ModelMockRunner
 from .engine.web3 import Web3Registry
 from .engine.model_api import ModelApi
 from credmark.dto import json_dump, json_dumps, print_example, print_tree, dto_schema_viz
@@ -102,6 +103,10 @@ def main():
         help='Comma-separated list of model slugs for models that should '
         'favor use of the local version. This is only required when a model is '
         'calling another model.')
+    parser_run.add_argument(
+        '-m', '--model_mocks', default=None,
+        help='Module path and symbol of model mocks config to use. '
+        'For example, models.contrib.mymodels.mymocks.mock_config')
     parser_run.add_argument('--provider_url_map', required=False, default=None,
                             help='JSON object of chain id to Web3 provider HTTP URL. '
                             'Overrides settings in env vars.')
@@ -426,11 +431,16 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
         format_json: bool = args['format_json']
         debug_log: bool = args['debug']
         use_local_models: Union[str, None] = args['use_local_models']
+        model_mocks_config: Union[str, None] = args['model_mocks']
 
         if use_local_models is not None and len(use_local_models):
             local_model_slugs = use_local_models.split(',')
             logger.debug(f'Use local models {local_model_slugs}')
             EngineModelContext.use_local_models_slugs.update(local_model_slugs)
+
+        if model_mocks_config:
+            model_mock_runner = ModelMockRunner(model_mocks_config)
+            EngineModelContext.use_model_mock_runner(model_mock_runner)
 
         if debug_log:
             dbg_logger = logging.getLogger('credmark.cmf.engine.context.debug')

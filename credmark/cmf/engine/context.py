@@ -13,6 +13,7 @@ from credmark.cmf.model.errors import MaxModelRunDepthError, ModelBaseError, \
     create_instance_from_error_dict
 from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
+from credmark.cmf.engine.mocks import ModelMockException, ModelMockRunner
 from credmark.dto.transform import DataTransformError, transform_data_for_dto
 from credmark.cmf.engine.web3 import Web3Registry
 from credmark.dto import DTO, EmptyInput, DTOValidationError
@@ -60,6 +61,12 @@ class EngineModelContext(ModelContext):
 
     # Set of model slugs to use the local version.
     use_local_models_slugs: Set[str] = set()
+
+    _model_mock_runner: Union[ModelMockRunner, None] = None
+
+    @classmethod
+    def use_model_mock_runner(cls, model_mock_runner: ModelMockRunner):
+        cls._model_mock_runner = model_mock_runner
 
     @classmethod
     def create_context_and_run_model(cls,  # pylint: disable=too-many-arguments,too-many-locals
@@ -244,6 +251,12 @@ class EngineModelContext(ModelContext):
                    version: Union[str, None]
                    ):
 
+        mock_result = self._run_model_mock(slug, input, version)
+        if isinstance(mock_result, str):
+            slug = mock_result
+        else:
+            return mock_result
+
         is_cli = self.dev_mode and not self.run_id
         is_top_level_inactive = self.__is_top_level and not self.is_active
         force_local = slug in self.use_local_models_slugs
@@ -275,6 +288,36 @@ class EngineModelContext(ModelContext):
                 try_remote)
         finally:
             self.__depth -= 1
+
+    def _run_model_mock(self, slug, input, version):
+        # Run a model mock if mock runner set.
+        # Returns the mock result or a string for the slug
+        # of the model to actually run.
+
+        # Use mocks if set
+        if EngineModelContext._model_mock_runner is not None:
+            try:
+                self.__depth += 1
+
+                mock_input = transform_data_for_dto(input, None, slug, 'input')
+                output = EngineModelContext._model_mock_runner.output_for_model(
+                    slug, mock_input)  # type: ignore
+                if isinstance(output, str):
+                    # If a str, run model slug returned from mock
+                    return output
+                else:
+                    if version is None:
+                        version = '0.0'
+                    self._add_dependency(slug, version, 1)
+                    return slug, version, output
+            except ModelMockException:
+                # At the top level, we run the actual model if there is no mock
+                if self.__depth > 1:
+                    raise
+            finally:
+                self.__depth -= 1
+
+        return slug
 
     def _run_model_with_class(self,  # pylint: disable=too-many-locals,too-many-arguments
                               slug: str,
