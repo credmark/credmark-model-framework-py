@@ -10,7 +10,9 @@ For a Quickstart guide and a detailed description of all components, see the ins
 pip install git+https://github.com/credmark/credmark-model-framework-py.git@main
 ```
 
-## Releasing a Version
+## Publish the Package
+
+### Update Version
 
 - Update the version in `setup.py`, update `HISTORY.rst`, and git commit the changes.
 
@@ -19,6 +21,24 @@ pip install git+https://github.com/credmark/credmark-model-framework-py.git@main
 ```bash
 git tag -a "0.1.0" -m "Version 0.1.0"
 git push origin "0.1.0"
+```
+
+### Build
+
+```
+python3 -m build
+```
+
+### Check
+
+```
+twine check dist/*
+```
+
+### Upload
+
+```
+python3 -m twine upload dist/*
 ```
 
 ## Build During Development
