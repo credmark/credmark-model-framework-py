@@ -75,6 +75,7 @@ error = TokenAddressNotFoundError(message='Bad address',
 ```
 
 ## Model Types
+
 We also have some built-in reusable type classes available under [Credmark.cmf.types](https://github.com/credmark/credmark-model-framework-py/tree/main/credmark/cmf/types).
 
 We have created and grouped together different classes to manage input and output types to be used by models. These types include some standard blockchain and financial data structures as well as some standard input and output objects for Credmark models.
@@ -134,9 +135,6 @@ Token_data.py lists all erc20 tokens currently supported.
 
 **7. Portfolio:** This class holds a list of positions. So, it can be used to calculate all positions within a wallet.
 
-
-
-
 ## Model Context
 
 Each model runs with a particular context, including the name of the blockchain, block number, and a configured web3 instance (among other things). The context can be passed along when the model calls other models. The context’s web3 instance can be used to make RPC calls.
@@ -155,7 +153,7 @@ It also enforces deterministic behavior for Models. The key utilities in `ModelC
 
 A model can call other models and use their results. You can pass the input as an input arg and the model output is returned as a dict (or DTO if `return_type` is specified.)
 
-If an error occurs during a call to run a model, an exception is raised. See [Error handling](#error-handling)
+If an error occurs during a call to run a model, an exception is raised. See {doc}`errors`
 
 There are 2 ways to call another model:
 
@@ -270,7 +268,7 @@ As a subclass of int, the `block_number` class allows the provided block numbers
 
 Example code for the block-number class can be found [here](https://github.com/credmark/credmark-model-framework-py/blob/main/credmark/cmf/types/block_number.py).
 
-__Block number, Timestamp and Python datetime__
+**Block number, Timestamp and Python datetime**
 
 In blockchain, every block is created with a timestamp (in Unix epoch). In Python there are two types for date, date and datetime, with datetime can be with tzinfo or without. To provide convienent tools to query between the three and resolve the confusion around time, we have a few tools with `BlockNumber` class.
 
@@ -280,18 +278,17 @@ In blockchain, every block is created with a timestamp (in Unix epoch). In Pytho
 
 3. class method: `from_datetime(cls, timestamp: int)`: Return a BlockNumber instance to be less or equal to the input timestamp.
 
-    Be cautious when we obtain a timestamp from a Python datetime, we should attach a tzinfo (e.g. timezone.utc) to the datetime. Otherwise, Python take account of the local timezone when converting to a timestamp. See the mode  [`example.block-time`](https://github.com/credmark/credmark-models-py/blob/main/models/examples/block_time_example.py).
+   Be cautious when we obtain a timestamp from a Python datetime, we should attach a tzinfo (e.g. timezone.utc) to the datetime. Otherwise, Python take account of the local timezone when converting to a timestamp. See the mode [`example.block-time`](https://github.com/credmark/credmark-models-py/blob/main/models/examples/block_time_example.py).
 
 4. Use a BlockNumber instance: Obtain a Python datetime with UTC of the block. The block number should be less or equal to the context block.
 
-    ```
-    from credmark.types import ( BlockNumber )
+   ```
+   from credmark.types import ( BlockNumber )
 
-    dt = BlockNumber(14234904).timestamp_datetime
-    ```
+   dt = BlockNumber(14234904).timestamp_datetime
+   ```
 
 More example code for the block-number class can be found in [here](https://github.com/credmark/credmark-model-framework-py/blob/main/credmark/types/data/block_number.py) and model [`example.block-time`](https://github.com/credmark/credmark-models-py/blob/main/models/examples/block_time_example.py).
-
 
 ### Historical Utility
 

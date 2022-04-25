@@ -10,15 +10,21 @@ class ModelMockException(Exception):
 
 
 class ModelMock:
-    def __init__(self,
-                 output: Union[dict, DTO, ModelBaseError, str,
-                               List[Union[dict, DTO, ModelBaseError, str, 'ModelMock']]],
-                 input: Union[dict, None] = None,
-                 repeat=0):
-        """
-        Params:
+    """
+    Defines mock output for a model and options for how the mock is used.
+
+    Parameters:
         output: A dictionary where the keys are model slugs and the
-        values are:
+                values are one or more outputs. *(See details below.)*
+
+        input: None or a dict containing a (full or partial) model input.
+               *(See details below.)*
+
+        repeat: a count of times to repeat the output. Defaults to 0 which
+               is unlimited repeats.
+
+
+    The values in the ``output`` dictionary can be:
 
         - a string representing the slug of an actual model to run
 
@@ -30,26 +36,29 @@ class ModelMock:
 
         - a ModelMock instance to use as the output.
 
-        - a list of dicts, dtos, errors, or strings (as described above),
-        representing the outputs to iterate over for each to call run_model(slug).
+        - a list of dicts, DTOs, errors, or strings (as described above),
+          representing the outputs to iterate over for each to call run_model(slug).
 
-        input: None or a dict containing a (full or partial) model input
-            where if the input values match the input passed to run_model(slug),
-            it is considered a match and the output is used. (Currently only
-            a top-level shallow comparison of input values is used.)
+    An ``input`` dict can contain a full or partial model input
+    where if the input values match the input passed to run_model(slug),
+    it is considered a match and the output is used. *(Currently only
+    a top-level shallow comparison of input values is used.)*
 
-            NOTE: Mocks in the top-level list (outside a ModelMock instance) for
-            a slug in the config that have "input" set will be used as a "lookup"
-            before using other mocks in the list. Any Mocks with no match criteria
-            will be used after mocks with input matches are tried and there was no
-            match.
+    **NOTE**: Mocks in the top-level list (outside a ModelMock instance) for
+    a slug in the config that have ``input`` set will be used as a *lookup*
+    before using other mocks in the list. Any Mocks with no input match criteria
+    will be used after all mocks containing input are tried and there was no
+    match. For mocks that are not in the top-level list for a slug, the input is
+    simply used as a filter before a mock is used, in the normal order.
 
-            For mocks that are not in the top-level list for a slug, the input is
-            simply used as a filter before a mock is used, in the normal order.
+    """
 
-        repeat: a count of times to repeat the output. Defaults to 0 which
-            is infinite repeats.
-        """
+    def __init__(self,
+                 output: Union[dict, DTO, ModelBaseError, str,
+                               List[Union[dict, DTO, ModelBaseError, str, 'ModelMock']]],
+                 input: Union[dict, None] = None,
+                 repeat=0):
+
         self.output = output
         self.input = input
         self.repeat = repeat
@@ -69,46 +78,47 @@ class ModelMockConfig:
     """
     Configuration of mock models.
 
-    Example:
+    Parameters:
+        ``models`` (dict): a dict where each key is a model slug and the
+            value is a ModelMock instance or list of ModelMock instances.
 
-    config = ModelMockConfig(
-        run_unmocked=False,  # unmocked models cannot be run
+        ``run_unmocked`` (boolean): If true, an unmocked model will be run normally.
+            Otherwise an exception will be raised.
 
-        models={
-            "example.echo": ModelMock("example.echo"),
-            "contrib.a": ModelMock({"a": 42}),
-            "contrib.b": ModelMock([{"b": 1}, {"b": 2}, "contrib.b"]),
-            "contrib.b-rep": ModelMock([{"b": 1}, {"b": 2},
-                                        "contrib.b-rep"], repeat=2),
-            "contrib.c": ModelMock({"c": 42}, input={"address": "0x00000000"}, repeat=2),
-            "contrib.d": ModelMock([{"d": 1}, {"d": 2}],
-                                   input={"address": "0x00000000"}),
-            "contrib.e": [ModelMock({"e": 42}, input={"address": "0x00000000"}),
-                          ModelMock({"e": 1})],
-            "contrib.f": [ModelMock({"f": 42}, input={"address": "0x00000000"}),
-                          ModelMock("contrib.f")],
-            "contrib.g": ModelMock([ModelMock({"g": 1}, repeat=1),
-                                    ModelMock({"g": 2}, repeat=2),
-                                    ModelMock({"g": 3}, repeat=3)],
-                                   repeat=2),
-            "contrib.h": ModelMock(ModelDataError('Mock data error')),
-        }
-    )
+    Example::
+
+        config = ModelMockConfig(
+            run_unmocked=False,  # unmocked models cannot be run
+
+            models={
+                "example.echo": ModelMock("example.echo"),
+                "contrib.a": ModelMock({"a": 42}),
+                "contrib.b": ModelMock([{"b": 1}, {"b": 2}, "contrib.b"]),
+                "contrib.b-rep": ModelMock([{"b": 1}, {"b": 2},
+                                            "contrib.b-rep"], repeat=2),
+                "contrib.c": ModelMock({"c": 42}, input={"address": "0x00000000"}, repeat=2),
+                "contrib.d": ModelMock([{"d": 1}, {"d": 2}],
+                                    input={"address": "0x00000000"}),
+                "contrib.e": [ModelMock({"e": 42}, input={"address": "0x00000000"}),
+                            ModelMock({"e": 1})],
+                "contrib.f": [ModelMock({"f": 42}, input={"address": "0x00000000"}),
+                            ModelMock("contrib.f")],
+                "contrib.g": ModelMock([ModelMock({"g": 1}, repeat=1),
+                                        ModelMock({"g": 2}, repeat=2),
+                                        ModelMock({"g": 3}, repeat=3)],
+                                    repeat=2),
+                "contrib.h": ModelMock(ModelDataError('Mock data error')),
+            }
+        )
 
     When using model mocks, all run model calls will try to use a mock.
-    If there is no entry or input-matching entry for a run_model slug,
-    an exception will be raised.
+    If there is no entry or input-matching entry for a run_model slug and
+    ``run_unmocked`` is False, an exception will be raised.
     """
 
     def __init__(self,
                  models: dict[str, Union[ModelMock, List[ModelMock]]],
                  run_unmocked=False):
-        """
-        ``models``: a ModelMock instance or list of ModelMock instances.
-
-        ``run_unmocked`` (boolean): If true, an unmocked model will
-        be run normally. Otherwise an exception will be raised.
-        """
         self.models = models
         self.run_unmocked = run_unmocked
 
@@ -186,9 +196,6 @@ class ModelMockRunner:
 
     Uses a MockModelConfig to configure the mocks.
 
-    When using model mocks, all run model calls will try to use a mock.
-    If there is no entry or input-matching entry for a run_model slug,
-    an exception will be raised.
     """
 
     logger = logging.getLogger(__name__)
