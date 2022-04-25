@@ -84,7 +84,7 @@ What makes a good model? In general, good Models Should be:
 
 Here’s a [passing test](https://github.com/credmark/credmark-models-py/runs/5975564564?check_suite_focus=true) on github: ✅ 
 
-Here’s a [failing test](https://github.com/credmark/credmark-models-py/runs/5844626780?check_suite_focus=true) on github: :x:
+Here’s a [failing test](https://github.com/credmark/credmark-models-py/runs/5844626780?check_suite_focus=true) on github: ❌
 
 ### The Good Model Checklist
 
@@ -122,10 +122,10 @@ Here’s a [failing test](https://github.com/credmark/credmark-models-py/runs/58
 
 |           | Calls Contract Functions          | Calls Database  | Calls other Models  | Has hard-coded Data  | Transforms Input Data
 | --------- |:---------------------------------:|:---------------:|:-------------------:|:--------------------:|:---------------------:|
-| Models that fetches data    | ✅ | ✅ | ⚠️   |   :x: | :x:  
-| Algorithmic models    | :x:     | :x:  | ⚠️ only other algorithms |  :x:  | ✅   
-| Models that stitch together other models    | :x:      | :x: | ✅ |  :x: |  :x:  
-| Models that have hardcoded configuration    | :x:   | :x:    | :x:    |  ✅   | :x:
+| Models that fetches data    | ✅ | ✅ | ⚠️   |   ❌ | ❌  
+| Algorithmic models    | ❌     | ❌  | ⚠️ only other algorithms |  ❌  | ✅   
+| Models that stitch together other models    | ❌      | ❌ | ✅ |  ❌ |  ❌  
+| Models that have hardcoded configuration    | ❌   | ❌    | ❌    |  ✅   | ❌
 
 
 ### The Good PR Checklist
