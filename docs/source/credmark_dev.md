@@ -143,29 +143,39 @@ The model-slug can be a slug or slug prefix string.
 
 For example:
 
-```
-$ credmark-dev describe example.echo
+```shell
+$ credmark-dev describe example.model
 
-example.echo
- - slug: example.echo
- - version: 1.0
- - display_name: Echo
- - description: A test model to echo the message property sent in input.
+example.model
+ - slug: example.model
+ - version: 1.2
+ - display_name: Example - Model
+ - description: First example model to echo the message property sent in input.
  - developer: Credmark
  - tags: None
  - input schema (* for required field):
-   EchoDto(EchoDto(*))
+   ExampleEchoInput(ExampleEchoInput(*))
      └─message(string)
  - input example:
    #01: {"message": "string"}
  - output schema (* for required field):
-   EchoDto(EchoDto(*))
-     └─message(string)
+   ExampleEchoOutput(ExampleEchoOutput(*))
+     └─title(string)
+     └─description(string)
+     └─github_url(string)
+     └─documentation_url(string)
+     └─logs(List[Log])
+         └─type(string)
+         └─message(string)
+         └─input(string)
+         └─output(string)
+         └─error(string)
+     └─echo(string)
  - output example:
-   #01: {"message": "string"}
+   #01: {"title": "string"}
  - errors:
    No defined errors
- - class: models.examples.echo_example.EchoModel
+ - class: models.examples.e_01_model.ExampleEcho
 ```
 
 ## `version` command
