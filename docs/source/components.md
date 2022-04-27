@@ -12,7 +12,7 @@ The `@Model.describe()` decorator provides a simple interface to define the mode
 
 If description is not specified, the `__doc__` string of the model's class is used for the model description.
 
-See example [here](https://github.com/credmark/credmark-models-py/blob/main/models/examples/address_examples.py).
+See example [here](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_01_model.py).
 
 ## Data Transfer Object (DTO)
 
@@ -30,7 +30,7 @@ Please see the [pydantic docs](https://pydantic-docs.helpmanual.io/usage/models/
 
 Besides input and output, subclases of `ModelBaseError` can use a DTO for the `data.detail` object instead of a dict. You can simply pass a DTO as the `detail` arg in a model constructor:
 
-```python
+```py
 address = Address(some_address_string)
 e = ModelDataError(message='Address is not a contract',
                    code=ModelDataError.Codes.CONFLICT,
@@ -43,14 +43,14 @@ If your detail object has many properties and you want to document the error and
 
 For example:
 
-```python
+```py
 class TokenAddressNotFoundDetailDTO(DTO):
     address: Address = DTOField(...,description='Address for token not found')
 ```
 
 - Create a DTO subclass that defines the new error DTO. (This step is not strictly necessary but it lets you document the error.) The trick is to use the generic properties of the `ModelErrorDTO` to specify the detail's DTO class: `ModelErrorDTO[TokenAddressNotFoundDetailDTO]`
 
-```python
+```py
 class TokenAddressNotFoundDTO(ModelErrorDTO[TokenAddressNotFoundDetailDTO]):
   """
   This error occurs when there is no token at the specified address.
@@ -60,21 +60,21 @@ class TokenAddressNotFoundDTO(ModelErrorDTO[TokenAddressNotFoundDetailDTO]):
 
 - Then create a `ModelDataError` (or `ModelRunError`) subclass and set the class property `dto_class` to your new error DTO class:
 
-```python
+```py
 class TokenAddressNotFoundError(ModelDataError):
     dto_class = TokenAddressNotFoundDTO
 ```
 
 - You can now create an error instance with:
 
-```python
+```py
 # bad_address is set to an Address instance
 error = TokenAddressNotFoundError(message='Bad address',
                                 detail=TokenAddressNotFoundDetailDTO(address=bad_address))
 # You can now access: error.data.detail.address
 ```
 
-## Model Types
+## Additional Useful Modules
 
 We also have some built-in reusable type classes available under [Credmark.cmf.types](https://github.com/credmark/credmark-model-framework-py/tree/main/credmark/cmf/types).
 
@@ -99,33 +99,35 @@ We have created and grouped together different classes to manage input and outpu
 
 Example:
 
-        from credmark.cmf.types import (Address, Contract)
+```py
+from credmark.cmf.types import (Address, Contract)
 
-        contract = Contract(
-            # lending pool address
-            address=Address("0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9").checksum,
-            abi=AAVE_V2_TOKEN_CONTRACT_ABI
-        )
+contract = Contract(
+    # lending pool address
+    address=Address("0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9").checksum,
+    abi=AAVE_V2_TOKEN_CONTRACT_ABI
+)
+```
 
 The address can be provided in lower case, upper case or checksum hex format. This class will normalize the address into lower case. Note that It can be used as a normal string but it also has a "checksum" property which returns a web3 ChecksumAddress.
 
-See [address_examples.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/address_examples.py) on how to use this class.
+See [e_03_address.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_03_address.py) on how to use this class.
 
 **2. Account(s):** Account simply holds an address. Accounts is a list of account instances which allows iteration through each account.
 
-See [iteration_example](https://github.com/credmark/credmark-models-py/blob/main/models/examples/iteration_examples.py) on how to use this class.
+See [e_04_account.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_04_account.py) on how to use this class.
 
 **3. Contract:** a contract is a subclass of Account which has a name, deployed transaction hash, abi, protocol name etc..
 
 Object instantiation of this class will load all information available for the contract (against contract address provided as input) in our database and you can access whatever information you want from the object.
 
-See [contact_example.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/contract_examples.py) on how to use this class.
+See [e_05_contract.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_05_contract.py) on how to use this class.
 
 **4. Token:** Token is a specific kind of contract; hence the Token class inherits from Contract class.
 
 This class allows you to load token information with an address or symbol as well as get its price in USD Currently this class supports data load for erc20 token but we will support erc721 as well soon.
 
-See [token_example.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/token_examples.py) on how to use this class. Token_data.py lists all erc20 tokens currently supported.
+See [e_06_token.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_06_token.py) on how to use this class. Token_data.py lists all erc20 tokens currently supported.
 
 **5. Price and TokenPairPrice:** these classes can be used to hold a price or a price of a token against a reference token (such as CMK-BTC, CMK-ETH etc.)
 
@@ -166,49 +168,53 @@ Models are exposed on `context.models` by their slug (with any "-" (hyphens) in 
 
 For example, here we use keyword args:
 
-```python
+```py
 # Returns a dict with output of the model
-result = self.context.models.example.echo(message='Hello world')
+result = self.context.models.example.model(message='Hello world')
 ```
 
-You can use a DTO for the output by inializing it with the output dict.
+You can use a DTO for the output by initializing it with the output dict.
 
-Here we use a DTO instance as the input and convert the output to a DTO instance (in this case they happen to be the same DTO class but they don't have to be):
+Here we use a DTO instance as the input and convert the output to another DTO instance:
 
-```python
-class EchoDto(DTO):
+```py
+class ExampleEchoInput(DTO):
     message: str = DTOField('Hello', description='A message')
 
-input = EchoDto(message='Hello world')
-echo = EchoDto(**self.context.models.example.echo(input))
 
-echo.message # will equal 'Hello world'
+class ExampleEchoOutput(DTO):
+    echo: str
+
+input = ExampleEchoInput(message='Hello world')
+output = ExampleEchoOutput(**self.context.models.example.model(input))
+
+output.echo # will equal 'Hello world from block: 14661701'
 ```
 
 You can run a model at a different block number by using the `context.models(block_number=12345)` syntax, for example:
 
-```python
+```py
 # Runs the model with a context of block number 12345
-result = self.context.models(block_number=12345).example.echo(message='Hello world')
+result = self.context.models(block_number=12345).example.model(message='Hello world')
 ```
 
 #### `context.run_model()`
 
 Alternatively you can run a model by slug string using the `context.run_model` method:
 
-```python
+```py
 def run_model(name: str,
-          input: Union[dict, DTO] = EmptyInput(),
-          return_type: Union[Type[dict], Type[DTO], None],
-          block_number: Union[int, None] = None,
-          version: Union[str, None] = None)
+              input: Union[dict, DTO] = EmptyInput(),
+              return_type: Union[Type[dict], Type[DTO], None],
+              block_number: Union[int, None] = None,
+              version: Union[str, None] = None)
 ```
 
 If `return_type` is None or dict, then the method returns the model output as a dict. If it's a DTO class, the method returns a DTO instance. As above, you can use a dict result with `**` to initialize a DTO instance yourself.
 
 For example:
 
-```python
+```py
 # token = Token( ) instance
 
 price = Price(**self.context.run_model('price', token))
@@ -278,17 +284,17 @@ In blockchain, every block is created with a timestamp (in Unix epoch). In Pytho
 
 3. class method: `from_datetime(cls, timestamp: int)`: Return a BlockNumber instance to be less or equal to the input timestamp.
 
-   Be cautious when we obtain a timestamp from a Python datetime, we should attach a tzinfo (e.g. timezone.utc) to the datetime. Otherwise, Python take account of the local timezone when converting to a timestamp. See the mode [`example.block-time`](https://github.com/credmark/credmark-models-py/blob/main/models/examples/block_time_example.py).
+   Be cautious when we obtain a timestamp from a Python datetime, we should attach a tzinfo (e.g. timezone.utc) to the datetime. Otherwise, Python take account of the local timezone when converting to a timestamp. See the model [`example.block-time`](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_08_blocknumber.py).
 
 4. Use a BlockNumber instance: Obtain a Python datetime with UTC of the block. The block number should be less or equal to the context block.
 
-   ```
+   ```py
    from credmark.types import ( BlockNumber )
 
    dt = BlockNumber(14234904).timestamp_datetime
    ```
 
-More example code for the block-number class can be found in [here](https://github.com/credmark/credmark-model-framework-py/blob/main/credmark/types/data/block_number.py) and model [`example.block-time`](https://github.com/credmark/credmark-models-py/blob/main/models/examples/block_time_example.py).
+More example code for the block-number class can be found in [here](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_08_blocknumber.py)
 
 ### Historical Utility
 
@@ -296,4 +302,4 @@ The historical utility, available at `context.historical` (see [here](https://gi
 
 Block ranges can be specified by blocks (either a window from current block or a start and end block) or by time (a window from the current block’s time or start and end time.) Times can be specified different units, i.e. year, month, week, day, hour, minute and second.
 
-See [historical_example.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/historical_examples.py) on how to use this class.
+See [e_11_historical.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_11_historical.py) on how to use this class.
