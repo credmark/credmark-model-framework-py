@@ -64,19 +64,23 @@ class Token(Contract):
         }
 
     def __init__(self, **data):
+        if 'address' not in data and 'symbol' not in data:
+            raise ModelDataError('One of address or symbol is required')
 
         if 'address' not in data and 'symbol' in data:
             context = credmark.cmf.model.ModelContext.current_context()
 
             token_data = get_token_from_configuration(
                 chain_id=str(context.chain_id), symbol=data['symbol'])
-            if token_data is not None:
-                data['address'] = token_data['address']
-                if 'meta' not in data:
-                    data['meta'] = {}
-                data['meta']['symbol'] = token_data['symbol']
-                data['meta']['name'] = token_data['name']
-                data['meta']['decimals'] = token_data['decimals']
+            if token_data is None:
+                raise ModelDataError(f'Unsupported symbol: {data["symbol"]}')
+
+            data['address'] = token_data['address']
+            if 'meta' not in data:
+                data['meta'] = {}
+            data['meta']['symbol'] = token_data['symbol']
+            data['meta']['name'] = token_data['name']
+            data['meta']['decimals'] = token_data['decimals']
 
         if data['address'] == Address.null():
             raise ModelDataError(f'NULL address ({Address.null()}) is not a valid Token Address')
