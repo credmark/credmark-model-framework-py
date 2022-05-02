@@ -46,49 +46,14 @@ class RunModelMethod:
 
 class ModelContext:
     """
-    Model context class
+    Model context class. It holds the current context (chain id
+    and block number) as well as helpers for getting ledger data,
+    running other models both individually and historically over a
+    series of blocks, looking up contracts, and accessing a web3
+    node.
 
-    Instance attributes:
-        chain_id (int): chain ID, ex 1
-
-        block_number (int): default block number
-
-        web3 (Web3): a configured web3 instance for RPC calls
-
-        models: an object that has a virtual method for every model
-
-    Methods:
-        run_model(...) - run the specified model and return the results
-
-    Running a model:
-
-    The context.models instance can be used to run models with a method
-    call, with any ``-`` in the model slug replaced with ``_``.
-
-    For example:
-
-    - ``context.run_model('example.echo')`` becomes ``context.models.example.echo()``
-
-    - ``context.run_model('example.ledger-blocks')`` becomes
-      ``context.models.example.ledger_blocks()``
-
-    - ``context.run_model('var-model')`` becomes ``context.models.var_model()``
-
-    The input that you pass to ``context.run_model()`` can be
-    passed to the method call as keyword (named) args, for example::
-
-        context.models.rpc.get_blocknumber(timestamp=1438270017)
-
-    Or as an input ``DTO`` or dict::
-
-        context.models.example.echo(input_dto)
-
-    You can run a model with a context of a block number (it must be lower than the
-    block number of the current context) by calling the ``models`` instance with a
-    ``block_number`` arg::
-
-        context.models(block_number=123).example.echo(input_dto)
-
+    You can access an instance of this class from a model
+    as ``self.context``.
     """
     _current_context: ClassVar = None
 
@@ -113,14 +78,6 @@ class ModelContext:
 
     class Models:
         """
-        The ``context.models`` property is an instance of this class.
-
-        An instance can run any model by accessing it as a
-        method with any ``-`` in the model slug replaced with ``_``.
-
-        For example::
-
-            context.models.example.echo(message="Hello world")
         """
 
         def __init__(self, context, block_number: Union[int, None] = None):
@@ -145,11 +102,48 @@ class ModelContext:
         self._ledger = None
         self._contract_util = None
         self._historical_util = None
+        self._models = None
 
-        # The models instance can be used to run models like a method
-        # We don't pass the block_number so it uses the default
-        # (our context) block number.
-        self.models = ModelContext.Models(self)
+    @property
+    def models(self):
+        """
+        The ``context.models`` attribute can be used to run models with a method
+        call, with any ``-`` in the model slug replaced with ``_``.
+
+        For example:
+
+        - ``context.run_model('example.echo')`` becomes ``context.models.example.echo()``
+
+        - ``context.run_model('example.ledger-blocks')`` becomes
+        ``context.models.example.ledger_blocks()``
+
+        - ``context.run_model('var-model')`` becomes ``context.models.var_model()``
+
+        The input that you pass to ``context.run_model()`` can be
+        passed to the method call as keyword (named) args, for example::
+
+            output = context.models.rpc.get_blocknumber(timestamp=1438270017)
+
+        Or as an input ``DTO`` or dict::
+
+            output = context.models.example.echo(input_dto)
+
+        You can use the run output to create an output DTO::
+
+            output = EchoDto(**context.models.example.echo(input_dto))
+
+        You can run a model with a context of a block number (it must be lower than the
+        block number of the current context) by calling the ``models`` instance with a
+        ``block_number`` arg::
+
+            output = context.models(block_number=123).example.echo(input_dto)
+        """
+        if self._models is None:
+            # The models instance can be used to run models like a method
+            # We don't pass the block_number so it uses the default
+            # (our context) block number.
+            self._models = ModelContext.Models(self)
+        return self._models
 
     @property
     def chain_id(self):
@@ -182,18 +176,31 @@ class ModelContext:
 
     @property
     def ledger(self) -> Ledger:
+        """
+        A :class:`~credmark.cmf.model.ledger.Ledger` instance which can be
+        used to query the ledger for data.
+        """
         if self._ledger is None:
             self._ledger = Ledger(self)
         return self._ledger
 
     @property
     def contracts(self) -> ContractUtil:
+        """
+        A :class:`~credmark.cmf.model.utils.contract_util.ContractUtil`
+        instance which can be used to look up contracts.
+        """
         if self._contract_util is None:
             self._contract_util = ContractUtil(self)
         return self._contract_util
 
     @property
     def historical(self) -> HistoricalUtil:
+        """
+        A :class:`~credmark.cmf.model.utils.historical_util.HistoricalUtil`
+        instance which can be used to run a model over a series of blocks based
+        on time or block intervals.
+        """
         if self._historical_util is None:
             self._historical_util = HistoricalUtil(self)
         return self._historical_util

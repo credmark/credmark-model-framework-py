@@ -13,7 +13,55 @@ from credmark.cmf.types.ledger import (
 )
 
 
+QUERY_METHOD_DOC_STRING = """
+    Parameters:
+
+        columns: The columns list should be built using ``Ledger.{TABLE}.Columns``
+
+        aggregates: The aggregates list should be built using ``Ledger.Aggregate()``
+            calls where the expression contains an SQL function(ex. MAX, SUM etc.) and
+            column names are from ``Ledger.{TABLE}.Columns``.
+
+        where: The where portion of an SQL query(without the word WHERE.)
+            The column names are from ``Ledger.{TABLE}.Columns``.
+
+        group_by: The "group by" portion of an SQL query(without the words "GROUP BY".)
+            The column names are from ``Ledger.{TABLE}.Columns``.
+
+        order_by: The "order by" portion of an SQL query(without the words "ORDER BY".)
+            The column names are from ``Ledger.{TABLE}.Columns``.
+
+        having: The "having" portion of an SQL query(without the word "HAVING".)
+            The column names are from ``Ledger.{TABLE}.Columns``.
+
+        limit: The "limit" portion of an SQL query(without the word "LIMIT".)
+            Typically this can be an integer as a string.
+
+        offset: The "offset" portion of an SQL query(without the word "OFFSET".)
+            Typically this can be an integer as a string.
+
+    """
+
+
+def query_method(table: str):
+    def _doc(func):
+        func.__doc__ += QUERY_METHOD_DOC_STRING.replace('{TABLE}', table)
+        return func
+    return _doc
+
+
 class Ledger:
+    """
+    Performs queries on ledger data.
+
+    Access an instance of this class from the model context using
+    ``self.context.ledger``.
+
+    Run a query using one of the ``get_`` methods, for example
+    ``context.ledger.get_transactions()``. The query parameters are
+    common to all query methods.
+
+    """
 
     Transaction = TransactionTable
     Trace = TraceTable
@@ -30,9 +78,9 @@ class Ledger:
         Return a new LedgerAggregate instance that can be used in
         an aggregates list.
 
-        For example::
+        For example: :
 
-            aggregates=[Ledger.Aggregate(f'SUM({Ledger.Block.Columns.GAS_USED})', 'total_gas')]
+            aggregates = [Ledger.Aggregate(f'SUM({Ledger.Block.Columns.GAS_USED})', 'total_gas')]
         """
         return LedgerAggregate(expression=expression, asName=as_name)
 
@@ -87,6 +135,7 @@ class Ledger:
                                        'offset': offset},
                                       return_type=LedgerModelOutput)
 
+    @query_method('Transaction')
     def get_transactions(self,  # pylint: disable=too-many-arguments
                          columns: Union[List[str], None] = None,
                          where: Union[str, None] = None,
@@ -105,6 +154,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('Trace')
     def get_traces(self,  # pylint: disable=too-many-arguments
                    columns: Union[List[str], None] = None,
                    where: Union[str, None] = None,
@@ -123,6 +173,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('Log')
     def get_logs(self,  # pylint: disable=too-many-arguments
                  columns: Union[List[str], None] = None,
                  where: Union[str, None] = None,
@@ -141,6 +192,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('Contract')
     def get_contracts(self,  # pylint: disable=too-many-arguments
                       columns: Union[List[str], None] = None,
                       where: Union[str, None] = None,
@@ -159,6 +211,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('Block')
     def get_blocks(self,  # pylint: disable=too-many-arguments
                    columns: Union[List[str], None] = None,
                    where: Union[str, None] = None,
@@ -177,6 +230,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('Receipt')
     def get_receipts(self,  # pylint: disable=too-many-arguments
                      columns: Union[List[str], None] = None,
                      where: Union[str, None] = None,
@@ -195,6 +249,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('Token')
     def get_erc20_tokens(self,  # pylint: disable=too-many-arguments
                          columns: Union[List[str], None] = None,
                          where: Union[str, None] = None,
@@ -213,6 +268,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('TokenTransfer')
     def get_erc20_transfers(self,  # pylint: disable=too-many-arguments
                             columns: Union[List[str], None] = None,
                             where: Union[str, None] = None,

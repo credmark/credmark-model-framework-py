@@ -224,7 +224,7 @@ class Contract(Account):
     @property
     def ledger(self):
         """
-        Return a :class:`~credmark.cmf.types.ledger.ContractLedger` instance which can be
+        A :class:`~credmark.cmf.types.ledger.ContractLedger` instance which can be
         used to query the ledger for a contract's functions or events.
 
         To run a query, call a method ``contract.ledger.functions.contractFunctionName()``
