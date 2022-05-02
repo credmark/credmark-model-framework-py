@@ -9,6 +9,7 @@ from web3.contract import Contract as Web3Contract
 import json
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError
+from .ledger import ContractLedger
 from .account import Account
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
 import logging
@@ -83,6 +84,7 @@ class Contract(Account):
     _instance: Union[Web3Contract, None] = PrivateAttr(default=None)
     _proxy_implementation = PrivateAttr(default=None)
     _loaded = PrivateAttr(default=False)
+    _ledger = PrivateAttr(default=None)
 
     class Config:
         arbitrary_types_allowed = True
@@ -108,6 +110,7 @@ class Contract(Account):
             self._meta.abi = json.loads(data['abi'])
         self._instance = None
         self._proxy_implementation = None
+        self._ledger = None
 
     def _load(self):
         if self._loaded:
@@ -143,7 +146,7 @@ class Contract(Account):
                 raise ModelDataError(f'abi not available for address {self.address}')
         self._loaded = True
 
-    @ property
+    @property
     def instance(self) -> Web3Contract:
         if self._instance is None:
             if self.abi is not None:
@@ -175,48 +178,95 @@ class Contract(Account):
         else:
             return self.instance.functions
 
-    @ property
+    @property
     def events(self):
         if isinstance(self.proxy_for, Contract):
             return self.proxy_for.events
         return self.instance.events
 
-    @ property
+    @property
     def info(self):
         if isinstance(self, ContractInfo):
             return self
         self._load()
         return ContractInfo(**self.dict(), meta=self._meta)
 
-    @ property
+    @property
     def deploy_tx_hash(self):
         if not self._loaded:
             self._load()
         return self._meta.deploy_tx_hash
 
-    @ property
+    @property
     def contract_name(self):
         if not self._loaded:
             self._load()
         return self._meta.contract_name
 
-    @ property
+    @property
     def constructor_args(self):
         if not self._loaded:
             self._load()
         return self._meta.constructor_args
 
-    @ property
+    @property
     def abi(self):
         if not self._loaded:
             self._load()
         return self._meta.abi
 
-    @ property
+    @property
     def is_transparent_proxy(self):
         if not self._loaded:
             self._load()
         return self._meta.is_transparent_proxy
+
+    @property
+    def ledger(self):
+        """
+        Return a :class:`~credmark.cmf.types.ledger.ContractLedger` instance which can be
+        used to query the ledger for a contract's functions or events.
+
+        To run a query, call a method ``contract.ledger.functions.contractFunctionName()``
+        or ``contract.ledger.events.contractEventName()`` where ``contractFunctionName``
+        and ``contractEventName`` are the actual names of functions and events
+        of the contract.
+
+        Functions example::
+
+            contract = Contract(address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
+            ret = contract.ledger.functions.approve(
+                    columns=[ContractLedger.Functions.InputCol('spender')],
+                    aggregates=[
+                        ContractLedger.Aggregate(
+                            f'MAX({ContractLedger.Functions.InputCol("value")})', 'max_value')
+                    ],
+                    group_by=ContractLedger.Functions.InputCol('spender'),
+                    order_by='"max_value" desc',
+                    limit='5')
+
+            top_approvals = []
+            for row in ret.data:
+                top_approvals.append({
+                    "spender": row[ContractLedger.Functions.InputCol('spender')],
+                    "value": row['max_value']
+                })
+
+        Events example::
+
+            ret = contract.ledger.events.Transfer(
+                    columns=[ContractLedger.Events.Columns.EVT_BLOCK_NUMBER,
+                        ContractLedger.Events.InputCol('from'),
+                        ContractLedger.Events.InputCol('to'),
+                        ContractLedger.Events.InputCol('value')],
+                    order_by=f'{ContractLedger.Events.Columns.EVT_BLOCK_NUMBER} desc',
+                    limit='4')
+
+        See :class:`~credmark.cmf.types.ledger.ContractLedger.ContractEntity` for more details.
+        """
+        if self._ledger is None:
+            self._ledger = ContractLedger(str(self.address))
+        return self._ledger
 
 
 class ContractInfo(Contract):

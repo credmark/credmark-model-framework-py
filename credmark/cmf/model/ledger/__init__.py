@@ -1,7 +1,5 @@
 from typing import Type, Union, List
 
-from credmark.dto import DTO, DTOField
-
 from .errors import (
     InvalidColumnException,
     InvalidQueryException,
@@ -10,17 +8,9 @@ from .errors import (
 from credmark.cmf.types.ledger import (
     BlockTable, ContractTable,
     LogTable, ReceiptTable, TokenTable, TokenTransferTable,
-    TraceTable, TransactionTable, LedgerTable, LedgerModelOutput
+    TraceTable, TransactionTable, LedgerTable,
+    LedgerAggregate, LedgerModelOutput
 )
-
-
-class LedgerAggregate(DTO):
-    """
-    An aggregate column in a query, defined by an expression and
-    the name to use as the column name in the returned data.
-    """
-    expression: str = DTOField(..., description='Aggregate expression, for example "MAX(GAS_USED)"')
-    asName: str = DTOField(..., description='Returned as data column name')
 
 
 class Ledger:
@@ -39,6 +29,10 @@ class Ledger:
         """
         Return a new LedgerAggregate instance that can be used in
         an aggregates list.
+
+        For example::
+
+            aggregates=[Ledger.Aggregate(f'SUM({Ledger.Block.Columns.GAS_USED})', 'total_gas')]
         """
         return LedgerAggregate(expression=expression, asName=as_name)
 

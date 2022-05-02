@@ -1,6 +1,17 @@
+from enum import Enum
 from typing import List, Set, Union
 import inspect
-from credmark.dto import DTOField, PrivateAttr, IterableListGenericDTO
+from credmark.dto import DTO, DTOField, PrivateAttr, IterableListGenericDTO
+import credmark.cmf.model
+
+
+class LedgerAggregate(DTO):
+    """
+    An aggregate column in a query, defined by an expression and
+    the name to use as the column name in the returned data.
+    """
+    expression: str = DTOField(..., description='Aggregate expression, for example "MAX(GAS_USED)"')
+    asName: str = DTOField(..., description='Returned as data column name')
 
 
 class LedgerModelOutput(IterableListGenericDTO[dict]):
@@ -149,3 +160,193 @@ class TokenTransferTable(LedgerTable):
         TRANSACTION_HASH = 'transaction_hash'
         LOG_INDEX = 'log_index'
         BLOCK_NUMBER = 'block_number'
+
+
+class ContractFunctionsTable(LedgerTable):
+    # Column names are contract and function-specific but
+    # the following and standard fields for all functions
+    class Columns:
+        CONTRACT_ADDRESS = 'contract_address'
+        TXN_BLOCK_NUMBER = 'txn_block_number'
+        TXN_HASH = 'txn_hash'
+        TXN_INDEX = 'txn_index'
+        SUCCESS = 'success'  # boolean indicating txn was successful or not
+
+    @classmethod
+    def InputCol(cls, input_name: str):  # pylint: disable=invalid-name
+        return f'inp_{input_name.lower()}'
+
+
+class ContractEventsTable(LedgerTable):
+    # Column names are contract and event-specific but
+    # the following and standard fields for all events
+    class Columns:
+        CONTRACT_ADDRESS = 'contract_address'
+        EVT_BLOCK_NUMBER = 'evt_block_number'
+        EVT_HASH = 'evt_hash'
+        EVT_INDEX = 'evt_index'
+
+    @classmethod
+    def InputCol(cls, input_name: str):  # pylint: disable=invalid-name
+        return f'inp_{input_name.lower()}'
+
+
+class ContractLedger:
+    """
+    Helper class used by a Contract to do ledger queries
+    on contract functions and events.
+
+    You do not need to create an instance yourself.
+    Access an instance from a :class:`credmark.cmf.types.contract.Contract`
+    instance with ``contract.ledger``.
+
+    See :class:`~credmark.cmf.types.ledger.ContractEntity` below for info on running queries.
+    """
+    Functions = ContractFunctionsTable
+    Events = ContractEventsTable
+
+    @classmethod
+    def Aggregate(cls, expression: str, as_name: str):  # pylint: disable=invalid-name
+        """
+        Return a new :class:`credmark.cmf.types.ledger.LedgerAggregate` instance that can be used in
+        an aggregates list.
+
+        For example::
+
+            aggregates=[
+                ContractLedger.Aggregate(
+                    f'MAX({ContractLedger.Functions.InputCol("value")})',
+                    'max_value')
+            ]
+        """
+        return LedgerAggregate(expression=expression, asName=as_name)
+
+    class EntityType(Enum):
+        """"""
+        FUNCTIONS = 'functions'
+        EVENTS = 'events'
+
+    class ContractEntity:
+        """
+        Used by ContractLedger to query a contract's function or event data.
+        You do not need to create an instance yourself.
+
+        Access an instance with ``contract.ledger.functions.contractFunctionName()``
+        or ``contract.ledger.events.contractEventName()`` where ``contractFunctionName``
+        and ``contractEventName`` are the actual names of functions and events
+        of the contract.
+
+        See the :meth:`~credmark.cmf.types.ledger.ContractLedger.ContractEntity.__call__`
+        method below for the query parameters.
+        """
+
+        def __init__(self, address: str, entity_type: 'ContractLedger.EntityType', name: str):
+            """"""
+            super().__init__()
+            self.address = address
+            self.entity_type = entity_type
+            self.name = name
+
+        def __call__(self,  # pylint: disable=too-many-arguments
+                     columns: Union[List[str], None] = None,
+                     where: Union[str, None] = None,
+                     group_by: Union[str, None] = None,
+                     order_by: Union[str, None] = None,
+                     limit: Union[str, None] = None,
+                     offset: Union[str, None] = None,
+                     aggregates: Union[List[LedgerAggregate], None] = None,
+                     having: Union[str, None] = None):
+            """
+            Run a query on a contract's function or event data.
+
+            Parameters:
+
+                columns: The columns list should be built from ``ContractLedger.Functions.Columns``
+                    and function input columns using
+                    ``ContractLedger.Functions.InputCol('input-name')``
+                    (where ``input-name`` is the name of an input for the particular contract
+                    function.)
+                    For events, use ``ContractLedger.Events.Columns`` and
+                    ``ContractLedger.Events.InputCol()``.
+
+                aggregates: The aggregates list should be built from ``ContractLedger.Aggregate()``
+                    calls where the expression contains an SQL function (ex. MAX, SUM etc.) and
+                    column names as described for the ``columns`` parameter.
+
+                where: The where portion of an SQL query (without the word WHERE.)
+                    The column names are as described for the ``columns`` parameter.
+
+                group_by: The "group by" portion of an SQL query (without the words "GROUP BY".)
+                    The column names are as described for the ``columns`` parameter.
+
+                order_by: The "order by" portion of an SQL query (without the words "ORDER BY".)
+                    The column names are as described for the ``columns`` parameter.
+
+                having: The "having" portion of an SQL query (without the word "HAVING".)
+                    The column names are as described for the ``columns`` parameter.
+
+                limit: The "limit" portion of an SQL query (without the word "LIMIT".)
+                    Typically this can be an integer as a string.
+
+                offset: The "offset" portion of an SQL query (without the word "OFFSET".)
+                    Typically this can be an integer as a string.
+
+
+            Example usage::
+
+                contract = Contract(address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
+                ret = contract.ledger.functions.approve(
+                        columns=[ContractLedger.Functions.InputCol('spender')],
+                        aggregates=[
+                            ContractLedger.Aggregate(
+                                f'MAX({ContractLedger.Functions.InputCol("value")})', 'max_value')
+                        ],
+                        group_by=ContractLedger.Functions.InputCol('spender'),
+                        order_by='"max_value" desc',
+                        limit='5')
+            """
+            context = credmark.cmf.model.ModelContext.current_context()
+
+            if columns is None:
+                columns = []
+
+            input = {'contractAddress': self.address,
+                     'columns': columns,
+                     'aggregates': aggregates,
+                     'where': where,
+                     'groupBy': group_by,
+                     'having': having,
+                     'orderBy': order_by,
+                     'limit': limit,
+                     'offset': offset}
+
+            if self.entity_type == ContractLedger.EntityType.FUNCTIONS:
+                model_slug = 'contract.function_data'
+                input['functionName'] = self.name
+            elif self.entity_type == ContractLedger.EntityType.EVENTS:
+                model_slug = 'contract.event_data'
+                input['eventName'] = self.name
+            else:
+                raise ValueError(f'Invalid ContractLedger entity type {self.entity_type}')
+
+            return context.run_model(model_slug,
+                                     input,
+                                     return_type=LedgerModelOutput)
+
+    class ContractEntityFactory:
+        def __init__(self, entity_type: 'ContractLedger.EntityType', address: str):
+            super().__init__()
+            self.entity_type = entity_type
+            self.address = address
+
+        def __getattr__(self, __name: str) -> 'ContractLedger.ContractEntity':
+            return ContractLedger.ContractEntity(self.address, self.entity_type, __name)
+
+    def __init__(self, address: str):
+        """
+        """
+        super().__init__()
+        self.functions = ContractLedger.ContractEntityFactory(
+            ContractLedger.EntityType.FUNCTIONS, address)
+        self.events = ContractLedger.ContractEntityFactory(
+            ContractLedger.EntityType.EVENTS, address)
