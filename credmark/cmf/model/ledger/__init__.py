@@ -1,7 +1,5 @@
 from typing import Type, Union, List
 
-from credmark.dto import DTO, DTOField
-
 from .errors import (
     InvalidColumnException,
     InvalidQueryException,
@@ -10,20 +8,69 @@ from .errors import (
 from credmark.cmf.types.ledger import (
     BlockTable, ContractTable,
     LogTable, ReceiptTable, TokenTable, TokenTransferTable,
-    TraceTable, TransactionTable, LedgerTable, LedgerModelOutput
+    TraceTable, TransactionTable, LedgerTable,
+    LedgerAggregate, LedgerModelOutput
 )
 
 
-class LedgerAggregate(DTO):
+QUERY_METHOD_DOC_STRING = """
+    Parameters:
+
+        columns: The columns list should be built using ``Ledger.{TABLE}.Columns``
+
+        aggregates: The aggregates list should be built using ``Ledger.Aggregate()``
+            calls where the expression contains an SQL function(ex. MAX, SUM etc.) and
+            column names are from ``Ledger.{TABLE}.Columns``.
+
+        where: The where portion of an SQL query(without the word WHERE.)
+            The column names are from ``Ledger.{TABLE}.Columns``.
+            Aggregate column names must be in double-quotes.
+
+        group_by: The "group by" portion of an SQL query(without the words "GROUP BY".)
+            The column names are from ``Ledger.{TABLE}.Columns``.
+            Aggregate column names must be in double-quotes.
+
+        order_by: The "order by" portion of an SQL query(without the words "ORDER BY".)
+            The column names are from ``Ledger.{TABLE}.Columns``.
+            Aggregate column names must be in double-quotes.
+
+        having: The "having" portion of an SQL query(without the word "HAVING".)
+            The column names are from ``Ledger.{TABLE}.Columns``.
+            Aggregate column names must be in double-quotes.
+
+        limit: The "limit" portion of an SQL query(without the word "LIMIT".)
+            Typically this can be an integer as a string.
+
+        offset: The "offset" portion of an SQL query(without the word "OFFSET".)
+            Typically this can be an integer as a string.
+
+    Returns:
+        An object with a ``data`` property which is a list
+        of dicts, each dict holding a row with the keys being the column
+        names. The column names can be referenced using
+        ``Ledger.{TABLE}.Columns`` and aggregate columns names.
     """
-    An aggregate column in a query, defined by an expression and
-    the name to use as the column name in the returned data.
-    """
-    expression: str = DTOField(..., description='Aggregate expression, for example "MAX(GAS_USED)"')
-    asName: str = DTOField(..., description='Returned as data column name')
+
+
+def query_method(table: str):
+    def _doc(func):
+        func.__doc__ += QUERY_METHOD_DOC_STRING.replace('{TABLE}', table)
+        return func
+    return _doc
 
 
 class Ledger:
+    """
+    Performs queries on ledger data.
+
+    Access an instance of this class from the model context using
+    ``self.context.ledger``.
+
+    Run a query using one of the ``get_`` methods, for example
+    ``context.ledger.get_transactions()``. The query parameters are
+    common to all query methods.
+
+    """
 
     Transaction = TransactionTable
     Trace = TraceTable
@@ -39,6 +86,10 @@ class Ledger:
         """
         Return a new LedgerAggregate instance that can be used in
         an aggregates list.
+
+        For example: :
+
+            aggregates = [Ledger.Aggregate(f'SUM({Ledger.Block.Columns.GAS_USED})', 'total_gas')]
         """
         return LedgerAggregate(expression=expression, asName=as_name)
 
@@ -93,6 +144,7 @@ class Ledger:
                                        'offset': offset},
                                       return_type=LedgerModelOutput)
 
+    @query_method('Transaction')
     def get_transactions(self,  # pylint: disable=too-many-arguments
                          columns: Union[List[str], None] = None,
                          where: Union[str, None] = None,
@@ -101,7 +153,7 @@ class Ledger:
                          limit: Union[str, None] = None,
                          offset: Union[str, None] = None,
                          aggregates: Union[List[LedgerAggregate], None] = None,
-                         having: Union[str, None] = None):
+                         having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the Transactions table.
         """
@@ -111,6 +163,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('Trace')
     def get_traces(self,  # pylint: disable=too-many-arguments
                    columns: Union[List[str], None] = None,
                    where: Union[str, None] = None,
@@ -119,7 +172,7 @@ class Ledger:
                    limit: Union[str, None] = None,
                    offset: Union[str, None] = None,
                    aggregates: Union[List[LedgerAggregate], None] = None,
-                   having: Union[str, None] = None):
+                   having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the Traces table.
         """
@@ -129,6 +182,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('Log')
     def get_logs(self,  # pylint: disable=too-many-arguments
                  columns: Union[List[str], None] = None,
                  where: Union[str, None] = None,
@@ -137,7 +191,7 @@ class Ledger:
                  limit: Union[str, None] = None,
                  offset: Union[str, None] = None,
                  aggregates: Union[List[LedgerAggregate], None] = None,
-                 having: Union[str, None] = None):
+                 having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the Logs table.
         """
@@ -147,6 +201,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('Contract')
     def get_contracts(self,  # pylint: disable=too-many-arguments
                       columns: Union[List[str], None] = None,
                       where: Union[str, None] = None,
@@ -155,7 +210,7 @@ class Ledger:
                       limit: Union[str, None] = None,
                       offset: Union[str, None] = None,
                       aggregates: Union[List[LedgerAggregate], None] = None,
-                      having: Union[str, None] = None):
+                      having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the Contracts table.
         """
@@ -165,6 +220,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('Block')
     def get_blocks(self,  # pylint: disable=too-many-arguments
                    columns: Union[List[str], None] = None,
                    where: Union[str, None] = None,
@@ -173,7 +229,7 @@ class Ledger:
                    limit: Union[str, None] = None,
                    offset: Union[str, None] = None,
                    aggregates: Union[List[LedgerAggregate], None] = None,
-                   having: Union[str, None] = None):
+                   having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the Blocks table.
         """
@@ -183,6 +239,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('Receipt')
     def get_receipts(self,  # pylint: disable=too-many-arguments
                      columns: Union[List[str], None] = None,
                      where: Union[str, None] = None,
@@ -191,7 +248,7 @@ class Ledger:
                      limit: Union[str, None] = None,
                      offset: Union[str, None] = None,
                      aggregates: Union[List[LedgerAggregate], None] = None,
-                     having: Union[str, None] = None):
+                     having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the Receipts table.
         """
@@ -201,6 +258,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('Token')
     def get_erc20_tokens(self,  # pylint: disable=too-many-arguments
                          columns: Union[List[str], None] = None,
                          where: Union[str, None] = None,
@@ -209,7 +267,7 @@ class Ledger:
                          limit: Union[str, None] = None,
                          offset: Union[str, None] = None,
                          aggregates: Union[List[LedgerAggregate], None] = None,
-                         having: Union[str, None] = None):
+                         having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the ERC20 Tokens table.
         """
@@ -219,6 +277,7 @@ class Ledger:
                                      order_by, limit, offset,
                                      aggregates, having)
 
+    @query_method('TokenTransfer')
     def get_erc20_transfers(self,  # pylint: disable=too-many-arguments
                             columns: Union[List[str], None] = None,
                             where: Union[str, None] = None,
@@ -227,7 +286,7 @@ class Ledger:
                             limit: Union[str, None] = None,
                             offset: Union[str, None] = None,
                             aggregates: Union[List[LedgerAggregate], None] = None,
-                            having: Union[str, None] = None):
+                            having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the ERC20 Token Transfers table.
         """
