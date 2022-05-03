@@ -148,6 +148,10 @@ class Contract(Account):
 
     @property
     def instance(self) -> Web3Contract:
+        """
+        A web3 Web3Contract instance or raises a
+        ``ModelDataError`` if no ABI is available.
+        """
         if self._instance is None:
             if self.abi is not None:
                 context = credmark.cmf.model.ModelContext.current_context()
@@ -163,12 +167,18 @@ class Contract(Account):
 
     @property
     def proxy_for(self):
+        """
+        A proxy implementation if available
+        """
         if not self._loaded:
             self._load()
         return self._meta.proxy_implementation
 
     @property
     def functions(self):
+        """
+        A web3 ContractFunctions instance for the contract.
+        """
         if self.proxy_for is not None:
             context = credmark.cmf.model.ModelContext.current_context()
             return context.web3.eth.contract(
@@ -180,12 +190,19 @@ class Contract(Account):
 
     @property
     def events(self):
+        """
+        A web3 ContractEvents instance for the contract.
+
+        """
         if isinstance(self.proxy_for, Contract):
             return self.proxy_for.events
         return self.instance.events
 
     @property
     def info(self):
+        """
+        A :class:`credmark.cmf.types.contract.ContractInfo` instance for the contract.
+        """
         if isinstance(self, ContractInfo):
             return self
         self._load()
@@ -193,30 +210,45 @@ class Contract(Account):
 
     @property
     def deploy_tx_hash(self):
+        """
+        The deploy transaction hash, if available, otherwise None.
+        """
         if not self._loaded:
             self._load()
         return self._meta.deploy_tx_hash
 
     @property
     def contract_name(self):
+        """
+        Name of the contract, if available, otherwise None.
+        """
         if not self._loaded:
             self._load()
         return self._meta.contract_name
 
     @property
     def constructor_args(self):
+        """
+        Constructor args, if any, otherwise None.
+        """
         if not self._loaded:
             self._load()
         return self._meta.constructor_args
 
     @property
     def abi(self):
+        """
+        The ABI for the contract, if it's available, otherwise None.
+        """
         if not self._loaded:
             self._load()
         return self._meta.abi
 
     @property
     def is_transparent_proxy(self):
+        """
+        True if is a transparent proxy. Otherwise False or None.
+        """
         if not self._loaded:
             self._load()
         return self._meta.is_transparent_proxy

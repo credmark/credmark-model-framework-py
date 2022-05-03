@@ -15,6 +15,9 @@ class LedgerAggregate(DTO):
 
 
 class LedgerModelOutput(IterableListGenericDTO[dict]):
+    """
+    The return value for a ledger query.
+    """
     data: List[dict] = DTOField(
         default=[], description='A list of dicts which are the rows of data')
     _iterator: str = PrivateAttr("data")
@@ -255,7 +258,7 @@ class ContractLedger:
                      limit: Union[str, None] = None,
                      offset: Union[str, None] = None,
                      aggregates: Union[List[LedgerAggregate], None] = None,
-                     having: Union[str, None] = None):
+                     having: Union[str, None] = None) -> LedgerModelOutput:
             """
             Run a query on a contract's function or event data.
 
@@ -274,16 +277,20 @@ class ContractLedger:
                     column names as described for the ``columns`` parameter.
 
                 where: The where portion of an SQL query (without the word WHERE.)
-                    The column names are as described for the ``columns`` parameter.
+                    The column names are as described for the ``columns`` parameter. Aggregate
+                    column names must be in double-quotes.
 
                 group_by: The "group by" portion of an SQL query (without the words "GROUP BY".)
-                    The column names are as described for the ``columns`` parameter.
+                    The column names are as described for the ``columns`` parameter. Aggregate
+                    column names must be in double-quotes.
 
                 order_by: The "order by" portion of an SQL query (without the words "ORDER BY".)
-                    The column names are as described for the ``columns`` parameter.
+                    The column names are as described for the ``columns`` parameter. Aggregate
+                    column names must be in double-quotes.
 
                 having: The "having" portion of an SQL query (without the word "HAVING".)
-                    The column names are as described for the ``columns`` parameter.
+                    The column names are as described for the ``columns`` parameter. Aggregate
+                    column names must be in double-quotes.
 
                 limit: The "limit" portion of an SQL query (without the word "LIMIT".)
                     Typically this can be an integer as a string.
@@ -291,6 +298,13 @@ class ContractLedger:
                 offset: The "offset" portion of an SQL query (without the word "OFFSET".)
                     Typically this can be an integer as a string.
 
+            Returns:
+                An object with a ``data`` property which is a list
+                of dicts, each dict holding a row with the keys being the column
+                names. The column names can be referenced using
+                ``ContractLedger.Functions.Columns``,
+                ``ContractLedger.Functions.InputCol('...')``,
+                and aggregate columns names.
 
             Example usage::
 
@@ -304,6 +318,7 @@ class ContractLedger:
                         group_by=ContractLedger.Functions.InputCol('spender'),
                         order_by='"max_value" desc',
                         limit='5')
+                # ret.data contains a list of row dicts, keyed by column name
             """
             context = credmark.cmf.model.ModelContext.current_context()
 

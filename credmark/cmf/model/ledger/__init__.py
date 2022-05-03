@@ -24,15 +24,19 @@ QUERY_METHOD_DOC_STRING = """
 
         where: The where portion of an SQL query(without the word WHERE.)
             The column names are from ``Ledger.{TABLE}.Columns``.
+            Aggregate column names must be in double-quotes.
 
         group_by: The "group by" portion of an SQL query(without the words "GROUP BY".)
             The column names are from ``Ledger.{TABLE}.Columns``.
+            Aggregate column names must be in double-quotes.
 
         order_by: The "order by" portion of an SQL query(without the words "ORDER BY".)
             The column names are from ``Ledger.{TABLE}.Columns``.
+            Aggregate column names must be in double-quotes.
 
         having: The "having" portion of an SQL query(without the word "HAVING".)
             The column names are from ``Ledger.{TABLE}.Columns``.
+            Aggregate column names must be in double-quotes.
 
         limit: The "limit" portion of an SQL query(without the word "LIMIT".)
             Typically this can be an integer as a string.
@@ -40,6 +44,11 @@ QUERY_METHOD_DOC_STRING = """
         offset: The "offset" portion of an SQL query(without the word "OFFSET".)
             Typically this can be an integer as a string.
 
+    Returns:
+        An object with a ``data`` property which is a list
+        of dicts, each dict holding a row with the keys being the column
+        names. The column names can be referenced using
+        ``Ledger.{TABLE}.Columns`` and aggregate columns names.
     """
 
 
@@ -144,7 +153,7 @@ class Ledger:
                          limit: Union[str, None] = None,
                          offset: Union[str, None] = None,
                          aggregates: Union[List[LedgerAggregate], None] = None,
-                         having: Union[str, None] = None):
+                         having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the Transactions table.
         """
@@ -163,7 +172,7 @@ class Ledger:
                    limit: Union[str, None] = None,
                    offset: Union[str, None] = None,
                    aggregates: Union[List[LedgerAggregate], None] = None,
-                   having: Union[str, None] = None):
+                   having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the Traces table.
         """
@@ -182,7 +191,7 @@ class Ledger:
                  limit: Union[str, None] = None,
                  offset: Union[str, None] = None,
                  aggregates: Union[List[LedgerAggregate], None] = None,
-                 having: Union[str, None] = None):
+                 having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the Logs table.
         """
@@ -201,7 +210,7 @@ class Ledger:
                       limit: Union[str, None] = None,
                       offset: Union[str, None] = None,
                       aggregates: Union[List[LedgerAggregate], None] = None,
-                      having: Union[str, None] = None):
+                      having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the Contracts table.
         """
@@ -220,7 +229,7 @@ class Ledger:
                    limit: Union[str, None] = None,
                    offset: Union[str, None] = None,
                    aggregates: Union[List[LedgerAggregate], None] = None,
-                   having: Union[str, None] = None):
+                   having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the Blocks table.
         """
@@ -239,7 +248,7 @@ class Ledger:
                      limit: Union[str, None] = None,
                      offset: Union[str, None] = None,
                      aggregates: Union[List[LedgerAggregate], None] = None,
-                     having: Union[str, None] = None):
+                     having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the Receipts table.
         """
@@ -258,7 +267,7 @@ class Ledger:
                          limit: Union[str, None] = None,
                          offset: Union[str, None] = None,
                          aggregates: Union[List[LedgerAggregate], None] = None,
-                         having: Union[str, None] = None):
+                         having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the ERC20 Tokens table.
         """
@@ -277,7 +286,7 @@ class Ledger:
                             limit: Union[str, None] = None,
                             offset: Union[str, None] = None,
                             aggregates: Union[List[LedgerAggregate], None] = None,
-                            having: Union[str, None] = None):
+                            having: Union[str, None] = None) -> LedgerModelOutput:
         """
         Query data from the ERC20 Token Transfers table.
         """
