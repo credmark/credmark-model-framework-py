@@ -43,6 +43,8 @@ Commands:
                         Clean model manifest
 ```
 
+**_NOTE_**: `credmark-dev` will search for models under the folder `models` in the current folder. To change this location, use the `--model_path` argument.
+
 ## `run` command
 
 Below -h command shows the details of options available for run commands.
