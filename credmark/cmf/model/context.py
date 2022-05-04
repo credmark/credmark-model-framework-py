@@ -112,7 +112,7 @@ class ModelContext:
 
         For example:
 
-        - ``context.run_model('example.echo')`` becomes ``context.models.example.echo()``
+        - ``context.run_model('example.model')`` becomes ``context.models.example.model()``
 
         - ``context.run_model('example.ledger-blocks')`` becomes
         ``context.models.example.ledger_blocks()``
@@ -126,17 +126,17 @@ class ModelContext:
 
         Or as an input ``DTO`` or dict::
 
-            output = context.models.example.echo(input_dto)
+            output = context.models.example.model(input_dto)
 
         You can use the run output to create an output DTO::
 
-            output = EchoDto(**context.models.example.echo(input_dto))
+            output = EchoDto(**context.models.example.model(input_dto))
 
         You can run a model with a context of a block number (it must be lower than the
         block number of the current context) by calling the ``models`` instance with a
         ``block_number`` arg::
 
-            output = context.models(block_number=123).example.echo(input_dto)
+            output = context.models(block_number=123).example.model(input_dto)
         """
         if self._models is None:
             # The models instance can be used to run models like a method

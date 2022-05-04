@@ -1,14 +1,14 @@
 # Model Framework Core Components
 
-In the following you will find the key components of every model.
+This document describes the key components and concepts of the Credmark Model Framework.
 
 ## Model Class
 
-Credmark uses a simple base class called ‘Model’ class to set up a model. The actual code can be found [here](https://github.com/credmark/credmark-model-framework-py/blob/main/credmark/cmf/model/__init__.py).
+A Credmark model inherits from a simple base class called {class}`~credmark.cmf.model.Model`. The actual code can be found [here](https://github.com/credmark/credmark-model-framework-py/blob/main/credmark/cmf/model/__init__.py).
 
-All Models should import this class `import credmark.cmf.model` and can override the run() method. See examples [here](https://github.com/credmark/credmark-models-py/tree/main/models/examples).
+All Models should import this class `from credmark.cmf.model import Model`, subclass it, and override the run() method. See examples [here](https://github.com/credmark/credmark-models-py/tree/main/models/examples).
 
-The `@Model.describe()` decorator provides a simple interface to define the model properties such as slug, version, display_name, description, developer, input, output etc so that it can be used easily by consumers and other models.
+The {meth}`credmark.cmf.model.Model.describe` decorator `@Model.describe()` provides a simple interface to define the model properties such as slug, version, display_name, description, developer, input, output etc so that it can be used easily by consumers and other models.
 
 If description is not specified, the `__doc__` string of the model's class is used for the model description.
 
@@ -26,9 +26,9 @@ To create a DTO, simply subclass the DTO base class and use DTOFields to annotat
 
 Please see the [pydantic docs](https://pydantic-docs.helpmanual.io/usage/models/) for more information.
 
-### Model Error Detail DTO
+### Model Error Detail DTO [Advanced Topic]
 
-Besides input and output, subclases of `ModelBaseError` can use a DTO for the `data.detail` object instead of a dict. You can simply pass a DTO as the `detail` arg in a model constructor:
+Besides input and output, subclasses of {class}`~credmark.cmf.model.errors.ModelBaseError` can use a DTO for the `data.detail` object instead of a dict. You can simply pass a DTO as the `detail` arg in a model constructor:
 
 ```py
 address = Address(some_address_string)
@@ -74,22 +74,15 @@ error = TokenAddressNotFoundError(message='Bad address',
 # You can now access: error.data.detail.address
 ```
 
-## Additional Useful Modules
+## Data Classes
 
-We also have some built-in reusable type classes available under [Credmark.cmf.types](https://github.com/credmark/credmark-model-framework-py/tree/main/credmark/cmf/types).
+We have some built-in reusable data type classes available under [Credmark.cmf.types](https://github.com/credmark/credmark-model-framework-py/tree/main/credmark/cmf/types).
 
-We have created and grouped together different classes to manage input and output types to be used by models. These types include some standard blockchain and financial data structures as well as some standard input and output objects for Credmark models.
-
-### models
-
-1. ledger.py : DTOs and data used by the ledger models
-2. series.py: DTOs for the series models
-
-### data
+We have created and grouped together different classes to manage input and output data types (DTOs) to be used by models. These types include some standard blockchain and financial data structures as well as some standard input and output objects for Credmark models.
 
 **1. Address:** this class is a subclass of string and holds a blockchain address.
 
-`Address` class is inherited from `str` to help with web3 address conversion. It's highly recommended to use it instead of a baremetal address.
+{class}`~credmark.cmf.types.address.Address` class is inherited from `str` to help with web3 address conversion. It's highly recommended to use it instead of a string.
 
 ✔️: Address("0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9").checksum # checksum version to be used
 
@@ -100,7 +93,7 @@ We have created and grouped together different classes to manage input and outpu
 Example:
 
 ```py
-from credmark.cmf.types import (Address, Contract)
+from credmark.cmf.types import Address, Contract
 
 contract = Contract(
     # lending pool address
@@ -113,37 +106,38 @@ The address can be provided in lower case, upper case or checksum hex format. Th
 
 See [e_03_address.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_03_address.py) on how to use this class.
 
-**2. Account(s):** Account simply holds an address. Accounts is a list of account instances which allows iteration through each account.
+**2. Account(s):** {class}`~credmark.cmf.types.account.Account` simply holds an address. Accounts is a list of account instances which allows iteration through each account.
 
 See [e_04_account.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_04_account.py) on how to use this class.
 
-**3. Contract:** a contract is a subclass of Account which has a name, deployed transaction hash, abi, protocol name etc..
+**3. Contract:** a {class}`~credmark.cmf.types.contract.Contract` is a subclass of {class}`~credmark.cmf.types.account.Account` which has a name, deployed transaction hash, abi, protocol name etc.
 
 Object instantiation of this class will load all information available for the contract (against contract address provided as input) in our database and you can access whatever information you want from the object.
 
-See [e_05_contract.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_05_contract.py) on how to use this class.
+See the [Contract](contract_section) section for more details. See [e_05_contract.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_05_contract.py) for examples of how to use this class.
 
-**4. Token:** Token is a specific kind of contract; hence the Token class inherits from Contract class.
+**4. Token:** {class}`~credmark.cmf.types.token.Token` is a specific kind of contract; hence the Token class inherits from {class}`~credmark.cmf.types.contract.Contract` class.
 
 This class allows you to load token information with an address or symbol as well as get its price in USD Currently this class supports data load for erc20 token but we will support erc721 as well soon.
 
 See [e_06_token.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_06_token.py) on how to use this class. Token_data.py lists all erc20 tokens currently supported.
 
-**5. Price and TokenPairPrice:** these classes can be used to hold a price or a price of a token against a reference token (such as CMK-BTC, CMK-ETH etc.)
+**5. Price and TokenPairPrice:** The {class}`~credmark.cmf.types.price.Price` and {class}`~credmark.cmf.types.price.TokenPairPrice` classes can be used to hold a price or a price of a token against a reference token (such as CMK-BTC, CMK-ETH etc.)
 
-**6. Position:** this class holds a Token and an amount It can calculate its value based on the token price in USD. You can also access the scaled amount property if you need the scaled amount of the erc20 token.
+**6. Position:** A {class}`~credmark.cmf.types.position.Position` class holds a {class}`~credmark.cmf.types.token.Token` and an amount. It can calculate its value based on the token price in USD. You can also access the scaled amount property if you need the scaled amount of the erc20 token.
 
 Token_data.py lists all erc20 tokens currently supported.
 
-**7. Portfolio:** This class holds a list of positions. So, it can be used to calculate all positions within a wallet.
+**7. Portfolio:** A {class}`~credmark.cmf.types.portfolio.Portfolio` class holds a list of {class}`~credmark.cmf.types.position.Position` instances. So, it can be used to calculate all positions within a wallet.
 
 ## Model Context
 
-Each model runs with a particular context, including the name of the blockchain, block number, and a configured web3 instance (among other things). The context can be passed along when the model calls other models. The context’s web3 instance can be used to make RPC calls.
-The `ModelContext()` Class sets up the context for the model to run and can be accessed from a model as `self.context`.
+Each model runs with a particular context, including the block chain id, block number, and a configured web3 instance (among other things). The context’s web3 instance can be used to make RPC calls. It also enforces deterministic behavior for Models.
+
+The {class}`~credmark.cmf.model.context.ModelContext` class is the context for the model and can be accessed from a model as `self.context`.
 The base code can be found [here](https://github.com/credmark/credmark-model-framework-py/blob/main/credmark/cmf/model/context.py). It provides an interface for models to run other models, call contracts, get ledger data, use a web3 instance etc.
 
-It also enforces deterministic behavior for Models. The key utilities in `ModelContext` are
+The key utilities in `ModelContext` are
 
 - web3
 - contract
@@ -229,11 +223,13 @@ price = self.context.run_model('price', token, return_type=credmark.cmf.types.Pr
 `context.web3` will return a configured web3 instance with the default block set to the block number of context.
 The web3 providers are determined from the environment variables as described in the configuration section above. Currently users will need to use their own alchemy account (or other web3 provider) to access web3 functionality.
 
+(contract_section)=
+
 ### Contract
 
-Credmark simplified the process of getting web3 instances of any contract from any chain. So you don't need to find and hardcode chain specific attributes and functions within these chains to run your models.
+Credmark simplifies the process of getting web3 instances of any contract from any chain. So you don't need to find and hardcode chain specific attributes and functions within these chains to run your models.
 
-The model context exposes the `context.contracts` property which can be used to get contracts by metadata or address. The contracts are instances of the `Contract` class which are configured and use the web3 instance at specified block number and specified chain id along with additional data based on `constructor_args`.
+The model context exposes the `context.contracts` property which can be used to get contracts by metadata or address. The contracts are instances of the {class}`~credmark.cmf.types.contract.Contract` class which are configured and use the web3 instance at specified block number and specified chain id along with additional data based on `constructor_args`.
 
 Example code for contact class can be found [here](https://github.com/credmark/credmark-model-framework-py/blob/main/credmark/cmf/types/contract.py).
 
@@ -254,7 +250,7 @@ Tip: the contract object returned from contract class can be used to fetch any s
 
 ### Ledger
 
-Credmark allows access to in-house blockchain ledger data via ledger interface (`context.ledger`), so that any model can fetch/use ledger data if required. This is done via `Ledger` class which currently supports below functions:
+Credmark allows access to in-house blockchain ledger data via ledger interface (`context.ledger`), so that any model can fetch/use ledger data if required. This is done via {class}`~credmark.cmf.model.ledger.Ledger` class which currently supports below functions:
 
 - get_transactions
 - get_traces
@@ -270,26 +266,26 @@ Please refer [here](https://github.com/credmark/credmark-model-framework-py/blob
 ### Block number
 
 The `context.block_number` holds the block number for which a model is running. Models only have access to data at (by default) or before this block number (by instantiating a new context). In other words models cannot see into the future and ledger queries etc. will restrict access to data by this block number.
-As a subclass of int, the `block_number` class allows the provided block numbers to be treated as integers and hence enables arithmetic operations on block numbers. It also allows you to fetch the corresponding datetime and timestamp properties for the block number. This can be super useful in case we want to run any model iteratively for a certain block-interval or time-interval backwards from the block number provided in the context.
+As a subclass of `int`, the {class}`~credmark.cmf.types.block_number.BlockNumber` class allows the provided block numbers to be treated as integers and hence enables arithmetic operations on block numbers. It also allows you to fetch the corresponding datetime and timestamp properties for the block number. This can be super useful in case we want to run any model iteratively for a certain block-interval or time-interval backwards from the block number provided in the context.
 
 Example code for the block-number class can be found [here](https://github.com/credmark/credmark-model-framework-py/blob/main/credmark/cmf/types/block_number.py).
 
 **Block number, Timestamp and Python datetime**
 
-In blockchain, every block is created with a timestamp (in Unix epoch). In Python there are two types for date, date and datetime, with datetime can be with tzinfo or without. To provide convienent tools to query between the three and resolve the confusion around time, we have a few tools with `BlockNumber` class.
+In blockchain, every block is created with a timestamp (in Unix epoch). In Python there are two types for date, date and datetime, with datetime can be with tzinfo or without. To provide convienent tools to query between the three and resolve the confusion around time, we have a few tools with {class}`~credmark.cmf.types.block_number.BlockNumber` class.
 
 1. property, `block_number.timestamp_datetime`: Return the Python datetime with UTC of the block.
 
 2. property, `block_number.timestamp`: Return the Unix epoch of the block.
 
-3. class method: `from_datetime(cls, timestamp: int)`: Return a BlockNumber instance to be less or equal to the input timestamp.
+3. class method: `from_datetime(cls, timestamp: int)`: Return a {class}`~credmark.cmf.types.block_number.BlockNumber` instance to be less or equal to the input timestamp.
 
    Be cautious when we obtain a timestamp from a Python datetime, we should attach a tzinfo (e.g. timezone.utc) to the datetime. Otherwise, Python take account of the local timezone when converting to a timestamp. See the model [`example.block-time`](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_08_blocknumber.py).
 
-4. Use a BlockNumber instance: Obtain a Python datetime with UTC of the block. The block number should be less or equal to the context block.
+4. Use a {class}`~credmark.cmf.types.block_number.BlockNumber` instance: Obtain a Python datetime with UTC of the block. The block number should be less or equal to the context block.
 
    ```py
-   from credmark.types import ( BlockNumber )
+   from credmark.types import BlockNumber
 
    dt = BlockNumber(14234904).timestamp_datetime
    ```
@@ -298,8 +294,8 @@ More example code for the block-number class can be found in [here](https://gith
 
 ### Historical Utility
 
-The historical utility, available at `context.historical` (see [here](https://github.com/credmark/credmark-model-framework-py/blob/main/credmark/cmf/model/utils/historical_util.py)), allows you to run a model over a series of blocks for any defined range and interval.
+The historical utility {class}`~credmark.cmf.model.utils.historical_util.HistoricalUtil`, available at `context.historical` (see code [here](https://github.com/credmark/credmark-model-framework-py/blob/main/credmark/cmf/model/utils/historical_util.py)), allows you to run a model over a series of blocks for any defined range and interval.
 
-Block ranges can be specified by blocks (either a window from current block or a start and end block) or by time (a window from the current block’s time or start and end time.) Times can be specified different units, i.e. year, month, week, day, hour, minute and second.
+Block ranges can be specified by blocks (either a window from current block or a start and end block) with {meth}`~credmark.cmf.model.utils.historical_util.HistoricalUtil.run_model_historical_blocks` or by time (a window from the current block’s time or start and end time) with {meth}`~credmark.cmf.model.utils.historical_util.HistoricalUtil.run_model_historical`. Times can be specified different units, i.e. year, month, week, day, hour, minute and second.
 
 See [e_11_historical.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_11_historical.py) on how to use this class.
