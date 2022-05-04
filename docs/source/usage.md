@@ -63,3 +63,5 @@ CREDMARK_WEB3_PROVIDERS='{1:"https://eth-mainnet.alchemyapi.io/v2/ABC123","137":
 ```
 
 This variable is used to run models which require web3. It can be ignored for those models which do not require web3.
+
+**_NOTE_**: The web3 providers are used during local development. When a model is deployed it automatically uses Credmark's provider node.

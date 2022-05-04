@@ -139,11 +139,11 @@ The base code can be found [here](https://github.com/credmark/credmark-model-fra
 
 The key utilities in `ModelContext` are
 
-- web3
-- contract
-- ledger
-- block number
-- historical utility
+- [Web3](web3_section)
+- [Contract](contract_section)
+- [Ledger](ledger_section)
+- [Block number](block_number_section)
+- [Historical Utility](historical_section)
 
 ### Calling Other Models
 
@@ -218,10 +218,13 @@ price = Price(**self.context.run_model('price', token))
 price = self.context.run_model('price', token, return_type=credmark.cmf.types.Price)
 ```
 
+(web3_section)=
+
 ### Web3
 
 `context.web3` will return a configured web3 instance with the default block set to the block number of context.
-The web3 providers are determined from the environment variables as described in the configuration section above. Currently users will need to use their own alchemy account (or other web3 provider) to access web3 functionality.
+
+The web3 providers are determined from the environment variables as described in the [credmark_dev](credmark_dev) docs. Currently, during development, model developers will need to use their own alchemy account (or other web3 provider) to access web3 functionality. When a model is deployed, it automatically uses a Credmark web3 provider.
 
 (contract_section)=
 
@@ -248,6 +251,8 @@ Contract functions are accessible using the `contract.functions` property.
 
 Tip: the contract object returned from contract class can be used to fetch any specific web3 attributes of the contract and call contract functions. As well it can be used as a DTO (see details below) so it can be returned as part of the output of a model.
 
+(ledger_section)=
+
 ### Ledger
 
 Credmark allows access to in-house blockchain ledger data via ledger interface (`context.ledger`), so that any model can fetch/use ledger data if required. This is done via {class}`~credmark.cmf.model.ledger.Ledger` class which currently supports below functions:
@@ -262,6 +267,8 @@ Credmark allows access to in-house blockchain ledger data via ledger interface (
 - get_erc20_transfers
 
 Please refer [here](https://github.com/credmark/credmark-model-framework-py/blob/main/credmark/cmf/model/ledger/__init__.py) for the code of the `Ledger` class.
+
+(block_number_section)=
 
 ### Block number
 
@@ -291,6 +298,8 @@ In blockchain, every block is created with a timestamp (in Unix epoch). In Pytho
    ```
 
 More example code for the block-number class can be found in [here](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_08_blocknumber.py)
+
+(historical_section)=
 
 ### Historical Utility
 
