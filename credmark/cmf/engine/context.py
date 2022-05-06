@@ -57,6 +57,7 @@ class EngineModelContext(ModelContext):
     debug_logger = logging.getLogger(f'{__name__}.debug')
 
     dev_mode = False
+    test_mode = False
     max_run_depth = 20
 
     # Set of model slugs to use the local version.
@@ -65,7 +66,7 @@ class EngineModelContext(ModelContext):
     _model_mock_runner: Union[ModelMockRunner, None] = None
 
     @classmethod
-    def use_model_mock_runner(cls, model_mock_runner: ModelMockRunner):
+    def use_model_mock_runner(cls, model_mock_runner: Union[ModelMockRunner, None]):
         cls._model_mock_runner = model_mock_runner
 
     @classmethod
@@ -116,22 +117,45 @@ class EngineModelContext(ModelContext):
             if input is None:
                 input = {}
 
+            response = cls.run_model_with_context(context,
+                                                  model_slug,
+                                                  model_version,
+                                                  input)
+        except Exception as e:
+            err = ModelEngineError(str(e))
+            response = {
+                'slug': model_slug,
+                'version': model_version,
+                'error': err.dict(),
+                'dependencies': context.dependencies if context else {}}
+
+        return response
+
+    @classmethod
+    def run_model_with_context(cls,
+                               context: 'EngineModelContext',
+                               model_slug: str,
+                               model_version: Union[str, None],
+                               input: Union[dict, DTO],
+                               transform_output_to_dict=True):
+        try:
             ModelContext._current_context = context
 
             # We set the block_number in the context above so we pass in
             # None for block_number to the run_model method.
-            result_tuple = context._run_model(
+            result_tuple = context._run_model(  # pylint: disable=protected-access
                 model_slug, input, None, model_version)
 
             output = result_tuple[2]
-            output_as_dict = transform_data_for_dto(output, None, model_slug, 'output')
+            if transform_output_to_dict:
+                output = transform_data_for_dto(output, None, model_slug, 'output')
 
             response = {
                 'slug': result_tuple[0],
                 'version': result_tuple[1],
-                'output': output_as_dict,
+                'output': output,
                 'dependencies': context.dependencies}
-            return response
+
         except ModelBaseError as err:
             response = {
                 'slug': model_slug,
@@ -147,6 +171,7 @@ class EngineModelContext(ModelContext):
                 'dependencies': context.dependencies if context else {}}
         finally:
             ModelContext._current_context = None
+
         return response
 
     @classmethod
@@ -257,7 +282,7 @@ class EngineModelContext(ModelContext):
         else:
             return mock_result
 
-        is_cli = self.dev_mode and not self.run_id
+        is_cli = (self.dev_mode and not self.run_id) or self.test_mode
         is_top_level_inactive = self.__is_top_level and not self.is_active
         force_local = slug in self.use_local_models_slugs
         use_local = is_top_level_inactive or force_local
