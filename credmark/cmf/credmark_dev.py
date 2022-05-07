@@ -102,7 +102,7 @@ def main():  # pylint: disable=too-many-statements
         '-l', '--use_local_models', default=None,
         help='Comma-separated list of model slugs for models that should '
         'favor use of the local version. This is only required when a model is '
-        'calling another model.')
+        'calling another model. Use "*" to favor the use of local versions of all models.')
     parser_run.add_argument(
         '-m', '--model_mocks', default=None,
         help='Module path and symbol of model mocks config to use. '

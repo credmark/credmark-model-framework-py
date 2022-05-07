@@ -77,7 +77,7 @@ optional arguments:
   -l USE_LOCAL_MODELS, --use_local_models USE_LOCAL_MODELS
                         Comma-separated list of model slugs for models that should favor
                         use of the local version. This is only required when a model is
-                        calling another model.
+                        calling another model. Use "*" to use local versions of all models.
   --provider_url_map PROVIDER_URL_MAP
                         JSON object of chain id to Web3 provider HTTP URL. Overrides
                         settings in env vars.

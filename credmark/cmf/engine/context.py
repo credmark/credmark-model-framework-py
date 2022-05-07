@@ -224,6 +224,13 @@ class EngineModelContext(ModelContext):
                 for version, count in versions.items():
                     self._add_dependency(slug, version, count)
 
+    def _force_local_model_for_slug(self, slug: str):
+        return slug in self.use_local_models_slugs
+
+    def _favor_local_model_for_slug(self, slug: str):
+        return '*' in self.use_local_models_slugs or \
+            slug in self.use_local_models_slugs
+
     def run_model(self,
                   slug,
                   input=EmptyInput(),
@@ -284,8 +291,9 @@ class EngineModelContext(ModelContext):
 
         is_cli = (self.dev_mode and not self.run_id) or self.test_mode
         is_top_level_inactive = self.__is_top_level and not self.is_active
-        force_local = slug in self.use_local_models_slugs
-        use_local = is_top_level_inactive or force_local
+        force_local = self._force_local_model_for_slug(slug)
+        use_local = is_top_level_inactive or force_local or self.test_mode \
+            or self._favor_local_model_for_slug(slug)
         # when using the cli, we allow running remote models as top level
         try_remote = not is_top_level_inactive or is_cli
 
