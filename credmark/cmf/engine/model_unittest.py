@@ -55,7 +55,7 @@ class ModelTestContextFactory:
 
     def create_context(self,
                        chain_id: int = 1,
-                       block_number: int = 25000000):
+                       block_number: int = 14000000):
         # Clear the current context first
         ModelContext.set_current_context(None)
 
@@ -67,6 +67,9 @@ class ModelTestContextFactory:
 
         return context
 
+    def clear_context(self):
+        ModelContext.set_current_context(None)
+
     def use_mocks(self, mocks: Union[ModelMockConfig, None] = None):
         if mocks is not None:
             mock_runner = ModelMockRunner()
@@ -77,7 +80,7 @@ class ModelTestContextFactory:
 
 
 def model_context(chain_id: int = 1,
-                  block_number: int = 25000000,
+                  block_number: int = 14000000,
                   mocks: Union[ModelMockConfig, None] = None):
     """
     A decorator that can be used on a test method in a
@@ -93,11 +96,11 @@ def model_context(chain_id: int = 1,
     """
     def _deco(func):
         def _wrapper(self, *args, **kwargs):
-            runner = ModelTestContextFactory.factory()
-            runner.use_mocks(mocks)
-            self.context = runner.create_context(chain_id, block_number)
-            self.logger.debug('Using context chain_id=%d block_number=%d' %
-                              (chain_id, block_number))
+            factory = ModelTestContextFactory.factory()
+            factory.use_mocks(mocks)
+            self.context = factory.create_context(chain_id, block_number)
+            self.logger.debug('%s using context chain_id=%d block_number=%d' %
+                              (self.__class__.__name__, chain_id, block_number))
             return func(self, *args, **kwargs)
         return _wrapper
     return _deco
@@ -130,20 +133,27 @@ class ModelTestCase(unittest.TestCase):
         super().__init__(methodName)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.setLevel(logging.DEBUG)
+
+    def setUp(self):
+        super().setUp()
         self.create_model_context()
+
+    def tearDown(self) -> None:
+        ModelTestContextFactory.factory().clear_context()
+        return super().tearDown()
 
     def create_model_context(self,
                              chain_id: int = 1,
-                             block_number: int = 25000000,
+                             block_number: int = 14000000,
                              mocks: Union[ModelMockConfig, None] = None):
         """
         Create a new model context and set it as the current context.
         """
-        runner = ModelTestContextFactory.factory()
-        runner.use_mocks(mocks)
-        self.context = runner.create_context(chain_id, block_number)
-        self.logger.debug('Using context chain_id=%d block_number=%d' %
-                          (chain_id, block_number))
+        factory = ModelTestContextFactory.factory()
+        factory.use_mocks(mocks)
+        self.context = factory.create_context(chain_id, block_number)
+        self.logger.debug('%s using context chain_id=%d block_number=%d' %
+                          (self.__class__.__name__, chain_id, block_number))
 
     @property
     def context(self):

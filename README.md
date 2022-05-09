@@ -52,6 +52,12 @@ python setup.py sdist
 Run tests with:
 
 ```
+python -m credmark.cmf.credmark_dev test tests
+```
+
+or
+
+```
 python -m unittest discover tests
 ```
 
