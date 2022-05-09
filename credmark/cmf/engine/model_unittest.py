@@ -99,8 +99,8 @@ def model_context(chain_id: int = 1,
             factory = ModelTestContextFactory.factory()
             factory.use_mocks(mocks)
             self.context = factory.create_context(chain_id, block_number)
-            self.logger.debug('%s using context chain_id=%d block_number=%d' %
-                              (self.__class__.__name__, chain_id, block_number))
+            self.logger.debug('%s.%s using context chain_id=%d block_number=%d' %
+                              (self.__class__.__name__, func.__name__, chain_id, block_number))
             return func(self, *args, **kwargs)
         return _wrapper
     return _deco
