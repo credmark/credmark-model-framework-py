@@ -9,6 +9,10 @@ The Credmark Model Framework testing is based on the standard Python unittest mo
 Create unit tests in python files with a specific naming pattern,
 the default being `test*.py`, for example `test_model.py`. Typically they should be in the same folder as the model they test.
 
+:::{note}
+In order for the test discovery to load your tests, they must be in a folder with a `__init__.py` file so create a `__init__.py` file in your models folder if it does not exist.
+:::
+
 The unit tests must be implemented as subclasses of {class}`credmark.cmf.engine.model_unittest.ModelTestCase` and implement `test_*` methods to implement specific tests.
 
 ```{eval-rst}
@@ -40,6 +44,10 @@ credmark-dev test models/contrib/mymodels
 ```
 
 You can also use the `--pattern` argument to change the file matching pattern used for test discovery. The default is `test*.py`.
+
+:::{note}
+In order for the test discovery to load your tests, they must be in a folder with a `__init__.py` file so create a `__init__.py` file in your models folder if it does not exist.
+:::
 
 (mocks_section)=
 
