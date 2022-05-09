@@ -192,10 +192,10 @@ $ credmark-dev test -h
 
 usage: credmark-dev test [-h] [-p PATTERN] [--api_url API_URL]
                             [--provider_url_map PROVIDER_URL_MAP]
-                            [start_folder]
+                            [tests_folder]
 
 positional arguments:
-  start_folder          Folder to start discovery for tests.
+  tests_folder          Folder to start discovery for tests.
                         Defaults to "models".
 
 optional arguments:
