@@ -126,6 +126,8 @@ class EngineModelContext(ModelContext):
             response = {
                 'slug': model_slug,
                 'version': model_version,
+                'chainId': chain_id,
+                'blockNumber': block_number,
                 'error': err.dict(),
                 'dependencies': context.dependencies if context else {}}
 
@@ -138,7 +140,11 @@ class EngineModelContext(ModelContext):
                                model_version: Union[str, None],
                                input: Union[dict, DTO],
                                transform_output_to_dict=True):
+        chain_id = context.chain_id
+        block_number = int(context.block_number)
+
         try:
+
             ModelContext._current_context = context
 
             # We set the block_number in the context above so we pass in
@@ -153,6 +159,8 @@ class EngineModelContext(ModelContext):
             response = {
                 'slug': result_tuple[0],
                 'version': result_tuple[1],
+                'chainId': chain_id,
+                'blockNumber': block_number,
                 'output': output,
                 'dependencies': context.dependencies}
 
@@ -160,6 +168,8 @@ class EngineModelContext(ModelContext):
             response = {
                 'slug': model_slug,
                 'version': model_version,
+                'chainId': chain_id,
+                'blockNumber': block_number,
                 'error': err.dict(),
                 'dependencies': context.dependencies if context else {}}
         except Exception as e:
@@ -167,6 +177,8 @@ class EngineModelContext(ModelContext):
             response = {
                 'slug': model_slug,
                 'version': model_version,
+                'chainId': chain_id,
+                'blockNumber': block_number,
                 'error': err.dict(),
                 'dependencies': context.dependencies if context else {}}
         finally:
