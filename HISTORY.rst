@@ -3,7 +3,7 @@
 History
 -------
 
-0.8.* [ ]
+0.8.15 [2022-05-09]
 
 * chainId and blockNumber in model run results
 
