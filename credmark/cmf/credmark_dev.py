@@ -3,6 +3,7 @@ import sys
 import argparse
 import logging
 import json
+import unittest
 from typing import List, Union
 from importlib.metadata import version
 from dotenv import load_dotenv, find_dotenv
@@ -15,6 +16,7 @@ from .engine.web3 import Web3Registry
 from .engine.model_api import ModelApi
 from credmark.dto import json_dump, json_dumps, print_example, print_tree, dto_schema_viz
 from credmark.dto.dto_error_schema import extract_error_codes_and_descriptions
+from credmark.cmf.engine.model_unittest import ModelTestContextFactory
 
 
 logger = logging.getLogger(__name__)
@@ -29,9 +31,7 @@ def add_api_url_arg(parser):
                         'You do not normally need to set this.')
 
 
-def main():
-    load_dotenv(find_dotenv(usecwd=True))
-
+def main():  # pylint: disable=too-many-statements
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='Credmark developer tool')
@@ -102,20 +102,31 @@ def main():
         '-l', '--use_local_models', default=None,
         help='Comma-separated list of model slugs for models that should '
         'favor use of the local version. This is only required when a model is '
-        'calling another model.')
+        'calling another model. Use "*" to favor the use of local versions of all models.')
     parser_run.add_argument(
         '-m', '--model_mocks', default=None,
         help='Module path and symbol of model mocks config to use. '
         'For example, models.contrib.mymodels.mymocks.mock_config')
     parser_run.add_argument('--provider_url_map', required=False, default=None,
                             help='JSON object of chain id to Web3 provider HTTP URL. '
-                            'Overrides settings in env vars.')
+                            'Overrides settings in env var or .env file.')
     add_api_url_arg(parser_run)
     parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
     parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
     parser_run.add_argument('model-slug', default='(missing model-slug arg)',
                             help='Slug for the model to run.')
     parser_run.set_defaults(func=run_model, depth=0)
+
+    parser_test = subparsers.add_parser('test', help='Run model tests', aliases=['run-tests'])
+    parser_test.add_argument('-p', '--pattern', required=False, default='test*.py',
+                             help='Pattern to match test files (test*.py default).')
+    add_api_url_arg(parser_test)
+    parser_test.add_argument('--provider_url_map', required=False, default=None,
+                             help='JSON object of chain id to Web3 provider HTTP URL. '
+                             'Overrides settings in env var or .env.test file.')
+    parser_test.add_argument('tests_folder', nargs='?', default='models',
+                             help='Folder to start discovery for tests. Defaults to "models".')
+    parser_test.set_defaults(func=run_tests)
 
     parser_build = subparsers.add_parser(
         'build', help='Build model manifest [Not required during development]',
@@ -131,6 +142,12 @@ def main():
         sys.exit(1)
 
     args = parser.parse_args()
+
+    if args.func == run_tests:  # pylint: disable=comparison-with-callable
+        load_dotenv(find_dotenv('.env.test', usecwd=True))
+    else:
+        load_dotenv(find_dotenv(usecwd=True))
+
     args.func(vars(args))
 
 
@@ -150,6 +167,17 @@ def load_models(args, load_dev_models=False):
         model_paths = model_path.split(';')
     else:
         model_paths = None
+
+    # We add the tests folder (if set)
+    # to the models paths if not present
+    tests_folder = args.get('tests_folder')
+    if tests_folder:
+        if model_paths is None:
+            model_paths = [tests_folder]
+        else:
+            if tests_folder not in model_paths:
+                model_paths.append(tests_folder)
+
     model_loader = ModelLoader(model_paths, manifest_file, load_dev_models)
     model_loader.log_errors()
     return model_loader
@@ -397,6 +425,41 @@ def remove_manifest_file(args):
     sys.exit(0)
 
 
+def create_chain_to_provider_url(providers_json):
+    # if arg is provided, it overrides any providers env vars
+    if providers_json is not None:
+        try:
+            chain_to_provider_url = json.loads(providers_json)
+        except Exception as err:
+            logger.error(f'Error parsing JSON in arg provider_url_map: {err}')
+            raise
+    else:
+        try:
+            chain_to_provider_url = Web3Registry.load_providers_from_env()
+        except Exception as err:
+            logger.error(f'{err}')
+            raise
+    return chain_to_provider_url
+
+
+def run_tests(args):
+    config_logging(args, 'INFO')
+
+    api_url: Union[str, None] = args['api_url']
+    providers_json = args['provider_url_map']
+    chain_to_provider_url = create_chain_to_provider_url(providers_json)
+    model_loader = load_models(args, load_dev_models=True)
+
+    factory = ModelTestContextFactory(model_loader, chain_to_provider_url, api_url)
+    ModelTestContextFactory.use_factory(factory)
+
+    pattern = args['pattern']
+    tests_folder = args['tests_folder']
+    test_argv = [sys.argv[0], 'discover',
+                 '-s', tests_folder, '-p', pattern]
+    unittest.main(module=None, argv=test_argv, verbosity=2)
+
+
 def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,too-many-locals
     exit_code = 0
 
@@ -406,17 +469,7 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
         chain_to_provider_url = None
         providers_json = args['provider_url_map']
 
-        # if arg is provided, it overrides any providers env vars
-        if providers_json is not None:
-            try:
-                chain_to_provider_url = json.loads(providers_json)
-            except Exception as err:
-                logger.error(f'Error parsing JSON in arg provider_url_map: {err}')
-        else:
-            try:
-                chain_to_provider_url = Web3Registry.load_providers_from_env()
-            except Exception as err:
-                logger.error(f'{err}')
+        chain_to_provider_url = create_chain_to_provider_url(providers_json)
 
         model_loader = load_models(args, load_dev_models=not args.get(
             'run_id'))  # we assume developer will not pass a run_id

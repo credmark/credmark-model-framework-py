@@ -1,8 +1,8 @@
 import unittest
 import logging
-from credmark.cmf.model import Model
 from credmark.cmf.engine.context import EngineModelContext
-from credmark.cmf.engine.model_loader import ModelLoader
+from credmark.cmf.engine.model_unittest import ModelTestCase, model_context
+from credmark.cmf.model import Model
 from credmark.dto import DTO, DTOField
 
 logging.basicConfig(
@@ -28,24 +28,31 @@ class AModel(Model):
         return input
 
 
-class TestStringMethods(unittest.TestCase):
+class TestModel(ModelTestCase):
 
+    @model_context(chain_id=1, block_number=1)
     def test_run(self):
-        model_loader = ModelLoader(['tests'])
-        if model_loader.errors:
-            logging.error(model_loader.errors)
 
         car = Car(brand="credmark", color="green")
 
-        result = EngineModelContext.create_context_and_run_model(
-            chain_id=1,
-            block_number=1,
+        output = self.context.run_model(
+            slug='testmodel',
+            input=car.dict())
+
+        self.assertEqual(car.brand, output['brand'])
+        self.assertEqual(car.color, output['color'])
+
+    @model_context(chain_id=1, block_number=1)
+    def test_run_top(self):
+
+        car = Car(brand="credmark", color="green")
+
+        result = EngineModelContext.run_model_with_context(
+            self.context,
             model_slug='testmodel',
+            model_version=None,
             input=car.dict(),
-            model_loader=model_loader,
-            chain_to_provider_url=None,
-            api_url=None,
-            run_id='test_run')
+            transform_output_to_dict=True)
 
         self.assertEqual(result['slug'], 'testmodel')
         self.assertEqual(result['version'], '1.0')

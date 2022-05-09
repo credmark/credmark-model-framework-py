@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any, ClassVar, Type, TypeVar, Union, overload
+from typing import Any, Type, TypeVar, Union, overload
 from web3 import Web3
 
 from .errors import ModelNoContextError
@@ -55,7 +55,7 @@ class ModelContext:
     You can access an instance of this class from a model
     as ``self.context``.
     """
-    _current_context: ClassVar = None
+    _current_context: Union['ModelContext', None] = None
 
     @classmethod
     def current_context(cls) -> 'ModelContext':
@@ -76,6 +76,14 @@ class ModelContext:
         """
         return cls._current_context
 
+    @classmethod
+    def set_current_context(cls, context: Union['ModelContext', None]):
+        """
+        Set the current context, which could be None.
+        Normally you should not use this method.
+        """
+        cls._current_context = context
+
     class Models:
         """
         """
@@ -92,9 +100,6 @@ class ModelContext:
 
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry):
-        # type hint
-        ModelContext._current_context: Union[ModelContext, None]
-
         self._chain_id = chain_id
         self._block_number = credmark.cmf.types.BlockNumber(block_number)
         self._web3 = None

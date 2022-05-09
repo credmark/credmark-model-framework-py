@@ -1,12 +1,12 @@
 import unittest
+from credmark.cmf.engine.model_unittest import ModelTestCase
 from credmark.cmf.model.errors import ModelBaseError
 
 from credmark.cmf.types import Token
 from credmark.cmf.types.token import NativeToken
-from tests.context_test_case import ContextTestCase
 
 
-class TestToken(ContextTestCase):
+class TestToken(ModelTestCase):
     def test_run(self):
         token = Token(symbol="CMK")
         self.assertEqual(token.symbol, "CMK")

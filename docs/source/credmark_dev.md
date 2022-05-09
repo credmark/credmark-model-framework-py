@@ -8,9 +8,9 @@
 $ credmark-dev --help
 
 usage: credmark-dev [-h] [--log_level LOG_LEVEL] [--model_path MODEL_PATH]
-                    [--manifest_file MANIFEST_FILE]
-                    {version,list,list-models,models,deployed-models,describe,describe-models,man,run,run-model,build,build-manifest,clean,remove-manifest}
-                    ...
+                       [--manifest_file MANIFEST_FILE]
+                       {version,list,list-models,models,deployed-models,describe,describe-models,man,run,run-model,test,run-tests,build,build-manifest,clean,remove-manifest}
+                       ...
 
 Credmark developer tool
 
@@ -28,7 +28,7 @@ optional arguments:
 Commands:
   Supported commands
 
-  {version,list,list-models,models,deployed-models,describe,describe-models,man,run,run-model,build,build-manifest,clean,remove-manifest}
+  {version,list,list-models,models,deployed-models,describe,describe-models,man,run,run-model,test,run-tests,build,build-manifest,clean,remove-manifest}
                         additional help
     version             Show version of the framework
     list (list-models)  List models in this repo
@@ -37,6 +37,7 @@ Commands:
     describe (describe-models, man)
                         Show documentation for local and deployed models
     run (run-model)     Run a model
+    test (run-tests)    Run model tests
     build (build-manifest)
                         Build model manifest [Not required during development]
     clean (remove-manifest)
@@ -76,7 +77,7 @@ optional arguments:
   -l USE_LOCAL_MODELS, --use_local_models USE_LOCAL_MODELS
                         Comma-separated list of model slugs for models that should favor
                         use of the local version. This is only required when a model is
-                        calling another model.
+                        calling another model. Use "*" to use local versions of all models.
   --provider_url_map PROVIDER_URL_MAP
                         JSON object of chain id to Web3 provider HTTP URL. Overrides
                         settings in env vars.
@@ -179,6 +180,48 @@ example.model
    No defined errors
  - class: models.examples.e_01_model.ExampleEcho
 ```
+
+## `test` command
+
+Discover and run unit tests.
+
+Below -h command shows the details of options available for the test command.
+
+```
+$ credmark-dev test -h
+
+usage: credmark-dev test [-h] [-p PATTERN] [--api_url API_URL]
+                            [--provider_url_map PROVIDER_URL_MAP]
+                            [start_folder]
+
+positional arguments:
+  start_folder          Folder to start discovery for tests.
+                        Defaults to "models".
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PATTERN, --pattern PATTERN
+                        Pattern to match test files (test*.py default).
+  --api_url API_URL     Credmark API url. Defaults to the standard API gateway. You do not
+                        normally need to set this.
+  --provider_url_map PROVIDER_URL_MAP
+                        JSON object of chain id to Web3 provider HTTP URL. Overrides
+                        settings in env var or .env.test file.
+```
+
+To search for all tests under the `models` folder and run them use:
+
+```
+credmark-dev test
+```
+
+You can specify a start folder to search for tests by using an extra argument:
+
+```
+credmark-dev test models/contrib/mymodels
+```
+
+By default it searches for tests in files that match the pattern `test*.py`. You can specify an alternative pattern using the `--pattern` argument.
 
 ## `version` command
 
