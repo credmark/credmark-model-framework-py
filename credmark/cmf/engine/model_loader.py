@@ -200,7 +200,8 @@ class ModelLoader:
                                       model_class: Type[Model]):
         slug_ver = f'{slug}:{str(ver)}'
 
-        if slug_ver in self.__slug_version_to_class_dict:
+        existing_class = self.__slug_version_to_class_dict.get(slug_ver)
+        if existing_class is not None and existing_class != model_class:
             raise Exception(
                 f'Duplicate model slug ({slug}) and version ({ver}) found. Skipping duplicate.')
 

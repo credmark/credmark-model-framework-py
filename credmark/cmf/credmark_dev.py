@@ -124,7 +124,7 @@ def main():  # pylint: disable=too-many-statements
     parser_test.add_argument('--provider_url_map', required=False, default=None,
                              help='JSON object of chain id to Web3 provider HTTP URL. '
                              'Overrides settings in env var or .env.test file.')
-    parser_test.add_argument('start_folder', nargs='?', default='models',
+    parser_test.add_argument('tests_folder', nargs='?', default='models',
                              help='Folder to start discovery for tests. Defaults to "models".')
     parser_test.set_defaults(func=run_tests)
 
@@ -167,6 +167,17 @@ def load_models(args, load_dev_models=False):
         model_paths = model_path.split(';')
     else:
         model_paths = None
+
+    # We add the tests folder (if set)
+    # to the models paths if not present
+    tests_folder = args.get('tests_folder')
+    if tests_folder:
+        if model_paths is None:
+            model_paths = [tests_folder]
+        else:
+            if tests_folder not in model_paths:
+                model_paths.append(tests_folder)
+
     model_loader = ModelLoader(model_paths, manifest_file, load_dev_models)
     model_loader.log_errors()
     return model_loader
@@ -443,9 +454,9 @@ def run_tests(args):
     ModelTestContextFactory.use_factory(factory)
 
     pattern = args['pattern']
-    start_folder = args['start_folder']
+    tests_folder = args['tests_folder']
     test_argv = [sys.argv[0], 'discover',
-                 '-s', start_folder, '-p', pattern]
+                 '-s', tests_folder, '-p', pattern]
     unittest.main(module=None, argv=test_argv, verbosity=2)
 
 
