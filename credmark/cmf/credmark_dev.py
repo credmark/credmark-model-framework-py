@@ -11,7 +11,7 @@ from dotenv import load_dotenv, find_dotenv
 sys.path.append('.')
 from .engine.context import EngineModelContext
 from .engine.model_loader import ModelLoader
-from .engine.mocks import ModelMockRunner
+from .engine.mocks import MockGenerator, ModelMockRunner
 from .engine.web3 import Web3Registry
 from .engine.model_api import ModelApi
 from credmark.dto import json_dump, json_dumps, print_example, print_tree, dto_schema_viz
@@ -107,6 +107,10 @@ def main():  # pylint: disable=too-many-statements
         '-m', '--model_mocks', default=None,
         help='Module path and symbol of model mocks config to use. '
         'For example, models.contrib.mymodels.mymocks.mock_config')
+    parser_run.add_argument(
+        '--generate_mocks', default=None,
+        help='Generate model mocks and write them to the specified file. '
+        'The generated python file can be used with --model_mocks on another run.')
     parser_run.add_argument('--provider_url_map', required=False, default=None,
                             help='JSON object of chain id to Web3 provider HTTP URL. '
                             'Overrides settings in env var or .env file.')
@@ -485,6 +489,7 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
         debug_log: bool = args['debug']
         use_local_models: Union[str, None] = args['use_local_models']
         model_mocks_config: Union[str, None] = args['model_mocks']
+        generate_mocks: Union[str, None] = args.get('generate_mocks')
 
         if use_local_models is not None and len(use_local_models):
             local_model_slugs = use_local_models.split(',')
@@ -494,6 +499,14 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
         if model_mocks_config:
             model_mock_runner = ModelMockRunner(model_mocks_config)
             EngineModelContext.use_model_mock_runner(model_mock_runner)
+
+        if generate_mocks is not None:
+            if not generate_mocks.endswith('.py'):
+                generate_mocks += '.py'
+            mock_gen = MockGenerator()
+            EngineModelContext.add_model_run_listener(mock_gen.model_run)
+        else:
+            mock_gen = None
 
         if debug_log:
             dbg_logger = logging.getLogger('credmark.cmf.engine.context.debug')
@@ -520,6 +533,10 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
             api_url=api_url,
             run_id=run_id,
             depth=depth)
+
+        if generate_mocks is not None and mock_gen is not None:
+            logger.info(f'Writing mocks to file "{generate_mocks}"')
+            mock_gen.write(generate_mocks, model_slug)
 
         if 'error' in result:
             etype = result.get('error', {}).get('type')

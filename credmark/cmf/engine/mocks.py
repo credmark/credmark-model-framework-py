@@ -64,7 +64,17 @@ class ModelMock:
         self.repeat = repeat
 
     def __repr__(self):
-        return f'ModelMock({str(vars(self))})'
+        # output valid python to create the mock
+        if isinstance(self.output, ModelBaseError):
+            cls = self.output.__class__.__name__
+            data = self.output.data.dict().copy()
+            del data['type']
+            return (f'ModelMock({cls}(**{data}),' +
+                    f'input={self.input}, repeat={self.repeat})')
+        elif isinstance(self.output, str):
+            return f'ModelMock("{self.output}", input={self.input}, repeat={self.repeat})'
+        else:
+            return f'ModelMock({self.output}, input={self.input}, repeat={self.repeat})'
 
     @classmethod
     def check_input_match(cls, model_input: dict, match_input: dict):
@@ -130,6 +140,69 @@ class MockEntryCursorFrame:
 
     def __repr__(self):
         return f'(index={self.index} repeat={self.repeat})'
+
+
+class MockGenerator:
+    """
+    Generate mocks for model runs and write python to a file.
+
+    The model_run() method should be called for each run and a
+    mock will be created for it.
+
+    Example usage:
+
+        gen = MockGenerator()
+        EngineModelContext.add_model_run_listener(gen.model_run)
+
+        EngineModelContext.create_context_and_run_model(model_slug=model_slug...)
+
+        gen.write('mocks.py', model_slug)
+    """
+
+    def __init__(self):
+        self.model_map = {}
+        self.error_classes = set()
+
+    def write(self, file_path: str, omit_slug: str):
+        with open(file_path, 'w') as file:
+            self._write_header(file)
+            slugs = [slug for slug in self.model_map if slug != omit_slug]
+            slugs.sort()
+            count = len(slugs)
+
+            for i, slug in enumerate(slugs):
+                mocks = self.model_map[slug]
+                file.write(f'        \'{slug}\': {mocks}{"," if i < count - 1 else ""}\n')
+
+            self._write_footer(file)
+
+    def _write_header(self, file):
+        if len(self.error_classes) > 0:
+            file.write(f'from credmark.cmf.model.errors import {", ".join(self.error_classes)}\n')
+        file.write('from credmark.cmf.engine.mocks import ModelMock, ModelMockConfig\n\n\n')
+        file.write('mocks = ModelMockConfig(\n')
+        file.write('    run_unmocked=False,\n')
+        file.write('    models={\n')
+
+    def _write_footer(self, file):
+        file.write('    }\n')
+        file.write(')\n')
+
+    def model_run(self,
+                  slug: str,
+                  _version: Union[str, None],
+                  _chain_id: int,
+                  _block_number: int,
+                  _input: Union[dict, DTO, None],
+                  output: Union[dict, DTO, None],
+                  error: ModelBaseError):
+        if slug not in self.model_map:
+            self.model_map[slug] = []
+
+        if error is not None:
+            self.error_classes.add(error.__class__.__name__)
+
+        self.model_map[slug].append(ModelMock(output if output is not None else error, repeat=1))
 
 
 class MockEntryCursor:
