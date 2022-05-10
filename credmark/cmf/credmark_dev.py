@@ -110,7 +110,7 @@ def main():  # pylint: disable=too-many-statements
     parser_run.add_argument(
         '--generate_mocks', default=None,
         help='Generate model mocks and write them to the specified file. '
-        'The generated python file can be used with --model_mocks on another run.')
+        'The generated python file can be used with --model_mocks on another run or in unit tests.')
     parser_run.add_argument('--provider_url_map', required=False, default=None,
                             help='JSON object of chain id to Web3 provider HTTP URL. '
                             'Overrides settings in env var or .env file.')
