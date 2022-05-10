@@ -2,7 +2,7 @@ import json
 import logging
 import traceback
 import sys
-from typing import Set, Type, Union
+from typing import Callable, List, Set, Type, Union
 from credmark.dto.encoder import json_dumps
 from credmark.cmf.model import Model
 from credmark.cmf.model.context import ModelContext
@@ -63,7 +63,24 @@ class EngineModelContext(ModelContext):
     # Set of model slugs to use the local version.
     use_local_models_slugs: Set[str] = set()
 
+    _model_run_listeners: List[Callable] = []
+
     _model_mock_runner: Union[ModelMockRunner, None] = None
+
+    @classmethod
+    def add_model_run_listener(cls, run_listener):
+        cls._model_run_listeners.append(run_listener)
+
+    @classmethod
+    def notify_model_run(cls,
+                         slug: str, version: Union[str, None],
+                         chain_id: int, block_number: int,
+                         input: Union[dict, DTO],
+                         output: Union[dict, DTO, None],
+                         error: Union[ModelBaseError, None]):
+        for listener in cls._model_run_listeners:
+            listener(slug, version, chain_id, block_number,
+                     input, output, error)
 
     @classmethod
     def use_model_mock_runner(cls, model_mock_runner: Union[ModelMockRunner, None]):
@@ -364,7 +381,7 @@ class EngineModelContext(ModelContext):
 
         return slug
 
-    def _run_model_with_class(self,  # pylint: disable=too-many-locals,too-many-arguments
+    def _run_model_with_class(self,  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches
                               slug: str,
                               input: Union[dict, DTO],
                               block_number: Union[int, None],
@@ -385,6 +402,8 @@ class EngineModelContext(ModelContext):
                 model_class)
 
         elif try_remote and api is not None:
+            run_block_number = block_number if block_number is not None else self.block_number
+
             try:
                 debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
 
@@ -393,7 +412,7 @@ class EngineModelContext(ModelContext):
 
                 slug, version, output, error, dependencies = api.run_model(
                     slug, version, self.chain_id,
-                    block_number if block_number is not None else self.block_number,
+                    run_block_number,
                     input if input is None or isinstance(input, dict) else input.dict(),
                     self.run_id, self.__depth)
 
@@ -406,10 +425,13 @@ class EngineModelContext(ModelContext):
                         self.debug_logger.debug(f"< Run API model '{slug}' error: {error}")
                     raise create_instance_from_error_dict(error)
 
+                EngineModelContext.notify_model_run(slug, version, self.chain_id,
+                                                    run_block_number, input, output, error)
+
                 if debug_log:
                     self.debug_logger.debug(f"< Run API model '{slug}' output: {output}")
 
-            except ModelNotFoundError:
+            except ModelNotFoundError as err:
                 # We always fallback to local if model not found on server.
                 if model_class is not None:
                     self.logger.debug(f'Model {slug} not on server. Using local instead')
@@ -420,7 +442,18 @@ class EngineModelContext(ModelContext):
                         version,
                         model_class)
                 else:
+                    EngineModelContext.notify_model_run(slug, version, self.chain_id,
+                                                        run_block_number, input, None, err)
                     raise
+            except ModelBaseError as err:
+                EngineModelContext.notify_model_run(slug, version, self.chain_id,
+                                                    run_block_number, input, None, err)
+                raise
+            except Exception as exc:
+                err = ModelRunError(str(exc))
+                EngineModelContext.notify_model_run(slug, version, self.chain_id,
+                                                    run_block_number, input, None, err)
+                raise
         else:
             # No call stack item because model not run
             err = ModelNotFoundError.create(slug, version)
@@ -488,6 +521,9 @@ class EngineModelContext(ModelContext):
             except DataTransformError as err:
                 raise ModelOutputError(str(err))
 
+            EngineModelContext.notify_model_run(slug, model_class.version, context.chain_id,
+                                                context.block_number, input, output, None)
+
             if debug_log:
                 self.debug_logger.debug(f"< Run model '{slug}' output: {output}")
 
@@ -535,6 +571,9 @@ class EngineModelContext(ModelContext):
                                       chainId=context.chain_id,
                                       blockNumber=context.block_number,
                                       trace=trace if trace is not None else None))
+
+            EngineModelContext.notify_model_run(slug, model_class.version, context.chain_id,
+                                                context.block_number, input, None, err)
             raise err
 
         finally:

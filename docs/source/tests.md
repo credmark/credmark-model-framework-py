@@ -76,9 +76,68 @@ A {class}`credmark.cmf.engine.mocks.ModelMock` instance contains the output for 
    :members:
 ```
 
+### Generating Mocks
+
+Instead of manually creating mocks, you can generate them automatically from a model run using the `credmark-dev` tool. To do this, use the `--generate_mocks` flag where the value is the path of a python file to create (or overwrite) and write the generated mocks in.
+
+For example running:
+
+```
+credmark-dev run example.ledger-blocks --generate_mocks ./mocks.py
+```
+
+will generate the file `./mocks.py` something like:
+
+```
+from credmark.cmf.engine.mocks import ModelMock, ModelMockConfig
+
+
+mocks = ModelMockConfig(
+    run_unmocked=False,
+    models={
+        'ledger.block_data': [ModelMock({'data': [{'difficulty': 13867018111894316}, {'difficulty': 13859975667743356}, {'difficulty': 13859700789836412}, {'difficulty': 13859425911929468}, {'difficulty': 13859151034022524}, {'difficulty': 13872423444635732}, {'difficulty': 13865378362450248}, {'difficulty': 13871876861917288}, {'difficulty': 13898747976151264}, {'difficulty': 13898473098244320}]}, input=None, repeat=1)]
+    }
+)
+```
+
+#### Removing Top-Level Generated Mocks
+
+If your model is calling models that themselves call other models, you may want to remove the top-level models from your mocks. If you do this you will also need to set `run_unmocked=True` in your `ModelMockConfig`.
+
+If you have a model that calls a `"series"` model, you probably want to remove the `"series"` model from your mocks. For example, if your model calls `"series.block-window-interval"` to run an `"example.echo"` model over a series of blocks, the generated mocks might look something like this:
+
+```
+from credmark.cmf.engine.mocks import ModelMock, ModelMockConfig
+
+
+mocks = ModelMockConfig(
+    run_unmocked=False,
+    models={
+        'example.echo': [ModelMock({'echo': 'Hello'}, input=None, repeat=1), ModelMock({'echo': 'Hello'}, input=None, repeat=1), ModelMock({'echo': 'Hello'}, input=None, repeat=1)],
+        'rpc.get-block-range-block-window-interval': [ModelMock({'blockNumbers': [{'blockNumber': 9999, 'blockTimestamp': 1438334590, 'sampleTimestamp': 1438334590}, {'blockNumber': 10000, 'blockTimestamp': 1438334627, 'sampleTimestamp': 1438334627}, {'blockNumber': 10001, 'blockTimestamp': 1438334639, 'sampleTimestamp': 1438334639}]}, input=None, repeat=1)],
+        'series.block-window-interval': [ModelMock({'series': [{'blockNumber': 9999, 'blockTimestamp': 1438334590, 'sampleTimestamp': 1438334590, 'output': {'echo': 'Hello'}}, {'blockNumber': 10000, 'blockTimestamp': 1438334627, 'sampleTimestamp': 1438334627, 'output': {'echo': 'Hello'}}, {'blockNumber': 10001, 'blockTimestamp': 1438334639, 'sampleTimestamp': 1438334639, 'output': {'echo': 'Hello'}}], 'errors': None}, input=None, repeat=1)]
+    }
+)
+```
+
+You can remove the `"series.block-window-interval"` mock and set `run_unmocked=True` so it actually runs the `"series.block-window-interval"` model and uses the mocks for the `"example.echo"` and `"rpc.get-block-range-block-window-interval"` models:
+
+```
+from credmark.cmf.engine.mocks import ModelMock, ModelMockConfig
+
+
+mocks = ModelMockConfig(
+    run_unmocked=True,
+    models={
+        'example.echo': [ModelMock({'echo': 'Hello'}, input=None, repeat=1), ModelMock({'echo': 'Hello'}, input=None, repeat=1), ModelMock({'echo': 'Hello'}, input=None, repeat=1)],
+        'rpc.get-block-range-block-window-interval': [ModelMock({'blockNumbers': [{'blockNumber': 9999, 'blockTimestamp': 1438334590, 'sampleTimestamp': 1438334590}, {'blockNumber': 10000, 'blockTimestamp': 1438334627, 'sampleTimestamp': 1438334627}, {'blockNumber': 10001, 'blockTimestamp': 1438334639, 'sampleTimestamp': 1438334639}]}, input=None, repeat=1)],
+    }
+)
+```
+
 ### Testing with Mocks
 
-To use mocks for a test, you can pass a configured `ModelMockConfig` instance to the {func}`credmark.cmf.engine.model_unittest.model_context` test method decorator.
+To use mocks in a unit test, you can pass a configured `ModelMockConfig` instance to the {func}`credmark.cmf.engine.model_unittest.model_context` test method decorator in your {class}`~credmark.cmf.engine.model_unittest.ModelTestCase` test subclass.
 
 ```py
 model_mocks_config = ModelMockConfig(
@@ -88,6 +147,8 @@ model_mocks_config = ModelMockConfig(
                       input={'address': '0x68cfb82eacb9f198d508b514d898a403c449533e'}),
         ]
     })
+
+class ModelTest(ModelTestCase):
 
     @model_context(chain_id=1,
                    block_number=140000,
