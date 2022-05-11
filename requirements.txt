@@ -54,3 +54,6 @@ varint==1.0.2
 web3 @ git+https://github.com/credmark/web3.py.git@e886bbd74f0974cb1895846550ef71ce3af167fc
 websockets==9.1
 yarl==1.7.2
+ipython>=8.3.0
+
+
