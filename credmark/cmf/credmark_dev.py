@@ -113,8 +113,9 @@ def main():  # pylint: disable=too-many-statements
     add_api_url_arg(parser_run)
     parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
     parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
-    parser_run.add_argument('model-slug', default='(missing model-slug arg)',
-                            help='Slug for the model to run.')
+    parser_run.add_argument(
+        'model-slug', default='(missing model-slug arg)',
+        help='Slug for the model to run or "console" for the interactive console.')
     parser_run.set_defaults(func=run_model, depth=0)
 
     parser_test = subparsers.add_parser('test', help='Run model tests', aliases=['run-tests'])
@@ -532,10 +533,11 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
             else:
                 exit_code = 1
 
-        if format_json:
-            print(json_dumps(result, indent=4).replace('\\n', '\n').replace('\\"', '\''))
-        else:
-            json_dump(result, sys.stdout)
+        if model_slug != 'console':
+            if format_json:
+                print(json_dumps(result, indent=4).replace('\\n', '\n').replace('\\"', '\''))
+            else:
+                json_dump(result, sys.stdout)
 
     except Exception as e:
         # this exception would only happen have been raised
@@ -547,7 +549,8 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
                 "message": f'Error in credmark-dev: {str(e)}'
             }
         }
-        json.dump(msg, sys.stdout)
+        if args.get('model-slug') != 'console':
+            json.dump(msg, sys.stdout)
         exit_code = 1
     finally:
         sys.stdout.write('\n')
