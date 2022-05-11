@@ -1,4 +1,5 @@
 # pylint: disable=locally-disabled, unused-import, unused-variable
+import importlib
 from typing import List
 from datetime import datetime, date, timezone, timedelta
 import IPython
@@ -97,9 +98,8 @@ class CmfConsole(Model):
 
         init_script_fp = os.path.join('script', 'console_init.py')
         if os.path.isfile(init_script_fp):
-            with open(init_script_fp) as fp:
-                init_script = fp.read()
-                exec(init_script)
+            console_init = importlib.import_module('script.console_init')
+            console_init.load_modules(globals())
 
         ledger = self.context.ledger
         run_model = self.context.run_model
