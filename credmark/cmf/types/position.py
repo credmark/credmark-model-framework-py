@@ -10,10 +10,8 @@ class Position(DTO):
 
     def get_value(self):
         context = credmark.cmf.model.ModelContext.current_context()
-        try:
-            token_price = Price(**context.models.token.price(self.asset)).price
-        except Exception:
-            token_price = 0.0
+
+        token_price = Price(**context.models.token.price(self.asset)).price
 
         if token_price is None:
             token_price = 0.0
