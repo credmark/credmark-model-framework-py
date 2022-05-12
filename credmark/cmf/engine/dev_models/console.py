@@ -10,10 +10,12 @@ import logging
 import yaml
 
 from web3.exceptions import ABIFunctionNotFound
+from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.engine.model_api import ModelApi
 
 from credmark.cmf.model import Model
+from credmark.cmf.model.context import RunModelMethod
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.cmf.model.print import print_manifest_description
 from credmark.cmf.types import (
@@ -57,12 +59,9 @@ class ConsoleModel(Model):
 
     blocks: List[BlockNumber] = []
 
-    # filled in lazily
-    _model_manifest_map = {}
-    _added_deployed_manifests = False
-
     def init(self):
         self.load_config(globals())
+        RunModelMethod.interactive_docs = True
 
     def load_config(self, var_namespace):
         path = self.console_yaml_path
@@ -112,7 +111,8 @@ class ConsoleModel(Model):
 
     def help(self):
         print('# Credmark model utility shortcuts')
-        print('ledger = self.context.ledger')
+        print('context = self.context')
+        print('models = self.context.models')
         print('run_model = self.context.run_model'
               '(model_slug, input=EmptyInput(), return_type=dict): run a model')
         print(
@@ -123,7 +123,7 @@ class ConsoleModel(Model):
             'run_model_historical_blocks = self.context.run_model_historical_blocks'
             '(model_slug, model_input, model_return_type, window, interval, '
             ' end_block, snap_block, model_version)')
-        print('models = self.context.models')
+        print('ledger = self.context.ledger')
         print('block_number = self.context.block_number')
         print('chain_id = self.context.chain_id')
         print('web3 = self.context.web3')
@@ -139,6 +139,9 @@ class ConsoleModel(Model):
         print('self.save("output_filename"): save console history to {output_filename}.py')
         print('self.load("input_filename"): load and run {input_filename}.py')
         print('self.goto_block(block_number): Change context to a past block number')
+        print('')
+        print('With "models." use tab to auto-complete the slug. '
+              'Add ? at end to get docs for the model.')
 
     def where(self):
         print(f'You are {len(self.blocks)} blocks deep.')
@@ -160,40 +163,19 @@ class ConsoleModel(Model):
         """
         self.context.run_model(self.slug, block_number=to_block)
 
-    def _model_manifests(self, fetch_deployed):
-        if len(self._model_manifest_map) == 0:
-            loader: ModelLoader = self.context.model_loader  # type: ignore
-            manifests = loader.loaded_model_manifests()
-            for m in manifests:
-                # hack for casing.
-                m['displayName'] = m['display_name']
-                self._model_manifest_map[m['slug']] = m
-
-        if fetch_deployed and not self._added_deployed_manifests:
-            model_api: ModelApi = self.context.model_api  # type: ignore
-            try:
-                deployed_manifests = model_api.get_models()
-                for m in deployed_manifests:
-                    self._model_manifest_map[m['slug']] = m
-                self._added_deployed_manifests = True
-            except Exception:
-                # Error will have been logged but we continue so things work offline
-                pass
-        return self._model_manifest_map
+    def _model_manifests(self):
+        return self.context._model_manifests()  # pylint: disable=protected-access
 
     def list_models(self):
-        manifest_map = self._model_manifests(True)
+        manifest_map = self._model_manifests()
         slugs = list(manifest_map.keys())
         slugs.sort()
         for s in slugs:
             print(f' - {s} : {manifest_map[s].get("displayName")}')
 
     def describe_model(self, slug: str):  # pylint: disable=arguments-differ
-        manifest_map = self._model_manifests(False)
+        manifest_map = self._model_manifests()
         manifest = manifest_map.get(slug)
-        if manifest is None:
-            manifest_map = self._model_manifests(True)
-            manifest = manifest_map.get(slug)
         print('')
         if manifest is not None:
             print_manifest_description(manifest, sys.stdout)
@@ -205,6 +187,7 @@ class ConsoleModel(Model):
 
         list_models = self.list_models
         describe_model = self.describe_model
+        context = self.context
         ledger = self.context.ledger
         run_model = self.context.run_model
         models = self.context.models
@@ -217,7 +200,8 @@ class ConsoleModel(Model):
         if len(self.blocks) == 1:
             banner1 = f'Entering Credmark Model Console at block {self.context.block_number}.'
             banner2 = 'Help: self.help(), Quit: quit()\n' \
-                'Available types are BlockNumber, Address, Contract, Token...\n'
+                'Available vars: context, models, ledger, web3, etc.\n' \
+                'Available types: BlockNumber, Address, Contract, Token...\n'
             exit_msg = f'\nExiting Credmark Model Console at block {self.context.block_number}. '
         else:
             banner1 = f'\nSwitching context to block {self.context.block_number}.'

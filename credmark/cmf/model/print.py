@@ -25,10 +25,10 @@ def print_manifest_description(manifest, stream):
                 v, v.get('title', 'Object'), v, 0, 'example',
                 only_required=False, tag='top', limit=10)
 
-            print(' - input schema (* for required field):')
+            stream.write(' - input schema (* for required field):\n')
             print_tree(input_tree, '   ', stream.write)
 
-            print(' - input example:')
+            stream.write(' - input example:\n')
             print_example(input_examples, '   ', stream.write)
 
         elif i == 'output':
@@ -39,29 +39,29 @@ def print_manifest_description(manifest, stream):
                 v, v.get('title', 'Object'), v, 0, 'example',
                 only_required=True, tag='top', limit=1)
 
-            print(' - output schema (* for required field):')
+            stream.write(' - output schema (* for required field):\n')
             print_tree(output_tree, '   ', stream.write)
 
-            print(' - output example:')
+            stream.write(' - output example:\n')
             print_example(output_examples, '   ', stream.write)
 
         elif i == 'error':
             codes = extract_error_codes_and_descriptions(v)
-            print(' - errors:')
+            stream.write(' - errors:\n')
             if len(codes) > 0:
                 for ct in codes:
-                    print(f'   {ct[0]}')
-                    print(f'     codes={ct[1]}')
-                    print(f'     {ct[2]}')
+                    stream.write(f'   {ct[0]}\n')
+                    stream.write(f'     codes={ct[1]}\n')
+                    stream.write(f'     {ct[2]}\n')
                 title = v.get('title', 'Error')
                 output_tree = dto_schema_viz(
                     v, title, v, 0, 'tree', only_required=False, tag='top', limit=1)
                 output_examples = dto_schema_viz(
                     v, title, v, 0, 'example', only_required=False, tag='top', limit=1)
-                print(' - error schema:')
+                stream.write(' - error schema:\n')
                 print_tree(output_tree, '   ', stream.write)
             else:
-                print('   No defined errors')
+                stream.write('   No defined errors\n')
 
         else:
             stream.write(f' - {i}: {v}\n')
