@@ -1,7 +1,9 @@
 from abc import abstractmethod
+import io
 from typing import Any, Type, TypeVar, Union, overload
 from web3 import Web3
 
+from .print import print_manifest_description
 from .errors import ModelNoContextError
 from .ledger import Ledger
 import credmark.cmf.types
@@ -13,20 +15,38 @@ DTOT = TypeVar('DTOT')
 
 
 class RunModelMethod:
-    """
-    This class is used interally by the context.
+    # This class is used interally by the context.
 
-    A run model method is callable (where the prefix is the actual
-    model name) or called with a method name (where prefix is the
-    dot prefix of the model name.)
-    """
+    # A run model method is callable (where the prefix is the actual
+    # model name) or called with a method name (where prefix is the
+    # dot prefix of the model name.)
+
+    # If this is set to true for the class, the doc string
+    # for an instance will be set to the model schema doc
+    interactive_docs = False
 
     def __init__(self, context, prefix: str, block_number: Union[int, None] = None):
         self.__context = context
         self.__prefix = prefix
         self.__block_number = block_number
 
+        if self.interactive_docs:
+            # In interactive mode, we set the docstring to the
+            # manifest doc for the model
+            manifest = self.__context._model_manifests(True).get(prefix)
+            if manifest is not None:
+                doc = io.StringIO()
+                print_manifest_description(manifest, doc)
+                self.__doc__ = doc.getvalue()
+                doc.close()
+            else:
+                slugs = [s for s in self.__context._model_manifests(True).keys()
+                         if s.startswith(prefix)]
+                slugs.sort()
+                self.__doc__ = f'Run a model.\n\nAvailable models: {", ".join(slugs)}'
+
     # run a model. args can be a positional DTO or dict or kwargs
+
     def __call__(self, input: Union[DTO, dict, None] = None, **kwargs) -> dict:
         if isinstance(input, DTO):
             input = input.dict()
@@ -42,6 +62,15 @@ class RunModelMethod:
         return RunModelMethod(
             self.__context, f"{self.__prefix}.{__name}",
             block_number=self.__block_number)
+
+    def __dir__(self):
+        # For ipython tab-complete
+        prefix = self.__prefix + '.'
+        prefix_len = len(prefix)
+        slugs = [s[prefix_len:]
+                 for s in self.__context._model_manifests(True).keys() if s.startswith(prefix)]
+        slugs.sort()
+        return slugs
 
 
 class ModelContext:
@@ -98,6 +127,12 @@ class ModelContext:
         def __call__(self, block_number=None):
             return ModelContext.Models(self.__context, block_number=block_number)
 
+        def __dir__(self):
+            # For ipython tab-complete
+            slugs = list(self.__context._model_manifests(True).keys())
+            slugs.sort()
+            return slugs
+
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry):
         self._chain_id = chain_id
@@ -149,6 +184,12 @@ class ModelContext:
             # (our context) block number.
             self._models = ModelContext.Models(self)
         return self._models
+
+    @abstractmethod
+    def _model_manifests(self, underscore_slugs=False) -> dict:
+        # Context implementation will override this to return
+        # a dict of slug to manifest dict containing available models.
+        ...
 
     @property
     def chain_id(self):

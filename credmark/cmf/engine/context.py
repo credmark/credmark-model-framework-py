@@ -60,6 +60,10 @@ class EngineModelContext(ModelContext):
     test_mode = False
     max_run_depth = 20
 
+    # map of slug to manifest, filled in lazily
+    _model_manifest_map: dict[str, dict] = {}
+    _model_underscore_manifest_map: dict[str, dict] = {}
+
     # Set of model slugs to use the local version.
     use_local_models_slugs: Set[str] = set()
 
@@ -235,13 +239,31 @@ class EngineModelContext(ModelContext):
     def dependencies(self):
         return self.__dependencies
 
-    @property
-    def model_loader(self):
-        return self.__model_loader
+    def _model_manifests(self, underscore_slugs=False):
+        """
+        Returns a map of slug to manifest for all models local
+        and remote, which is lazily built for the class on the first call.
+        """
+        if len(self._model_manifest_map) == 0:
+            manifests = self.__model_loader.loaded_model_manifests()
+            for m in manifests:
+                # hack for casing.
+                m['displayName'] = m['display_name']
+                slug = m['slug']
+                self._model_manifest_map[slug] = m
+                self._model_underscore_manifest_map[slug.replace('-', '_')] = m
 
-    @property
-    def model_api(self):
-        return self.__api
+            if self.__api is not None:
+                try:
+                    deployed_manifests = self.__api.get_models()
+                    for m in deployed_manifests:
+                        slug = m['slug']
+                        self._model_manifest_map[slug] = m
+                        self._model_underscore_manifest_map[slug.replace('-', '_')] = m
+                except Exception:
+                    # Error will have been logged but we continue so things work offline
+                    pass
+        return self._model_underscore_manifest_map if underscore_slugs else self._model_manifest_map
 
     def _add_dependency(self, slug: str, version: str, count: int):
         versions = self.__dependencies.get(slug)
