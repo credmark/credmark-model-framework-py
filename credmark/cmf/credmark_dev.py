@@ -14,9 +14,9 @@ from .engine.model_loader import ModelLoader
 from .engine.mocks import MockGenerator, ModelMockRunner
 from .engine.web3 import Web3Registry
 from .engine.model_api import ModelApi
-from credmark.dto import json_dump, json_dumps, print_example, print_tree, dto_schema_viz
-from credmark.dto.dto_error_schema import extract_error_codes_and_descriptions
+from credmark.dto import json_dump, json_dumps
 from credmark.cmf.engine.model_unittest import ModelTestContextFactory
+from credmark.cmf.model.print import print_manifest, print_manifest_description
 
 
 logger = logging.getLogger(__name__)
@@ -117,8 +117,9 @@ def main():  # pylint: disable=too-many-statements
     add_api_url_arg(parser_run)
     parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
     parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
-    parser_run.add_argument('model-slug', default='(missing model-slug arg)',
-                            help='Slug for the model to run.')
+    parser_run.add_argument(
+        'model-slug', default='(missing model-slug arg)',
+        help='Slug for the model to run or "console" for the interactive console.')
     parser_run.set_defaults(func=run_model, depth=0)
 
     parser_test = subparsers.add_parser('test', help='Run model tests', aliases=['run-tests'])
@@ -333,63 +334,10 @@ def list_deployed_models(args):  # pylint: disable=too-many-branches
 
 def print_manifests(manifests: List[dict], describe_schemas=False):
     for m in manifests:  # pylint: disable=too-many-nested-blocks
-        for i, v in m.items():
-            if i == 'slug':
-                sys.stdout.write(f'{v}\n')
-                sys.stdout.write(f' - {i}: {v}\n')
-            else:
-                if not describe_schemas:
-                    sys.stdout.write(f' - {i}: {v}\n')
-                else:
-                    if i == 'input':
-                        input_tree = dto_schema_viz(
-                            v, v.get('title', 'Object'), v, 0, 'tree',
-                            only_required=False, tag='top', limit=10)
-                        input_examples = dto_schema_viz(
-                            v, v.get('title', 'Object'), v, 0, 'example',
-                            only_required=False, tag='top', limit=10)
-
-                        print(' - input schema (* for required field):')
-                        print_tree(input_tree, '   ', sys.stdout.write)
-
-                        print(' - input example:')
-                        print_example(input_examples, '   ', sys.stdout.write)
-
-                    elif i == 'output':
-                        output_tree = dto_schema_viz(
-                            v, v.get('title', 'Object'), v, 0, 'tree',
-                            only_required=False, tag='top', limit=1)
-                        output_examples = dto_schema_viz(
-                            v, v.get('title', 'Object'), v, 0, 'example',
-                            only_required=True, tag='top', limit=1)
-
-                        print(' - output schema (* for required field):')
-                        print_tree(output_tree, '   ', sys.stdout.write)
-
-                        print(' - output example:')
-                        print_example(output_examples, '   ', sys.stdout.write)
-
-                    elif i == 'error':
-                        codes = extract_error_codes_and_descriptions(v)
-                        print(' - errors:')
-                        if len(codes) > 0:
-                            for ct in codes:
-                                print(f'   {ct[0]}')
-                                print(f'     codes={ct[1]}')
-                                print(f'     {ct[2]}')
-                            title = v.get('title', 'Error')
-                            output_tree = dto_schema_viz(
-                                v, title, v, 0, 'tree', only_required=False, tag='top', limit=1)
-                            output_examples = dto_schema_viz(
-                                v, title, v, 0, 'example', only_required=False, tag='top', limit=1)
-                            print(' - error schema:')
-                            print_tree(output_tree, '   ', sys.stdout.write)
-                        else:
-                            print('   No defined errors')
-
-                    else:
-                        sys.stdout.write(f' - {i}: {v}\n')
-
+        if describe_schemas:
+            print_manifest_description(m, sys.stdout)
+        else:
+            print_manifest(m, sys.stdout)
         sys.stdout.write('\n')
 
 
@@ -549,10 +497,11 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
             else:
                 exit_code = 1
 
-        if format_json:
-            print(json_dumps(result, indent=4).replace('\\n', '\n').replace('\\"', '\''))
-        else:
-            json_dump(result, sys.stdout)
+        if model_slug != 'console':
+            if format_json:
+                print(json_dumps(result, indent=4).replace('\\n', '\n').replace('\\"', '\''))
+            else:
+                json_dump(result, sys.stdout)
 
     except Exception as e:
         # this exception would only happen have been raised
@@ -564,7 +513,8 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
                 "message": f'Error in credmark-dev: {str(e)}'
             }
         }
-        json.dump(msg, sys.stdout)
+        if args.get('model-slug') != 'console':
+            json.dump(msg, sys.stdout)
         exit_code = 1
     finally:
         sys.stdout.write('\n')
