@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.17 [2022-05-12]
+* Model console
+
 0.8.16 [2022-05-10]
 * Model mock generation
 
