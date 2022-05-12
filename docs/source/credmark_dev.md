@@ -1,6 +1,6 @@
 # CLI credmark-dev
 
-`credmark-dev` is a command-line tool installed with the `credmark-model-framework`. It can be used to list, run, and get docs for models.
+`credmark-dev` is a command-line tool installed with the `credmark-model-framework`. It can be used to run, list, and get docs for models. It also includes an [interactive python console](console_section).
 
 ## `help` command
 
@@ -59,7 +59,7 @@ usage: credmark-dev run [-h] [-b BLOCK_NUMBER] [-c CHAIN_ID] [-i INPUT] [-v MODE
                         model-slug
 
 positional arguments:
-  model-slug            Slug for the model to run.
+  model-slug            Slug for the model to run or "console" for the interactive console.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -240,3 +240,48 @@ credmark-model-framework version 0.0.0
 ```
 
 **Note:** the commands `build` and `clean` do not need to be used during model development.
+
+(console_section)=
+
+## Interactive Model Console
+
+You can run an interactive python console with a model context using the command:
+
+```
+credmark-dev run console
+```
+
+This is useful to interactively develop and test models.
+
+Within the console you can execute python commands interactively in the same environment as a model's `run()` method. The standard model properties are available such as `self.context` and `self.logger`, as well as some shortcuts and utility functions.
+
+For more info on commands, enter `self.help()` in the console.
+
+### Console Configuration
+
+You can configure the console to automatically import extra modules and classes by using a `credmark_dev_console.yaml` file in your working directory.
+
+The yaml file can have an `imports` object that contains:
+
+- `modules`: a list of objects containing:
+
+  - `name`: full name of module to import) and optional
+  - `as`: name to assign module to.
+
+- `globals`: a list of strings containing the full module name followed by dot and the name of the symbol in the module. Ex. `models.credmark.protocols.lending.aave.aave_v2.AaveDebtInfo`
+
+An example `credmark_dev_console.yaml` file:
+
+```yaml
+imports:
+  modules:
+    - name: numpy
+      as: np
+    - name: pandas
+      as: pd
+    - name: matplotlib.pyplot
+      as: plt
+  globals:
+    - models.credmark.protocols.lending.aave.aave_v2.AaveDebtInfo
+    - models.credmark.protocols.lending.aave.aave_v2.AaveDebtInfos
+```
