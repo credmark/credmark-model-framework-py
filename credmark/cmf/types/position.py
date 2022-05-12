@@ -1,7 +1,7 @@
+import credmark.cmf.model
 from credmark.dto import DTO, DTOField, cross_examples
 from .token import Token, NativeToken
 from .price import Price
-from credmark.cmf.model import ModelContext
 
 
 class Position(DTO):
@@ -9,7 +9,7 @@ class Position(DTO):
     asset: Token
 
     def get_value(self):
-        context = ModelContext.current_context()
+        context = credmark.cmf.model.ModelContext.current_context()
         try:
             token_price = Price(**context.models.token.price(self.asset)).price
         except Exception:
