@@ -1,4 +1,5 @@
 
+from numpy import isin
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 
@@ -106,20 +107,23 @@ class Token(Contract):
 
     def try_erc20_property(self, prop_name):
         try:
-            prop = self.functions[prop_name]().call()  # type: ignore
+            prop_value = self.functions[prop_name]().call()  # type: ignore
         except (BadFunctionCallOutput, ABIFunctionNotFound):
             raise ModelDataError(
                 f'No {prop_name} function on token {self.address}, non ERC20 Compliant'
                 f' proxied by {self.proxy_for.address}' if self.proxy_for is not None else '')
-        if prop is None:
+        if prop_value is None:
             raise ModelDataError(f"Token.{prop_name} is None")
-        return prop
+        return prop_value
 
     @property
     def symbol(self):
         self._load()
         if self._meta.symbol is None:
-            self._meta.symbol = self.try_erc20_property('symbol')
+            symbol_tmp = self.try_erc20_property('symbol')
+            if isinstance(symbol_tmp, bytes):
+                symbol_tmp = symbol_tmp.decode('utf-8', errors='strict').replace('\x00', '')
+            self._meta.symbol = symbol_tmp
         return self._meta.symbol
 
     @property
@@ -133,7 +137,10 @@ class Token(Contract):
     def name(self):
         self._load()
         if self._meta.name is None:
-            self._meta.name = self.try_erc20_property('name')
+            name_tmp = self.try_erc20_property('name')
+            if isinstance(name_tmp, bytes):
+                name_tmp = name_tmp.decode('utf-8', errors='strict').replace('\x00', '')
+            self._meta.name = name_tmp
         return self._meta.name
 
     @property
