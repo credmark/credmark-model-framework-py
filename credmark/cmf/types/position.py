@@ -1,5 +1,6 @@
 from credmark.dto import DTO, DTOField, cross_examples
 from .token import Token, NativeToken
+from .price import Price
 from credmark.cmf.model import ModelContext
 
 
@@ -9,9 +10,15 @@ class Position(DTO):
 
     def get_value(self):
         context = ModelContext.current_context()
-        price = context.run_model('token.price', input=self.asset,
-                                  block_number=context.block_number)['price']
-        return price * self.amount
+        try:
+            token_price = Price(**context.models.token.price(self.asset)).price
+        except Exception:
+            token_price = 0.0
+
+        if token_price is None:
+            token_price = 0.0
+
+        return token_price * self.amount
 
     class Config:
         schema_extra = {
