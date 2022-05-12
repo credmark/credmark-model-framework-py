@@ -1,5 +1,6 @@
 # pylint: disable=locally-disabled, unused-import, unused-variable
 import importlib
+import sys
 from typing import List
 from datetime import datetime, date, timezone, timedelta
 import IPython
@@ -9,9 +10,12 @@ import logging
 import yaml
 
 from web3.exceptions import ABIFunctionNotFound
+from credmark.cmf.engine.model_loader import ModelLoader
+from credmark.cmf.engine.model_api import ModelApi
 
 from credmark.cmf.model import Model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
+from credmark.cmf.model.print import print_manifest_description
 from credmark.cmf.types import (
     Address,
     Account, Contract, Token,
@@ -52,6 +56,10 @@ class ConsoleModel(Model):
     console_yaml_path = 'credmark_dev_console.yaml'
 
     blocks: List[BlockNumber] = []
+
+    # filled in lazily
+    _model_manifest_map = {}
+    _added_deployed_manifests = False
 
     def init(self):
         self.load_config(globals())
@@ -121,6 +129,8 @@ class ConsoleModel(Model):
         print('web3 = self.context.web3')
         print('')
         print('# Utility functions')
+        print('list_models(): List available models')
+        print('describe_model(slug): Describe a model by slug')
         print('get_dt(y,m,d,h=0,m=0,s=0,ms=0): create UTC datetime')
         print('get_block(timestamp): get the block number before the timestamp')
         print('')
@@ -144,12 +154,57 @@ class ConsoleModel(Model):
         if ipython is not None:
             ipython.magic(f"%load {filename}.py")
 
-    def goto_block(self, to_block):
+    def goto_block(self, to_block: int):
+        """
+        Change context to a new block number.
+        """
         self.context.run_model(self.slug, block_number=to_block)
+
+    def _model_manifests(self, fetch_deployed):
+        if len(self._model_manifest_map) == 0:
+            loader: ModelLoader = self.context.model_loader  # type: ignore
+            manifests = loader.loaded_model_manifests()
+            for m in manifests:
+                # hack for casing.
+                m['displayName'] = m['display_name']
+                self._model_manifest_map[m['slug']] = m
+
+        if fetch_deployed and not self._added_deployed_manifests:
+            model_api: ModelApi = self.context.model_api  # type: ignore
+            try:
+                deployed_manifests = model_api.get_models()
+                for m in deployed_manifests:
+                    self._model_manifest_map[m['slug']] = m
+                self._added_deployed_manifests = True
+            except Exception:
+                # Error will have been logged but we continue so things work offline
+                pass
+        return self._model_manifest_map
+
+    def list_models(self):
+        manifest_map = self._model_manifests(True)
+        slugs = list(manifest_map.keys())
+        slugs.sort()
+        for s in slugs:
+            print(f' - {s} : {manifest_map[s].get("displayName")}')
+
+    def describe_model(self, slug: str):  # pylint: disable=arguments-differ
+        manifest_map = self._model_manifests(False)
+        manifest = manifest_map.get(slug)
+        if manifest is None:
+            manifest_map = self._model_manifests(True)
+            manifest = manifest_map.get(slug)
+        print('')
+        if manifest is not None:
+            print_manifest_description(manifest, sys.stdout)
+        else:
+            print(f'No models matching "{slug}" found.')
 
     def run(self, _) -> dict:
         self.blocks.append(self.context.block_number)
 
+        list_models = self.list_models
+        describe_model = self.describe_model
         ledger = self.context.ledger
         run_model = self.context.run_model
         models = self.context.models

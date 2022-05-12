@@ -218,6 +218,14 @@ class EngineModelContext(ModelContext):
     def dependencies(self):
         return self.__dependencies
 
+    @property
+    def model_loader(self):
+        return self.__model_loader
+
+    @property
+    def model_api(self):
+        return self.__api
+
     def _add_dependency(self, slug: str, version: str, count: int):
         versions = self.__dependencies.get(slug)
         if versions is None:
