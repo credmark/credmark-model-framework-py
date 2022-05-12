@@ -1,5 +1,3 @@
-
-from numpy import isin
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 
