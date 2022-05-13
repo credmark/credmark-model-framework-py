@@ -6,7 +6,17 @@ Check out how to create, run and submit a Model based on the Credmark Model Fram
 
 A model is simply a decorated class that inherits from {class}`credmark.cmf.model.Model` and implements a `run()` method that takes an input and returns an output.
 
-Create a new class as a subclass of {class}`credmark.cmf.model.Model` and then decorate it with the {meth}`credmark.cmf.model.Model.describe` decorator `@Model.describe`:
+To get started, you can use the {doc}`credmark_dev` command to create a new model skeleton python file using something like:
+
+```
+credmark_dev create my_models hello_world
+```
+
+This will create a model in the folder `models/contrib/my_models/hello_world.py`.
+
+In the command above you can replace `my_models` with your username or a unique folder name for your models and replace `hello_world` with the name you wish to use for the file.
+
+The skeleton file will contain a subclass of {class}`credmark.cmf.model.Model` decorated with the {meth}`credmark.cmf.model.Model.describe` decorator `@Model.describe`, something like the following example:
 
 ```python
 from credmark.cmf.model import Model, EmptyInput
@@ -145,7 +155,8 @@ Here’s a [failing test](https://github.com/credmark/credmark-models-py/runs/58
   - Is it materially different from the existing DTOs
 
 ## Bugs, Issues, and Support
-The Credmark Model Framework is under active development, thus there will be some bugs or issues that may cause problems. 
+
+The Credmark Model Framework is under active development, thus there will be some bugs or issues that may cause problems.
 
 We encourage all modelers to join our [Discord](https://discord.com/invite/3dSfMqP3d4), pick the role "Engineering" and post any issues the in the channel [#framework-help](https://discord.com/channels/827615638540910622/965655586513485835). The Discord shall be the place to ask general questions about how to do something or if you have data-related questions.
 
