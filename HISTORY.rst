@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.18 [2022-05-13]
+* Model console improvements
+* Added return_type arg to context.models model run
+
 0.8.17 [2022-05-12]
 * Model console
 
