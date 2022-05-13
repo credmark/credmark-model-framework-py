@@ -27,7 +27,11 @@ class RunModelMethod:
         self.__block_number = block_number
 
     # run a model. args can be a positional DTO or dict or kwargs
+<<<<<<< Updated upstream
     def __call__(self, input: Union[DTO, dict, None] = None, **kwargs) -> dict:
+=======
+    def __call__(self, input: Union[DTO, dict, None] = None, return_type=None, **kwargs) -> dict:
+>>>>>>> Stashed changes
         if isinstance(input, DTO):
             input = input.dict()
         elif input is None:
@@ -35,14 +39,35 @@ class RunModelMethod:
 
         return self.__context.run_model(
             f"{self.__prefix.replace('_', '-')}",
-            input, block_number=self.__block_number)
+            input, block_number=self.__block_number,
+            return_type=return_type)
 
     # Handle method calls where the prefix is the dot prefix of a model name
     def __getattr__(self, __name: str):
+        model_manifests = self.__context._model_manifests(True)
+        if self.__prefix in model_manifests.keys():
+            if __name in model_manifests[self.__prefix]:
+                return model_manifests[self.__prefix][__name]
         return RunModelMethod(
             self.__context, f"{self.__prefix}.{__name}",
             block_number=self.__block_number)
 
+<<<<<<< Updated upstream
+=======
+    def __dir__(self):
+        # For ipython tab-complete
+        model_manifests = self.__context._model_manifests(True)
+        if self.__prefix in model_manifests.keys():
+            return sorted(list(model_manifests[self.__prefix].keys()))
+
+        prefix = self.__prefix + '.'
+        prefix_len = len(prefix)
+        slugs = [s[prefix_len:]
+                 for s in self.__context._model_manifests(True).keys() if s.startswith(prefix)]
+        slugs.sort()
+        return slugs
+
+>>>>>>> Stashed changes
 
 class ModelContext:
     """
