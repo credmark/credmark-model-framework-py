@@ -36,6 +36,8 @@ Commands:
                         List models deployed on server
     describe (describe-models, man)
                         Show documentation for local and deployed models
+    create (create-model)
+                        Create a new model skeleton file
     run (run-model)     Run a model
     test (run-tests)    Run model tests
     build (build-manifest)
@@ -45,6 +47,27 @@ Commands:
 ```
 
 **_NOTE_**: `credmark-dev` will search for models under the folder `models` in the current folder. To change this location, use the `--model_path` argument.
+
+## `create` command
+
+Create a skeleton for a new model with the `create` command.
+
+Below -h command shows the details of args:
+
+```
+$ credmark-dev create -h
+
+usage: credmark-dev create [-h] model_folder filename
+
+positional arguments:
+  model_folder  The name of the folder under "models/contrib" in which to put the new model
+                file. Ex. "my_models"
+  filename      The name of the new model file. Ex. "model.py"
+
+optional arguments:
+  -h, --help    show this help message and exit
+
+```
 
 ## `run` command
 

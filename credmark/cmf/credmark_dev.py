@@ -1,9 +1,11 @@
 #! /usr/bin/env python3
+import os
 import sys
 import argparse
 import logging
 import json
 import unittest
+import inspect
 from typing import List, Union
 from importlib.metadata import version
 from dotenv import load_dotenv, find_dotenv
@@ -82,6 +84,18 @@ def main():  # pylint: disable=too-many-statements
                              help='Slug or partial slug to describe.')
     add_api_url_arg(parser_desc)
     parser_desc.set_defaults(func=describe_models)
+
+    parser_create = subparsers.add_parser(
+        'create', help='Create a new model skeleton file',
+        aliases=['create-model'])
+    parser_create.add_argument(
+        'model_folder', default='(missing model_folder arg)',
+        help='The name of the folder under "models/contrib" in which to put the new model file. '
+        'Ex. "my_models"')
+    parser_create.add_argument(
+        'filename', default='(missing filename arg)',
+        help='The name of the new model file. Ex. "model.py"')
+    parser_create.set_defaults(func=create_model)
 
     parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
     parser_run.add_argument('-b', '--block_number', type=int, required=False, default=None,
@@ -339,6 +353,41 @@ def print_manifests(manifests: List[dict], describe_schemas=False):
         else:
             print_manifest(m, sys.stdout)
         sys.stdout.write('\n')
+
+
+def create_model(args):
+    import credmark.cmf.model.template  # pylint: disable=import-outside-toplevel
+
+    model_folder = args['model_folder'].replace('-', '_')
+
+    filename = args['filename'].replace('-', '_')
+    if not filename.endswith('.py'):
+        filename += '.py'
+
+    folder_path = os.path.join('models', 'contrib', model_folder)
+    file_path = os.path.join(folder_path, filename)
+
+    if not os.path.isdir(folder_path):
+        try:
+            print(f'Creating folder {folder_path}')
+            os.mkdir(folder_path)
+        except Exception as exc:
+            logger.error(f'Error creating model folder {folder_path}: {exc}')
+            sys.exit(1)
+
+    if os.path.isfile(file_path):
+        res = input(f'File {file_path} exists, overwrite [Y/n]? ')
+        if res not in ['', 'Y', 'y']:
+            print('Exiting...')
+            sys.exit(1)
+    try:
+        print(f'Creating file {file_path}')
+        with open(file_path, 'w') as file:
+            file.write(inspect.getsource(credmark.cmf.model.template))
+    except Exception as exc:
+        logger.error(f'Error writing model template to path {file_path}: {exc}')
+
+    sys.exit(0)
 
 
 def write_manifest_file(args):
