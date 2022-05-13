@@ -257,6 +257,149 @@ Within the console you can execute python commands interactively in the same env
 
 For more info on commands, enter `self.help()` in the console.
 
+### Using the Console
+
+The use the console to run small utilities or interactively test portions of model code.
+
+The following are some examples:
+
+#### Get current context block number
+
+```
+In [1]: block_number
+Out[1]: 14000000
+
+In [2]: block_number.timestamp_datetime
+Out[2]: datetime.datetime(2022, 1, 13, 22, 59, 55, tzinfo=datetime.timezone.utc)
+```
+
+#### Get a block number for a timestamp
+
+Get the {class}`~credmark.cmf.types.block_number.BlockNumber` for a timestamp at or before 2022-01-01 10:30:00 UTC
+
+```
+In [1]: bn = get_block(get_dt(2022,1,1,10,30,00))
+
+In [2]: bn
+Out[2]: 13919019
+
+In [3]: bn.timestamp_datetime
+Out[3]: datetime.datetime(2022, 1, 1, 10, 29, 56, tzinfo=datetime.timezone.utc)
+```
+
+#### Query the ledger
+
+```
+In [1]: ledger.get_blocks(columns=[BlockTable.Columns.NUMBER, BlockTable.Columns.TIMESTAMP], order_by=f'{BlockTable.Columns.NUMBER} desc', limit='5')
+
+Out [1]: LedgerModelOutput(data=[{'number': 14000000, 'timestamp': 1642114795}, {'number': 13999999, 'timestamp': 1642114789}, {'number': 13999998, 'timestamp': 1642114786}, {'number': 13999997, 'timestamp': 1642114763}, {'number': 13999996, 'timestamp': 1642114759}])
+```
+
+#### Get info on a model
+
+```
+# Press tab for autocomplete list:
+# In [1]: models.aave_v2
+
+In [1]: models.aave_v2.get_lending_pool.description
+Out[1]: 'Aave V2 - Get lending pool for main market'
+
+# Get docs for model:
+
+In [2]: models.aave_v2.get_lending_pool?
+Out[2]: Call signature:
+models.aave_v2.get_lending_pool(
+    input: Union[pydantic.main.BaseModel, dict, NoneType] = None,
+    return_type=None,
+    **kwargs,
+) -> dict
+Type:           RunModelMethod
+String form:    <credmark.cmf.model.context.RunModelMethod object at 0x12463f310>
+File:           ~credmark/cmf/model/context.py
+Docstring:
+aave-v2.get-lending-pool
+- slug: aave-v2.get-lending-pool
+- displayName: aave-v2.get-lending-pool
+- description: Aave V2 - Get lending pool for main market
+- developer:
+- input schema (* for required field):
+  EmptyInput(object)
+- input example:
+  #01: {}
+- output schema (* for required field):
+  Contract(Contract(*))
+    └─address(string)
+- output example:
+  #01: {"address": "0x1F98431c8aD98523631AE4a59f267346ea31F984"}
+- errors:
+  No defined errors
+
+# If the model is local, you can get the input and output DTO classes:
+
+In [3]: models.aave_v2.get_lending_pool.inputDTO
+Out[3]: credmark.dto.EmptyInput
+
+In [4]: models.aave_v2.get_lending_pool.outputDTO
+Out[4]: credmark.cmf.types.contract.Contract
+
+In [5]: models.token.price.inputDTO
+Out[5]: credmark.cmf.types.token.Token
+
+In [6]: models.token.price.inputDTO(symbol='CMK')
+Out[6]: Token(address='0x68cfb82eacb9f198d508b514d898a403c449533e')
+
+In [7]: models.token.price.outputDTO
+Out[7]: credmark.cmf.types.price.Price
+```
+
+#### Run a model
+
+```
+In [1]: models.aave_v2.get_lending_pool()
+Out[1]: {'address': '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9'}
+```
+
+##### Run a model with parameters
+
+```
+In [1]: models.token.price(Token(symbol='CMK'))
+Out[1]: {'price': 0.30365299879260643,
+ 'src': 'token.price:sushiswap.get-pool-price-info|uniswap-v3.get-pool-price-info'}
+
+# Or use args to get the same result:
+In [2]: models.token.price(symbol='CMK')
+Out[2]: {'price': 0.30365299879260643,
+ 'src': 'token.price:sushiswap.get-pool-price-info|uniswap-v3.get-pool-price-info'}
+```
+
+##### Run a model and get a DTO result
+
+```
+In [2]: models.token.price(Token(symbol='CMK'), return_type=Price)
+Out[2]: Price(price=0.30365299879260643, src='token.price:sushiswap.get-pool-price-info|uniswap-v3.get-pool-price-info')
+
+# Or another way to get the same result:
+In [2]: Price(**models.token.price(Token(symbol='CMK')))
+Out[2]: Price(price=0.30365299879260643, src='token.price:sushiswap.get-pool-price-info|uniswap-v3.get-pool-price-info')
+```
+
+#### Switch context to an earlier block number
+
+```
+In [1]: self.goto_block(13000000)
+
+Switching context to block 13000000.
+Quit current context: quit()
+
+In [2]: block_number
+Out[2]: 13000000
+
+In [3]: quit()
+
+Exiting context at block 13000000.
+Current context at block 14000000. Remaining block stack [].
+```
+
 ### Console Configuration
 
 You can configure the console to automatically import extra modules and classes by using a `credmark_dev_console.yaml` file in your working directory.

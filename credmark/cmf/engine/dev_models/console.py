@@ -132,7 +132,7 @@ class ConsoleModel(Model):
         print('list_models(): List available models')
         print('describe_model(slug): Describe a model by slug')
         print('get_dt(y,m,d,h=0,m=0,s=0,ms=0): create UTC datetime')
-        print('get_block(timestamp): get the block number before the timestamp')
+        print('get_block(in_dt): get the block number before the datetime timestamp')
         print('')
         print('# Console functions')
         print('self.where(): where you are in the chain of blocks')
