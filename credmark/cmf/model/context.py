@@ -59,27 +59,48 @@ class RunModelMethod:
 
     # Handle method calls where the prefix is the dot prefix of a model name
     def __getattr__(self, __name: str):
-        model_manifests = self.__context._model_manifests(True)
-        if self.__prefix in model_manifests.keys():
-            if __name in model_manifests[self.__prefix]:
-                return model_manifests[self.__prefix][__name]
+        if self.interactive_docs:
+            model_manifests: dict = self.__context._model_manifests(True)
+            # If prefix matches a complete slug we allow access to
+            # manifest fields and model class properties.
+            if self.__prefix in model_manifests:
+                if __name in model_manifests[self.__prefix]:
+                    return model_manifests[self.__prefix][__name]
+                else:
+                    mclass = self.__context._class_for_model(self.__prefix.replace('_', '-'))
+                    if mclass is not None:
+                        mclassdict = vars(mclass)
+                        if __name in mclassdict:
+                            return mclassdict[__name]
+
         return RunModelMethod(
             self.__context, f"{self.__prefix}.{__name}",
             block_number=self.__block_number)
 
     def __dir__(self):
-        # For ipython tab-complete
-        model_manifests = self.__context._model_manifests(True)
-        if self.__prefix in model_manifests.keys():
-            return sorted(list(model_manifests[self.__prefix].keys()))
-        prefix = self.__prefix + '.'
-        prefix_len = len(prefix)
-        slugs = [s[prefix_len:]
-                 for s in self.__context._model_manifests(True).keys() if s.startswith(prefix)]
-        slugs.sort()
-        return slugs
+        if self.interactive_docs:
+            # For ipython tab-complete
+            model_manifests: dict = self.__context._model_manifests(True)
 
-      
+            if self.__prefix in model_manifests:
+                mclass = self.__context._class_for_model(self.__prefix.replace('_', '-'))
+                fields = list(model_manifests[self.__prefix].keys())
+                if mclass is not None:
+                    # allow autocomplete for some model class properties
+                    fields.extend(['inputDTO', 'outputDTO'])
+                fields.sort()
+                return fields
+
+            prefix = self.__prefix + '.'
+            prefix_len = len(prefix)
+            slugs = [s[prefix_len:]
+                     for s in self.__context._model_manifests(True).keys() if s.startswith(prefix)]
+            slugs.sort()
+            return slugs
+        else:
+            return super().__dir__()
+
+
 class ModelContext:
     """
     Model context class. It holds the current context (chain id
@@ -135,10 +156,13 @@ class ModelContext:
             return ModelContext.Models(self.__context, block_number=block_number)
 
         def __dir__(self):
-            # For ipython tab-complete
-            slugs = list(self.__context._model_manifests(True).keys())
-            slugs.sort()
-            return slugs
+            if RunModelMethod.interactive_docs:
+                # For ipython tab-complete
+                slugs = list(self.__context._model_manifests(True).keys())
+                slugs.sort()
+                return slugs
+            else:
+                return super().__dir__()
 
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry):
@@ -196,6 +220,13 @@ class ModelContext:
     def _model_manifests(self, underscore_slugs=False) -> dict:
         # Context implementation will override this to return
         # a dict of slug to manifest dict containing available models.
+        ...
+
+    @abstractmethod
+    def _class_for_model(self, slug: str, version: Union[str, None] = None):
+        # Context implementation will override this to return
+        # the model class for a slug. If the model is not available locally
+        # it will return None.
         ...
 
     @property

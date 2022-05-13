@@ -265,6 +265,9 @@ class EngineModelContext(ModelContext):
                     pass
         return self._model_underscore_manifest_map if underscore_slugs else self._model_manifest_map
 
+    def _class_for_model(self, slug: str, version: Union[str, None] = None):
+        return self.__model_loader.get_model_class(slug, version, False)
+
     def _add_dependency(self, slug: str, version: str, count: int):
         versions = self.__dependencies.get(slug)
         if versions is None:
