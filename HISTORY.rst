@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.19 [2022-05-13]
+* credmark-dev create command
+
 0.8.18 [2022-05-13]
 * Model console improvements
 * Added return_type arg to context.models model run
