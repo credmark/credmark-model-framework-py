@@ -1,6 +1,7 @@
 # pylint: disable=locally-disabled, unused-import, unused-variable
 import importlib
 import sys
+import inspect
 from typing import List
 from datetime import datetime, date, timezone, timedelta
 import IPython
@@ -41,11 +42,13 @@ from credmark.cmf.types.ledger import (BlockTable, ContractTable,
 
 
 # pylint: disable= too-many-arguments
-def get_dt(year, month, day, hour=0, minute=0, second=0, microsecond=0):
+def get_dt(year: int, month: int, day: int, hour=0, minute=0, second=0, microsecond=0):
+    """Get a datetime for date and time values"""
     return datetime(year, month, day, hour, minute, second, microsecond, tzinfo=timezone.utc)
 
 
-def get_block(in_dt):
+def get_block(in_dt: datetime):
+    """Get the BlockNumber instance at or before the datetime timestamp."""
     return BlockNumber.from_timestamp(in_dt.replace(tzinfo=timezone.utc).timestamp())
 
 
@@ -109,24 +112,32 @@ class ConsoleModel(Model):
         except Exception as exc:
             self.logger.error(f'Error importing {path} from console config: {exc}')
 
+    shortcut_descriptions = [
+        'context = self.context',
+        'models = self.context.models',
+        'ledger = self.context.ledger',
+        'block_number = self.context.block_number',
+        'chain_id = self.context.chain_id',
+        'web3 = self.context.web3',
+
+        'run_model = self.context.run_model #(model_slug, input=EmptyInput(), return_type=dict)',
+
+        'run_model_historical = self.context.historical.run_model_historical'
+        ' #(model_slug, model_input, model_return_type, window, interval, '
+        'end_timestamp, snap_clock, model_version)',
+
+        'run_model_historical_blocks = self.context.run_model_historical_blocks'
+        ' #(model_slug, model_input, model_return_type, window, interval, '
+        'end_block, snap_block, model_version)',
+    ]
+
+    utility_functions = [get_dt, get_block]
+
     def help(self):
         print('# Credmark model utility shortcuts')
-        print('context = self.context')
-        print('models = self.context.models')
-        print('run_model = self.context.run_model'
-              '(model_slug, input=EmptyInput(), return_type=dict): run a model')
-        print(
-            'run_model_historical = self.context.historical.run_model_historical'
-            '(model_slug, model_input, model_return_type, window, interval, '
-            ' end_timestamp, snap_clock, model_version)')
-        print(
-            'run_model_historical_blocks = self.context.run_model_historical_blocks'
-            '(model_slug, model_input, model_return_type, window, interval, '
-            ' end_block, snap_block, model_version)')
-        print('ledger = self.context.ledger')
-        print('block_number = self.context.block_number')
-        print('chain_id = self.context.chain_id')
-        print('web3 = self.context.web3')
+        for desc in self.shortcut_descriptions:
+            print(desc)
+
         print('')
         print('# Utility functions')
         print('list_models(): List available models')
@@ -137,6 +148,8 @@ class ConsoleModel(Model):
         print('# Console functions')
         print('self.where(): where you are in the chain of blocks')
         print('self.save("output_filename"): save console history to {output_filename}.py')
+        print('self.save_shortcuts("output_filename"): '
+              'save shortcut variables code to {output_filename}.py')
         print('self.load("input_filename"): load and run {input_filename}.py')
         print('self.goto_block(block_number): Change context to a past block number')
         print('')
@@ -145,17 +158,31 @@ class ConsoleModel(Model):
 
     def where(self):
         print(f'You are {len(self.blocks)} blocks deep.')
-        print(f'The block journey is {self.blocks}')
+        print(f'The block stack is {self.blocks}')
 
     def save(self, filename):
         ipython = IPython.get_ipython()
         if ipython is not None:
-            ipython.magic(f"%save {filename}.py")
+            # ipython will automatically add a .py ext
+            ipython.magic(f"%save -f {filename}")
+
+    def save_shortcuts(self, filename):
+        if not filename.endswith('.py'):
+            filename += '.py'
+        # Write the aliases in comments
+        with open(filename, 'w') as file:
+            for desc in self.shortcut_descriptions:
+                file.write(f'{desc.split("#", maxsplit=1)[0]}\n')
+            file.write('\n')
+            for fun in self.utility_functions:
+                file.write(f'{inspect.getsource(fun)}\n')
+            file.write('\n')
 
     def load(self, filename):
         ipython = IPython.get_ipython()
         if ipython is not None:
-            ipython.magic(f"%load {filename}.py")
+            # ipython will automatically add a .py ext
+            ipython.magic(f"%load {filename}")
 
     def goto_block(self, to_block: int):
         """
