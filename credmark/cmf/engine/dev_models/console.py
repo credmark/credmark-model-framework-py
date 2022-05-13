@@ -112,27 +112,6 @@ class ConsoleModel(Model):
         except Exception as exc:
             self.logger.error(f'Error importing {path} from console config: {exc}')
 
-    shortcut_descriptions = [
-        'context = self.context',
-        'models = self.context.models',
-        'ledger = self.context.ledger',
-        'block_number = self.context.block_number',
-        'chain_id = self.context.chain_id',
-        'web3 = self.context.web3',
-
-        'run_model = self.context.run_model #(model_slug, input=EmptyInput(), return_type=dict)',
-
-        'run_model_historical = self.context.historical.run_model_historical'
-        ' #(model_slug, model_input, model_return_type, window, interval, '
-        'end_timestamp, snap_clock, model_version)',
-
-        'run_model_historical_blocks = self.context.run_model_historical_blocks'
-        ' #(model_slug, model_input, model_return_type, window, interval, '
-        'end_block, snap_block, model_version)',
-    ]
-
-    utility_functions = [get_dt, get_block]
-
     def help(self):
         print('# Credmark model utility shortcuts')
         for desc in self.shortcut_descriptions:
@@ -208,6 +187,27 @@ class ConsoleModel(Model):
             print_manifest_description(manifest, sys.stdout)
         else:
             print(f'No models matching "{slug}" found.')
+
+    shortcut_descriptions = [
+        'context = self.context',
+        'models = self.context.models',
+        'ledger = self.context.ledger',
+        'block_number = self.context.block_number',
+        'chain_id = self.context.chain_id',
+        'web3 = self.context.web3',
+
+        'run_model = self.context.run_model #(model_slug, input=EmptyInput(), return_type=dict)',
+
+        'run_model_historical = self.context.historical.run_model_historical'
+        ' #(model_slug, model_input, model_return_type, window, interval, '
+        'end_timestamp, snap_clock, model_version)',
+
+        'run_model_historical_blocks = self.context.run_model_historical_blocks'
+        ' #(model_slug, model_input, model_return_type, window, interval, '
+        'end_block, snap_block, model_version)',
+    ]
+
+    utility_functions = [get_dt, get_block]
 
     def run(self, _) -> dict:
         self.blocks.append(self.context.block_number)
