@@ -1,7 +1,7 @@
 import unittest
 import logging
+from credmark.cmf.engine.model_unittest import ModelTestCase
 
-import credmark.cmf.model
 from credmark.dto import DTO, DTOField
 from credmark.cmf.types import Address
 import functools
@@ -25,7 +25,7 @@ class PoolAddress(DTO):
     poolAddress: Address = DTOField(..., description='Address of Pool')
 
 
-class TestStringMethods(unittest.TestCase):
+class TestAddress(ModelTestCase):
 
     def test_run(self):
         expect_exception(

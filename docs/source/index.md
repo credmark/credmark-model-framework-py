@@ -21,7 +21,7 @@ how_to
 credmark_dev
 components
 errors
-mocks
+tests
 model_docs
 api
 reference

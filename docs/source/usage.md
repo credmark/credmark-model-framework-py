@@ -28,13 +28,7 @@ If you wish, you can run it on miniconda. Simply install the miniconda version m
 Then run:
 
 ```
-pip install -r requirements.txt
-```
-
-For development, you can also run:
-
-```
-pip install -r requirements-dev.txt
+pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 ## Configure environment variables

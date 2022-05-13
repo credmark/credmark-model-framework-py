@@ -16,7 +16,8 @@ from credmark.cmf.model import validate_model_slug
 # Typically they are models that call other models and they run
 # locally so they can call other local-only models.
 
-DEV_MODELS_PATH = 'credmark/cmf/engine/dev_models/series_models'
+DEV_MODELS_PATHS = ['credmark/cmf/engine/dev_models/series_models',
+                    'credmark/cmf/engine/dev_models/console']
 
 
 class ModelLoader:
@@ -60,7 +61,8 @@ class ModelLoader:
         if load_dev_models:
             self.logger.debug('Loading dev models')
             self.__loading_dev_models = True
-            self._try_model_module(DEV_MODELS_PATH.replace('/', '.'), DEV_MODELS_PATH)
+            for dev_models_path in DEV_MODELS_PATHS:
+                self._try_model_module(dev_models_path.replace('/', '.'), dev_models_path)
             self.__loading_dev_models = False
 
         self.__model_manifest_list.sort(key=lambda m: m['slug'])
@@ -71,6 +73,7 @@ class ModelLoader:
         self.__slug_version_to_class_dict.clear()
         self.__slug_to_versions_dict.clear()
         self.__model_manifest_list.clear()
+        self.__dev_model_slugs.clear()
 
     def log_errors(self):
         for e in self.errors:
@@ -200,7 +203,8 @@ class ModelLoader:
                                       model_class: Type[Model]):
         slug_ver = f'{slug}:{str(ver)}'
 
-        if slug_ver in self.__slug_version_to_class_dict:
+        existing_class = self.__slug_version_to_class_dict.get(slug_ver)
+        if existing_class is not None and existing_class != model_class:
             raise Exception(
                 f'Duplicate model slug ({slug}) and version ({ver}) found. Skipping duplicate.')
 
@@ -223,7 +227,7 @@ class ModelLoader:
         """ Import a named object from a module in the context of this function.
         """
         try:
-            module = __import__(modulename, globals(), locals(), [name])
+            module = importlib.import_module(modulename)
             mclass = vars(module)[name]
         except (ImportError, KeyError) as err:
             raise Exception(

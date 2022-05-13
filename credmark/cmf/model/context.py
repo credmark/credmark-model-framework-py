@@ -1,7 +1,9 @@
 from abc import abstractmethod
-from typing import Any, ClassVar, Type, TypeVar, Union, overload
+import io
+from typing import Any, Type, TypeVar, Union, overload
 from web3 import Web3
 
+from .print import print_manifest_description
 from .errors import ModelNoContextError
 from .ledger import Ledger
 import credmark.cmf.types
@@ -13,25 +15,38 @@ DTOT = TypeVar('DTOT')
 
 
 class RunModelMethod:
-    """
-    This class is used interally by the context.
+    # This class is used interally by the context.
 
-    A run model method is callable (where the prefix is the actual
-    model name) or called with a method name (where prefix is the
-    dot prefix of the model name.)
-    """
+    # A run model method is callable (where the prefix is the actual
+    # model name) or called with a method name (where prefix is the
+    # dot prefix of the model name.)
+
+    # If this is set to true for the class, the doc string
+    # for an instance will be set to the model schema doc
+    interactive_docs = False
 
     def __init__(self, context, prefix: str, block_number: Union[int, None] = None):
         self.__context = context
         self.__prefix = prefix
         self.__block_number = block_number
 
+        if self.interactive_docs:
+            # In interactive mode, we set the docstring to the
+            # manifest doc for the model
+            manifest = self.__context._model_manifests(True).get(prefix)
+            if manifest is not None:
+                doc = io.StringIO()
+                print_manifest_description(manifest, doc)
+                self.__doc__ = doc.getvalue()
+                doc.close()
+            else:
+                slugs = [s for s in self.__context._model_manifests(True).keys()
+                         if s.startswith(prefix)]
+                slugs.sort()
+                self.__doc__ = f'Run a model.\n\nAvailable models: {", ".join(slugs)}'
+
     # run a model. args can be a positional DTO or dict or kwargs
-<<<<<<< Updated upstream
-    def __call__(self, input: Union[DTO, dict, None] = None, **kwargs) -> dict:
-=======
     def __call__(self, input: Union[DTO, dict, None] = None, return_type=None, **kwargs) -> dict:
->>>>>>> Stashed changes
         if isinstance(input, DTO):
             input = input.dict()
         elif input is None:
@@ -52,14 +67,11 @@ class RunModelMethod:
             self.__context, f"{self.__prefix}.{__name}",
             block_number=self.__block_number)
 
-<<<<<<< Updated upstream
-=======
     def __dir__(self):
         # For ipython tab-complete
         model_manifests = self.__context._model_manifests(True)
         if self.__prefix in model_manifests.keys():
             return sorted(list(model_manifests[self.__prefix].keys()))
-
         prefix = self.__prefix + '.'
         prefix_len = len(prefix)
         slugs = [s[prefix_len:]
@@ -67,8 +79,7 @@ class RunModelMethod:
         slugs.sort()
         return slugs
 
->>>>>>> Stashed changes
-
+      
 class ModelContext:
     """
     Model context class. It holds the current context (chain id
@@ -80,7 +91,7 @@ class ModelContext:
     You can access an instance of this class from a model
     as ``self.context``.
     """
-    _current_context: ClassVar = None
+    _current_context: Union['ModelContext', None] = None
 
     @classmethod
     def current_context(cls) -> 'ModelContext':
@@ -101,6 +112,14 @@ class ModelContext:
         """
         return cls._current_context
 
+    @classmethod
+    def set_current_context(cls, context: Union['ModelContext', None]):
+        """
+        Set the current context, which could be None.
+        Normally you should not use this method.
+        """
+        cls._current_context = context
+
     class Models:
         """
         """
@@ -115,11 +134,14 @@ class ModelContext:
         def __call__(self, block_number=None):
             return ModelContext.Models(self.__context, block_number=block_number)
 
+        def __dir__(self):
+            # For ipython tab-complete
+            slugs = list(self.__context._model_manifests(True).keys())
+            slugs.sort()
+            return slugs
+
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry):
-        # type hint
-        ModelContext._current_context: Union[ModelContext, None]
-
         self._chain_id = chain_id
         self._block_number = credmark.cmf.types.BlockNumber(block_number)
         self._web3 = None
@@ -169,6 +191,12 @@ class ModelContext:
             # (our context) block number.
             self._models = ModelContext.Models(self)
         return self._models
+
+    @abstractmethod
+    def _model_manifests(self, underscore_slugs=False) -> dict:
+        # Context implementation will override this to return
+        # a dict of slug to manifest dict containing available models.
+        ...
 
     @property
     def chain_id(self):

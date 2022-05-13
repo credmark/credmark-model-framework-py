@@ -2,7 +2,7 @@ import json
 import logging
 import traceback
 import sys
-from typing import Set, Type, Union
+from typing import Callable, List, Set, Type, Union
 from credmark.dto.encoder import json_dumps
 from credmark.cmf.model import Model
 from credmark.cmf.model.context import ModelContext
@@ -57,15 +57,37 @@ class EngineModelContext(ModelContext):
     debug_logger = logging.getLogger(f'{__name__}.debug')
 
     dev_mode = False
+    test_mode = False
     max_run_depth = 20
+
+    # map of slug to manifest, filled in lazily
+    _model_manifest_map: dict[str, dict] = {}
+    _model_underscore_manifest_map: dict[str, dict] = {}
 
     # Set of model slugs to use the local version.
     use_local_models_slugs: Set[str] = set()
 
+    _model_run_listeners: List[Callable] = []
+
     _model_mock_runner: Union[ModelMockRunner, None] = None
 
     @classmethod
-    def use_model_mock_runner(cls, model_mock_runner: ModelMockRunner):
+    def add_model_run_listener(cls, run_listener):
+        cls._model_run_listeners.append(run_listener)
+
+    @classmethod
+    def notify_model_run(cls,
+                         slug: str, version: Union[str, None],
+                         chain_id: int, block_number: int,
+                         input: Union[dict, DTO],
+                         output: Union[dict, DTO, None],
+                         error: Union[ModelBaseError, None]):
+        for listener in cls._model_run_listeners:
+            listener(slug, version, chain_id, block_number,
+                     input, output, error)
+
+    @classmethod
+    def use_model_mock_runner(cls, model_mock_runner: Union[ModelMockRunner, None]):
         cls._model_mock_runner = model_mock_runner
 
     @classmethod
@@ -116,26 +138,59 @@ class EngineModelContext(ModelContext):
             if input is None:
                 input = {}
 
+            response = cls.run_model_with_context(context,
+                                                  model_slug,
+                                                  model_version,
+                                                  input)
+        except Exception as e:
+            err = ModelEngineError(str(e))
+            response = {
+                'slug': model_slug,
+                'version': model_version,
+                'chainId': chain_id,
+                'blockNumber': block_number,
+                'error': err.dict(),
+                'dependencies': context.dependencies if context else {}}
+
+        return response
+
+    @classmethod
+    def run_model_with_context(cls,
+                               context: 'EngineModelContext',
+                               model_slug: str,
+                               model_version: Union[str, None],
+                               input: Union[dict, DTO],
+                               transform_output_to_dict=True):
+        chain_id = context.chain_id
+        block_number = int(context.block_number)
+
+        try:
+
             ModelContext._current_context = context
 
             # We set the block_number in the context above so we pass in
             # None for block_number to the run_model method.
-            result_tuple = context._run_model(
+            result_tuple = context._run_model(  # pylint: disable=protected-access
                 model_slug, input, None, model_version)
 
             output = result_tuple[2]
-            output_as_dict = transform_data_for_dto(output, None, model_slug, 'output')
+            if transform_output_to_dict:
+                output = transform_data_for_dto(output, None, model_slug, 'output')
 
             response = {
                 'slug': result_tuple[0],
                 'version': result_tuple[1],
-                'output': output_as_dict,
+                'chainId': chain_id,
+                'blockNumber': block_number,
+                'output': output,
                 'dependencies': context.dependencies}
-            return response
+
         except ModelBaseError as err:
             response = {
                 'slug': model_slug,
                 'version': model_version,
+                'chainId': chain_id,
+                'blockNumber': block_number,
                 'error': err.dict(),
                 'dependencies': context.dependencies if context else {}}
         except Exception as e:
@@ -143,10 +198,13 @@ class EngineModelContext(ModelContext):
             response = {
                 'slug': model_slug,
                 'version': model_version,
+                'chainId': chain_id,
+                'blockNumber': block_number,
                 'error': err.dict(),
                 'dependencies': context.dependencies if context else {}}
         finally:
             ModelContext._current_context = None
+
         return response
 
     @classmethod
@@ -181,6 +239,32 @@ class EngineModelContext(ModelContext):
     def dependencies(self):
         return self.__dependencies
 
+    def _model_manifests(self, underscore_slugs=False):
+        """
+        Returns a map of slug to manifest for all models local
+        and remote, which is lazily built for the class on the first call.
+        """
+        if len(self._model_manifest_map) == 0:
+            manifests = self.__model_loader.loaded_model_manifests()
+            for m in manifests:
+                # hack for casing.
+                m['displayName'] = m['display_name']
+                slug = m['slug']
+                self._model_manifest_map[slug] = m
+                self._model_underscore_manifest_map[slug.replace('-', '_')] = m
+
+            if self.__api is not None:
+                try:
+                    deployed_manifests = self.__api.get_models()
+                    for m in deployed_manifests:
+                        slug = m['slug']
+                        self._model_manifest_map[slug] = m
+                        self._model_underscore_manifest_map[slug.replace('-', '_')] = m
+                except Exception:
+                    # Error will have been logged but we continue so things work offline
+                    pass
+        return self._model_underscore_manifest_map if underscore_slugs else self._model_manifest_map
+
     def _add_dependency(self, slug: str, version: str, count: int):
         versions = self.__dependencies.get(slug)
         if versions is None:
@@ -198,6 +282,13 @@ class EngineModelContext(ModelContext):
             else:
                 for version, count in versions.items():
                     self._add_dependency(slug, version, count)
+
+    def _force_local_model_for_slug(self, slug: str):
+        return slug in self.use_local_models_slugs
+
+    def _favor_local_model_for_slug(self, slug: str):
+        return '*' in self.use_local_models_slugs or \
+            slug in self.use_local_models_slugs
 
     def run_model(self,
                   slug,
@@ -257,10 +348,11 @@ class EngineModelContext(ModelContext):
         else:
             return mock_result
 
-        is_cli = self.dev_mode and not self.run_id
+        is_cli = (self.dev_mode and not self.run_id) or self.test_mode
         is_top_level_inactive = self.__is_top_level and not self.is_active
-        force_local = slug in self.use_local_models_slugs
-        use_local = is_top_level_inactive or force_local
+        force_local = self._force_local_model_for_slug(slug)
+        use_local = is_top_level_inactive or force_local or self.test_mode \
+            or self._favor_local_model_for_slug(slug)
         # when using the cli, we allow running remote models as top level
         try_remote = not is_top_level_inactive or is_cli
 
@@ -319,7 +411,7 @@ class EngineModelContext(ModelContext):
 
         return slug
 
-    def _run_model_with_class(self,  # pylint: disable=too-many-locals,too-many-arguments
+    def _run_model_with_class(self,  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches
                               slug: str,
                               input: Union[dict, DTO],
                               block_number: Union[int, None],
@@ -340,6 +432,8 @@ class EngineModelContext(ModelContext):
                 model_class)
 
         elif try_remote and api is not None:
+            run_block_number = block_number if block_number is not None else self.block_number
+
             try:
                 debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
 
@@ -348,7 +442,7 @@ class EngineModelContext(ModelContext):
 
                 slug, version, output, error, dependencies = api.run_model(
                     slug, version, self.chain_id,
-                    block_number if block_number is not None else self.block_number,
+                    run_block_number,
                     input if input is None or isinstance(input, dict) else input.dict(),
                     self.run_id, self.__depth)
 
@@ -361,10 +455,13 @@ class EngineModelContext(ModelContext):
                         self.debug_logger.debug(f"< Run API model '{slug}' error: {error}")
                     raise create_instance_from_error_dict(error)
 
+                EngineModelContext.notify_model_run(slug, version, self.chain_id,
+                                                    run_block_number, input, output, error)
+
                 if debug_log:
                     self.debug_logger.debug(f"< Run API model '{slug}' output: {output}")
 
-            except ModelNotFoundError:
+            except ModelNotFoundError as err:
                 # We always fallback to local if model not found on server.
                 if model_class is not None:
                     self.logger.debug(f'Model {slug} not on server. Using local instead')
@@ -375,7 +472,18 @@ class EngineModelContext(ModelContext):
                         version,
                         model_class)
                 else:
+                    EngineModelContext.notify_model_run(slug, version, self.chain_id,
+                                                        run_block_number, input, None, err)
                     raise
+            except ModelBaseError as err:
+                EngineModelContext.notify_model_run(slug, version, self.chain_id,
+                                                    run_block_number, input, None, err)
+                raise
+            except Exception as exc:
+                err = ModelRunError(str(exc))
+                EngineModelContext.notify_model_run(slug, version, self.chain_id,
+                                                    run_block_number, input, None, err)
+                raise
         else:
             # No call stack item because model not run
             err = ModelNotFoundError.create(slug, version)
@@ -443,6 +551,9 @@ class EngineModelContext(ModelContext):
             except DataTransformError as err:
                 raise ModelOutputError(str(err))
 
+            EngineModelContext.notify_model_run(slug, model_class.version, context.chain_id,
+                                                context.block_number, input, output, None)
+
             if debug_log:
                 self.debug_logger.debug(f"< Run model '{slug}' output: {output}")
 
@@ -490,6 +601,9 @@ class EngineModelContext(ModelContext):
                                       chainId=context.chain_id,
                                       blockNumber=context.block_number,
                                       trace=trace if trace is not None else None))
+
+            EngineModelContext.notify_model_run(slug, model_class.version, context.chain_id,
+                                                context.block_number, input, None, err)
             raise err
 
         finally:

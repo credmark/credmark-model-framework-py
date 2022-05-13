@@ -1,6 +1,6 @@
 # CLI credmark-dev
 
-`credmark-dev` is a command-line tool installed with the `credmark-model-framework`. It can be used to list, run, and get docs for models.
+`credmark-dev` is a command-line tool installed with the `credmark-model-framework`. It can be used to run, list, and get docs for models. It also includes an [interactive python console](console_section).
 
 ## `help` command
 
@@ -8,9 +8,9 @@
 $ credmark-dev --help
 
 usage: credmark-dev [-h] [--log_level LOG_LEVEL] [--model_path MODEL_PATH]
-                    [--manifest_file MANIFEST_FILE]
-                    {version,list,list-models,models,deployed-models,describe,describe-models,man,run,run-model,build,build-manifest,clean,remove-manifest}
-                    ...
+                       [--manifest_file MANIFEST_FILE]
+                       {version,list,list-models,models,deployed-models,describe,describe-models,man,run,run-model,test,run-tests,build,build-manifest,clean,remove-manifest}
+                       ...
 
 Credmark developer tool
 
@@ -28,7 +28,7 @@ optional arguments:
 Commands:
   Supported commands
 
-  {version,list,list-models,models,deployed-models,describe,describe-models,man,run,run-model,build,build-manifest,clean,remove-manifest}
+  {version,list,list-models,models,deployed-models,describe,describe-models,man,run,run-model,test,run-tests,build,build-manifest,clean,remove-manifest}
                         additional help
     version             Show version of the framework
     list (list-models)  List models in this repo
@@ -37,6 +37,7 @@ Commands:
     describe (describe-models, man)
                         Show documentation for local and deployed models
     run (run-model)     Run a model
+    test (run-tests)    Run model tests
     build (build-manifest)
                         Build model manifest [Not required during development]
     clean (remove-manifest)
@@ -58,7 +59,7 @@ usage: credmark-dev run [-h] [-b BLOCK_NUMBER] [-c CHAIN_ID] [-i INPUT] [-v MODE
                         model-slug
 
 positional arguments:
-  model-slug            Slug for the model to run.
+  model-slug            Slug for the model to run or "console" for the interactive console.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -76,7 +77,14 @@ optional arguments:
   -l USE_LOCAL_MODELS, --use_local_models USE_LOCAL_MODELS
                         Comma-separated list of model slugs for models that should favor
                         use of the local version. This is only required when a model is
-                        calling another model.
+                        calling another model. Use "*" to use local versions of all models.
+  -m MODEL_MOCKS, --model_mocks MODEL_MOCKS
+                        Module path and symbol of model mocks config to use. For example,
+                        models.contrib.mymodels.mymocks.mock_config
+  --generate_mocks GENERATE_MOCKS
+                        Generate model mocks and write them to the specified file. The
+                        generated python file can be used with --model_mocks on another
+                        run or in unit tests.
   --provider_url_map PROVIDER_URL_MAP
                         JSON object of chain id to Web3 provider HTTP URL. Overrides
                         settings in env vars.
@@ -180,6 +188,48 @@ example.model
  - class: models.examples.e_01_model.ExampleEcho
 ```
 
+## `test` command
+
+Discover and run unit tests.
+
+Below -h command shows the details of options available for the test command.
+
+```
+$ credmark-dev test -h
+
+usage: credmark-dev test [-h] [-p PATTERN] [--api_url API_URL]
+                            [--provider_url_map PROVIDER_URL_MAP]
+                            [tests_folder]
+
+positional arguments:
+  tests_folder          Folder to start discovery for tests.
+                        Defaults to "models".
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PATTERN, --pattern PATTERN
+                        Pattern to match test files (test*.py default).
+  --api_url API_URL     Credmark API url. Defaults to the standard API gateway. You do not
+                        normally need to set this.
+  --provider_url_map PROVIDER_URL_MAP
+                        JSON object of chain id to Web3 provider HTTP URL. Overrides
+                        settings in env var or .env.test file.
+```
+
+To search for all tests under the `models` folder and run them use:
+
+```
+credmark-dev test
+```
+
+You can specify a start folder to search for tests by using an extra argument:
+
+```
+credmark-dev test models/contrib/mymodels
+```
+
+By default it searches for tests in files that match the pattern `test*.py`. You can specify an alternative pattern using the `--pattern` argument.
+
 ## `version` command
 
 The version command shows the current version of the `credmark-model-framework`:
@@ -190,3 +240,48 @@ credmark-model-framework version 0.0.0
 ```
 
 **Note:** the commands `build` and `clean` do not need to be used during model development.
+
+(console_section)=
+
+## Interactive Model Console
+
+You can run an interactive python console with a model context using the command:
+
+```
+credmark-dev run console
+```
+
+This is useful to interactively develop and test models.
+
+Within the console you can execute python commands interactively in the same environment as a model's `run()` method. The standard model properties are available such as `self.context` and `self.logger`, as well as some shortcuts and utility functions.
+
+For more info on commands, enter `self.help()` in the console.
+
+### Console Configuration
+
+You can configure the console to automatically import extra modules and classes by using a `credmark_dev_console.yaml` file in your working directory.
+
+The yaml file can have an `imports` object that contains:
+
+- `modules`: a list of objects containing:
+
+  - `name`: full name of module to import) and optional
+  - `as`: name to assign module to.
+
+- `globals`: a list of strings containing the full module name followed by dot and the name of the symbol in the module. Ex. `models.credmark.protocols.lending.aave.aave_v2.AaveDebtInfo`
+
+An example `credmark_dev_console.yaml` file:
+
+```yaml
+imports:
+  modules:
+    - name: numpy
+      as: np
+    - name: pandas
+      as: pd
+    - name: matplotlib.pyplot
+      as: plt
+  globals:
+    - models.credmark.protocols.lending.aave.aave_v2.AaveDebtInfo
+    - models.credmark.protocols.lending.aave.aave_v2.AaveDebtInfos
+```

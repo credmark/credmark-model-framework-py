@@ -68,7 +68,9 @@ class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
     def schema(cls):
         schema = super().schema()
         # Add fields that have default values to the required list in schema
-        schema['required'].extend(['stack', 'code', 'permanent'])
+        required = schema['required']
+        if 'stack' not in required:
+            required.extend(['stack', 'code', 'permanent'])
         return schema
 
 
