@@ -38,7 +38,7 @@ class LedgerTable:
         """
         Return the set of columns for the table.
 
-        For contract ledget tables, the set will not
+        For contract ledger tables, the set will not
         include any contract-specific columns.
         """
         if cls.__column_set is None:
