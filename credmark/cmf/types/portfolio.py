@@ -18,7 +18,7 @@ class Portfolio(IterableListGenericDTO[Position]):
             The value of the portfolio using the price_model.
 
         Raises:
-            ModelDataError if no pools available for a position's price data.
+            ModelDataError: if no pools available for a position's price data.
         """
         return sum([pos.get_value(price_model) for pos in self.positions])
 

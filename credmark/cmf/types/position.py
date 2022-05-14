@@ -14,7 +14,7 @@ class Position(DTO):
             The value of the position using the price_model.
 
         Raises:
-            ModelDataError if no pools available for price data.
+            ModelDataError: if no pools available for price data.
         """
         context = credmark.cmf.model.ModelContext.current_context()
         token_price = context.run_model(price_model, input=self.asset, return_type=Price).price

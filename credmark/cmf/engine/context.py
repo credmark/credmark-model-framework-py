@@ -320,7 +320,7 @@ class EngineModelContext(ModelContext):
             or a DTO instance if return_type is specified.
 
         Raises:
-            MissingModelError if requested model is not available
+            MissingModelError: if requested model is not available
             Exception on other errors
         """
 

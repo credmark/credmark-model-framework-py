@@ -248,7 +248,7 @@ class ModelLoader:
             Model class.
 
         Raises:
-            MissingModelError if model is not found if raise_on_not_found is True
+            MissingModelError: if model is not found if raise_on_not_found is True
         """
         model_class = None
 
