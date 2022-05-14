@@ -26,12 +26,21 @@ class LedgerModelOutput(IterableListGenericDTO[dict]):
 class LedgerTable:
 
     class Columns:
+        # Subclasses should have class properties for the column names.
+        # Use a doc string """""" after each property so they will be
+        # documented automatically.
         pass
 
     __column_set: Union[Set[str], None] = None
 
     @classmethod
     def columns(cls):
+        """
+        Return the set of columns for the table.
+
+        For contract ledget tables, the set will not
+        include any contract-specific columns.
+        """
         if cls.__column_set is None:
             cls.__column_set = set()
             for i in inspect.getmembers(cls.Columns):
@@ -45,138 +54,243 @@ class LedgerTable:
 
 class TransactionTable(LedgerTable):
     class Columns:
+        """Column names"""
         HASH = 'hash'
+        """"""
         NONCE = 'nonce'
+        """"""
         BLOCK_HASH = 'block_hash'
+        """"""
         TRANSACTION_INDEX = 'transaction_index'
+        """"""
         FROM_ADDRESS = 'from_address'
+        """"""
         TO_ADDRESS = 'to_address'
+        """"""
         VALUE = 'value'
+        """"""
         GAS = 'gas'
+        """"""
         GAS_PRICE = 'gas_price'
+        """"""
         INPUT = 'input'
+        """"""
         BLOCK_TIMESTAMP = 'block_timestamp'
+        """"""
         MAX_FEE_PER_GAS = 'max_fee_per_gas'
+        """"""
         MAX_PRIORITY_FEE_PER_GAS = 'max_priority_fee_per_gas'
+        """"""
         TRANSACTION_TYPE = 'transaction_type'
+        """"""
         BLOCK_NUMBER = 'block_number'
+        """"""
 
 
 class TraceTable(LedgerTable):
     class Columns:
+        """Column names"""
         BLOCK_NUMBER = 'block_number'
+        """"""
         TRANSACTION_HASH = 'transaction_hash'
+        """"""
         TRANSACTION_INDEX = 'transaction_index'
+        """"""
         FROM_ADDRESS = 'from_address'
+        """"""
         TO_ADDRESS = 'to_address'
+        """"""
         VALUE = 'value'
+        """"""
         INPUT = 'input'
+        """"""
         OUTPUT = 'output'
+        """"""
         TRACE_TYPE = 'trace_type'
+        """"""
         CALL_TYPE = 'call_type'
+        """"""
         REWARD_TYPE = 'reward_type'
+        """"""
         GAS = 'gas'
+        """"""
         GAS_USED = 'gas_used'
+        """"""
         SUB_TRACES = 'sub_traces'
+        """"""
         TRACE_ADDRESS = 'trace_address'
+        """"""
         ERROR = 'error'
+        """"""
         STATUS = 'status'
+        """"""
         TRACE_ID = 'trace_id'
+        """"""
 
 
 class BlockTable(LedgerTable):
     class Columns:
+        """Column names"""
         NUMBER = 'number'
+        """"""
         HASH = 'hash'
+        """"""
         PARENT_HASH = 'parent_hash'
+        """"""
         NONCE = 'nonce'
+        """"""
         SHA3_UNCLES = 'sha3_uncles'
+        """"""
         LOGS_BLOOM = 'logs_bloom'
+        """"""
         TRANSACTIONS_ROOT = 'transactions_root'
+        """"""
         STATE_ROOT = 'state_root'
+        """"""
         RECEIPTS_ROOT = 'receipts_root'
+        """"""
         MINER = 'miner'
+        """"""
         DIFFICULTY = 'difficulty'
+        """"""
         TOTAL_DIFFICULTY = 'total_difficulty'
+        """"""
         SIZE = 'size'
+        """"""
         EXTRA_DATA = 'extra_data'
+        """"""
         GAS_LIMIT = 'gas_limit'
+        """"""
         GAS_USED = 'gas_used'
+        """"""
         TIMESTAMP = 'timestamp'
+        """"""
         TS = 'ts'
+        """"""
         TRANSACTION_COUNT = 'transaction_count'
+        """"""
         BASE_FEE_PER_GAS = 'base_fee_per_gas'
+        """"""
 
 
 class ContractTable(LedgerTable):
     class Columns:
+        """Column names"""
         ADDRESS = 'address'
+        """"""
         BYTECODE = 'bytecode'
+        """"""
         FUNCTION_SIGHASHES = 'function_sighashes'
+        """"""
         IS_ERC20 = 'is_erc20 '
+        """"""
         IS_ERC721 = 'is_erc721 '
+        """"""
         BLOCK_NUMBER = 'block_number'
+        """"""
 
 
 class LogTable(LedgerTable):
     class Columns:
+        """Column names"""
         LOG_INDEX = 'log_index'
+        """"""
         TRANSACTION_HASH = 'transaction_hash'
+        """"""
         TRANSACTION_INDEX = 'transaction_index'
+        """"""
         BLOCK_HASH = 'block_hash'
+        """"""
         BLOCK_NUMBER = 'block_number'
+        """"""
         ADDRESS = 'address'
+        """"""
         DATA = 'data'
+        """"""
         TOPICS = 'topics'
+        """"""
 
 
 class ReceiptTable(LedgerTable):
     class Columns:
+        """Column names"""
         TRANSACTION_HASH = 'transaction_hash'
+        """"""
         TRANSACTION_INDEX = 'transaction_index'
+        """"""
         BLOCK_HASH = 'block_hash'
+        """"""
         BLOCK_NUMBER = 'block_number'
+        """"""
         CUMULATIVE_GAS_USED = 'cumulative_gas_used'
+        """"""
         GAS_USED = 'gas_used'
+        """"""
         CONTRACT_ADDRESS = 'contract_address'
+        """"""
         ROOT = 'root'
+        """"""
         STATUS = 'status'
+        """"""
         EFFECTIVE_GAS_PRICE = 'effective_gas_price'
+        """"""
 
 
 class TokenTable(LedgerTable):
     class Columns:
+        """Column names"""
         ADDRESS = 'address'
+        """"""
         SYMBOL = 'symbol'
+        """"""
         NAME = 'name'
+        """"""
         DECIMALS = 'decimals'
+        """"""
         TOTAL_SUPPLY = 'total_supply'
+        """"""
         BLOCK_NUMBER = 'block_number'
+        """"""
 
 
 class TokenTransferTable(LedgerTable):
     class Columns:
+        """Column names"""
         TOKEN_ADDRESS = 'token_address'
+        """"""
         FROM_ADDRESS = 'from_address'
+        """"""
         TO_ADDRESS = 'to_address'
+        """"""
         VALUE = 'value'
+        """"""
         TRANSACTION_HASH = 'transaction_hash'
+        """"""
         LOG_INDEX = 'log_index'
+        """"""
         BLOCK_NUMBER = 'block_number'
+        """"""
 
 
 class ContractFunctionsTable(LedgerTable):
     # Column names are contract and function-specific but
     # the following and standard fields for all functions
     class Columns:
+        """Column names"""
         CONTRACT_ADDRESS = 'contract_address'
+        """"""
         TXN_BLOCK_NUMBER = 'txn_block_number'
+        """"""
         TXN_HASH = 'txn_hash'
+        """"""
         TXN_INDEX = 'txn_index'
+        """"""
         SUCCESS = 'success'  # boolean indicating txn was successful or not
+        """"""
 
     @classmethod
     def InputCol(cls, input_name: str):  # pylint: disable=invalid-name
+        """Construct a column name from a function input name."""
         return f'inp_{input_name.lower()}'
 
 
@@ -184,13 +298,19 @@ class ContractEventsTable(LedgerTable):
     # Column names are contract and event-specific but
     # the following and standard fields for all events
     class Columns:
+        """Column names"""
         CONTRACT_ADDRESS = 'contract_address'
+        """"""
         EVT_BLOCK_NUMBER = 'evt_block_number'
+        """"""
         EVT_HASH = 'evt_hash'
+        """"""
         EVT_INDEX = 'evt_index'
+        """"""
 
     @classmethod
     def InputCol(cls, input_name: str):  # pylint: disable=invalid-name
+        """Construct a column name from an event input name."""
         return f'inp_{input_name.lower()}'
 
 
@@ -206,7 +326,9 @@ class ContractLedger:
     See :class:`~credmark.cmf.types.ledger.ContractEntity` below for info on running queries.
     """
     Functions = ContractFunctionsTable
+    """ContractFunctionsTable"""
     Events = ContractEventsTable
+    """ContractEventsTable"""
 
     @classmethod
     def Aggregate(cls, expression: str, as_name: str):  # pylint: disable=invalid-name
@@ -227,7 +349,9 @@ class ContractLedger:
     class EntityType(Enum):
         """"""
         FUNCTIONS = 'functions'
+        """"""
         EVENTS = 'events'
+        """"""
 
     class ContractEntity:
         """
