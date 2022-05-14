@@ -7,8 +7,9 @@ import credmark.cmf.model
 
 class LedgerAggregate(DTO):
     """
-    An aggregate column in a query, defined by an expression and
-    the name to use as the column name in the returned data.
+    An aggregate column in a query.
+    It is defined by an expression and the name to use as the
+    column name in the returned data.
     """
     expression: str = DTOField(..., description='Aggregate expression, for example "MAX(GAS_USED)"')
     asName: str = DTOField(..., description='Returned as data column name')
@@ -24,6 +25,9 @@ class LedgerModelOutput(IterableListGenericDTO[dict]):
 
 
 class LedgerTable:
+    """
+    Base class for ledger data tables
+    """
 
     class Columns:
         # Subclasses should have class properties for the column names.
@@ -53,6 +57,7 @@ class LedgerTable:
 
 
 class TransactionTable(LedgerTable):
+    """Transactions ledger data table"""
     class Columns:
         """Column names"""
         HASH = 'hash'
@@ -88,6 +93,7 @@ class TransactionTable(LedgerTable):
 
 
 class TraceTable(LedgerTable):
+    """Trace ledger data table"""
     class Columns:
         """Column names"""
         BLOCK_NUMBER = 'block_number'
@@ -129,6 +135,7 @@ class TraceTable(LedgerTable):
 
 
 class BlockTable(LedgerTable):
+    """Blocks ledger data table"""
     class Columns:
         """Column names"""
         NUMBER = 'number'
@@ -174,6 +181,7 @@ class BlockTable(LedgerTable):
 
 
 class ContractTable(LedgerTable):
+    """Contracts ledger data table"""
     class Columns:
         """Column names"""
         ADDRESS = 'address'
@@ -191,6 +199,7 @@ class ContractTable(LedgerTable):
 
 
 class LogTable(LedgerTable):
+    """Logs ledger data table"""
     class Columns:
         """Column names"""
         LOG_INDEX = 'log_index'
@@ -212,6 +221,7 @@ class LogTable(LedgerTable):
 
 
 class ReceiptTable(LedgerTable):
+    """Receipts ledger data table"""
     class Columns:
         """Column names"""
         TRANSACTION_HASH = 'transaction_hash'
@@ -237,6 +247,7 @@ class ReceiptTable(LedgerTable):
 
 
 class TokenTable(LedgerTable):
+    """Tokens ledger data table"""
     class Columns:
         """Column names"""
         ADDRESS = 'address'
@@ -254,6 +265,7 @@ class TokenTable(LedgerTable):
 
 
 class TokenTransferTable(LedgerTable):
+    """Token transfers ledger data table"""
     class Columns:
         """Column names"""
         TOKEN_ADDRESS = 'token_address'
@@ -273,6 +285,8 @@ class TokenTransferTable(LedgerTable):
 
 
 class ContractFunctionsTable(LedgerTable):
+    """Contract functions ledger data table"""
+
     # Column names are contract and function-specific but
     # the following and standard fields for all functions
     class Columns:
@@ -295,6 +309,7 @@ class ContractFunctionsTable(LedgerTable):
 
 
 class ContractEventsTable(LedgerTable):
+    """Contract events ledger data table"""
     # Column names are contract and event-specific but
     # the following and standard fields for all events
     class Columns:
@@ -316,14 +331,18 @@ class ContractEventsTable(LedgerTable):
 
 class ContractLedger:
     """
-    Helper class used by a Contract to do ledger queries
+    Helper class used by :class:`~credmark.cmf.types.contract.Contract` for ledger queries
     on contract functions and events.
 
     You do not need to create an instance yourself.
     Access an instance from a :class:`credmark.cmf.types.contract.Contract`
     instance with ``contract.ledger``.
 
-    See :class:`~credmark.cmf.types.ledger.ContractEntity` below for info on running queries.
+    See :class:`~credmark.cmf.types.ledger.ContractLedger.ContractEntity` below for info
+    on running queries.
+
+    Parameters:
+        address: Contract address
     """
     Functions = ContractFunctionsTable
     """ContractFunctionsTable"""
@@ -343,6 +362,12 @@ class ContractLedger:
                     f'MAX({ContractLedger.Functions.InputCol("value")})',
                     'max_value')
             ]
+
+        Parameters:
+
+            expression: an aggregate expression
+
+            as_name: the column name for the returned aggregate data column
         """
         return LedgerAggregate(expression=expression, asName=as_name)
 
@@ -355,7 +380,8 @@ class ContractLedger:
 
     class ContractEntity:
         """
-        Used by ContractLedger to query a contract's function or event data.
+        Used by :class:`~credmark.cmf.types.ledger.ContractLedger` to query a
+        contract's function or event data.
         You do not need to create an instance yourself.
 
         Access an instance with ``contract.ledger.functions.contractFunctionName()``
@@ -365,10 +391,18 @@ class ContractLedger:
 
         See the :meth:`~credmark.cmf.types.ledger.ContractLedger.ContractEntity.__call__`
         method below for the query parameters.
+
+        Parameters:
+            address: Contract address
+
+            entity_type: Type of entity: functions or events
+
+            name: Name of function or event
         """
 
         def __init__(self, address: str, entity_type: 'ContractLedger.EntityType', name: str):
-            """"""
+            """
+            """
             super().__init__()
             self.address = address
             self.entity_type = entity_type
