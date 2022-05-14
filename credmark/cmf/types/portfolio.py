@@ -12,8 +12,8 @@ class Portfolio(IterableListGenericDTO[Position]):
     positions: List[Position] = DTOField(default=[], description='List of positions')
     _iterator: str = PrivateAttr('positions')
 
-    def get_value(self):
-        return sum([pos.get_value() for pos in self.positions])
+    def get_value(self, price_model='token.price'):
+        return sum([pos.get_value(price_model) for pos in self.positions])
 
     class Config:
         schema_extra: dict = {

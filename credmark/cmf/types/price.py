@@ -13,7 +13,7 @@ from .address import Address
 
 
 class Price(DTO):
-    price: Union[float, None] = DTOField(None, description='Value of one Token')
+    price: float = DTOField(0.0, description='Value of one Token')
     src: Union[str, None] = DTOField(None, description='Source')
 
     class Config:

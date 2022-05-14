@@ -8,14 +8,9 @@ class Position(DTO):
     amount: float = DTOField(0.0, description='Quantity of token held')
     asset: Token
 
-    def get_value(self):
+    def get_value(self, price_model='token.price'):
         context = credmark.cmf.model.ModelContext.current_context()
-
-        token_price = Price(**context.models.token.price(self.asset)).price
-
-        if token_price is None:
-            token_price = 0.0
-
+        token_price = context.run_model(price_model, input=self.asset, return_type=Price).price
         return token_price * self.amount
 
     class Config:
