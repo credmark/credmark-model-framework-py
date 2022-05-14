@@ -3,8 +3,9 @@
 History
 -------
 
-0.8.? [2022-05-?]
+0.8.20 [2022-05-14]
 * Changed manifest displayName field casing
+* Added get_value to Portfolio and Position DTOs
 
 0.8.19 [2022-05-13]
 * credmark-dev create command
