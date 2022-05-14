@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.? [2022-05-?]
+* Changed manifest displayName field casing
+
 0.8.19 [2022-05-13]
 * credmark-dev create command
 

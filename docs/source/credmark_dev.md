@@ -182,7 +182,7 @@ $ credmark-dev describe example.model
 example.model
  - slug: example.model
  - version: 1.2
- - display_name: Example - Model
+ - displayName: Example - Model
  - description: First example model to echo the message property sent in input.
  - developer: Credmark
  - tags: None
