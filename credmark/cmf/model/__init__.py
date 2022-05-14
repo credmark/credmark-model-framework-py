@@ -181,7 +181,7 @@ def describe(slug: str,  # pylint: disable=too-many-arguments
             'model': {
                 'slug': slug,
                 'version': version,
-                'display_name': display_name,
+                'displayName': display_name,
                 'description': model_desc,
                 'developer': developer if developer is not None else '',
                 'tags': tags,

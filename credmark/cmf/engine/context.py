@@ -247,8 +247,6 @@ class EngineModelContext(ModelContext):
         if len(self._model_manifest_map) == 0:
             manifests = self.__model_loader.loaded_model_manifests()
             for m in manifests:
-                # hack for casing.
-                m['displayName'] = m['display_name']
                 slug = m['slug']
                 self._model_manifest_map[slug] = m
                 self._model_underscore_manifest_map[slug.replace('-', '_')] = m
