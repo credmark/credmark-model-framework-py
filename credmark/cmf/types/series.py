@@ -99,7 +99,8 @@ class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS
         if fields is None:
             return pd.DataFrame(series_in_list, columns=['blockNumber', 'blockTime', 'output'])
         else:
-            return pd.DataFrame(series_in_list, columns=['blockNumber', 'blockTime'] + [c for c, _ in fields])
+            return pd.DataFrame(series_in_list,
+                                columns=['blockNumber', 'blockTime'] + [c for c, _ in fields])
 
 
 class SeriesModelStartEndIntervalInput(DTO):
