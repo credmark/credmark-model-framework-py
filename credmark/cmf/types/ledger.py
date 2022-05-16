@@ -1,3 +1,4 @@
+import contextlib
 from enum import Enum
 from typing import List, Set, Union
 import inspect
@@ -330,6 +331,8 @@ class ContractEventsTable(LedgerTable):
 
 
 class ContractLedger:
+    # pylint: disable=locally-disabled,invalid-name
+
     """
     Helper class used by :class:`~credmark.cmf.types.contract.Contract` for ledger queries
     on contract functions and events.
@@ -378,7 +381,7 @@ class ContractLedger:
         EVENTS = 'events'
         """"""
 
-    class ContractEntity:
+    class ContractEntity(contextlib.AbstractContextManager):
         """
         Used by :class:`~credmark.cmf.types.ledger.ContractLedger` to query a
         contract's function or event data.
@@ -400,23 +403,41 @@ class ContractLedger:
             name: Name of function or event
         """
 
-        def __init__(self, address: str, entity_type: 'ContractLedger.EntityType', name: str):
-            """
-            """
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return None
+
+        def __init__(self, address: str,
+                     entity_type: 'ContractLedger.EntityType',
+                     name: str,
+                     ledger_table):
+            """"""
             super().__init__()
             self.address = address
             self.entity_type = entity_type
             self.name = name
+            self._ledger_table = ledger_table
 
-        def __call__(self,  # pylint: disable=too-many-arguments
-                     columns: Union[List[str], None] = None,
-                     where: Union[str, None] = None,
-                     group_by: Union[str, None] = None,
-                     order_by: Union[str, None] = None,
-                     limit: Union[str, None] = None,
-                     offset: Union[str, None] = None,
-                     aggregates: Union[List[LedgerAggregate], None] = None,
-                     having: Union[str, None] = None) -> LedgerModelOutput:
+        def Columns(self):
+            return self._ledger_table.Columns
+
+        def InputCol(self, *args, **kwargs):
+            return self._ledger_table.InputCol(*args, **kwargs)
+
+        def columns(self):
+            return self._ledger_table.columns()
+
+        def select(self,  # pylint: disable=too-many-arguments
+                   columns: Union[List[str], None] = None,
+                   where: Union[str, None] = None,
+                   group_by: Union[str, None] = None,
+                   order_by: Union[str, None] = None,
+                   limit: Union[str, None] = None,
+                   offset: Union[str, None] = None,
+                   aggregates: Union[List[LedgerAggregate], None] = None,
+                   having: Union[str, None] = None) -> LedgerModelOutput:
             """
             Run a query on a contract's function or event data.
 
@@ -513,7 +534,16 @@ class ContractLedger:
             self.address = address
 
         def __getattr__(self, __name: str) -> 'ContractLedger.ContractEntity':
-            return ContractLedger.ContractEntity(self.address, self.entity_type, __name)
+            if self.entity_type == ContractLedger.EntityType.FUNCTIONS:
+                return ContractLedger.ContractEntity(self.address,
+                                                     self.entity_type, __name,
+                                                     ContractFunctionsTable)
+            elif self.entity_type == ContractLedger.EntityType.EVENTS:
+                return ContractLedger.ContractEntity(self.address,
+                                                     self.entity_type, __name,
+                                                     ContractEventsTable)
+            else:
+                raise ValueError(f'Invalid ContractLedger entity type {self.entity_type}')
 
     def __init__(self, address: str):
         """

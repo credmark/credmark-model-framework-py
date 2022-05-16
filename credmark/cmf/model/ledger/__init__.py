@@ -1,3 +1,4 @@
+import contextlib
 from typing import Type, Union, List
 
 from .errors import (
@@ -56,75 +57,46 @@ QUERY_METHOD_DOC_STRING = """
     """
 
 
-def _query_method(table: str):
-    # decorator for a query method in the ledger that adds
-    # docstrings based on a template.
-    def _doc(func):
-        func.__doc__ = func.__doc__.strip() + QUERY_METHOD_DOC_STRING.replace('{TABLE}', table)
-        return func
-    return _doc
+def query_method(func):
+    def wrapper(self, *args, **kwargs):
+        func.__doc__ += QUERY_METHOD_DOC_STRING
+        func.__doc__ = func.__doc__.replace('{TABLE}', self.table_name)
+        return func(self, *args, **kwargs)
+    return wrapper
 
 
-class Ledger:
-    """
-    Performs queries on ledger data and has aliases to table definitions.
+class LedgerQuery(contextlib.AbstractContextManager):
+    # pylint: disable=locally-disabled,invalid-name
+    def __init__(self, ledger_table, table_name, cwgo_query_table, context):
+        self._ledger_table = ledger_table
+        self._table_name = table_name
+        self._cwgo_query = cwgo_query_table
+        self._context = context
 
-    Access an instance of this class from the model context using
-    ``self.context.ledger``.
+    @property
+    def table_name(self):
+        return self._table_name
 
-    Run a query using one of the ``get_`` methods, for example
-    ``context.ledger.get_transactions()``. The query parameters are
-    common to all query methods.
+    @property
+    def Columns(self):
+        return self._ledger_table.Columns
 
-    """
-
-    Transaction = TransactionTable
-    """"""
-    Trace = TraceTable
-    """"""
-    Block = BlockTable
-    """"""
-    Contract = ContractTable
-    """"""
-    Log = LogTable
-    """"""
-    Receipt = ReceiptTable
-    """"""
-    Token = TokenTable
-    """"""
-    TokenTransfer = TokenTransferTable
-    """"""
-
-    @classmethod
-    def Aggregate(cls, expression: str, as_name: str):  # pylint: disable=invalid-name
-        """
-        Return a new LedgerAggregate instance that can be used in
-        an aggregates list.
-
-        For example: :
-
-            aggregates = [Ledger.Aggregate(f'SUM({Ledger.Block.Columns.GAS_USED})', 'total_gas')]
-        """
-        return LedgerAggregate(expression=expression, asName=as_name)
-
-    def __init__(self, context):
-        # We type the property here to avoid circular ref
-        self.context = context
+    def columns(self):
+        return self._ledger_table.columns()
 
     def _validate_columns(self, model_slug: str,
-                          columns: List[str],
-                          ledger_object_type: type[LedgerTable]):
-        column_set = ledger_object_type.columns()
+                          columns: List[str]):
+        column_set = self._ledger_table.columns()
 
-        for column in columns:
-            if column.lower() not in column_set:
-                raise InvalidColumnException(
-                    model_slug,
-                    column, list(column_set), "invalid column name")
+        if column_set is not None:
+            for column in columns:
+                if column.lower() not in column_set:
+                    raise InvalidColumnException(
+                        model_slug,
+                        column, list(column_set), "invalid column name")
 
     def _send_cwgo_query(self,  # pylint: disable=too-many-arguments
                          model_slug: str,
-                         table_def: Type[LedgerTable],
                          columns: Union[List[str], None] = None,
                          where: Union[str, None] = None,
                          group_by: Union[str, None] = None,
@@ -139,173 +111,88 @@ class Ledger:
 
         if columns is None:
             columns = []
+        elif not isinstance(columns, list):
+            raise InvalidQueryException(
+                model_slug, f'{columns} needs to be a list of string.')
         else:
-            self._validate_columns(model_slug, columns, table_def)
+            self._validate_columns(model_slug, columns)
 
         if where is None and limit is None and not aggregates:
             raise InvalidQueryException(
                 model_slug,
                 f'{model_slug} call must have a where or limit value for non-aggregate queries.')
 
-        return self.context.run_model(model_slug,
-                                      {'columns': columns,
-                                       'aggregates': aggregates,
-                                       'where': where,
-                                       'groupBy': group_by,
-                                       'having': having,
-                                       'orderBy': order_by,
-                                       'limit': limit,
-                                       'offset': offset},
-                                      return_type=LedgerModelOutput)
+        return self._context.run_model(model_slug,
+                                       {'columns': columns,
+                                        'aggregates': aggregates,
+                                        'where': where,
+                                        'groupBy': group_by,
+                                        'having': having,
+                                        'orderBy': order_by,
+                                        'limit': limit,
+                                        'offset': offset},
+                                       return_type=LedgerModelOutput)
 
-    @_query_method('Transaction')
-    def get_transactions(self,  # pylint: disable=too-many-arguments
-                         columns: Union[List[str], None] = None,
-                         where: Union[str, None] = None,
-                         group_by: Union[str, None] = None,
-                         order_by: Union[str, None] = None,
-                         limit: Union[str, None] = None,
-                         offset: Union[str, None] = None,
-                         aggregates: Union[List[LedgerAggregate], None] = None,
-                         having: Union[str, None] = None) -> LedgerModelOutput:
+    @query_method
+    def select(self,  # pylint: disable=too-many-arguments
+               columns: Union[List[str], None] = None,
+               where: Union[str, None] = None,
+               group_by: Union[str, None] = None,
+               order_by: Union[str, None] = None,
+               limit: Union[str, None] = None,
+               offset: Union[str, None] = None,
+               aggregates: Union[List[LedgerAggregate], None] = None,
+               having: Union[str, None] = None) -> LedgerModelOutput:
         """
-        Query data from the Transactions table.
+        Query data from the {TABLE} table.
         """
-        return self._send_cwgo_query('ledger.transaction_data',
-                                     TransactionTable,
+        return self._send_cwgo_query(self._cwgo_query,
                                      columns, where, group_by,
                                      order_by, limit, offset,
                                      aggregates, having)
 
-    @_query_method('Trace')
-    def get_traces(self,  # pylint: disable=too-many-arguments
-                   columns: Union[List[str], None] = None,
-                   where: Union[str, None] = None,
-                   group_by: Union[str, None] = None,
-                   order_by: Union[str, None] = None,
-                   limit: Union[str, None] = None,
-                   offset: Union[str, None] = None,
-                   aggregates: Union[List[LedgerAggregate], None] = None,
-                   having: Union[str, None] = None) -> LedgerModelOutput:
-        """
-        Query data from the Traces table.
-        """
-        return self._send_cwgo_query('ledger.trace_data',
-                                     TraceTable,
-                                     columns, where, group_by,
-                                     order_by, limit, offset,
-                                     aggregates, having)
+    def __enter__(self):
+        return self
 
-    @_query_method('Log')
-    def get_logs(self,  # pylint: disable=too-many-arguments
-                 columns: Union[List[str], None] = None,
-                 where: Union[str, None] = None,
-                 group_by: Union[str, None] = None,
-                 order_by: Union[str, None] = None,
-                 limit: Union[str, None] = None,
-                 offset: Union[str, None] = None,
-                 aggregates: Union[List[LedgerAggregate], None] = None,
-                 having: Union[str, None] = None) -> LedgerModelOutput:
-        """
-        Query data from the Logs table.
-        """
-        return self._send_cwgo_query('ledger.log_data',
-                                     LogTable,
-                                     columns, where, group_by,
-                                     order_by, limit, offset,
-                                     aggregates, having)
+    def __exit__(self, exc_type, exc_value, traceback):
+        return None
 
-    @_query_method('Contract')
-    def get_contracts(self,  # pylint: disable=too-many-arguments
-                      columns: Union[List[str], None] = None,
-                      where: Union[str, None] = None,
-                      group_by: Union[str, None] = None,
-                      order_by: Union[str, None] = None,
-                      limit: Union[str, None] = None,
-                      offset: Union[str, None] = None,
-                      aggregates: Union[List[LedgerAggregate], None] = None,
-                      having: Union[str, None] = None) -> LedgerModelOutput:
-        """
-        Query data from the Contracts table.
-        """
-        return self._send_cwgo_query('ledger.contract_data',
-                                     ContractTable,
-                                     columns, where, group_by,
-                                     order_by, limit, offset,
-                                     aggregates, having)
 
-    @_query_method('Block')
-    def get_blocks(self,  # pylint: disable=too-many-arguments
-                   columns: Union[List[str], None] = None,
-                   where: Union[str, None] = None,
-                   group_by: Union[str, None] = None,
-                   order_by: Union[str, None] = None,
-                   limit: Union[str, None] = None,
-                   offset: Union[str, None] = None,
-                   aggregates: Union[List[LedgerAggregate], None] = None,
-                   having: Union[str, None] = None) -> LedgerModelOutput:
-        """
-        Query data from the Blocks table.
-        """
-        return self._send_cwgo_query('ledger.block_data',
-                                     BlockTable,
-                                     columns, where, group_by,
-                                     order_by, limit, offset,
-                                     aggregates, having)
+class Ledger:
+    """
+    Performs queries on ledger data.
 
-    @_query_method('Receipt')
-    def get_receipts(self,  # pylint: disable=too-many-arguments
-                     columns: Union[List[str], None] = None,
-                     where: Union[str, None] = None,
-                     group_by: Union[str, None] = None,
-                     order_by: Union[str, None] = None,
-                     limit: Union[str, None] = None,
-                     offset: Union[str, None] = None,
-                     aggregates: Union[List[LedgerAggregate], None] = None,
-                     having: Union[str, None] = None) -> LedgerModelOutput:
-        """
-        Query data from the Receipts table.
-        """
-        return self._send_cwgo_query('ledger.receipt_data',
-                                     ReceiptTable,
-                                     columns, where, group_by,
-                                     order_by, limit, offset,
-                                     aggregates, having)
+    Access an instance of this class from the model context using
+    ``self.context.ledger``.
 
-    @_query_method('Token')
-    def get_erc20_tokens(self,  # pylint: disable=too-many-arguments
-                         columns: Union[List[str], None] = None,
-                         where: Union[str, None] = None,
-                         group_by: Union[str, None] = None,
-                         order_by: Union[str, None] = None,
-                         limit: Union[str, None] = None,
-                         offset: Union[str, None] = None,
-                         aggregates: Union[List[LedgerAggregate], None] = None,
-                         having: Union[str, None] = None) -> LedgerModelOutput:
-        """
-        Query data from the ERC20 Tokens table.
-        """
-        return self._send_cwgo_query('ledger.erc20_token_data',
-                                     TokenTable,
-                                     columns, where, group_by,
-                                     order_by, limit, offset,
-                                     aggregates, having)
+    Run a query using one of the ``get_`` methods, for example
+    ``context.ledger.get_transactions()``. The query parameters are
+    common to all query methods.
 
-    @_query_method('TokenTransfer')
-    def get_erc20_transfers(self,  # pylint: disable=too-many-arguments
-                            columns: Union[List[str], None] = None,
-                            where: Union[str, None] = None,
-                            group_by: Union[str, None] = None,
-                            order_by: Union[str, None] = None,
-                            limit: Union[str, None] = None,
-                            offset: Union[str, None] = None,
-                            aggregates: Union[List[LedgerAggregate], None] = None,
-                            having: Union[str, None] = None) -> LedgerModelOutput:
+    """
+    # pylint: disable=locally-disabled,invalid-name
+    @classmethod
+    def Aggregate(cls, expression: str, as_name: str):
         """
-        Query data from the ERC20 Token Transfers table.
+        Return a new LedgerAggregate instance that can be used in
+        an aggregates list.
+
+        For example: :
+
+            aggregates = [Ledger.Aggregate(f'SUM({Ledger.Block.Columns.GAS_USED})', 'total_gas')]
         """
-        return self._send_cwgo_query('ledger.erc20_token_transfer_data',
-                                     TokenTransferTable,
-                                     columns, where, group_by,
-                                     order_by, limit, offset,
-                                     aggregates, having)
+        return LedgerAggregate(expression=expression, asName=as_name)
+
+    def __init__(self, context):
+        # We type the property here to avoid circular ref
+        self.context = context
+        self.Transaction = LedgerQuery(TransactionTable, 'Transaction',
+                                       'ledger.transaction_data', self.context)
+        self.Trace = LedgerQuery(TraceTable, 'Trace', 'ledger.trace_data', context)
+        self.Block = LedgerQuery(BlockTable, 'Block', 'ledger.block_data', context)
+        self.Contract = LedgerQuery(ContractTable, 'Contract', 'ledger.contract_data', context)
+        self.Log = LedgerQuery(LogTable, 'Log', 'ledger.log_data', context)
+        self.Receipt = LedgerQuery(ReceiptTable, 'Receipt', 'ledger.receipt_data', context)
+        self.Token = LedgerQuery(TokenTable, 'Token', 'ledger.erc20_token_data', context)
+        self.TokenTransfer = LedgerQuery(TokenTransferTable, 'TokenTransfer',
+                                         'ledger.erc20_token_transfer_data', context)
