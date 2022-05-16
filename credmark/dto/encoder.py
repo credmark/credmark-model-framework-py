@@ -1,4 +1,6 @@
 import json
+import datetime
+import numpy as np
 from credmark.dto import DTO
 
 
@@ -11,10 +13,18 @@ class PydanticJSONEncoder(json.JSONEncoder):
       json.dump(result, cls=PydanticJSONEncoder)
     """
 
-    def default(self, o):
-        if isinstance(o, DTO):
-            return o.dict()
-        return json.JSONEncoder.default(self, o)
+    def default(self, obj):
+        if isinstance(obj, DTO):
+            return obj.dict()
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, (datetime.date, datetime.datetime)):
+            return obj.isoformat()
+        return json.JSONEncoder.default(self, obj)
 
 
 def json_dump(obj, fp, **json_dump_args):  # pylint: disable=invalid-name
