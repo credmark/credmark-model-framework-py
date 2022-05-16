@@ -487,27 +487,27 @@ class ContractLedger:
             if columns is None:
                 columns = []
 
-            input = {'contractAddress': self.address,
-                     'columns': columns,
-                     'aggregates': aggregates,
-                     'where': where,
-                     'groupBy': group_by,
-                     'having': having,
-                     'orderBy': order_by,
-                     'limit': limit,
-                     'offset': offset}
+            model_input = {'contractAddress': self.address,
+                           'columns': columns,
+                           'aggregates': aggregates,
+                           'where': where,
+                           'groupBy': group_by,
+                           'having': having,
+                           'orderBy': order_by,
+                           'limit': limit,
+                           'offset': offset}
 
             if self.entity_type == ContractLedger.EntityType.FUNCTIONS:
                 model_slug = 'contract.function_data'
-                input['functionName'] = self.name
+                model_input['functionName'] = self.name
             elif self.entity_type == ContractLedger.EntityType.EVENTS:
                 model_slug = 'contract.event_data'
-                input['eventName'] = self.name
+                model_input['eventName'] = self.name
             else:
                 raise ValueError(f'Invalid ContractLedger entity type {self.entity_type}')
 
             return context.run_model(model_slug,
-                                     input,
+                                     model_input,
                                      return_type=LedgerModelOutput)
 
     class ContractEntityFactory:
