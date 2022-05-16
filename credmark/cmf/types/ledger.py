@@ -3,6 +3,7 @@ from typing import List, Set, Union
 import inspect
 from credmark.dto import DTO, DTOField, PrivateAttr, IterableListGenericDTO
 import credmark.cmf.model
+import pandas as pd
 
 
 class LedgerAggregate(DTO):
@@ -22,6 +23,9 @@ class LedgerModelOutput(IterableListGenericDTO[dict]):
     data: List[dict] = DTOField(
         default=[], description='A list of dicts which are the rows of data')
     _iterator: str = PrivateAttr("data")
+
+    def to_df(self):
+        return pd.DataFrame(self.data)
 
 
 class LedgerTable:
