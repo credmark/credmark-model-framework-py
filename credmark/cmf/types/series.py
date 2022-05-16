@@ -87,7 +87,7 @@ class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS
                     [f(p.output) for f in fields])
                     for p in self.series]
 
-    def to_df(self, fields: Optional[List[Tuple[str, Callable]]] = None) -> pd.DataFrame:
+    def to_dataframe(self, fields: Optional[List[Tuple[str, Callable]]] = None) -> pd.DataFrame:
         """
         Parameters:
             fields (List[Tuple[str, Callable]] | None): List of field name and lambda to extract
