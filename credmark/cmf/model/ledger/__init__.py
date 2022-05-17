@@ -147,15 +147,13 @@ class Ledger:
                 model_slug,
                 f'{model_slug} call must have a where or limit value for non-aggregate queries.')
 
+        model_input = {'columns': columns, 'aggregates': aggregates,
+                       'where': where, 'groupBy': group_by,
+                       'having': having, 'orderBy': order_by,
+                       'limit': limit, 'offset': offset}
+
         return self.context.run_model(model_slug,
-                                      {'columns': columns,
-                                       'aggregates': aggregates,
-                                       'where': where,
-                                       'groupBy': group_by,
-                                       'having': having,
-                                       'orderBy': order_by,
-                                       'limit': limit,
-                                       'offset': offset},
+                                      model_input,
                                       return_type=LedgerModelOutput)
 
     @_query_method('Transaction')
