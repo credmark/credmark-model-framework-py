@@ -24,7 +24,7 @@ class LedgerModelOutput(IterableListGenericDTO[dict]):
         default=[], description='A list of dicts which are the rows of data')
     _iterator: str = PrivateAttr("data")
 
-    def to_df(self):
+    def to_dataframe(self):
         return pd.DataFrame(self.data)
 
 
