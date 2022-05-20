@@ -46,7 +46,10 @@ class RunModelMethod:
                 self.__doc__ = f'Run a model.\n\nAvailable models: {", ".join(slugs)}'
 
     # run a model. args can be a positional DTO or dict or kwargs
-    def __call__(self, input: Union[DTO, dict, None] = None, return_type=None, **kwargs):
+    def __call__(self,
+                 input: Union[DTO, dict, None] = None,
+                 return_type: Union[DTO, dict, None] = None,
+                 **kwargs):
         if isinstance(input, DTO):
             input = input.dict()
         elif input is None:
