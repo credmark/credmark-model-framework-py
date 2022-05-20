@@ -115,12 +115,16 @@ class Token(Contract):
         return prop_value
 
     @property
-    def symbol(self):
+    def symbol(self) -> str:
         self._load()
         if self._meta.symbol is None:
             symbol_tmp = self.try_erc20_property('symbol')
             if isinstance(symbol_tmp, bytes):
                 symbol_tmp = symbol_tmp.decode('utf-8', errors='strict').replace('\x00', '')
+            elif isinstance(symbol_tmp, str):
+                pass
+            else:
+                raise ModelDataError(f'Unknown value for symbol {symbol_tmp}')
             self._meta.symbol = symbol_tmp
         return self._meta.symbol
 
