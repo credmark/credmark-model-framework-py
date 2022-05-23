@@ -97,6 +97,7 @@ class Token(Contract):
 
     @property
     def info(self):
+        _ = self.symbol, self.name, self.decimals, self.total_supply
         if isinstance(self, TokenInfo):
             return self
         self._load()
@@ -115,12 +116,14 @@ class Token(Contract):
         return prop_value
 
     @property
-    def symbol(self):
+    def symbol(self) -> str:
         self._load()
         if self._meta.symbol is None:
             symbol_tmp = self.try_erc20_property('symbol')
             if isinstance(symbol_tmp, bytes):
                 symbol_tmp = symbol_tmp.decode('utf-8', errors='strict').replace('\x00', '')
+            elif not isinstance(symbol_tmp, str):
+                raise ModelDataError(f'Unknown value for symbol {symbol_tmp}')
             self._meta.symbol = symbol_tmp
         return self._meta.symbol
 
@@ -132,23 +135,25 @@ class Token(Contract):
         return self._meta.decimals
 
     @property
-    def name(self):
+    def name(self) -> str:
         self._load()
         if self._meta.name is None:
             name_tmp = self.try_erc20_property('name')
             if isinstance(name_tmp, bytes):
                 name_tmp = name_tmp.decode('utf-8', errors='strict').replace('\x00', '')
+            elif not isinstance(name_tmp, str):
+                raise ModelDataError(f'Unknown value for name {name_tmp}')
             self._meta.name = name_tmp
         return self._meta.name
 
     @property
-    def total_supply(self):
+    def total_supply(self) -> int:
         self._load()
         if self._meta.total_supply is None:
             self._meta.total_supply = self.try_erc20_property('totalSupply')
         return self._meta.total_supply
 
-    def scaled(self, value):
+    def scaled(self, value) -> float:
         return value / (10 ** self.decimals)
 
 
