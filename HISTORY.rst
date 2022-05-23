@@ -3,6 +3,12 @@
 History
 -------
 
+0.8.21 [2022-05-23]
+* Serialize datetimes and numpy and pandas datastructures to json
+* Pandas types conversion helpers
+* Improve types and typehints
+* Fix to load token ERC20 properties in Token.info() method
+
 0.8.20 [2022-05-14]
 * Changed manifest displayName field casing
 * Added get_value to Portfolio and Position DTOs
