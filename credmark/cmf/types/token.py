@@ -97,6 +97,7 @@ class Token(Contract):
 
     @property
     def info(self):
+        _ = self.symbol, self.name, self.decimals, self.total_supply
         if isinstance(self, TokenInfo):
             return self
         self._load()
