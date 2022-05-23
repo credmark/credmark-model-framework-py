@@ -122,9 +122,7 @@ class Token(Contract):
             symbol_tmp = self.try_erc20_property('symbol')
             if isinstance(symbol_tmp, bytes):
                 symbol_tmp = symbol_tmp.decode('utf-8', errors='strict').replace('\x00', '')
-            elif isinstance(symbol_tmp, str):
-                pass
-            else:
+            elif not isinstance(symbol_tmp, str):
                 raise ModelDataError(f'Unknown value for symbol {symbol_tmp}')
             self._meta.symbol = symbol_tmp
         return self._meta.symbol
@@ -143,9 +141,7 @@ class Token(Contract):
             name_tmp = self.try_erc20_property('name')
             if isinstance(name_tmp, bytes):
                 name_tmp = name_tmp.decode('utf-8', errors='strict').replace('\x00', '')
-            elif isinstance(name_tmp, str):
-                pass
-            else:
+            elif not isinstance(name_tmp, str):
                 raise ModelDataError(f'Unknown value for name {name_tmp}')
             self._meta.name = name_tmp
         return self._meta.name
