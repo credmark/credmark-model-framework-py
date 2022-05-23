@@ -46,10 +46,24 @@ class RunModelMethod:
                 self.__doc__ = f'Run a model.\n\nAvailable models: {", ".join(slugs)}'
 
     # run a model. args can be a positional DTO or dict or kwargs
+    @overload
     def __call__(self,
                  input: Union[DTO, dict, None] = None,
-                 return_type: Union[DTO, dict, None] = None,
-                 **kwargs):
+                 return_type: Union[dict, None] = None,
+                 **kwargs) -> dict:
+        ...
+
+    @overload
+    def __call__(self,
+                 input: Union[DTO, dict, None] = None,
+                 return_type: Type[DTO] = EmptyInput,
+                 **kwargs) -> DTO:
+        ...
+
+    def __call__(self,
+                 input: Union[DTO, dict, None] = None,
+                 return_type: Union[dict, Type[DTO], None] = None,
+                 **kwargs) -> Union[dict, DTO]:
         if isinstance(input, DTO):
             input = input.dict()
         elif input is None:
@@ -61,6 +75,7 @@ class RunModelMethod:
             return_type=return_type)
 
     # Handle method calls where the prefix is the dot prefix of a model name
+
     def __getattr__(self, __name: str):
         if self.interactive_docs:
             model_manifests: dict = self.__context._model_manifests(True)
