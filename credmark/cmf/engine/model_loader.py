@@ -17,7 +17,8 @@ from credmark.cmf.model import validate_model_slug
 # locally so they can call other local-only models.
 
 DEV_MODELS_PATHS = ['credmark/cmf/engine/dev_models/series_models',
-                    'credmark/cmf/engine/dev_models/console']
+                    'credmark/cmf/engine/dev_models/console',
+                    'credmark/cmf/engine/dev_models/composer', ]
 
 
 class ModelLoader:
