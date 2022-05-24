@@ -14,7 +14,7 @@ sys.path.append('.')
 from .engine.context import EngineModelContext
 from .engine.model_loader import ModelLoader
 from .engine.mocks import MockGenerator, ModelMockRunner
-from .engine.web3 import Web3Registry
+from .engine.web3registry import Web3Registry
 from .engine.model_api import ModelApi
 from credmark.dto import json_dump, json_dumps
 from credmark.cmf.engine.model_unittest import ModelTestContextFactory
