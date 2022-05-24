@@ -2,7 +2,7 @@
 import os
 import json
 from typing import Union
-from web3 import HTTPProvider, Web3
+from web3 import HTTPProvider, WebsocketProvider, Web3
 
 
 class Web3Registry:
@@ -10,13 +10,18 @@ class Web3Registry:
     # Cache of urls to providers that are reused
     # We don't cache chainId to providers because that
     # can change from request to request when running in a lambda
-    _url_to_web3_provider: dict[str, HTTPProvider] = {}
+    _url_to_web3_provider: dict[str, Union[HTTPProvider, WebsocketProvider]] = {}
 
     @classmethod
     def web3_for_provider_url(cls, provider_url: str):
         provider = cls._url_to_web3_provider.get(provider_url)
         if provider is None:
-            provider = Web3.HTTPProvider(provider_url)
+            if provider_url.startswith('http'):
+                provider = Web3.HTTPProvider(provider_url)
+            elif provider_url.startswith('ws'):
+                provider = Web3.WebsocketProvider(provider_url)
+            else:
+                raise Exception(f'Unknown prefix for Web3 provider {provider_url}')
             cls._url_to_web3_provider[provider_url] = provider
         # create a new web3 instance with cached provider
         return Web3(provider)
