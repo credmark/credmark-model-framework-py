@@ -15,7 +15,7 @@ from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.engine.mocks import ModelMockException, ModelMockRunner
 from credmark.dto.transform import DataTransformError, transform_data_for_dto
-from credmark.cmf.engine.web3 import Web3Registry
+from credmark.cmf.engine.web3registry import Web3Registry
 from credmark.dto import DTO, EmptyInput, DTOValidationError
 
 
