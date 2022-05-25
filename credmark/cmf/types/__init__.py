@@ -10,4 +10,4 @@ from .position import Position, NativePosition, TokenPosition
 from .price import Price, TokenPairPrice, PriceList
 from .token_wei import TokenWei
 from .token import Token, Tokens, NativeToken
-from .compose import ComposeEachInputDto, ComposeEachOutputDto, ModelDefinitionDto
+from .compose import ComposeEachInputDto, ComposeEachOutputDto, ModelDefinitionDto, ComposeHistoricalInputDto

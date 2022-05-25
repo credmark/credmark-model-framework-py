@@ -1,5 +1,7 @@
 from typing import Any, Union, List
 from credmark.dto import DTO, DTOField, PrivateAttr, IterableListGenericDTO
+from datetime import datetime
+import pytz
 
 
 class ModelDefinitionDto(DTO):
@@ -19,3 +21,12 @@ class ComposeEachOutputDto(IterableListGenericDTO):
     destination: ModelDefinitionDto
     outputs: List[ComposeEachOutputRowDto]
     _iterator: str = PrivateAttr('outputs')
+
+
+class ComposeHistoricalInputDto(DTO):
+    destination: ModelDefinitionDto = DTOField(description="The model to be run historically.")
+    input: dict = DTOField(description="The model input.")
+    window: str = DTOField(description="The width of the historical window, e.g. '365 days'")
+    interval: str = DTOField(description="The size of the sampling interval, e.g. '6 hours'")
+    tz_offset: int = DTOField(default=0,
+                              description="The timezone offset")
