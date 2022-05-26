@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.22 [2022-05-26]
+* Support for web3 websocket urls
+* Contract ledger event txn hash field name fix
+
 0.8.21 [2022-05-23]
 * Serialize datetimes and numpy and pandas datastructures to json
 * Pandas types conversion helpers
