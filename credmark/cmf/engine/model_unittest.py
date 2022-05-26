@@ -6,7 +6,7 @@ from dotenv import find_dotenv, load_dotenv
 from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
-from credmark.cmf.engine.web3 import Web3Registry
+from credmark.cmf.engine.web3_registry import Web3Registry
 from credmark.cmf.model.context import ModelContext
 from credmark.cmf.engine.mocks import ModelMockConfig, ModelMockRunner
 
