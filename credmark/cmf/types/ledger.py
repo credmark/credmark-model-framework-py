@@ -322,7 +322,7 @@ class ContractEventsTable(LedgerTable):
         """"""
         EVT_BLOCK_NUMBER = 'evt_block_number'
         """"""
-        EVT_HASH = 'evt_hash'
+        EVT_HASH = 'evt_tx_hash'
         """"""
         EVT_INDEX = 'evt_index'
         """"""
