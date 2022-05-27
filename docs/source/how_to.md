@@ -9,7 +9,7 @@ A model is simply a decorated class that inherits from {class}`credmark.cmf.mode
 To get started, you can use the {doc}`credmark_dev` command to create a new model skeleton python file using something like:
 
 ```
-credmark_dev create my_models hello_world
+credmark-dev create my_models hello_world
 ```
 
 This will create a model in the folder `models/contrib/my_models/hello_world.py`.
