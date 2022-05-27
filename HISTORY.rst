@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.XX []
+* Increase API run request timeout
+
 0.8.22 [2022-05-26]
 * Support for web3 websocket urls
 * Contract ledger event txn hash field name fix
