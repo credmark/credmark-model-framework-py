@@ -30,6 +30,12 @@ class ModelLoader:
         '''
         model_paths is a list of paths to search for model manifest files.
         '''
+        self._model_paths = model_paths
+        self._load_dev_models = load_dev_models
+
+        if not isinstance(model_paths, list):
+            raise Exception('model_paths needs to be a list of paths')
+
         self.errors = []
         self.warnings = []
 
@@ -66,6 +72,9 @@ class ModelLoader:
             self.__loading_dev_models = False
 
         self.__model_manifest_list.sort(key=lambda m: m['slug'])
+
+    def reload(self):
+        self.__init__(self._model_paths, self.manifest_file, self._load_dev_models)
 
     def clear(self):
         self.errors.clear()
