@@ -16,6 +16,7 @@ from .engine.model_loader import ModelLoader
 from .engine.mocks import MockGenerator, ModelMockRunner
 from .engine.web3_registry import Web3Registry
 from .engine.model_api import ModelApi
+import credmark
 from credmark.dto import json_dump, json_dumps
 from credmark.cmf.engine.model_unittest import ModelTestContextFactory
 from credmark.cmf.model.print import print_manifest, print_manifest_description
@@ -35,8 +36,10 @@ def add_api_url_arg(parser):
 
 def main():  # pylint: disable=too-many-statements
     parser = argparse.ArgumentParser(
+        prog='credmark-dev',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='Credmark developer tool')
+
     parser.add_argument('--log_level', default=None, required=False,
                         help='Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL')
     parser.add_argument('--model_path', default="models", required=False,
