@@ -4,6 +4,7 @@ import traceback
 import sys
 from typing import Callable, List, Set, Type, Union
 from credmark.dto.encoder import json_dumps
+from importlib.metadata import version
 from credmark.cmf.model import Model
 from credmark.cmf.model.context import ModelContext
 from credmark.cmf.engine.errors import ModelRunRequestError
@@ -20,6 +21,7 @@ from credmark.dto import DTO, EmptyInput, DTOValidationError
 
 
 RPC_GET_LATEST_BLOCK_NUMBER_SLUG = 'rpc.get-latest-blocknumber'
+RPC_GET_CMF_VERSION = 'rpc.get-cmf-version'
 
 
 def extract_most_recent_run_model_traceback(exc_traceback, skip=1):
@@ -126,6 +128,13 @@ class EngineModelContext(ModelContext):
                 'Using local models (requested + dev models): '
                 f'{cls.use_local_models_slugs}')
 
+            remote_version = cls.get_cmf_version(api, chain_id)
+            local_version = version('credmark-model-framework')
+            if remote_version != local_version:
+                cls.logger.info(
+                    f'Local Cmf version ({local_version}) is outdated. '
+                    f'The latest version is {remote_version}.')
+
             if block_number is None:
                 # Lookup latest block number if none specified
                 block_number = cls.get_latest_block_number(api, chain_id)
@@ -208,7 +217,7 @@ class EngineModelContext(ModelContext):
         return response
 
     @classmethod
-    def get_latest_block_number(cls, api: ModelApi, chain_id: int):
+    def get_latest_block_number(cls, api: ModelApi, chain_id: int) -> int:
         _s, _v, output, _e, _d = api.run_model(RPC_GET_LATEST_BLOCK_NUMBER_SLUG,
                                                None, chain_id, 0, {}, raise_error_results=True)
         if output is None:
@@ -216,6 +225,16 @@ class EngineModelContext(ModelContext):
 
         block_number: int = output['blockNumber']
         return block_number
+
+    @classmethod
+    def get_cmf_version(cls, api: ModelApi, chain_id: int) -> str:
+        _s, _v, output, _e, _d = api.run_model(RPC_GET_CMF_VERSION,
+                                               None, chain_id, 0, {}, raise_error_results=True)
+        if output is None:
+            raise Exception('Error response getting Cmf version')
+
+        remote_version: str = output['version']
+        return remote_version
 
     def __init__(self,  # pylint: disable=too-many-arguments
                  chain_id: int,
