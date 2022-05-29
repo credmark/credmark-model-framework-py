@@ -72,11 +72,14 @@ class ModelLoader:
             if cmf_spec is not None:
                 cmf_paths = cmf_spec.submodule_search_locations
                 if cmf_paths is not None:
-                    self.__loading_dev_models = True
-                    cmf_path = cmf_paths[0]
                     for dev_models_path in DEV_MODELS_PATHS:
-                        self._try_model_module(cmf_path, os.path.join(cmf_path, dev_models_path))
-                    self.__loading_dev_models = False
+                        for cmf_path in cmf_paths:
+                            dev_model_fpath = os.path.join(cmf_path, dev_models_path)
+                            if os.path.isfile(dev_model_fpath):
+                                self.__loading_dev_models = True
+                                self._try_model_module(cmf_path, dev_model_fpath)
+                                self.__loading_dev_models = False
+                                break
 
         self.__model_manifest_list.sort(key=lambda m: m['slug'])
 
@@ -134,14 +137,20 @@ class ModelLoader:
     def _load_module_with_path(self, base_path, fpath):
         # https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
         parent_path = os.path.abspath(os.path.join(base_path, '..'))
-        # fpath always ends wit
-        module_name = fpath[:-3].replace(parent_path, '').replace('/', '.')
+        add_path = False
+        if parent_path not in sys.path:
+            add_path = True
+            sys.path.insert(0, parent_path)
+        # fpath always ends with '.py'
+        module_name = fpath[:-3].replace(parent_path + os.path.sep, '').replace('/', '.')
         spec = importlib.util.spec_from_file_location(module_name, fpath)
         if spec is None or spec.loader is None:
             raise Exception(f'Unable to load module from {fpath}')
         mod = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = mod
         spec.loader.exec_module(mod)
+        if add_path:
+            del sys.path[0]
         return module_name, mod
 
     def _try_model_module(self, base_path, fpath):
@@ -156,7 +165,6 @@ class ModelLoader:
             for manifest in manifests:
                 self._process_model_manifest(manifest, fpath)
         except Exception as err:
-            breakpoint()
             self.errors.append(
                 f'Error loading manifest for module {module_name} in model file {fpath}: {err}')
 

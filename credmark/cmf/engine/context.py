@@ -129,13 +129,18 @@ class EngineModelContext(ModelContext):
             block_number = cls.get_latest_block_number(api, chain_id)
             cls.logger.info(f'Using latest block number {block_number}')
 
+        if console:
+            EngineModelContext.dev_mode = True
+            RunModelMethod.interactive_docs = True
+            # Empty the previous context when we re-create context in interactive console.
+            ModelContext.set_current_context(None)
+
         context = EngineModelContext(
             chain_id, block_number, web3_registry,
             run_id, depth, model_loader, api, True)
 
         if console:
-            RunModelMethod.interactive_docs = True
-            ModelContext._current_context = context
+            ModelContext.set_current_context(context)
 
         return context
 
@@ -196,7 +201,6 @@ class EngineModelContext(ModelContext):
         block_number = int(context.block_number)
 
         try:
-
             ModelContext._current_context = context
 
             # We set the block_number in the context above so we pass in

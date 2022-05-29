@@ -192,7 +192,8 @@ class ModelContext:
                 return super().__dir__()
 
         def reload(self):
-            self.__context._model_reload()  # pylint: disable=protected-access
+            if RunModelMethod.interactive_docs:
+                self.__context._model_reload()  # pylint: disable=protected-access
 
     def __init__(self, chain_id: int, block_number,
                  web3_registry):
