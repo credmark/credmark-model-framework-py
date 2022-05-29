@@ -4,7 +4,7 @@ from itertools import product
 def combine_dict(dicts):
     dd = {}
     for d in dicts:
-        dd |= d
+        dd = {**d, **dd}
     return dd
 
 

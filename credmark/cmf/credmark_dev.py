@@ -7,7 +7,6 @@ import json
 import unittest
 import inspect
 from typing import List, Union
-from importlib.metadata import version
 from dotenv import load_dotenv, find_dotenv
 
 sys.path.append('.')
@@ -16,6 +15,7 @@ from .engine.model_loader import ModelLoader
 from .engine.mocks import MockGenerator, ModelMockRunner
 from .engine.web3_registry import Web3Registry
 from .engine.model_api import ModelApi
+import credmark
 from credmark.dto import json_dump, json_dumps
 from credmark.cmf.engine.model_unittest import ModelTestContextFactory
 from credmark.cmf.model.print import print_manifest, print_manifest_description
@@ -205,7 +205,7 @@ def load_models(args, load_dev_models=False):
 
 
 def show_version(_args):
-    ver = version('credmark-model-framework')
+    ver = credmark.__version__
     print(ver)
     sys.exit(0)
 
