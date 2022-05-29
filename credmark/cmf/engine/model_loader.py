@@ -1,6 +1,8 @@
 import logging
 import os
+import sys
 import importlib
+import importlib.util
 import inspect
 import json
 from typing import Set, Union, Type, List
@@ -16,8 +18,8 @@ from credmark.cmf.model import validate_model_slug
 # Typically they are models that call other models and they run
 # locally so they can call other local-only models.
 
-DEV_MODELS_PATHS = ['credmark/cmf/engine/dev_models/series_models',
-                    'credmark/cmf/engine/dev_models/console']
+DEV_MODELS_PATHS = ['cmf/engine/dev_models/series_models.py',
+                    'cmf/engine/dev_models/console.py']
 
 
 class ModelLoader:
@@ -66,10 +68,15 @@ class ModelLoader:
 
         if load_dev_models:
             self.logger.debug('Loading dev models')
-            self.__loading_dev_models = True
-            for dev_models_path in DEV_MODELS_PATHS:
-                self._try_model_module(dev_models_path.replace('/', '.'), dev_models_path)
-            self.__loading_dev_models = False
+            cmf_spec = importlib.util.find_spec("credmark")
+            if cmf_spec is not None:
+                cmf_paths = cmf_spec.submodule_search_locations
+                if cmf_paths is not None:
+                    self.__loading_dev_models = True
+                    cmf_path = cmf_paths[0]
+                    for dev_models_path in DEV_MODELS_PATHS:
+                        self._try_model_module(cmf_path, os.path.join(cmf_path, dev_models_path))
+                    self.__loading_dev_models = False
 
         self.__model_manifest_list.sort(key=lambda m: m['slug'])
 
@@ -117,22 +124,31 @@ class ModelLoader:
 
         if os.path.isfile(path):
             if path.endswith('.py'):
-                self._try_model_manifest(path)
+                self._try_model_module(os.path.dirname(path), path)
         else:
             for root, _dirs, files in os.walk(path):
                 for fname in files:
                     if fname.endswith('.py'):
-                        self._try_model_manifest(os.path.join(root, fname))
+                        self._try_model_module(path, os.path.join(root, fname))
 
-    def _try_model_manifest(self, fpath: str):
-        if fpath.endswith('.py'):
-            path_to_module = fpath.replace(os.path.sep, '.')[:-3]
-            self._try_model_module(path_to_module, fpath)
+    def _load_module_with_path(self, base_path, fpath):
+        # https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
+        parent_path = os.path.abspath(os.path.join(base_path, '..'))
+        # fpath always ends wit
+        module_name = fpath[:-3].replace(parent_path, '').replace('/', '.')
+        spec = importlib.util.spec_from_file_location(module_name, fpath)
+        if spec is None or spec.loader is None:
+            raise Exception(f'Unable to load module from {fpath}')
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = mod
+        spec.loader.exec_module(mod)
+        return module_name, mod
 
-    def _try_model_module(self, module_name, fpath):
+    def _try_model_module(self, base_path, fpath):
+        module_name = ''
         try:
-            mod = importlib.import_module(module_name)
-            manifests = [v.__dict__['__manifest']
+            module_name, mod = self._load_module_with_path(base_path, fpath)
+            manifests = [v.__dict__['__manifest'] | {'base_path': base_path, 'fpath': fpath}
                          for k, v in mod.__dict__.items()
                          if inspect.isclass(v) and
                          '__manifest' in v.__dict__ and
@@ -140,6 +156,7 @@ class ModelLoader:
             for manifest in manifests:
                 self._process_model_manifest(manifest, fpath)
         except Exception as err:
+            breakpoint()
             self.errors.append(
                 f'Error loading manifest for module {module_name} in model file {fpath}: {err}')
 
@@ -158,19 +175,21 @@ class ModelLoader:
             if model is not None:
                 models = [model]
 
+        base_path = manifest['base_path']
+        fpath = manifest['fpath']
         if models is not None:
             for model in models:
                 try:
-                    self._process_model_manifest_entry(model)
+                    self._process_model_manifest_entry(model, base_path, fpath)
                 except Exception as err:
                     self.errors.append(
                         f'Error processing entry in manifest file {fpath}: {err}')
 
-    def _process_model_manifest_entry(self, model_manifest):
+    def _process_model_manifest_entry(self, model_manifest, base_path, fpath):
         try:
             model_slug = model_manifest['slug']
             validate_model_slug(model_slug)
-            model_classname = model_manifest['class']
+            model_class = model_manifest['class']
             # ensure version is a string
             _model_version = model_manifest['version'] = str(
                 model_manifest['version'])
@@ -178,14 +197,8 @@ class ModelLoader:
             raise Exception(
                 f'Missing field {err} for model {model_manifest.get("slug", "<unknown>")}')
 
-        mclass = None
-        modulename, classname = model_classname = os.path.splitext(
-            model_classname)
-        if modulename and classname:
-            mclass = self._load_module_class(modulename, classname[1:])
-        else:
-            raise Exception(
-                f'Invalid model class "{model_classname}" for model {model_slug}')
+        module_name, mod = self._load_module_with_path(base_path, fpath)
+        mclass = vars(mod)[model_class.replace(module_name + '.', '')]
 
         if mclass is not None:
             self._add_model_class(mclass)
@@ -231,17 +244,6 @@ class ModelLoader:
 
         if self.__loading_dev_models:
             self.__dev_model_slugs.add(slug)
-
-    def _load_module_class(self, modulename, name):
-        """ Import a named object from a module in the context of this function.
-        """
-        try:
-            module = importlib.import_module(modulename)
-            mclass = vars(module)[name]
-        except (ImportError, KeyError) as err:
-            raise Exception(
-                f'Error importing class {name} from module {modulename}: {err}')
-        return mclass
 
     def get_model_class(self, slug: str, ver: Union[str, None], raise_on_not_found: bool = True):
         """Get a model class by slug and optional version.
