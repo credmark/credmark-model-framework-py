@@ -292,9 +292,7 @@ In blockchain, every block is created with a timestamp (in Unix epoch). In Pytho
 4. Use a {class}`~credmark.cmf.types.block_number.BlockNumber` instance: Obtain a Python datetime with UTC of the block. The block number should be less or equal to the context block.
 
    ```py
-   from credmark.types import BlockNumber
-
-   dt = BlockNumber(14234904).timestamp_datetime
+   dt = self.context.BlockNumber(14234904).timestamp_datetime
    ```
 
 More example code for the block-number class can be found in [here](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_08_blocknumber.py)

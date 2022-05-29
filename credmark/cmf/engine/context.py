@@ -14,6 +14,7 @@ from credmark.cmf.model.errors import MaxModelRunDepthError, ModelBaseError, \
 from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.engine.mocks import ModelMockException, ModelMockRunner
+from credmark.cmf.model.context import RunModelMethod
 from credmark.dto.transform import DataTransformError, transform_data_for_dto
 from credmark.cmf.engine.web3_registry import Web3Registry
 from credmark.dto import DTO, EmptyInput, DTOValidationError
@@ -91,6 +92,54 @@ class EngineModelContext(ModelContext):
         cls._model_mock_runner = model_mock_runner
 
     @classmethod
+    def create_context(cls,  # pylint: disable=too-many-arguments,too-many-locals
+                       chain_id: int,
+                       block_number: Union[int, None],
+                       model_loader: Union[ModelLoader,
+                                           None] = None,
+                       chain_to_provider_url: Union[dict[str, str], None] = None,
+                       api_url: Union[str, None] = None,
+                       run_id: Union[str, None] = None,
+                       depth: int = 0,
+                       console: bool = False):
+        """
+        Parameters:
+            block_number: if None, latest block is used
+            run_id (str | None): a string to identify a particular model run. It is
+                same for any other models run from within a model.
+        """
+        context: Union[EngineModelContext, None] = None
+
+        if model_loader is None:
+            model_loader = ModelLoader(['.'])
+
+        api = ModelApi.api_for_url(api_url)
+
+        web3_registry = Web3Registry(chain_to_provider_url)
+
+        if cls.dev_mode:
+            cls.use_local_models_slugs.update(
+                model_loader.loaded_dev_model_slugs())
+            cls.logger.debug(
+                'Using local models (requested + dev models): '
+                f'{cls.use_local_models_slugs}')
+
+        if block_number is None:
+            # Lookup latest block number if none specified
+            block_number = cls.get_latest_block_number(api, chain_id)
+            cls.logger.info(f'Using latest block number {block_number}')
+
+        context = EngineModelContext(
+            chain_id, block_number, web3_registry,
+            run_id, depth, model_loader, api, True)
+
+        if console:
+            RunModelMethod.interactive_docs = True
+            ModelContext._current_context = context
+
+        return context
+
+    @classmethod
     def create_context_and_run_model(cls,  # pylint: disable=too-many-arguments,too-many-locals
                                      chain_id: int,
                                      block_number: Union[int, None],
@@ -110,31 +159,13 @@ class EngineModelContext(ModelContext):
                 same for any other models run from within a model.
         Catches all exceptions
         """
-        context: Union[EngineModelContext, None] = None
+        context = cls.create_context(chain_id, block_number, model_loader,
+                                     chain_to_provider_url,
+                                     api_url,
+                                     run_id,
+                                     depth)
+
         try:
-            if model_loader is None:
-                model_loader = ModelLoader(['.'])
-
-            api = ModelApi.api_for_url(api_url)
-
-            web3_registry = Web3Registry(chain_to_provider_url)
-
-            if cls.dev_mode:
-                cls.use_local_models_slugs.update(
-                    model_loader.loaded_dev_model_slugs())
-            cls.logger.debug(
-                'Using local models (requested + dev models): '
-                f'{cls.use_local_models_slugs}')
-
-            if block_number is None:
-                # Lookup latest block number if none specified
-                block_number = cls.get_latest_block_number(api, chain_id)
-                cls.logger.info(f'Using latest block number {block_number}')
-
-            context = EngineModelContext(
-                chain_id, block_number, web3_registry,
-                run_id, depth, model_loader, api, True)
-
             if input is None:
                 input = {}
 
@@ -238,6 +269,13 @@ class EngineModelContext(ModelContext):
     @property
     def dependencies(self):
         return self.__dependencies
+
+    def _model_reload(self):
+        """
+        Reload model manifests
+        """
+        self.__model_loader.reload()
+        self._model_manifest_map = {}
 
     def _model_manifests(self, underscore_slugs=False):
         """

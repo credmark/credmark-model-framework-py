@@ -386,3 +386,31 @@ def create_instance_from_error_dict(err_obj: dict) -> ModelBaseError:
         logger.error(f'Missing error class for error type {err_type}')
 
     raise ModelEngineError(f'{err_type}: {message}')
+
+
+class BlockNumberOutOfRangeDetailDTO(DTO):
+    blockNumber: Union[int, None]
+    maxBlockNumber: Union[int, None]
+
+
+class BlockNumberOutOfRangeErrorDTO(ModelErrorDTO[BlockNumberOutOfRangeDetailDTO]):
+    """
+    A block number was constructed that is out of range for the context.
+    This is a subclass of ``ModelInvalidStateError`` (and ``ModelRunError``)
+    as its considered a coding error in the model.
+
+    Properties of the ``detail`` object:
+    - blockNumber: the requested block number
+    - maxBlockNumber: Maximum block number of context
+    """
+
+
+class BlockNumberOutOfRangeError(ModelInvalidStateError):
+    dto_class = BlockNumberOutOfRangeErrorDTO
+
+    @classmethod
+    def create(cls, block_number: int, max_block_number: int):
+        message = f'BlockNumber {block_number} is out of maximum range: {max_block_number}'
+        detail = BlockNumberOutOfRangeDetailDTO(
+            blockNumber=block_number, maxBlockNumber=max_block_number)
+        return BlockNumberOutOfRangeError(message=message, detail=detail)
