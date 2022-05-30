@@ -5,7 +5,6 @@ import re
 from copy import deepcopy
 from typing import List, Tuple, Type, Union
 
-from .context import ModelContext
 from credmark.dto import DTO, EmptyInput
 from credmark.dto.transform import transform_data_for_dto
 
@@ -315,7 +314,7 @@ class Model:
     inputDTO: Union[Type[DTO], None]
     outputDTO: Union[Type[DTO], None]
 
-    def __init__(self, context: ModelContext):
+    def __init__(self, context: 'ModelContext'):
         self.context = context
         # Configure our logger.
         self.logger = logging.getLogger(
