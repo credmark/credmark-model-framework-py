@@ -101,7 +101,9 @@ class EngineModelContext(ModelContext):
                        api_url: Union[str, None] = None,
                        run_id: Union[str, None] = None,
                        depth: int = 0,
-                       console: bool = False):
+                       console: bool = False,
+                       use_local_models: Union[str, None] = None
+                       ):
         """
         Parameters:
             block_number: if None, latest block is used
@@ -128,6 +130,11 @@ class EngineModelContext(ModelContext):
             # Lookup latest block number if none specified
             block_number = cls.get_latest_block_number(api, chain_id)
             cls.logger.info(f'Using latest block number {block_number}')
+
+        if use_local_models is not None and len(use_local_models):
+            local_model_slugs = use_local_models.split(',')
+            cls.logger.debug(f'Use local models {local_model_slugs}')
+            EngineModelContext.use_local_models_slugs.update(local_model_slugs)
 
         if console:
             EngineModelContext.dev_mode = True
@@ -156,7 +163,8 @@ class EngineModelContext(ModelContext):
                                      chain_to_provider_url: Union[dict[str, str], None] = None,
                                      api_url: Union[str, None] = None,
                                      run_id: Union[str, None] = None,
-                                     depth: int = 0):
+                                     depth: int = 0,
+                                     use_local_models: Union[str, None] = None):
         """
         Parameters:
             block_number: if None, latest block is used
@@ -168,7 +176,9 @@ class EngineModelContext(ModelContext):
                                      chain_to_provider_url,
                                      api_url,
                                      run_id,
-                                     depth)
+                                     depth,
+                                     console=False,
+                                     use_local_models=use_local_models)
 
         try:
             if input is None:

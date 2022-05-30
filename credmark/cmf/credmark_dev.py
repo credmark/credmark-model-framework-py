@@ -489,11 +489,6 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
         model_mocks_config: Union[str, None] = args['model_mocks']
         generate_mocks: Union[str, None] = args.get('generate_mocks')
 
-        if use_local_models is not None and len(use_local_models):
-            local_model_slugs = use_local_models.split(',')
-            logger.debug(f'Use local models {local_model_slugs}')
-            EngineModelContext.use_local_models_slugs.update(local_model_slugs)
-
         if model_mocks_config:
             model_mock_runner = ModelMockRunner(model_mocks_config)
             EngineModelContext.use_model_mock_runner(model_mock_runner)
@@ -530,7 +525,8 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
             chain_to_provider_url=chain_to_provider_url,
             api_url=api_url,
             run_id=run_id,
-            depth=depth)
+            depth=depth,
+            use_local_models=use_local_models)
 
         if generate_mocks is not None and mock_gen is not None:
             logger.info(f'Writing mocks to file "{generate_mocks}"')
