@@ -11,7 +11,6 @@ from .print import print_manifest_description
 from .errors import ModelNoContextError
 from .ledger import Ledger
 from credmark.dto import DTO, EmptyInput
-from .utils.contract_util import ContractUtil
 from .utils.historical_util import HistoricalUtil
 
 from credmark.cmf.model.errors import (
@@ -202,7 +201,6 @@ class ModelContext:
         self._web3 = None
         self._web3_registry = web3_registry
         self._ledger = None
-        self._contract_util = None
         self._historical_util = None
         self._models = None
 
@@ -298,16 +296,6 @@ class ModelContext:
         if self._ledger is None:
             self._ledger = Ledger(self)
         return self._ledger
-
-    @property
-    def contracts(self) -> ContractUtil:
-        """
-        A :class:`~credmark.cmf.model.utils.contract_util.ContractUtil`
-        instance which can be used to look up contracts.
-        """
-        if self._contract_util is None:
-            self._contract_util = ContractUtil(self)
-        return self._contract_util
 
     @property
     def historical(self) -> HistoricalUtil:
