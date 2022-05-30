@@ -9,7 +9,6 @@ import inspect
 from typing import List, Union
 from dotenv import load_dotenv, find_dotenv
 
-sys.path.append('.')
 from .engine.context import EngineModelContext
 from .engine.model_loader import ModelLoader
 from .engine.mocks import MockGenerator, ModelMockRunner
