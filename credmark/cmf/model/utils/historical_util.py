@@ -4,7 +4,6 @@ from typing import (
     Union,
     List,
 )
-import credmark.cmf.model
 from credmark.cmf.model.errors import ModelRunError
 from credmark.cmf.types.series import (
     BlockSeries,
@@ -39,7 +38,7 @@ class HistoricalUtil:
     }
 
     def __init__(self, context) -> None:
-        self.context: credmark.cmf.model.ModelContext = context
+        self.context = context
 
     def run_model_historical(self,  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
                              model_slug: str,
@@ -102,6 +101,7 @@ class HistoricalUtil:
 
             if end_timestamp is None:
                 end_timestamp = self.context.block_number.timestamp
+
             if snap_clock is not None:
                 if snap_clock == 'interval':
                     snap_sec = interval_timestamp
