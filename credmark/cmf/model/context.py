@@ -274,7 +274,8 @@ class ModelContext:
 
     @block_number.setter
     def block_number(self, block_number: int):
-        self._block_number = self._block_number + (block_number - int(self._block_number))
+        # We use arithmetic so as to preserve the type of _block_number
+        self._block_number = self._block_number + (int(block_number) - int(self._block_number))
 
     @property
     def web3(self) -> Web3:
