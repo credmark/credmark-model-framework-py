@@ -4,7 +4,6 @@ import traceback
 import sys
 from typing import Callable, List, Set, Type, Union
 from credmark.dto.encoder import json_dumps
-from importlib.metadata import version as metadata_version
 from credmark.cmf.model import Model
 from credmark.cmf.model.context import ModelContext
 from credmark.cmf.engine.errors import ModelRunRequestError
@@ -129,7 +128,8 @@ class EngineModelContext(ModelContext):
                 f'{cls.use_local_models_slugs}')
 
             remote_version = cls.get_cmf_version(api, chain_id)
-            local_version = metadata_version('credmark-model-framework')
+            import credmark  # pylint: disable=import-outside-toplevel
+            local_version = credmark.__version__
             if remote_version != local_version:
                 cls.logger.info(
                     f'Local Cmf version ({local_version}) is outdated. '

@@ -7,7 +7,6 @@ import json
 import unittest
 import inspect
 from typing import List, Union
-from importlib.metadata import version
 from dotenv import load_dotenv, find_dotenv
 
 sys.path.append('.')
@@ -205,8 +204,8 @@ def load_models(args, load_dev_models=False):
 
 
 def show_version(_args):
-    ver = version('credmark-model-framework')
-    print(ver)
+    import credmark  # pylint: disable=import-outside-toplevel
+    print(credmark.__version__)
     sys.exit(0)
 
 
