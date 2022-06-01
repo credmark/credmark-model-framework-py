@@ -1,12 +1,13 @@
+
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
-from credmark.cmf.types.currency import Currency
+from credmark.cmf.types.data.fiat_currency_data import FIAT_CURRENCY_DATA
 
 from .contract import Contract
 from .address import NATIVE_TOKEN_ADDRESS, Address
 from .data.fungible_token_data import FUNGIBLE_TOKEN_DATA, ERC20_GENERIC_ABI
 from typing import List, Union
-from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO  # type: ignore
+from credmark.dto import EmptyInput, PrivateAttr, IterableListGenericDTO, DTOField, DTO  # type: ignore
 from web3.exceptions import (
     BadFunctionCallOutput,
     ABIFunctionNotFound
@@ -41,7 +42,7 @@ def get_token_from_configuration(
     return None
 
 
-class Token(Contract, Currency):
+class Token(Contract):
     """
     Token represents a fungible Token that conforms to ERC20
     standards
@@ -191,3 +192,44 @@ class Tokens(IterableListGenericDTO[Token]):
     tokens: List[Token] = DTOField(
         default=[], description="An iterable list of Token Objects")
     _iterator: str = PrivateAttr('tokens')
+
+
+class FiatCurrency(DTO):
+    """
+    This is Fiat Currency. It's used as inputs to pricing and currency models.
+    """
+
+    symbol: str = 'USD'
+    name: str = 'United States Dollar'
+    decimals: int = 0
+
+
+class Currency(DTO):
+
+    """
+    This is a converter for any Fungible Currency.
+    """
+
+    address: Union[Address, None] = None
+    symbol: Union[str, None] = None
+    fiat: Union[bool, None] = None
+
+    def __new__(cls, **data) -> object:
+        addr = data.get("address", None)
+        symbol = data.get("symbol", None)
+        fiat = data.get("fiat", None)
+
+        if addr is not None:
+            if addr == NATIVE_TOKEN_ADDRESS:
+                return NativeToken(**data)
+            if symbol is None:
+                return Token(**data)
+
+        if symbol is not None:
+            if FIAT_CURRENCY_DATA.get(symbol, None) is not None and (fiat or fiat is None):
+                return FiatCurrency(**FIAT_CURRENCY_DATA[symbol], **data)
+            if fiat is None or not fiat:
+                return Token(**data)
+
+        raise ModelDataError(
+            "Could not identify specific currency. Currency must be of type Token, NativeToken or FiatCurrency")
