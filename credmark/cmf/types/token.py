@@ -232,4 +232,5 @@ class Currency(DTO):
                 return Token(**data)
 
         raise ModelDataError(
-            "Could not identify specific currency. Currency must be of type Token, NativeToken or FiatCurrency")
+            "Could not identify specific currency. Currency "
+            "must be of type Token, NativeToken or FiatCurrency")
