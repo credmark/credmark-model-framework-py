@@ -33,10 +33,8 @@ def add_api_url_arg(parser):
 
 def main():  # pylint: disable=too-many-statements
     parser = argparse.ArgumentParser(
-        prog='credmark-dev',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='Credmark developer tool')
-
     parser.add_argument('--log_level', default=None, required=False,
                         help='Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL')
     parser.add_argument('--model_path', default="models", required=False,
@@ -203,9 +201,8 @@ def load_models(args, load_dev_models=False):
 
 
 def show_version(_args):
-    import credmark   # pylint: disable=import-outside-toplevel
-    ver = credmark.__version__
-    print(ver)
+    ver = version('credmark-model-framework')
+    print(f'credmark-model-framework version {ver}')
     sys.exit(0)
 
 
