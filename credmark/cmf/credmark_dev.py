@@ -204,8 +204,9 @@ def load_models(args, load_dev_models=False):
 
 
 def show_version(_args):
-    import credmark  # pylint: disable=import-outside-toplevel
-    print(credmark.__version__)
+    import credmark.cmf  # pylint: disable=import-outside-toplevel
+    ver = credmark.cmf.__version__
+    print(f'credmark-model-framework version {ver}')
     sys.exit(0)
 
 
