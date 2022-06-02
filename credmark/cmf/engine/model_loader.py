@@ -66,7 +66,7 @@ class ModelLoader:
                 self.logger.debug(f'Loading manifest from model_paths: {model_paths}')
                 self._search_paths_for_model_files(model_paths)
 
-        if load_dev_models:
+        if load_dev_models:  # pylint: disable=too-many-nested-blocks
             self.logger.debug('Loading dev models')
             cmf_spec = importlib.util.find_spec("credmark")
             if cmf_spec is not None:

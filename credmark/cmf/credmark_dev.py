@@ -7,6 +7,7 @@ import json
 import unittest
 import inspect
 from typing import List, Union
+from importlib.metadata import version
 from dotenv import load_dotenv, find_dotenv
 
 from .engine.context import EngineModelContext

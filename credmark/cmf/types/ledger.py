@@ -2,6 +2,7 @@ from enum import Enum
 from typing import List, Set, Union
 import inspect
 from credmark.dto import DTO, DTOField, PrivateAttr, IterableListGenericDTO
+import credmark.cmf.model
 import pandas as pd
 
 
@@ -403,15 +404,13 @@ class ContractLedger:
             name: Name of function or event
         """
 
-        def __init__(self, address: str, entity_type: 'ContractLedger.EntityType', name: str,
-                     context):
+        def __init__(self, address: str, entity_type: 'ContractLedger.EntityType', name: str):
             """
             """
             super().__init__()
             self.address = address
             self.entity_type = entity_type
             self.name = name
-            self.context = context
 
         def __call__(self,  # pylint: disable=too-many-arguments
                      columns: Union[List[str], None] = None,
@@ -483,7 +482,7 @@ class ContractLedger:
                         limit='5')
                 # ret.data contains a list of row dicts, keyed by column name
             """
-            context = self.context
+            context = credmark.cmf.model.ModelContext.current_context()
 
             if columns is None:
                 columns = []
@@ -512,21 +511,19 @@ class ContractLedger:
                                      return_type=LedgerModelOutput)
 
     class ContractEntityFactory:
-        def __init__(self, entity_type: 'ContractLedger.EntityType', address: str, context):
+        def __init__(self, entity_type: 'ContractLedger.EntityType', address: str):
             super().__init__()
             self.entity_type = entity_type
             self.address = address
-            self.context = context
 
         def __getattr__(self, __name: str) -> 'ContractLedger.ContractEntity':
-            return ContractLedger.ContractEntity(self.address, self.entity_type, __name,
-                                                 self.context)
+            return ContractLedger.ContractEntity(self.address, self.entity_type, __name)
 
-    def __init__(self, address: str, context):
+    def __init__(self, address: str):
         """
         """
         super().__init__()
         self.functions = ContractLedger.ContractEntityFactory(
-            ContractLedger.EntityType.FUNCTIONS, address, context)
+            ContractLedger.EntityType.FUNCTIONS, address)
         self.events = ContractLedger.ContractEntityFactory(
-            ContractLedger.EntityType.EVENTS, address, context)
+            ContractLedger.EntityType.EVENTS, address)

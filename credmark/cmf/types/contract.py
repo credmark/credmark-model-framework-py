@@ -297,8 +297,7 @@ class Contract(Account):
         See :class:`~credmark.cmf.types.ledger.ContractLedger.ContractEntity` for more details.
         """
         if self._ledger is None:
-            context = credmark.cmf.model.ModelContext.current_context()
-            self._ledger = ContractLedger(str(self.address), context)
+            self._ledger = ContractLedger(str(self.address))
         return self._ledger
 
 
