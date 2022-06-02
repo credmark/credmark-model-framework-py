@@ -127,13 +127,7 @@ class EngineModelContext(ModelContext):
                 'Using local models (requested + dev models): '
                 f'{cls.use_local_models_slugs}')
 
-            remote_version = cls.get_cmf_version(api, chain_id)
-            import credmark  # pylint: disable=import-outside-toplevel
-            local_version = credmark.__version__
-            if remote_version != local_version:
-                cls.logger.info(
-                    f'Local Cmf version ({local_version}) is outdated. '
-                    f'The latest version is {remote_version}.')
+            cls.check_latest_version(api, chain_id)
 
             if block_number is None:
                 # Lookup latest block number if none specified
@@ -257,6 +251,16 @@ class EngineModelContext(ModelContext):
     @property
     def dependencies(self):
         return self.__dependencies
+
+    @classmethod
+    def check_latest_version(cls, api, chain_id):
+        remote_version = cls.get_cmf_version(api, chain_id)
+        import credmark.cmf  # pylint: disable=import-outside-toplevel
+        local_version = credmark.cmf.__version__
+        if remote_version != local_version:
+            cls.logger.info(
+                f'Local Cmf version ({local_version}) is outdated. '
+                f'The latest version is {remote_version}.')
 
     def _model_manifests(self, underscore_slugs=False):
         """
