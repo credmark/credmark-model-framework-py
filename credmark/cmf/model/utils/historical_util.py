@@ -4,6 +4,7 @@ from typing import (
     Union,
     List,
 )
+import credmark.cmf.model
 from credmark.cmf.model.errors import ModelRunError
 from credmark.cmf.types.series import (
     BlockSeries,
@@ -38,7 +39,7 @@ class HistoricalUtil:
     }
 
     def __init__(self, context) -> None:
-        self.context = context
+        self.context: credmark.cmf.model.ModelContext = context
 
     def run_model_historical(self,  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
                              model_slug: str,
