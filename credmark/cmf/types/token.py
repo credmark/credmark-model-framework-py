@@ -1,9 +1,8 @@
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
-from credmark.cmf.types.currency import Currency
 
 from .contract import Contract
-from .address import NATIVE_TOKEN_ADDRESS, Address
+from .address import Address
 from .data.fungible_token_data import FUNGIBLE_TOKEN_DATA, ERC20_GENERIC_ABI
 from typing import List, Union
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO  # type: ignore
@@ -41,7 +40,7 @@ def get_token_from_configuration(
     return None
 
 
-class Token(Contract, Currency):
+class Token(Contract):
     """
     Token represents a fungible Token that conforms to ERC20
     standards
@@ -162,23 +161,33 @@ class TokenInfo(Token):
     meta: Token.TokenMetadata
 
 
-class NativeToken(Token):
+class NativeToken(DTO):
+    symbol: str = 'ETH'
+    name: str = 'ethereum'
+    decimals: int = 18
 
     def __init__(self, **data) -> None:
         context = credmark.cmf.model.ModelContext.current_context()
-        data = {"address": NATIVE_TOKEN_ADDRESS}
-        super().__init__(**data)
-        if context.chain_id == 1:
-            self._meta.abi = []
-            self._meta.symbol = "ETH"
-            self._meta.decimals = 18
-            self._meta.name = "Ethereum"
-            self._meta.total_supply = 0
-            self._loaded = True
 
-    def get_balance(self, address: Address) -> int:
+        token_data = get_token_from_configuration(
+            chain_id=str(context.chain_id), is_native_token=True)
+        if token_data is not None:
+            data['symbol'] = token_data.get('symbol')
+            data['decimals'] = token_data.get('decimals')
+            data['name'] = token_data.get('name')
+        super().__init__(**data)
+
+    def scaled(self, value):
+        return value / (10 ** self.decimals)
+
+    def wrapped(self) -> Union[Token, None]:
         context = credmark.cmf.model.ModelContext.current_context()
-        return context.web3.eth.get_balance(address)
+
+        token_data = get_token_from_configuration(
+            chain_id=str(context.chain_id), wraps=self.symbol)
+        if token_data is not None:
+            return Token(address=token_data['address'])
+        return None
 
 
 class NonFungibleToken(Contract):
