@@ -1,23 +1,14 @@
 from abc import abstractmethod
-from datetime import datetime, timezone
-
 import io
 from typing import Any, Type, TypeVar, Union, overload
 from web3 import Web3
-from web3.types import BlockData, Timestamp
-
 
 from .print import print_manifest_description
 from .errors import ModelNoContextError
 from .ledger import Ledger
+import credmark.cmf.types
 from credmark.dto import DTO, EmptyInput
 from .utils.historical_util import HistoricalUtil
-
-from credmark.cmf.model.errors import (
-    ModelInputError,
-    BlockNumberOutOfRangeDetailDTO,
-    BlockNumberOutOfRangeError
-)
 
 DTOT = TypeVar('DTOT')
 
@@ -194,10 +185,10 @@ class ModelContext:
             if RunModelMethod.interactive_docs:
                 self.__context._model_reload()  # pylint: disable=protected-access
 
-    def __init__(self, chain_id: int, block_number,
+    def __init__(self, chain_id: int, block_number: int,
                  web3_registry):
         self._chain_id = chain_id
-        self._block_number = self.BlockNumber(block_number)
+        self._block_number = credmark.cmf.types.BlockNumber(block_number)
         self._web3 = None
         self._web3_registry = web3_registry
         self._ledger = None
@@ -275,7 +266,7 @@ class ModelContext:
     @block_number.setter
     def block_number(self, block_number: int):
         # We use arithmetic so as to preserve the type of _block_number
-        self._block_number = self._block_number + (int(block_number) - int(self._block_number))
+        self._block_number = credmark.cmf.types.BlockNumber(block_number)
 
     @property
     def web3(self) -> Web3:
@@ -372,81 +363,3 @@ class ModelContext:
             ModelBaseError: other subclasses of ``ModelBaseError`` that should not be caught.
 
         """
-
-    class BlockNumber(int):
-        def __new__(cls,
-                    number: int,
-                    timestamp: Union[Timestamp, None] = None,  # pylint: disable=unused-argument
-                    sample_timestamp: Union[Timestamp, None] = None):  # pylint: disable=unused-argument
-
-            context = ModelContext.get_current_context()
-            if context is not None and number > context.block_number:
-                raise BlockNumberOutOfRangeError.create(number, context.block_number)
-
-            if number < 0:
-                raise BlockNumberOutOfRangeError(
-                    message=f'BlockNumber {number} is less than 0',
-                    detail=BlockNumberOutOfRangeDetailDTO(
-                        blockNumber=number,
-                        maxBlockNumber=context.block_number if context is not None else None))
-
-            return super().__new__(cls, number)
-
-        def __init__(self,
-                     number: int,  # pylint: disable=unused-argument
-                     timestamp: Union[Timestamp, None] = None,
-                     sample_timestamp: Union[Timestamp, None] = None) -> None:
-            self._timestamp = timestamp
-            self.sample_timestamp = sample_timestamp
-            super().__init__()
-
-        def __add__(self, number):
-            return self.__class__(super().__add__(number))
-
-        def __sub__(self, number):
-            return self.__class__(super().__sub__(number))
-
-        @property
-        def timestamp(self) -> int:
-            if self._timestamp is None:
-                context = ModelContext.current_context()
-
-                block: BlockData = context.web3.eth.get_block(self.__int__())
-                if 'timestamp' not in block:
-                    raise ModelInputError(f'No timestamp for block {self.__int__()}')
-                self._timestamp = block['timestamp']
-
-            return self._timestamp
-
-        @property
-        def timestamp_datetime(self) -> datetime:
-            return datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
-
-        @classmethod
-        def from_timestamp(cls, timestamp: Union[datetime, int, float]):
-            """
-            Returns the block number from the input timestamp.
-            For input of timestamp and datetime, the last block before the datetime is returned.
-
-            The timestamp here will be used as the sample_timestamp on the resulting BlockNumber.
-            """
-
-            context = ModelContext.current_context()
-
-            if isinstance(timestamp, int):
-                pass
-            elif isinstance(timestamp, float):
-                timestamp = int(timestamp)
-            elif isinstance(timestamp, datetime):
-                if not timestamp.tzinfo:
-                    raise ModelInputError(f'Input datetime {timestamp} has no tzinfo.')
-                timestamp = int(timestamp.timestamp())
-            else:
-                raise ModelInputError(
-                    f'Invalid input for date/datetime/timestamp to query block_number {timestamp}')
-
-            get_blocknumber_result = context.models.rpc.get_blocknumber(timestamp=timestamp)
-
-            return cls(number=get_blocknumber_result['blockNumber'],
-                       timestamp=get_blocknumber_result['blockTimestamp'],
-                       sample_timestamp=get_blocknumber_result['sampleTimestamp'])

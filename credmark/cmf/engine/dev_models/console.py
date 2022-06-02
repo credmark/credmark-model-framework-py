@@ -12,7 +12,6 @@ import yaml
 
 from web3.exceptions import ABIFunctionNotFound
 from credmark.cmf.engine.context import EngineModelContext
-from credmark.cmf.model.context import ModelContext
 from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.engine.model_api import ModelApi
 
@@ -26,6 +25,7 @@ from credmark.cmf.types import (
     Accounts, Contracts, Tokens,
     Portfolio, Position,
     Price, PriceList,
+    BlockNumber,
     NativeToken,
     NativePosition,
     TokenPosition,
@@ -49,7 +49,7 @@ def get_dt(year: int, month: int, day: int, hour=0, minute=0, second=0, microsec
 
 def get_block(in_dt: datetime):
     """Get the BlockNumber instance at or before the datetime timestamp."""
-    return ModelContext.BlockNumber.from_timestamp(in_dt.replace(tzinfo=timezone.utc).timestamp())
+    return BlockNumber.from_timestamp(in_dt.replace(tzinfo=timezone.utc).timestamp())
 
 
 @Model.describe(slug='console',
@@ -60,7 +60,7 @@ class ConsoleModel(Model):
 
     console_yaml_path = 'credmark_dev_console.yaml'
 
-    blocks: List[ModelContext.BlockNumber] = []
+    blocks: List[BlockNumber] = []
 
     def init(self):
         self.load_config(globals())

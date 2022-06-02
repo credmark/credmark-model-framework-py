@@ -172,15 +172,15 @@ class EngineModelContext(ModelContext):
                 same for any other models run from within a model.
         Catches all exceptions
         """
-        context = cls.create_context(chain_id, block_number, model_loader,
-                                     chain_to_provider_url,
-                                     api_url,
-                                     run_id,
-                                     depth,
-                                     console=False,
-                                     use_local_models=use_local_models)
-
         try:
+            context = cls.create_context(chain_id, block_number, model_loader,
+                                         chain_to_provider_url,
+                                         api_url,
+                                         run_id,
+                                         depth,
+                                         console=False,
+                                         use_local_models=use_local_models)
+
             if input is None:
                 input = {}
 
@@ -283,13 +283,6 @@ class EngineModelContext(ModelContext):
     @property
     def dependencies(self):
         return self.__dependencies
-
-    def _model_reload(self):
-        """
-        Reload model manifests
-        """
-        self.__model_loader.reload()
-        self._model_manifest_map = {}
 
     def _model_manifests(self, underscore_slugs=False):
         """
