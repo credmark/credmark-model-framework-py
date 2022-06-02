@@ -110,7 +110,12 @@ class EngineModelContext(ModelContext):
             run_id (str | None): a string to identify a particular model run. It is
                 same for any other models run from within a model.
         """
-        context: Union[EngineModelContext, None] = None
+
+        if console:
+            cls.dev_mode = True
+            RunModelMethod.interactive_docs = True
+            # Clear the previous context when we re-create context in the interactive console.
+            ModelContext.set_current_context(None)
 
         if model_loader is None:
             model_loader = ModelLoader(['.'])
@@ -136,15 +141,9 @@ class EngineModelContext(ModelContext):
             cls.logger.debug(f'Use local models {local_model_slugs}')
             EngineModelContext.use_local_models_slugs.update(local_model_slugs)
 
-        if console:
-            EngineModelContext.dev_mode = True
-            RunModelMethod.interactive_docs = True
-            # Empty the previous context when we re-create context in interactive console.
-            ModelContext.set_current_context(None)
-
         context = EngineModelContext(
             chain_id, block_number, web3_registry,
-            run_id, depth, model_loader, api, True)
+            run_id, depth, model_loader, api, is_top_level=not console)
 
         if console:
             ModelContext.set_current_context(context)
@@ -172,6 +171,8 @@ class EngineModelContext(ModelContext):
                 same for any other models run from within a model.
         Catches all exceptions
         """
+        context: Union[EngineModelContext, None] = None
+
         try:
             context = cls.create_context(chain_id, block_number, model_loader,
                                          chain_to_provider_url,
@@ -402,6 +403,11 @@ class EngineModelContext(ModelContext):
         # when using the cli, we allow running remote models as top level
         try_remote = not is_top_level_inactive or is_cli
 
+        self.debug_logger.debug(
+            f'{self.dev_mode, self.run_id, self.test_mode,self.test_mode, self._favor_local_model_for_slug(slug)}')
+        self.debug_logger.debug(
+            f'{is_cli, is_top_level_inactive,try_remote, slug, force_local, use_local}')
+
         try:
             model_class = self.__model_loader.get_model_class(slug, version, force_local)
         except Exception:
@@ -468,6 +474,10 @@ class EngineModelContext(ModelContext):
 
         api = self.__api
 
+        self.debug_logger.debug(
+            f'[run_model_with_class] try_remote: {try_remote} use_local: {use_local} '
+            f'block_number: {block_number}')
+
         if use_local and model_class is not None:
 
             slug, version, output = self._run_local_model_with_class(
@@ -484,7 +494,9 @@ class EngineModelContext(ModelContext):
                 debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
 
                 if debug_log:
-                    self.debug_logger.debug(f"> Run API model '{slug}' input: {input}")
+                    self.debug_logger.debug(
+                        f"> Run API model '{slug}' input: {input} "
+                        f"run_block_number: {run_block_number}")
 
                 slug, version, output, error, dependencies = api.run_model(
                     slug, version, self.chain_id,
@@ -498,14 +510,18 @@ class EngineModelContext(ModelContext):
                 # Any error raised will already have a call stack entry
                 if error is not None:
                     if debug_log:
-                        self.debug_logger.debug(f"< Run API model '{slug}' error: {error}")
+                        self.debug_logger.debug(
+                            f"< Run API model '{slug}' error: {error} "
+                            f"run_block_number: {run_block_number}")
                     raise create_instance_from_error_dict(error)
 
                 EngineModelContext.notify_model_run(slug, version, self.chain_id,
                                                     run_block_number, input, output, error)
 
                 if debug_log:
-                    self.debug_logger.debug(f"< Run API model '{slug}' output: {output}")
+                    self.debug_logger.debug(
+                        f"< Run API model '{slug}' output: {output} "
+                        f"run_block_number: {run_block_number}")
 
             except ModelNotFoundError as err:
                 # We always fallback to local if model not found on server.
@@ -582,7 +598,8 @@ class EngineModelContext(ModelContext):
             model = model_class(context)
 
             if debug_log:
-                self.debug_logger.debug(f"> Run model '{slug}' input: {input}")
+                self.debug_logger.debug(
+                    f"> Run model '{slug}' input: {input} block_number: {block_number}")
 
             output = model.run(input)
 
@@ -601,7 +618,8 @@ class EngineModelContext(ModelContext):
                                                 context.block_number, input, output, None)
 
             if debug_log:
-                self.debug_logger.debug(f"< Run model '{slug}' output: {output}")
+                self.debug_logger.debug(
+                    f"< Run model '{slug}' output: {output} block_number: {block_number}")
 
         except Exception as err:
             if isinstance(err, (DataTransformError, DTOValidationError)):
@@ -609,7 +627,8 @@ class EngineModelContext(ModelContext):
                 err = ModelTypeError(str(err))
                 trace = traceback.format_exc(limit=30)
                 if debug_log:
-                    self.debug_logger.debug(f"< Run model '{slug}' error: {err}")
+                    self.debug_logger.debug(
+                        f"< Run model '{slug}' error: {err} block_number: {block_number}")
 
             elif isinstance(err, ModelBaseError):
                 _exc_type, _exc_value, exc_traceback = sys.exc_info()
@@ -624,7 +643,8 @@ class EngineModelContext(ModelContext):
                 err.transform_data_detail(None)
 
                 if debug_log:
-                    self.debug_logger.debug(f"< Run model '{slug}' error: {err}")
+                    self.debug_logger.debug(
+                        f"< Run model '{slug}' error: {err}")
             else:
                 err_msg = f'Exception running model {slug}({input}) on ' \
                     f'chain {context.chain_id} ' \
