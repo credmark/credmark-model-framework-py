@@ -134,6 +134,9 @@ class MapBlocksOutput(IterableListGenericDTO[MapBlockResult[DTOCLS]], Generic[DT
 
 
 class MapBlockTimeSeries(MapBlocksOutput):
+    """
+    Output for the compose.map-block-time-series model.
+    """
     endTimestamp: int = DTOField(
         ...,
         description='End timestamp of block series, inclusive unless exclusive is True.')
@@ -142,23 +145,47 @@ class MapBlockTimeSeries(MapBlocksOutput):
 
 
 class MapBlockTimeSeriesInput(DTO):
-    endTimestamp: int
-    interval: int
-    count: int
-    exclusive: Union[bool, None] = DTOField(default=False)
-    modelInput: Union[dict, DTO, None] = None
-    modelSlug: str
-    modelVersion: Optional[str] = None
+    """
+    Input for the compose.map-block-time-series model.
+    """
+    endTimestamp: int = DTOField(
+        description='End timestamp of block series, inclusive unless exclusive is True')
+    interval: int = DTOField(description='Series interval in seconds')
+    count: int = DTOField(description='Number of intervals in the series.')
+    exclusive: Union[bool, None] = DTOField(
+        default=False, description='If true, blocks are exclusive of end timestamp')
+    modelInput: Union[dict, DTO, None] = DTOField(
+        default=None,
+        description='Input for the model run at each block number.')
+    modelSlug: str = DTOField(description='Slug of model to run at each block number.')
+    modelVersion: Optional[str] = DTOField(
+        default=None,
+        description='Optional version of the model to run. Normally you should not set this.')
 
 
 class MapInputsInput(DTO):
-    modelInputs: List[Union[dict, DTO]]
-    modelSlug: str
-    modelVersion: Optional[str] = None
+    """
+    Input for the compose.map-inputs model.
+    """
+    modelInputs: List[Union[dict, DTO]] = DTOField(
+        description='A list of inputs. The specified model will be run once with each input.')
+    modelSlug: str = DTOField(description='Slug of model to run with each input.')
+    modelVersion: Optional[str] = DTOField(
+        default=None,
+        description='Optional version of the model to run. Normally you should not set this.')
 
 
 class MapBlocksInput(DTO):
-    blockNumbers: List[BlockNumber]
-    modelInput: Union[dict, DTO, None] = None
-    modelSlug: str
-    modelVersion: Optional[str] = None
+    """
+    Input for the compose.map-blocks model.
+    """
+    blockNumbers: List[BlockNumber] = DTOField(
+        description='List of block numbers. The specified model will be run for each block number.'
+    )
+    modelInput: Union[dict, DTO, None] = DTOField(
+        default=None,
+        description='Input for the model run at each block number.')
+    modelSlug: str = DTOField(description='Slug of model to run at each block number.')
+    modelVersion: Optional[str] = DTOField(
+        default=None,
+        description='Optional version of the model to run. Normally you should not set this.')
