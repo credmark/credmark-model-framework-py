@@ -403,10 +403,13 @@ class EngineModelContext(ModelContext):
         # when using the cli, we allow running remote models as top level
         try_remote = not is_top_level_inactive or is_cli
 
-        self.debug_logger.debug(
-            f'{self.dev_mode, self.run_id, self.test_mode,self.test_mode, self._favor_local_model_for_slug(slug)}')
-        self.debug_logger.debug(
-            f'{is_cli, is_top_level_inactive,try_remote, slug, force_local, use_local}')
+        debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
+
+        if debug_log:
+            self.debug_logger.debug(
+                f'{self.dev_mode, self.run_id, self.test_mode,self.test_mode, self._favor_local_model_for_slug(slug)}')
+            self.debug_logger.debug(
+                f'{is_cli, is_top_level_inactive,try_remote, slug, force_local, use_local}')
 
         try:
             model_class = self.__model_loader.get_model_class(slug, version, force_local)
@@ -474,9 +477,12 @@ class EngineModelContext(ModelContext):
 
         api = self.__api
 
-        self.debug_logger.debug(
-            f'[run_model_with_class] try_remote: {try_remote} use_local: {use_local} '
-            f'block_number: {block_number}')
+        debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
+
+        if debug_log:
+            self.debug_logger.debug(
+                f'[run_model_with_class] try_remote: {try_remote} use_local: {use_local} '
+                f'block_number: {block_number}')
 
         if use_local and model_class is not None:
 
@@ -491,8 +497,6 @@ class EngineModelContext(ModelContext):
             run_block_number = block_number if block_number is not None else self.block_number
 
             try:
-                debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
-
                 if debug_log:
                     self.debug_logger.debug(
                         f"> Run API model '{slug}' input: {input} "

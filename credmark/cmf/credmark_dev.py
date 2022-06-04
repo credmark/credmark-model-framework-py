@@ -38,6 +38,8 @@ def main():  # pylint: disable=too-many-statements
         description='Credmark developer tool')
     parser.add_argument('--log_level', default=None, required=False,
                         help='Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL')
+    parser.add_argument('--log_file', default=None, required=False,
+                        help='log file to write')
     parser.add_argument('--model_path', default="models", required=False,
                         help='Semicolon separated paths to the model folders \
                             (or parent) or model python file. Defaults to models folder.')
@@ -171,12 +173,14 @@ def main():  # pylint: disable=too-many-statements
 
 def config_logging(args, default_level='WARNING'):
     level = args['log_level']
+    log_file = args['log_file']
     if not level:
         level = default_level
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=level)
-
+        level=level,
+        filename=log_file,
+        filemode='w')
 
 def load_models(args, load_dev_models=False):
     manifest_file = args.get('manifest_file')
