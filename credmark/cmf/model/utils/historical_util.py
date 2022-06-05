@@ -102,7 +102,6 @@ class HistoricalUtil:
 
             if end_timestamp is None:
                 end_timestamp = self.context.block_number.timestamp
-
             if snap_clock is not None:
                 if snap_clock == 'interval':
                     snap_sec = interval_timestamp
