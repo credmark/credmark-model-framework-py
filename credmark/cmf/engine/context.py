@@ -386,6 +386,9 @@ class EngineModelContext(ModelContext):
     def set_current(self):
         ModelContext.set_current_context(self)
 
+    def _model_reload(self):
+        self.__model_loader.reload()
+
     def _run_model(self,
                    slug: str,
                    input: Union[dict, DTO],
