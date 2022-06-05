@@ -383,6 +383,9 @@ class EngineModelContext(ModelContext):
         # Transform to the requested return type
         return transform_data_for_dto(output, return_type, slug, 'output')
 
+    def set_current(self):
+        ModelContext.set_current_context(self)
+
     def _run_model(self,
                    slug: str,
                    input: Union[dict, DTO],
