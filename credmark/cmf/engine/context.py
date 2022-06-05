@@ -124,6 +124,11 @@ class EngineModelContext(ModelContext):
 
         web3_registry = Web3Registry(chain_to_provider_url)
 
+        if use_local_models is not None and len(use_local_models):
+            local_model_slugs = use_local_models.split(',')
+            cls.logger.debug(f'Use local models {local_model_slugs}')
+            cls.use_local_models_slugs.update(local_model_slugs)
+
         if cls.dev_mode:
             cls.use_local_models_slugs.update(
                 model_loader.loaded_dev_model_slugs())
@@ -136,16 +141,12 @@ class EngineModelContext(ModelContext):
             block_number = cls.get_latest_block_number(api, chain_id)
             cls.logger.info(f'Using latest block number {block_number}')
 
-        if use_local_models is not None and len(use_local_models):
-            local_model_slugs = use_local_models.split(',')
-            cls.logger.debug(f'Use local models {local_model_slugs}')
-            EngineModelContext.use_local_models_slugs.update(local_model_slugs)
-
         context = EngineModelContext(
             chain_id, block_number, web3_registry,
             run_id, depth, model_loader, api, is_top_level=not console)
 
         if console:
+            context.is_active = True
             ModelContext.set_current_context(context)
 
         return context
@@ -407,9 +408,12 @@ class EngineModelContext(ModelContext):
 
         if debug_log:
             self.debug_logger.debug(
-                f'{self.dev_mode, self.run_id, self.test_mode,self.test_mode, self._favor_local_model_for_slug(slug)}')
+                f'Run model states: {self.dev_mode=}, {self.run_id=}, {self.test_mode=}, '
+                f'{self._favor_local_model_for_slug(slug)=} {self.is_active=}')
             self.debug_logger.debug(
-                f'{is_cli, is_top_level_inactive,try_remote, slug, force_local, use_local}')
+                f'{is_cli=}, {is_top_level_inactive=}, {try_remote=}, {slug=}, '
+                f'{force_local=}, {use_local=}, '
+                f'{block_number=}')
 
         try:
             model_class = self.__model_loader.get_model_class(slug, version, force_local)
@@ -478,11 +482,6 @@ class EngineModelContext(ModelContext):
         api = self.__api
 
         debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
-
-        if debug_log:
-            self.debug_logger.debug(
-                f'[run_model_with_class] try_remote: {try_remote} use_local: {use_local} '
-                f'block_number: {block_number}')
 
         if use_local and model_class is not None:
 

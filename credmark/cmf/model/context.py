@@ -265,7 +265,6 @@ class ModelContext:
 
     @block_number.setter
     def block_number(self, block_number: int):
-        # We use arithmetic so as to preserve the type of _block_number
         self._block_number = credmark.cmf.types.BlockNumber(block_number)
 
     @property
