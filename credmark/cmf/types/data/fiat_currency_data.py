@@ -35,22 +35,41 @@ FIAT_CURRENCY_DATA = dict({
         "name": "Swiss Franc"},
     'IDR': {
         "currency_code": to_currency_code(360),
-        "name": "ndonesian Rupiah"},
+        "name": "Indonesian Rupiah"},
     'INR': {
         "currency_code": to_currency_code(356),
         "name": "Indian Rupee"},
     'NGN': {
-        "currency_code": to_currency_code(566)},
+        "currency_code": to_currency_code(566),
+        "name": "Nigerian Naira"},
     'NZD': {
-        "currency_code": to_currency_code(554)},
+        "currency_code": to_currency_code(554),
+        "name": "New Zealand Dollar"},
     'PHP': {
-        "currency_code": to_currency_code(608)},
+        "currency_code": to_currency_code(608),
+        "name": "Philippine Peso"},
     'SGD': {
-        "currency_code": to_currency_code(702)},
+        "currency_code": to_currency_code(702),
+        "name": "Singapore Dollar"},
     'TRY': {
-        "currency_code": to_currency_code(949)},
+        "currency_code": to_currency_code(949),
+        "name": "Turkish Lira"},
     'ZAR': {
-        "currency_code": to_currency_code(710)},
+        "currency_code": to_currency_code(710),
+        "name": "South African Rand"},
     'XDR': {
-        "currency_code": to_currency_code(960)}
+        "currency_code": to_currency_code(960),
+        "name": "Special Drawing Rights"},
+    'ARS': {
+        "currency_code": to_currency_code(32),
+        "name": "Argentine Peso"},
+    'RUB': {
+        "currency_code": to_currency_code(643),
+        "name": "Russian Ruble"},
+    'XAG': {
+        "currency_code": to_currency_code(961),
+        "name": "Silver (one troy ounce)"},
+    'XAU': {
+        "currency_code": to_currency_code(959),
+        "name": "Gold (one troy ounce)"},
 })
