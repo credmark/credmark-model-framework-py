@@ -60,7 +60,7 @@ class ModelLoader:
             self.logger.debug(f'Loading manifest from {manifest_file}')
             manifest = self._load_json_file(manifest_file)
             if manifest is not None and 'credmarkModelManifest' in manifest:
-                self._process_model_manifest(manifest, manifest_file)
+                self._process_model_manifest(manifest)
         else:
             if model_paths is not None:
                 self.logger.debug(f'Loading manifest from model_paths: {model_paths}')
@@ -163,7 +163,7 @@ class ModelLoader:
                          '__manifest' in v.__dict__ and
                          'credmarkModelManifest' in v.__dict__['__manifest']]
             for manifest in manifests:
-                self._process_model_manifest(manifest, fpath)
+                self._process_model_manifest(manifest)
         except Exception as err:
             self.errors.append(
                 f'Error loading manifest for module {module_name} in model file {fpath}: {err}')
@@ -175,7 +175,7 @@ class ModelLoader:
             except Exception as exc:
                 raise Exception(f'Error loading json manifest: {exc}')
 
-    def _process_model_manifest(self, manifest, fpath: str):
+    def _process_model_manifest(self, manifest):
         models: list = manifest.get('models')
 
         if models is None:
@@ -188,16 +188,23 @@ class ModelLoader:
         if models is not None:
             for model in models:
                 try:
-                    self._process_model_manifest_entry(model, base_path, fpath)
+                    mclass = self._load_mclass(model, base_path, fpath)
+                    self._process_model_manifest_entry(model, mclass)
                 except Exception as err:
                     self.errors.append(
                         f'Error processing entry in manifest file {fpath}: {err}')
 
-    def _process_model_manifest_entry(self, model_manifest, base_path, fpath):
+    def _load_mclass(self, model_manifest, base_path, fpath):
+        model_class = model_manifest['class']
+        module_name, mod = self._load_module_with_path(base_path, fpath)
+        mclass = vars(mod)[model_class.replace(module_name + '.', '')]
+
+        return mclass
+
+    def _process_model_manifest_entry(self, model_manifest, mclass):
         try:
             model_slug = model_manifest['slug']
             validate_model_slug(model_slug)
-            model_class = model_manifest['class']
             # ensure version is a string
             _model_version = model_manifest['version'] = str(
                 model_manifest['version'])
@@ -205,12 +212,31 @@ class ModelLoader:
             raise Exception(
                 f'Missing field {err} for model {model_manifest.get("slug", "<unknown>")}')
 
-        module_name, mod = self._load_module_with_path(base_path, fpath)
-        mclass = vars(mod)[model_class.replace(module_name + '.', '')]
-
         if mclass is not None:
             self._add_model_class(mclass)
             self.__model_manifest_list.append(model_manifest)
+
+    def add_model(self, model_class, replace=True):
+        model_manifest = model_class.__dict__['__manifest']
+        if 'credmarkModelManifest' not in model_manifest:
+            raise Exception('credmarkModelManifest is missing')
+
+        if replace:
+            self.remove_model_by_slug(model_manifest['model']['slug'])
+        self._process_model_manifest_entry(model_manifest['model'], model_class)
+
+    def remove_model_by_slug(self, slug):
+        keys_to_remove = [key for key in self.__slug_version_to_class_dict.keys()
+                          if key.startswith(slug)]
+        for key in keys_to_remove:
+            del self.__slug_version_to_class_dict[key]
+
+        if slug in self.__slug_to_versions_dict:
+            self.__slug_to_versions_dict.pop(slug)
+
+        for m in self.__model_manifest_list:
+            if m['slug'] == slug:
+                del m
 
     def _add_model_class(self, model_class: Type[Model]):
         slug = model_class.slug
