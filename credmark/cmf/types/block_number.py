@@ -50,6 +50,20 @@ class BlockNumberOutOfRangeError(ModelInvalidStateError):
 
 class BlockNumber(int):
     @classmethod
+    def list_with_interval(cls,
+                           end_block_number: int,
+                           interval: int,
+                           count: int):
+        """
+        Returns a list of ``count`` BlockNumber instances with a gap of
+        ``interval`` between each block number and the last block being ``end_block_number``.
+
+        For example ``BlockNumber.list_with_interval(14000000, 100, 5)`` will return
+        ``[13999600, 13999700, 13999800, 13999900, 14000000]``
+        """
+        return [BlockNumber(end_block_number - (i * interval)) for i in range(count - 1, -1, -1)]
+
+    @classmethod
     def __get_validators__(cls):
         yield cls.validate
 
