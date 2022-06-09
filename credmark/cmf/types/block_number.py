@@ -49,10 +49,38 @@ class BlockNumberOutOfRangeError(ModelInvalidStateError):
 
 
 class BlockNumber(int):
+    @classmethod
+    def list_with_interval(cls,
+                           end_block_number: int,
+                           interval: int,
+                           count: int):
+        """
+        Returns a list of ``count`` BlockNumber instances with a gap of
+        ``interval`` between each block number and the last block being ``end_block_number``.
+
+        For example ``BlockNumber.list_with_interval(14000000, 100, 5)`` will return
+        ``[13999600, 13999700, 13999800, 13999900, 14000000]``
+        """
+        return [BlockNumber(end_block_number - (i * interval)) for i in range(count - 1, -1, -1)]
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    # A pydantic validator so instances can be deserialized
+    # from an int or a dict with number, timestamp, and sampleTimestamp.
+    @classmethod
+    def validate(cls, i):
+        if isinstance(i, int):
+            return cls(i)
+        if isinstance(i, dict):
+            return cls(**i)
+        raise TypeError('BlockNumber must be deserialized with an int or dict')
+
     def __new__(cls,
                 number: int,
                 timestamp: Union[Timestamp, None] = None,  # pylint: disable=unused-argument
-                sample_timestamp: Union[Timestamp, None] = None):  # pylint: disable=unused-argument
+                sampleTimestamp: Union[Timestamp, None] = None):  # pylint: disable=unused-argument
 
         context = credmark.cmf.model.ModelContext.get_current_context()
         if context is not None and number > context.block_number:
@@ -70,9 +98,9 @@ class BlockNumber(int):
     def __init__(self,
                  number: int,  # pylint: disable=unused-argument
                  timestamp: Union[Timestamp, None] = None,
-                 sample_timestamp: Union[Timestamp, None] = None) -> None:
+                 sampleTimestamp: Union[Timestamp, None] = None) -> None:
         self._timestamp = timestamp
-        self.sample_timestamp = sample_timestamp
+        self.sample_timestamp = sampleTimestamp
         super().__init__()
 
     def __add__(self, number):
@@ -124,4 +152,4 @@ class BlockNumber(int):
 
         return BlockNumber(number=get_blocknumber_result['blockNumber'],
                            timestamp=get_blocknumber_result['blockTimestamp'],
-                           sample_timestamp=get_blocknumber_result['sampleTimestamp'])
+                           sampleTimestamp=get_blocknumber_result['sampleTimestamp'])
