@@ -70,6 +70,87 @@ class EmptyInput(DTO):
     """
 
 
+class IntDTO(int):
+    """
+    A DTO that can be used as an integer output (or input) to a model.
+    It is serialized as a dict with a ``value`` field ``{"value": 12345}``
+    and can be used in python code as a normal integer.
+    """
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    # A pydantic validator so instances can be deserialized
+    # from an int or a dict.
+    @classmethod
+    def validate(cls, i):
+        if isinstance(i, int):
+            return cls(i)
+        if isinstance(i, dict):
+            return cls(**i)
+        raise TypeError(f'{cls.__name__} must be deserialized with an int or dict')
+
+    def __new__(cls, value: int, **_kwargs):
+        return super().__new__(cls, value)
+
+    def dict(self):
+        return {"value": self}
+
+
+class FloatDTO(float):
+    """
+    A DTO that can be used as a float output (or input) to a model.
+    It is serialized as a dict with a ``value`` field ``{"value": 123.45}``
+    and can be used in python code as a normal float.
+    """
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    # A pydantic validator so instances can be deserialized
+    # from an float or a dict.
+    @classmethod
+    def validate(cls, i):
+        if isinstance(i, float):
+            return cls(i)
+        if isinstance(i, dict):
+            return cls(**i)
+        raise TypeError(f'{cls.__name__} must be deserialized with an float or dict')
+
+    def __new__(cls, value: float, **_kwargs):
+        return super().__new__(cls, value)
+
+    def dict(self):
+        return {"value": self}
+
+
+class StrDTO(str):
+    """
+    A DTO that can be used as a string output (or input) to a model.
+    It is serialized as a dict with a ``value`` field ``{"value": "foobar"}``
+    and can be used in python code as a normal str.
+    """
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    # A pydantic validator so instances can be deserialized
+    # from an str or a dict.
+    @classmethod
+    def validate(cls, i):
+        if isinstance(i, str):
+            return cls(i)
+        if isinstance(i, dict):
+            return cls(**i)
+        raise TypeError(f'{cls.__name__} must be deserialized with a str or dict')
+
+    def __new__(cls, value: str, **_kwargs):
+        return super().__new__(cls, value)
+
+    def dict(self):
+        return {"value": self}
+
+
 from .dto_schema import (
     cross_examples,
     dto_schema_viz,
