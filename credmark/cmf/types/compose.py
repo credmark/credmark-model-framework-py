@@ -133,7 +133,7 @@ class MapBlocksOutput(IterableListGenericDTO[MapBlockResult[DTOCLS]], Generic[DT
                                 columns=['blockNumber', 'blockTime'] + [c for c, _ in fields])
 
 
-class MapBlockTimeSeries(MapBlocksOutput):
+class MapBlockTimeSeries(MapBlocksOutput[DTOCLS], Generic[DTOCLS]):
     """
     Output for the compose.map-block-time-series model.
     """
