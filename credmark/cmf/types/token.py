@@ -118,7 +118,7 @@ class Token(Contract):
 
         super()._load()
 
-    @ property
+    @property
     def info(self):
         _ = self.symbol, self.name, self.decimals, self.total_supply
         if isinstance(self, TokenInfo):
@@ -138,7 +138,7 @@ class Token(Contract):
             raise ModelDataError(f"Token.{prop_name} is None")
         return prop_value
 
-    @ property
+    @property
     def symbol(self) -> str:
         self._load()
         if self._meta.symbol is None:
@@ -150,14 +150,14 @@ class Token(Contract):
             self._meta.symbol = symbol_tmp
         return self._meta.symbol
 
-    @ property
+    @property
     def decimals(self) -> int:
         self._load()
         if self._meta.decimals is None:
             self._meta.decimals = self.try_erc20_property('decimals')
         return self._meta.decimals
 
-    @ property
+    @property
     def name(self) -> str:
         self._load()
         if self._meta.name is None:
@@ -169,7 +169,7 @@ class Token(Contract):
             self._meta.name = name_tmp
         return self._meta.name
 
-    @ property
+    @property
     def total_supply(self) -> int:
         self._load()
         if self._meta.total_supply is None:
@@ -268,15 +268,15 @@ class FiatCurrency(Account):
             self._meta.symbol = fiat_symbol
             self._meta.name = fiat_entry['name']
 
-    @ property
+    @property
     def symbol(self):
         return self._meta.symbol
 
-    @ property
+    @property
     def name(self):
         return self._meta.name
 
-    @ property
+    @property
     def fiat(self):
         return True
 
