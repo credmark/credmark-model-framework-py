@@ -60,7 +60,7 @@ class ModelLoader:
             self.logger.debug(f'Loading manifest from {manifest_file}')
             manifest = self._load_json_file(manifest_file)
             if manifest is not None and 'credmarkModelManifest' in manifest:
-                self._process_model_manifest(manifest)
+                self._process_model_manifest(manifest, None, None)
         else:
             if model_paths is not None:
                 self.logger.debug(f'Loading manifest from model_paths: {model_paths}')
@@ -157,13 +157,13 @@ class ModelLoader:
         module_name = ''
         try:
             module_name, mod = self._load_module_with_path(base_path, fpath)
-            manifests = [v.__dict__['__manifest'] | {'base_path': base_path, 'fpath': fpath}
+            manifests = [v.__dict__['__manifest']
                          for k, v in mod.__dict__.items()
                          if inspect.isclass(v) and
                          '__manifest' in v.__dict__ and
                          'credmarkModelManifest' in v.__dict__['__manifest']]
             for manifest in manifests:
-                self._process_model_manifest(manifest)
+                self._process_model_manifest(manifest, base_path, fpath)
         except Exception as err:
             self.errors.append(
                 f'Error loading manifest for module {module_name} in model file {fpath}: {err}')
@@ -175,7 +175,7 @@ class ModelLoader:
             except Exception as exc:
                 raise Exception(f'Error loading json manifest: {exc}')
 
-    def _process_model_manifest(self, manifest):
+    def _process_model_manifest(self, manifest, base_path, fpath):
         models: list = manifest.get('models')
 
         if models is None:
@@ -183,12 +183,15 @@ class ModelLoader:
             if model is not None:
                 models = [model]
 
-        base_path = manifest['base_path']
-        fpath = manifest['fpath']
         if models is not None:
             for model in models:
                 try:
-                    mclass = self._load_mclass(model, base_path, fpath)
+                    mclass = self._load_mclass(
+                        model_manifest=model,
+                        base_path=(model['class'].split('.')[0]
+                                   if base_path is None else base_path),
+                        fpath=(os.sep.join(model['class'].split('.')[:-1]) + '.py'
+                               if fpath is None else fpath))
                     self._process_model_manifest_entry(model, mclass)
                 except Exception as err:
                     self.errors.append(
