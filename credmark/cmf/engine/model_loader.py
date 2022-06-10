@@ -19,8 +19,8 @@ from credmark.cmf.model import validate_model_slug
 # locally so they can call other local-only models.
 
 DEV_MODELS_PATHS = ['cmf/engine/dev_models/series_models.py',
+                    'cmf/engine/dev_models/compose_models.py',
                     'cmf/engine/dev_models/console.py']
-
 
 class ModelLoader:
     logger = logging.getLogger(__name__)

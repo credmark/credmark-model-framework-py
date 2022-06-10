@@ -502,7 +502,6 @@ class EngineModelContext(ModelContext):
         debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
 
         if use_local and model_class is not None:
-
             slug, version, output = self._run_local_model_with_class(
                 slug,
                 input,
