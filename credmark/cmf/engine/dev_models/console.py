@@ -40,6 +40,11 @@ from credmark.cmf.types.ledger import (BlockTable, ContractTable,
                                        TokenTransferTable, TraceTable,
                                        TransactionTable)
 
+from credmark.cmf.types.compose import (MapBlockResult, MapBlockTimeSeriesOutput,
+                                        MapBlockTimeSeriesInput, MapBlocksInput,
+                                        MapBlocksOutput, MapInputsInput,
+                                        MapInputsOutput, MapInputsResult)
+
 
 # pylint: disable= too-many-arguments
 def get_dt(year: int, month: int, day: int, hour=0, minute=0, second=0, microsecond=0):
