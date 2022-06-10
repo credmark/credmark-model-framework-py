@@ -386,8 +386,20 @@ class EngineModelContext(ModelContext):
     def set_current(self):
         ModelContext.set_current_context(self)
 
-    def _model_reload(self):
+    def reload_model(self):
         self.__model_loader.reload()
+        self._model_manifest_map = {}
+        self._model_underscore_manifest_map = {}
+
+    def add_model(self, mclass: Type[Model], replace=True):
+        self.__model_loader.add_model(mclass, replace)
+        self._model_manifest_map = {}
+        self._model_underscore_manifest_map = {}
+
+    def remove_model_by_slug(self, model_slug):
+        self.__model_loader.remove_model_by_slug(model_slug)
+        self._model_manifest_map = {}
+        self._model_underscore_manifest_map = {}
 
     def _run_model(self,
                    slug: str,
