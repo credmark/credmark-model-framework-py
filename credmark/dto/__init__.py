@@ -73,8 +73,11 @@ class EmptyInput(DTO):
 class IntDTO(int):
     """
     A DTO that can be used as an integer output (or input) to a model.
-    It is serialized as a dict with a ``value`` field ``{"value": 12345}``
-    and can be used in python code as a normal integer.
+    When used as a top-level DTO it is serialized as a dict with a
+    ``value`` field ``{"value": 12345}``, otherwise it is serialized
+    as a number.
+
+    It can be used in python code as a normal integer.
     """
     @classmethod
     def schema(cls):
@@ -112,9 +115,12 @@ class IntDTO(int):
 
 class FloatDTO(float):
     """
-    A DTO that can be used as a float output (or input) to a model.
-    It is serialized as a dict with a ``value`` field ``{"value": 123.45}``
-    and can be used in python code as a normal float.
+    A DTO that can be used as an float output (or input) to a model.
+    When used as a top-level DTO it is serialized as a dict with a
+    ``value`` field ``{"value": 123.45}``, otherwise it is serialized
+    as a number.
+
+    It can be used in python code as a normal float.
     """
     @classmethod
     def schema(cls):
@@ -152,9 +158,12 @@ class FloatDTO(float):
 
 class StrDTO(str):
     """
-    A DTO that can be used as a string output (or input) to a model.
-    It is serialized as a dict with a ``value`` field ``{"value": "foobar"}``
-    and can be used in python code as a normal str.
+    A DTO that can be used as an string output (or input) to a model.
+    When used as a top-level DTO it is serialized as a dict with a
+    ``value`` field ``{"value": "foobar"}``, otherwise it is serialized
+    as a string.
+
+    It can be used in python code as a normal string.
     """
     @classmethod
     def schema(cls):

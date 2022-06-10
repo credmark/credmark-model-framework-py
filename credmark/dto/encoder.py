@@ -1,7 +1,7 @@
 import json
 import datetime
 import numpy as np
-from credmark.dto import DTOTypesTuple
+from credmark.dto import DTO, DTOTypesTuple
 
 
 class PydanticJSONEncoder(json.JSONEncoder):
@@ -13,8 +13,17 @@ class PydanticJSONEncoder(json.JSONEncoder):
       json.dump(result, cls=PydanticJSONEncoder)
     """
 
-    def default(self, o):
+    def encode(self, o):
+        # A top-level primitive DTO (IntDTO, StrDTO, FloatDTO)
+        # is serialized as a dict.
         if isinstance(o, DTOTypesTuple):
+            o = o.dict()
+        return super().encode(o)
+
+    def default(self, o):
+        # Primitive DTO types (IntDTO, StrDTO, FloatDTO) are
+        # serialized as primitive types if not the top-level DTO.
+        if isinstance(o, DTO):
             return o.dict()
         if isinstance(o, np.integer):
             return int(o)
