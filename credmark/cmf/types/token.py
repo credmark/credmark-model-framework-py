@@ -1,16 +1,19 @@
+from typing import List, Union
+from web3.exceptions import (
+    BadFunctionCallOutput,
+    ABIFunctionNotFound
+)
+
+from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
+
+from .abi import ABI
 from .address import NATIVE_TOKEN_ADDRESS, Address
 from .account import Account
 from .contract import Contract
 from .data.fungible_token_data import FUNGIBLE_TOKEN_DATA, ERC20_GENERIC_ABI
 from .data.fiat_currency_data import FIAT_CURRENCY_DATA, FIAT_CURRENCY_DATA_BY_ADDRESS
-from typing import List, Union
-from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
-from web3.exceptions import (
-    BadFunctionCallOutput,
-    ABIFunctionNotFound
-)
 
 
 def get_token_from_configuration(
@@ -111,7 +114,7 @@ class Token(Contract):
             return
 
         if self._meta.abi is None:
-            self._meta.abi = ERC20_GENERIC_ABI
+            self._meta.abi = ABI(ERC20_GENERIC_ABI)
 
         super()._load()
 
@@ -192,7 +195,7 @@ class NativeToken(Token):
         data = {"address": NATIVE_TOKEN_ADDRESS[context.chain_id]}
         super().__init__(**data)
         if context.chain_id == 1:
-            self._meta.abi = []
+            self._meta.abi = ABI([])
             self._meta.symbol = "ETH"
             self._meta.decimals = 18
             self._meta.name = "Ethereum"

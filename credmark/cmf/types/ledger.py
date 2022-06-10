@@ -3,6 +3,7 @@ from typing import List, Set, Union
 import inspect
 from credmark.dto import DTO, DTOField, PrivateAttr, IterableListGenericDTO
 import credmark.cmf.model
+from .block_number import BlockNumber
 import pandas as pd
 
 
@@ -527,3 +528,30 @@ class ContractLedger:
             ContractLedger.EntityType.FUNCTIONS, address)
         self.events = ContractLedger.ContractEntityFactory(
             ContractLedger.EntityType.EVENTS, address)
+
+
+class LedgerBlockTimeSeriesInput(DTO):
+    """
+    Input for the ledger.block-time-series model.
+    """
+    endTimestamp: int = DTOField(
+        description='End timestamp of block series, inclusive unless exclusive is True')
+    interval: int = DTOField(description='Series interval in seconds')
+    count: int = DTOField(description='Number of intervals in the series.')
+    exclusive: Union[bool, None] = DTOField(
+        default=False, description='If true, blocks are exclusive of end timestamp')
+
+
+class LedgerBlockNumberTimeSeries(DTO):
+    """
+    Output for the ledger.block-time-series model.
+    """
+    endTimestamp: int = DTOField(
+        description='End timestamp of block series, inclusive unless exclusive is True')
+    interval: int = DTOField(description='Series interval in seconds')
+    exclusive: Union[bool, None] = DTOField(
+        default=False, description='If true, blocks are exclusive of end timestamp')
+    blockNumbers: List[BlockNumber] = DTOField(
+        default=[],
+        description='List of block numbers'
+    )
