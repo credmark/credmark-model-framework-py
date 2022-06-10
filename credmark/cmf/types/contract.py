@@ -1,4 +1,3 @@
-
 from typing import (
     Any,
     Union,
@@ -13,6 +12,7 @@ from .ledger import ContractLedger
 from .account import Account
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
 import logging
+from .abi import ABI
 
 
 class Singleton:
@@ -75,7 +75,7 @@ class Contract(Account):
         deploy_tx_hash: Union[str, None] = None
         constructor_args: Union[str, None] = None
         abi_hash: Union[str, None] = None
-        abi: Union[List[dict], str, None] = None
+        abi: Union[ABI, None] = None
         is_transparent_proxy: Union[bool, None] = None
         proxy_implementation: Union[Any, None] = None
 
@@ -135,7 +135,7 @@ class Contract(Account):
             res = contract_q_results['contracts'][0]
             self._meta.contract_name = res.get('contract_name')
             self._meta.constructor_args = res.get('constructor_args')
-            self._meta.abi = res.get('abi')
+            self._meta.abi = ABI(res.get('abi'))
             self._meta.is_transparent_proxy = res.get('proxy', 0) == "1"
             # TODO: Implementation needs to be validated on the db
             if self._meta.is_transparent_proxy:
