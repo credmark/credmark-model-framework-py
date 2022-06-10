@@ -30,8 +30,8 @@ class MapInputsResult(GenericDTO, Generic[INPUTDTOCLS, DTOCLS]):
     class Config:
         schema_extra = {
             'examples': [{'input': {'address': '0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72'},
-                         'output': {'result': 42},
-                          'error': {}}]
+                          'output': {'result': 42},
+                          'error': None}]
         }
 
 
