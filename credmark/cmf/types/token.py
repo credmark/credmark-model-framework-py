@@ -1,3 +1,5 @@
+from typing import List, Union
+from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.cmf.types.currency import Currency
