@@ -22,7 +22,7 @@ class TestToken(ModelTestCase):
 
         native_token = NativeToken()
         self.assertEqual(native_token.symbol, "ETH")
-        self.assertEqual(native_token.name, "ethereum")
+        self.assertEqual(native_token.name, "Ethereum")
         self.assertEqual(native_token.decimals, 18)
 
 

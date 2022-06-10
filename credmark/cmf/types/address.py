@@ -112,4 +112,6 @@ class Address(str):
 
 
 NULL_ADDRESS = Address("0x0000000000000000000000000000000000000000")
-NATIVE_TOKEN_ADDRESS = Address("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+NATIVE_TOKEN_ADDRESS = {
+    1: Address("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+}

@@ -1,11 +1,10 @@
-
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
-from credmark.cmf.types.data.fiat_currency_data import FIAT_CURRENCY_DATA
-
-from .contract import Contract
 from .address import NATIVE_TOKEN_ADDRESS, Address
+from .account import Account
+from .contract import Contract
 from .data.fungible_token_data import FUNGIBLE_TOKEN_DATA, ERC20_GENERIC_ABI
+from .data.fiat_currency_data import FIAT_CURRENCY_DATA, FIAT_CURRENCY_DATA_BY_ADDRESS
 from typing import List, Union
 from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
 from web3.exceptions import (
@@ -23,8 +22,8 @@ def get_token_from_configuration(
     token_datas = [
         t for t in FUNGIBLE_TOKEN_DATA.get(chain_id, [])
         if (t.get('is_native_token', False) == is_native_token and
-            (t.get('address', None) == address or
-             t.get('symbol', None) == symbol) or
+            ((t.get('address', None) == address and address is not None) or
+             (t.get('symbol', None) == symbol and symbol is not None)) or
             (t.get('wraps', None) == wraps and wraps is not None))
     ]
 
@@ -64,6 +63,25 @@ class Token(Contract):
                          ] + Contract.Config.schema_extra['examples']
         }
 
+    def __new__(cls, **data):
+        context = credmark.cmf.model.ModelContext.current_context()
+
+        token_data = None
+        if 'symbol' in data:
+            token_data = get_token_from_configuration(
+                chain_id=str(context.chain_id), symbol=data['symbol'], is_native_token=True)
+
+        if 'address' in data:
+            token_data = get_token_from_configuration(
+                chain_id=str(context.chain_id), address=data['address'], is_native_token=True)
+
+        if token_data is not None:
+            return NativeToken()
+        else:
+            obj = super().__new__(cls)
+            obj.__init__(**data)
+            return obj
+
     def __init__(self, **data):
         if 'address' not in data and 'symbol' not in data:
             raise ModelDataError('One of address or symbol is required')
@@ -97,7 +115,7 @@ class Token(Contract):
 
         super()._load()
 
-    @property
+    @ property
     def info(self):
         _ = self.symbol, self.name, self.decimals, self.total_supply
         if isinstance(self, TokenInfo):
@@ -117,7 +135,7 @@ class Token(Contract):
             raise ModelDataError(f"Token.{prop_name} is None")
         return prop_value
 
-    @property
+    @ property
     def symbol(self) -> str:
         self._load()
         if self._meta.symbol is None:
@@ -129,14 +147,14 @@ class Token(Contract):
             self._meta.symbol = symbol_tmp
         return self._meta.symbol
 
-    @property
+    @ property
     def decimals(self) -> int:
         self._load()
         if self._meta.decimals is None:
             self._meta.decimals = self.try_erc20_property('decimals')
         return self._meta.decimals
 
-    @property
+    @ property
     def name(self) -> str:
         self._load()
         if self._meta.name is None:
@@ -148,7 +166,7 @@ class Token(Contract):
             self._meta.name = name_tmp
         return self._meta.name
 
-    @property
+    @ property
     def total_supply(self) -> int:
         self._load()
         if self._meta.total_supply is None:
@@ -157,6 +175,10 @@ class Token(Contract):
 
     def scaled(self, value) -> float:
         return value / (10 ** self.decimals)
+
+    @property
+    def fiat(self) -> bool:
+        return False
 
 
 class TokenInfo(Token):
@@ -167,7 +189,7 @@ class NativeToken(Token):
 
     def __init__(self, **data) -> None:
         context = credmark.cmf.model.ModelContext.current_context()
-        data = {"address": NATIVE_TOKEN_ADDRESS}
+        data = {"address": NATIVE_TOKEN_ADDRESS[context.chain_id]}
         super().__init__(**data)
         if context.chain_id == 1:
             self._meta.abi = []
@@ -194,40 +216,94 @@ class Tokens(IterableListGenericDTO[Token]):
     _iterator: str = PrivateAttr('tokens')
 
 
-class FiatCurrency(DTO):
+class FiatCurrency(Account):
     """
-    This is Fiat Currency. It's used as inputs to pricing and currency models.
+    This is DTO for Fiat Currency.
     """
 
-    symbol: str = 'USD'
-    name: str = 'United States Dollar'
-    decimals: int = 0
+    class FiatCurrencyMeta:
+        symbol: Union[str, None] = None
+        name: Union[str, None] = None
+
+    _meta: FiatCurrencyMeta = PrivateAttr(
+        default_factory=lambda: FiatCurrency.FiatCurrencyMeta())  # pylint: disable=unnecessary-lambda
+
+    def __init__(self, **data):
+        addr = data.get('address', None)
+        symbol = data.get("symbol", None)
+
+        if symbol is None and addr is None:
+            raise ModelDataError('Missing both symbol and address')
+
+        if symbol is not None:
+            fiat_entry = FIAT_CURRENCY_DATA.get(symbol)
+
+            if fiat_entry is None:
+                raise ModelDataError('{symbol} is not added for fiat currency.')
+
+            fiat_address = Address(fiat_entry['address'])
+            if addr is not None and Address(addr) != fiat_address:
+                raise ModelDataError(
+                    f'Different address ({addr}) specified for {symbol}/{fiat_address}')
+
+            super().__init__(address=fiat_address)
+            self._meta.symbol = symbol
+            self._meta.name = fiat_entry['name']
+
+        elif addr is not None:
+            fiat_entry = FIAT_CURRENCY_DATA_BY_ADDRESS.get(addr)
+
+            if fiat_entry is None:
+                raise ModelDataError('{symbol} is not added for fiat currency.')
+
+            fiat_symbol = fiat_entry['symbol']
+            if symbol is not None and symbol != fiat_symbol:
+                raise ModelDataError(
+                    f'Different symbol ({fiat_symbol}) specified for {symbol}/{addr}')
+
+            super().__init__(address=Address(addr))
+            self._meta.symbol = fiat_symbol
+            self._meta.name = fiat_entry['name']
+
+    @ property
+    def symbol(self):
+        return self._meta.symbol
+
+    @ property
+    def name(self):
+        return self._meta.name
+
+    @ property
+    def fiat(self):
+        return True
 
 
 class Currency(DTO):
 
     """
-    This is a converter for any Fungible Currency.
+    This is a converter for any Fungible Token and FiatCurrency.
+    It's used as inputs to price models.
     """
 
     address: Union[Address, None] = None
     symbol: Union[str, None] = None
+    name: Union[str, None] = None
     fiat: Union[bool, None] = None
 
-    def __new__(cls, **data) -> object:
+    def __new__(cls, **data) -> Union[NativeToken, Token, FiatCurrency]:
         addr = data.get("address", None)
         symbol = data.get("symbol", None)
         fiat = data.get("fiat", None)
 
         if addr is not None:
-            if addr == NATIVE_TOKEN_ADDRESS:
-                return NativeToken(**data)
-            if symbol is None:
+            if FIAT_CURRENCY_DATA_BY_ADDRESS.get(addr, None) is not None and (fiat or fiat is None):
+                return FiatCurrency(**data)
+            if fiat is None or not fiat:
                 return Token(**data)
 
         if symbol is not None:
             if FIAT_CURRENCY_DATA.get(symbol, None) is not None and (fiat or fiat is None):
-                return FiatCurrency(**FIAT_CURRENCY_DATA[symbol], **data)
+                return FiatCurrency(**data)
             if fiat is None or not fiat:
                 return Token(**data)
 

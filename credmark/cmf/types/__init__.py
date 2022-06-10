@@ -9,4 +9,4 @@ from .portfolio import Portfolio
 from .position import Position, NativePosition, TokenPosition
 from .price import Price, TokenPairPrice, PriceList
 from .token_wei import TokenWei
-from .token import Token, Tokens, NativeToken, Currency
+from .token import Token, Tokens, NativeToken, Currency, FiatCurrency
