@@ -7,8 +7,6 @@ from credmark.cmf.types.currency import Currency
 from .contract import Contract
 from .address import NATIVE_TOKEN_ADDRESS, Address
 from .data.fungible_token_data import FUNGIBLE_TOKEN_DATA, ERC20_GENERIC_ABI
-from typing import List, Union
-from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField  # type: ignore
 from web3.exceptions import (
     BadFunctionCallOutput,
     ABIFunctionNotFound
