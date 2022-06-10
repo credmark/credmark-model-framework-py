@@ -32,7 +32,8 @@ from credmark.cmf.types import (
     ContractLedger,
 )
 
-from credmark.dto import DTO, IntDTO, StrDTO, FloatDTO, DTOField, EmptyInput, IterableListGenericDTO, PrivateAttr
+from credmark.dto import (DTO, IntDTO, StrDTO, FloatDTO, DTOField,
+                          EmptyInput, IterableListGenericDTO, PrivateAttr)
 
 from credmark.cmf.types.ledger import (BlockTable, ContractTable,
                                        LogTable,
