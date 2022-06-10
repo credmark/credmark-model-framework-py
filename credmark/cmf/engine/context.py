@@ -65,6 +65,11 @@ class EngineModelContext(ModelContext):
     _model_manifest_map: dict[str, dict] = {}
     _model_underscore_manifest_map: dict[str, dict] = {}
 
+    @classmethod
+    def _clear_model_manifest_maps(cls):
+        cls._model_manifest_map.clear()
+        cls._model_underscore_manifest_map.clear()
+
     # Set of model slugs to use the local version.
     use_local_models_slugs: Set[str] = set()
 
@@ -388,18 +393,15 @@ class EngineModelContext(ModelContext):
 
     def reload_model(self):
         self.__model_loader.reload()
-        self._model_manifest_map = {}
-        self._model_underscore_manifest_map = {}
+        EngineModelContext._clear_model_manifest_maps()
 
     def add_model(self, mclass: Type[Model], replace=True):
         self.__model_loader.add_model(mclass, replace)
-        self._model_manifest_map = {}
-        self._model_underscore_manifest_map = {}
+        EngineModelContext._clear_model_manifest_maps()
 
     def remove_model_by_slug(self, model_slug):
         self.__model_loader.remove_model_by_slug(model_slug)
-        self._model_manifest_map = {}
-        self._model_underscore_manifest_map = {}
+        EngineModelContext._clear_model_manifest_maps()
 
     def _run_model(self,
                    slug: str,
