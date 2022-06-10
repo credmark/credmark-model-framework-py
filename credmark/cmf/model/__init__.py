@@ -6,7 +6,7 @@ from copy import deepcopy
 from typing import List, Tuple, Type, Union
 
 from .context import ModelContext
-from credmark.dto import DTO, EmptyInput
+from credmark.dto import DTOType, DTOTypesTuple, EmptyInput
 from credmark.dto.transform import transform_data_for_dto
 
 from .errors import ModelBaseError, ModelDataErrorDTO, ModelDefinitionError
@@ -148,8 +148,8 @@ def describe(slug: str,  # pylint: disable=too-many-arguments
              description: Union[str, None] = None,
              developer: Union[str, None] = None,
              tags: Union[list[str], None] = None,
-             input: Union[Type[DTO], Type[dict]] = EmptyInput,
-             output: Union[Type[DTO], Type[dict], None] = None,
+             input: Union[Type[DTOType], Type[dict]] = EmptyInput,
+             output: Union[Type[DTOType], Type[dict], None] = None,
              errors: Union[List[ModelErrorDesc], ModelErrorDesc, None] = None):
     """
     Decorator for a model.
@@ -185,9 +185,11 @@ def describe(slug: str,  # pylint: disable=too-many-arguments
                 'description': model_desc,
                 'developer': developer if developer is not None else '',
                 'tags': tags,
-                'input': input.schema() if input is not None and issubclass(input, DTO)
+                'input': input.schema()
+                if input is not None and issubclass(input, DTOTypesTuple)
                 else DICT_SCHEMA,
-                'output': output.schema() if output is not None and issubclass(output, DTO)
+                'output': output.schema()
+                if output is not None and issubclass(output, DTOTypesTuple)
                 else DICT_SCHEMA,
                 'error': create_error_schema_for_error_descs(slug, errors),
                 'class': cls.__dict__['__module__'] + '.' + cls.__name__
@@ -259,8 +261,8 @@ class Model:
                  description: Union[str, None] = None,
                  developer: Union[str, None] = None,
                  tags: Union[list[str], None] = None,
-                 input: Union[Type[DTO], Type[dict]] = EmptyInput,
-                 output: Union[Type[DTO], Type[dict], None] = None,
+                 input: Union[Type[DTOType], Type[dict]] = EmptyInput,
+                 output: Union[Type[DTOType], Type[dict], None] = None,
                  errors: Union[List[ModelErrorDesc], ModelErrorDesc, None] = None):
         """
         Decorator for credmark.cmf.model.Model subclasses to describe the model.
@@ -312,8 +314,8 @@ class Model:
     slug: str
     version: str
     _manifest: dict
-    inputDTO: Union[Type[DTO], None]
-    outputDTO: Union[Type[DTO], None]
+    inputDTO: Union[Type[DTOType], None]
+    outputDTO: Union[Type[DTOType], None]
 
     def __init__(self, context: ModelContext):
         self.context = context
@@ -329,7 +331,7 @@ class Model:
         """
 
     @ abstractmethod
-    def run(self, input: Union[dict, DTO]) -> Union[dict, DTO]:
+    def run(self, input: Union[dict, DTOType]) -> Union[dict, DTOType]:
         """
         Subclasses **must** override this method to perform the work
         of running the model.
@@ -342,7 +344,7 @@ class Model:
 
     def convert_dict_to_dto(self,
                             data: dict,
-                            dto_class: Type[DTO]):
+                            dto_class: Type[DTOType]):
         """
         A model can call this method to convert a dict
         of data in a known format into a DTO instance.

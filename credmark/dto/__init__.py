@@ -1,7 +1,7 @@
 # pylint: disable=locally-disabled, unused-import
 
 import re
-from typing import Any, Dict, Generic, Iterator, List, TypeVar
+from typing import Any, Dict, Generic, Iterator, List, TypeVar, Union
 from pydantic import (
     BaseModel as DTO,
     Field as DTOField,
@@ -77,6 +77,19 @@ class IntDTO(int):
     and can be used in python code as a normal integer.
     """
     @classmethod
+    def schema(cls):
+        return {'title': cls.__name__,
+                'description': 'DTO for an integer value.',
+                'type': 'object',
+                'properties': {
+                    'value': {
+                        'title': 'Value',
+                        'description': 'An integer',
+                        'type': 'integer'}
+                },
+                'required': ['value']}
+
+    @classmethod
     def __get_validators__(cls):
         yield cls.validate
 
@@ -103,6 +116,19 @@ class FloatDTO(float):
     It is serialized as a dict with a ``value`` field ``{"value": 123.45}``
     and can be used in python code as a normal float.
     """
+    @classmethod
+    def schema(cls):
+        return {'title': cls.__name__,
+                'description': 'DTO for a float value.',
+                'type': 'object',
+                'properties': {
+                    'value': {
+                        'title': 'Value',
+                        'description': 'A floating-point number',
+                        'type': 'number'}
+                },
+                'required': ['value']}
+
     @classmethod
     def __get_validators__(cls):
         yield cls.validate
@@ -131,6 +157,19 @@ class StrDTO(str):
     and can be used in python code as a normal str.
     """
     @classmethod
+    def schema(cls):
+        return {'title': cls.__name__,
+                'description': 'DTO for a string value.',
+                'type': 'object',
+                'properties': {
+                    'value': {
+                        'title': 'Value',
+                        'description': 'A string',
+                        'type': 'string'}
+                },
+                'required': ['value']}
+
+    @classmethod
     def __get_validators__(cls):
         yield cls.validate
 
@@ -149,6 +188,16 @@ class StrDTO(str):
 
     def dict(self):
         return {"value": self}
+
+
+DTOType = Union[DTO, IntDTO, StrDTO, FloatDTO]
+
+DTOTypesTuple = (DTO, IntDTO, StrDTO, FloatDTO)
+"""
+A tuple containing the DTO types superclasses.
+This can be used when checking if an instance is a DTOType
+subclass: ```isinstance(obj, DTOTypesTuple)```
+"""
 
 
 from .dto_schema import (

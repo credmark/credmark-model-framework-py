@@ -1,7 +1,7 @@
 import json
 import datetime
 import numpy as np
-from credmark.dto import DTO
+from credmark.dto import DTOTypesTuple
 
 
 class PydanticJSONEncoder(json.JSONEncoder):
@@ -14,7 +14,7 @@ class PydanticJSONEncoder(json.JSONEncoder):
     """
 
     def default(self, o):
-        if isinstance(o, DTO):
+        if isinstance(o, DTOTypesTuple):
             return o.dict()
         if isinstance(o, np.integer):
             return int(o)
