@@ -52,6 +52,10 @@ class MapInputsOutput(IterableListGenericDTO[MapInputsResult[INPUTDTOCLS, DTOCLS
     will be added to the series array.
     If a non-permament error occurs during a model run, the entire series
     will generate an error.
+
+    The output can be converted to list (to_list) or Panda's DataFrame (to_dataframe())
+    with customized lambdas to extract certain field(s) of the output into
+    values (in a list) or columns (in a dataframe).
     """
     results: List[MapInputsResult[INPUTDTOCLS, DTOCLS]] = DTOField(
         default=[], description='List of model run results')
@@ -131,8 +135,8 @@ class MapBlocksOutput(IterableListGenericDTO[MapBlockResult[DTOCLS]], Generic[DT
     will generate an error.
 
     The output can be converted to list (to_list) or Panda's DataFrame (to_dataframe())
-    with customized lambdas to extract certain field(s) of the returned object into
-    top-level values (in a list) or columns (in a dataframe).
+    with customized lambdas to extract certain field(s) of the output into
+    values (in a list) or columns (in a dataframe).
     """
     results: List[MapBlockResult[DTOCLS]] = DTOField(
         default=[], description='List of results of block model run outputs')
