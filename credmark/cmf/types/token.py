@@ -66,24 +66,22 @@ class Token(Contract):
                          ] + Contract.Config.schema_extra['examples']
         }
 
-    def __new__(cls, **data):
+    def __new__(cls, **kwargs):
         context = credmark.cmf.model.ModelContext.current_context()
 
         token_data = None
-        if 'symbol' in data:
+        if 'symbol' in kwargs:
             token_data = get_token_from_configuration(
-                chain_id=str(context.chain_id), symbol=data['symbol'], is_native_token=True)
+                chain_id=str(context.chain_id), symbol=kwargs['symbol'], is_native_token=True)
 
-        if 'address' in data:
+        if 'address' in kwargs:
             token_data = get_token_from_configuration(
-                chain_id=str(context.chain_id), address=data['address'], is_native_token=True)
+                chain_id=str(context.chain_id), address=kwargs['address'], is_native_token=True)
 
         if token_data is not None:
             return NativeToken()
         else:
-            obj = super().__new__(cls)
-            obj.__init__(**data)
-            return obj
+            return super().__new__(cls)
 
     def __init__(self, **data):
         if 'address' not in data and 'symbol' not in data:
@@ -179,7 +177,7 @@ class Token(Contract):
     def scaled(self, value) -> float:
         return value / (10 ** self.decimals)
 
-    @property
+    @ property
     def fiat(self) -> bool:
         return False
 
