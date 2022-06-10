@@ -4,6 +4,7 @@ import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.cmf.types.currency import Currency
 
+from .abi import ABI
 from .contract import Contract
 from .address import NATIVE_TOKEN_ADDRESS, Address
 from .data.fungible_token_data import FUNGIBLE_TOKEN_DATA, ERC20_GENERIC_ABI
@@ -92,7 +93,7 @@ class Token(Contract, Currency):
             return
 
         if self._meta.abi is None:
-            self._meta.abi = ERC20_GENERIC_ABI
+            self._meta.abi = ABI(ERC20_GENERIC_ABI)
 
         super()._load()
 
@@ -169,7 +170,7 @@ class NativeToken(Token):
         data = {"address": NATIVE_TOKEN_ADDRESS}
         super().__init__(**data)
         if context.chain_id == 1:
-            self._meta.abi = []
+            self._meta.abi = ABI([])
             self._meta.symbol = "ETH"
             self._meta.decimals = 18
             self._meta.name = "Ethereum"

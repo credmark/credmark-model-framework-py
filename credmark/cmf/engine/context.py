@@ -14,6 +14,7 @@ from credmark.cmf.model.errors import MaxModelRunDepthError, ModelBaseError, \
 from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.engine.mocks import ModelMockException, ModelMockRunner
+from credmark.cmf.model.context import RunModelMethod
 from credmark.dto.transform import DataTransformError, transform_data_for_dto
 from credmark.cmf.engine.web3_registry import Web3Registry
 from credmark.dto import DTOType, EmptyInput, DTOValidationError
@@ -64,6 +65,11 @@ class EngineModelContext(ModelContext):
     _model_manifest_map: dict[str, dict] = {}
     _model_underscore_manifest_map: dict[str, dict] = {}
 
+    @classmethod
+    def _clear_model_manifest_maps(cls):
+        cls._model_manifest_map.clear()
+        cls._model_underscore_manifest_map.clear()
+
     # Set of model slugs to use the local version.
     use_local_models_slugs: Set[str] = set()
 
@@ -91,6 +97,66 @@ class EngineModelContext(ModelContext):
         cls._model_mock_runner = model_mock_runner
 
     @classmethod
+    def create_context(cls,  # pylint: disable=too-many-arguments,too-many-locals
+                       chain_id: int,
+                       block_number: Union[int, None],
+                       model_loader: Union[ModelLoader,
+                                           None] = None,
+                       chain_to_provider_url: Union[dict[str, str], None] = None,
+                       api_url: Union[str, None] = None,
+                       run_id: Union[str, None] = None,
+                       depth: int = 0,
+                       console: bool = False,
+                       use_local_models: Union[str, None] = None
+                       ):
+        """
+        Parameters:
+            block_number: if None, latest block is used
+            run_id (str | None): a string to identify a particular model run. It is
+                same for any other models run from within a model.
+        """
+
+        if console:
+            cls.dev_mode = True
+            RunModelMethod.interactive_docs = True
+            # Clear the previous context when we re-create context in the interactive console.
+            ModelContext.set_current_context(None)
+
+        if model_loader is None:
+            model_loader = ModelLoader(['.'])
+
+        api = ModelApi.api_for_url(api_url)
+
+        web3_registry = Web3Registry(chain_to_provider_url)
+
+        if use_local_models is not None and len(use_local_models):
+            local_model_slugs = use_local_models.split(',')
+            cls.logger.debug(f'Use local models {local_model_slugs}')
+            cls.use_local_models_slugs.update(local_model_slugs)
+
+        if cls.dev_mode:
+            cls.use_local_models_slugs.update(
+                model_loader.loaded_dev_model_slugs())
+            cls.logger.debug(
+                'Using local models (requested + dev models): '
+                f'{cls.use_local_models_slugs}')
+
+        if block_number is None:
+            # Lookup latest block number if none specified
+            block_number = cls.get_latest_block_number(api, chain_id)
+            cls.logger.info(f'Using latest block number {block_number}')
+
+        context = EngineModelContext(
+            chain_id, block_number, web3_registry,
+            run_id, depth, model_loader, api, is_top_level=not console)
+
+        if console:
+            context.is_active = True
+            ModelContext.set_current_context(context)
+
+        return context
+
+    @classmethod
     def create_context_and_run_model(cls,  # pylint: disable=too-many-arguments,too-many-locals
                                      chain_id: int,
                                      block_number: Union[int, None],
@@ -102,7 +168,8 @@ class EngineModelContext(ModelContext):
                                      chain_to_provider_url: Union[dict[str, str], None] = None,
                                      api_url: Union[str, None] = None,
                                      run_id: Union[str, None] = None,
-                                     depth: int = 0):
+                                     depth: int = 0,
+                                     use_local_models: Union[str, None] = None):
         """
         Parameters:
             block_number: if None, latest block is used
@@ -111,29 +178,15 @@ class EngineModelContext(ModelContext):
         Catches all exceptions
         """
         context: Union[EngineModelContext, None] = None
+
         try:
-            if model_loader is None:
-                model_loader = ModelLoader(['.'])
-
-            api = ModelApi.api_for_url(api_url)
-
-            web3_registry = Web3Registry(chain_to_provider_url)
-
-            if cls.dev_mode:
-                cls.use_local_models_slugs.update(
-                    model_loader.loaded_dev_model_slugs())
-            cls.logger.debug(
-                'Using local models (requested + dev models): '
-                f'{cls.use_local_models_slugs}')
-
-            if block_number is None:
-                # Lookup latest block number if none specified
-                block_number = cls.get_latest_block_number(api, chain_id)
-                cls.logger.info(f'Using latest block number {block_number}')
-
-            context = EngineModelContext(
-                chain_id, block_number, web3_registry,
-                run_id, depth, model_loader, api, True)
+            context = cls.create_context(chain_id, block_number, model_loader,
+                                         chain_to_provider_url,
+                                         api_url,
+                                         run_id,
+                                         depth,
+                                         console=False,
+                                         use_local_models=use_local_models)
 
             if input is None:
                 input = {}
@@ -165,7 +218,6 @@ class EngineModelContext(ModelContext):
         block_number = int(context.block_number)
 
         try:
-
             ModelContext._current_context = context
 
             # We set the block_number in the context above so we pass in
@@ -336,6 +388,21 @@ class EngineModelContext(ModelContext):
         # Transform to the requested return type
         return transform_data_for_dto(output, return_type, slug, 'output')
 
+    def set_current(self):
+        ModelContext.set_current_context(self)
+
+    def reload_model(self):
+        self.__model_loader.reload()
+        EngineModelContext._clear_model_manifest_maps()
+
+    def add_model(self, mclass: Type[Model], replace=True):
+        self.__model_loader.add_model(mclass, replace)
+        EngineModelContext._clear_model_manifest_maps()
+
+    def remove_model_by_slug(self, model_slug):
+        self.__model_loader.remove_model_by_slug(model_slug)
+        EngineModelContext._clear_model_manifest_maps()
+
     def _run_model(self,
                    slug: str,
                    input: Union[dict, DTOType],
@@ -356,6 +423,17 @@ class EngineModelContext(ModelContext):
             or self._favor_local_model_for_slug(slug)
         # when using the cli, we allow running remote models as top level
         try_remote = not is_top_level_inactive or is_cli
+
+        debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
+
+        if debug_log:
+            self.debug_logger.debug(
+                f'Run model states: {self.dev_mode=}, {self.run_id=}, {self.test_mode=}, '
+                f'{self._favor_local_model_for_slug(slug)=} {self.is_active=}')
+            self.debug_logger.debug(
+                f'{is_cli=}, {is_top_level_inactive=}, {try_remote=}, {slug=}, '
+                f'{force_local=}, {use_local=}, '
+                f'{block_number=}')
 
         try:
             model_class = self.__model_loader.get_model_class(slug, version, force_local)
@@ -423,8 +501,9 @@ class EngineModelContext(ModelContext):
 
         api = self.__api
 
-        if use_local and model_class is not None:
+        debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
 
+        if use_local and model_class is not None:
             slug, version, output = self._run_local_model_with_class(
                 slug,
                 input,
@@ -436,10 +515,10 @@ class EngineModelContext(ModelContext):
             run_block_number = block_number if block_number is not None else self.block_number
 
             try:
-                debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
-
                 if debug_log:
-                    self.debug_logger.debug(f"> Run API model '{slug}' input: {input}")
+                    self.debug_logger.debug(
+                        f"> Run API model '{slug}' input: {input} "
+                        f"run_block_number: {run_block_number}")
 
                 slug, version, output, error, dependencies = api.run_model(
                     slug, version, self.chain_id,
@@ -453,14 +532,18 @@ class EngineModelContext(ModelContext):
                 # Any error raised will already have a call stack entry
                 if error is not None:
                     if debug_log:
-                        self.debug_logger.debug(f"< Run API model '{slug}' error: {error}")
+                        self.debug_logger.debug(
+                            f"< Run API model '{slug}' error: {error} "
+                            f"run_block_number: {run_block_number}")
                     raise create_instance_from_error_dict(error)
 
                 EngineModelContext.notify_model_run(slug, version, self.chain_id,
                                                     run_block_number, input, output, error)
 
                 if debug_log:
-                    self.debug_logger.debug(f"< Run API model '{slug}' output: {output}")
+                    self.debug_logger.debug(
+                        f"< Run API model '{slug}' output: {output} "
+                        f"run_block_number: {run_block_number}")
 
             except ModelNotFoundError as err:
                 # We always fallback to local if model not found on server.
@@ -537,7 +620,8 @@ class EngineModelContext(ModelContext):
             model = model_class(context)
 
             if debug_log:
-                self.debug_logger.debug(f"> Run model '{slug}' input: {input}")
+                self.debug_logger.debug(
+                    f"> Run model '{slug}' input: {input} block_number: {block_number}")
 
             output = model.run(input)
 
@@ -556,7 +640,8 @@ class EngineModelContext(ModelContext):
                                                 context.block_number, input, output, None)
 
             if debug_log:
-                self.debug_logger.debug(f"< Run model '{slug}' output: {output}")
+                self.debug_logger.debug(
+                    f"< Run model '{slug}' output: {output} block_number: {block_number}")
 
         except Exception as err:
             if isinstance(err, (DataTransformError, DTOValidationError)):
@@ -564,7 +649,8 @@ class EngineModelContext(ModelContext):
                 err = ModelTypeError(str(err))
                 trace = traceback.format_exc(limit=30)
                 if debug_log:
-                    self.debug_logger.debug(f"< Run model '{slug}' error: {err}")
+                    self.debug_logger.debug(
+                        f"< Run model '{slug}' error: {err} block_number: {block_number}")
 
             elif isinstance(err, ModelBaseError):
                 _exc_type, _exc_value, exc_traceback = sys.exc_info()
@@ -579,7 +665,8 @@ class EngineModelContext(ModelContext):
                 err.transform_data_detail(None)
 
                 if debug_log:
-                    self.debug_logger.debug(f"< Run model '{slug}' error: {err}")
+                    self.debug_logger.debug(
+                        f"< Run model '{slug}' error: {err}")
             else:
                 err_msg = f'Exception running model {slug}({input}) on ' \
                     f'chain {context.chain_id} ' \

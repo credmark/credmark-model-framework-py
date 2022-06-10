@@ -1,5 +1,5 @@
 
-from credmark.dto import DTO  # type: ignore
+from credmark.dto import DTO, DTOField  # type: ignore
 
 
 class Currency(DTO):
@@ -13,5 +13,5 @@ class FiatCurrency(Currency):
     This is Fiat Currency. It's used as inputs to pricing and currency models.
     """
 
-    symbol: str = 'USD'
-    name: str = 'United States Dollar'
+    symbol: str
+    name: str = DTOField('')

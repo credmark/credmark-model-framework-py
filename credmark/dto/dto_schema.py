@@ -35,7 +35,7 @@ def dto_schema_viz(head_node,  # pylint: disable=too-many-arguments,too-many-loc
                 # DTO with example
                 if ret_type == 'example' and ('examples' in node or 'example' in node):
                     # return [{var_name: v} for v in node.get('examples', node.get('example'))]
-                    return node.get('examples', node.get('example'))[:limit]
+                    return node.get('examples', [node.get('example')])[:limit]
 
                 # DTO without example
                 if ret_type == 'tree':

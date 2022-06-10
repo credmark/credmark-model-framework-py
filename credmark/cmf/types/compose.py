@@ -27,6 +27,13 @@ class MapInputsResult(GenericDTO, Generic[INPUTDTOCLS, DTOCLS]):
         default=None,
         description='Error DTO from model run. Will not be present if output exists.')
 
+    class Config:
+        schema_extra = {
+            'examples': [{'input': {'address': '0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72'},
+                          'output': {'result': 42},
+                          'error': None}]
+        }
+
 
 class MapInputsOutput(IterableListGenericDTO[MapInputsResult[INPUTDTOCLS, DTOCLS]],
                       Generic[INPUTDTOCLS, DTOCLS]):
@@ -45,10 +52,52 @@ class MapInputsOutput(IterableListGenericDTO[MapInputsResult[INPUTDTOCLS, DTOCLS
     will be added to the series array.
     If a non-permament error occurs during a model run, the entire series
     will generate an error.
+
+    The output can be converted to list (to_list) or Panda's DataFrame (to_dataframe())
+    with customized lambdas to extract certain field(s) of the output into
+    values (in a list) or columns (in a dataframe).
     """
     results: List[MapInputsResult[INPUTDTOCLS, DTOCLS]] = DTOField(
         default=[], description='List of model run results')
     _iterator: str = PrivateAttr('results')
+
+    class Config:
+        schema_extra = {
+            'examples': [{'results': ex}
+                         for ex in
+                         MapInputsResult[INPUTDTOCLS, DTOCLS].Config.schema_extra['examples']]
+        }
+
+    def to_list(self, fields: Optional[List[Callable]] = None) -> List[List]:
+        """
+        Parameters:
+            fields (List[Callable] | None): List of lambda to extract certain field from output.
+                Leave empty to extract the entire output.
+        Extract tuples from results data
+        """
+        if fields is None:
+            return [[p.input,
+                    p.output,
+                    p.error]
+                    for p in self.results]
+        else:
+            return [[p.input, *[f(p.output) for f in fields], p.error]
+                    for p in self.results]
+
+    def to_dataframe(self, fields: Optional[List[Tuple[str, Callable]]] = None) -> pd.DataFrame:
+        """
+        Parameters:
+            fields (List[Tuple[str, Callable]] | None): List of field name and lambda to extract
+                certain field from output. Leave empty to extract the entire output.
+        Extract tuples from results data
+
+        """
+        results_as_list = self.to_list(fields=None if fields is None else [f for (_, f) in fields])
+        if fields is None:
+            return pd.DataFrame(results_as_list, columns=['input', 'output', 'error'])
+        else:
+            return pd.DataFrame(results_as_list,
+                                columns=['input'] + [c for c, _ in fields] + ['error'])
 
 
 class MapBlockResult(GenericDTO, Generic[DTOCLS]):
@@ -84,6 +133,10 @@ class MapBlocksOutput(IterableListGenericDTO[MapBlockResult[DTOCLS]], Generic[DT
     will be added to the series array.
     If a non-permament error occurs during a model run, the entire series
     will generate an error.
+
+    The output can be converted to list (to_list) or Panda's DataFrame (to_dataframe())
+    with customized lambdas to extract certain field(s) of the output into
+    values (in a list) or columns (in a dataframe).
     """
     results: List[MapBlockResult[DTOCLS]] = DTOField(
         default=[], description='List of results of block model run outputs')
@@ -109,12 +162,14 @@ class MapBlocksOutput(IterableListGenericDTO[MapBlockResult[DTOCLS]], Generic[DT
         if fields is None:
             return [[p.blockNumber,
                     datetime.utcfromtimestamp(p.blockNumber.timestamp),
-                    p.output]
+                    p.output,
+                    p.error]
                     for p in self.results]
         else:
             return [([p.blockNumber,
                     datetime.utcfromtimestamp(p.blockNumber.timestamp)] +
-                    [f(p.output) for f in fields])
+                    [f(p.output) for f in fields] +
+                    [p.error])
                     for p in self.results]
 
     def to_dataframe(self, fields: Optional[List[Tuple[str, Callable]]] = None) -> pd.DataFrame:
@@ -127,13 +182,16 @@ class MapBlocksOutput(IterableListGenericDTO[MapBlockResult[DTOCLS]], Generic[DT
         """
         results_as_list = self.to_list(fields=None if fields is None else [f for (_, f) in fields])
         if fields is None:
-            return pd.DataFrame(results_as_list, columns=['blockNumber', 'blockTime', 'output'])
+            return pd.DataFrame(results_as_list,
+                                columns=['blockNumber', 'blockTime', 'output', 'error'])
         else:
             return pd.DataFrame(results_as_list,
-                                columns=['blockNumber', 'blockTime'] + [c for c, _ in fields])
+                                columns=(['blockNumber', 'blockTime'] +
+                                         [c for c, _ in fields] +
+                                         ['error']))
 
 
-class MapBlockTimeSeries(MapBlocksOutput):
+class MapBlockTimeSeriesOutput(MapBlocksOutput[DTOCLS], Generic[DTOCLS]):
     """
     Output for the compose.map-block-time-series model.
     """

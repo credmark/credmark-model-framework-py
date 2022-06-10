@@ -68,6 +68,10 @@ class EmptyInput(DTO):
     """
     The model does not require any input. This is an empty object.
     """
+    class Config:
+        schema_extra: dict = {
+            'examples': [{}]
+        }
 
 
 class IntDTO(int):

@@ -8,7 +8,6 @@ from .errors import ModelNoContextError
 from .ledger import Ledger
 import credmark.cmf.types
 from credmark.dto import DTOType, DTOTypesTuple, EmptyInput
-from .utils.contract_util import ContractUtil
 from .utils.historical_util import HistoricalUtil
 
 DTOT = TypeVar('DTOT')
@@ -182,6 +181,10 @@ class ModelContext:
             else:
                 return super().__dir__()
 
+        def reload(self):
+            if RunModelMethod.interactive_docs:
+                self.__context._model_reload()  # pylint: disable=protected-access
+
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry):
         self._chain_id = chain_id
@@ -189,7 +192,6 @@ class ModelContext:
         self._web3 = None
         self._web3_registry = web3_registry
         self._ledger = None
-        self._contract_util = None
         self._historical_util = None
         self._models = None
 
@@ -285,16 +287,6 @@ class ModelContext:
         if self._ledger is None:
             self._ledger = Ledger(self)
         return self._ledger
-
-    @property
-    def contracts(self) -> ContractUtil:
-        """
-        A :class:`~credmark.cmf.model.utils.contract_util.ContractUtil`
-        instance which can be used to look up contracts.
-        """
-        if self._contract_util is None:
-            self._contract_util = ContractUtil(self)
-        return self._contract_util
 
     @property
     def historical(self) -> HistoricalUtil:
