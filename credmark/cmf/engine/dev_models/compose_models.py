@@ -1,6 +1,6 @@
 from credmark.cmf.model import Model
 from credmark.cmf.model.errors import ModelDataError
-from credmark.cmf.types.compose import (MapBlockResult, MapBlockTimeSeries,
+from credmark.cmf.types.compose import (MapBlockResult, MapBlockTimeSeriesOutput,
                                         MapBlockTimeSeriesInput, MapBlocksInput,
                                         MapBlocksOutput, MapInputsInput,
                                         MapInputsOutput, MapInputsResult)
@@ -26,10 +26,10 @@ class LedgerModelSlugs:
                 description='Run a model on each of a time series of blocks',
                 developer='Credmark',
                 input=MapBlockTimeSeriesInput,
-                output=MapBlockTimeSeries[dict])
+                output=MapBlockTimeSeriesOutput[dict])
 class ComposeMapBlockTimeSeriesModel(Model):
 
-    def run(self, input: MapBlockTimeSeriesInput) -> MapBlockTimeSeries[dict]:
+    def run(self, input: MapBlockTimeSeriesInput) -> MapBlockTimeSeriesOutput[dict]:
         context = self.context
 
         ts_input = LedgerBlockTimeSeriesInput(
@@ -67,10 +67,10 @@ class ComposeMapBlockTimeSeriesModel(Model):
 
             results.append(row)
 
-        return MapBlockTimeSeries[dict](endTimestamp=input.endTimestamp,
-                                        interval=input.interval,
-                                        exclusive=bool(input.exclusive),
-                                        results=results)
+        return MapBlockTimeSeriesOutput[dict](endTimestamp=input.endTimestamp,
+                                              interval=input.interval,
+                                              exclusive=bool(input.exclusive),
+                                              results=results)
 
 
 @Model.describe(slug='compose.map-blocks',

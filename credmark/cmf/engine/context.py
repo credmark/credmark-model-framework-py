@@ -424,7 +424,6 @@ class EngineModelContext(ModelContext):
         api = self.__api
 
         if use_local and model_class is not None:
-
             slug, version, output = self._run_local_model_with_class(
                 slug,
                 input,
