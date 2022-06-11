@@ -1,5 +1,5 @@
 from typing import List, Optional, TypeVar, Union, Generic, Tuple, Callable
-from credmark.dto import DTO, GenericDTO, DTOField, PrivateAttr, IterableListGenericDTO
+from credmark.dto import DTO, DTOType, GenericDTO, DTOField, PrivateAttr, IterableListGenericDTO
 from credmark.cmf.model.errors import ModelErrorDTO
 import pandas as pd
 from datetime import datetime
@@ -107,7 +107,7 @@ class SeriesModelStartEndIntervalInput(DTO):
     interval: int
     start: int
     end: int
-    modelInput: Union[dict, DTO, None] = None
+    modelInput: Union[dict, DTOType, None] = None
     modelSlug: str
     modelVersion: Optional[str] = None
 
@@ -115,6 +115,6 @@ class SeriesModelStartEndIntervalInput(DTO):
 class SeriesModelWindowIntervalInput(DTO):
     window: int
     interval: int
-    modelInput: Union[dict, DTO, None] = None
+    modelInput: Union[dict, DTOType, None] = None
     modelSlug: str
     modelVersion: Optional[str] = None

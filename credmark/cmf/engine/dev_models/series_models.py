@@ -7,7 +7,7 @@ from credmark.cmf.types.series import BlockSeries, BlockSeriesRow, \
     BlockSeriesErrorRow
 from credmark.cmf.types.rpc import RpcBlockRangeOutput, \
     RpcBlockStartEndIntervalInput, RpcBlockWindowIntervalInput
-from credmark.dto import DTO
+from credmark.dto import DTOType
 
 
 class RpcModelSlugs:
@@ -38,7 +38,7 @@ class RpcModelSlugs:
 def run_model_for_block_range(context: ModelContext,
                               block_range: RpcBlockRangeOutput,
                               model_slug: str,
-                              model_input: Union[DTO, dict, None],
+                              model_input: Union[DTOType, dict, None],
                               model_version: Union[str, None]):
     if model_input is None:
         model_input = {}

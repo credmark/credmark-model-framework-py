@@ -17,7 +17,7 @@ from credmark.cmf.engine.mocks import ModelMockException, ModelMockRunner
 from credmark.cmf.model.context import RunModelMethod
 from credmark.dto.transform import DataTransformError, transform_data_for_dto
 from credmark.cmf.engine.web3_registry import Web3Registry
-from credmark.dto import DTO, EmptyInput, DTOValidationError
+from credmark.dto import DTOType, EmptyInput, DTOValidationError
 
 
 RPC_GET_LATEST_BLOCK_NUMBER_SLUG = 'rpc.get-latest-blocknumber'
@@ -85,8 +85,8 @@ class EngineModelContext(ModelContext):
     def notify_model_run(cls,
                          slug: str, version: Union[str, None],
                          chain_id: int, block_number: int,
-                         input: Union[dict, DTO],
-                         output: Union[dict, DTO, None],
+                         input: Union[dict, DTOType],
+                         output: Union[dict, DTOType, None],
                          error: Union[ModelBaseError, None]):
         for listener in cls._model_run_listeners:
             listener(slug, version, chain_id, block_number,
@@ -212,7 +212,7 @@ class EngineModelContext(ModelContext):
                                context: 'EngineModelContext',
                                model_slug: str,
                                model_version: Union[str, None],
-                               input: Union[dict, DTO],
+                               input: Union[dict, DTOType],
                                transform_output_to_dict=True):
         chain_id = context.chain_id
         block_number = int(context.block_number)
@@ -405,7 +405,7 @@ class EngineModelContext(ModelContext):
 
     def _run_model(self,
                    slug: str,
-                   input: Union[dict, DTO],
+                   input: Union[dict, DTOType],
                    block_number: Union[int, None],
                    version: Union[str, None]
                    ):
@@ -492,7 +492,7 @@ class EngineModelContext(ModelContext):
 
     def _run_model_with_class(self,  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches
                               slug: str,
-                              input: Union[dict, DTO],
+                              input: Union[dict, DTOType],
                               block_number: Union[int, None],
                               version: Union[str, None],
                               model_class: Union[Type[Model], None],
@@ -578,7 +578,7 @@ class EngineModelContext(ModelContext):
 
     def _run_local_model_with_class(self,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
                                     slug: str,
-                                    input: Union[dict, DTO],
+                                    input: Union[dict, DTOType],
                                     block_number: Union[int, None],
                                     version: Union[str, None],
                                     model_class: Type[Model]):

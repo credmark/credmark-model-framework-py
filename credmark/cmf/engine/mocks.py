@@ -2,7 +2,7 @@ import logging
 import os
 from typing import List, Union
 from credmark.cmf.model.errors import ModelBaseError, ModelDataError
-from credmark.dto import DTO
+from credmark.dto import DTOType
 
 
 class ModelMockException(Exception):
@@ -54,8 +54,8 @@ class ModelMock:
     """
 
     def __init__(self,
-                 output: Union[dict, DTO, ModelBaseError, str,
-                               List[Union[dict, DTO, ModelBaseError, str, 'ModelMock']]],
+                 output: Union[dict, DTOType, ModelBaseError, str,
+                               List[Union[dict, DTOType, ModelBaseError, str, 'ModelMock']]],
                  input: Union[dict, None] = None,
                  repeat=0):
 
@@ -193,8 +193,8 @@ class MockGenerator:
                   _version: Union[str, None],
                   _chain_id: int,
                   _block_number: int,
-                  _input: Union[dict, DTO, None],
-                  output: Union[dict, DTO, None],
+                  _input: Union[dict, DTOType, None],
+                  output: Union[dict, DTOType, None],
                   error: ModelBaseError):
         if slug not in self.model_map:
             self.model_map[slug] = []
@@ -216,7 +216,7 @@ class MockEntryCursor:
                     mocks: Union[ModelMock, List[ModelMock]],
                     model_input: dict,
                     depth=0,
-                    loop=0) -> Union[dict, DTO, str, ModelBaseError, None]:
+                    loop=0) -> Union[dict, DTOType, str, ModelBaseError, None]:
         # If a list (and not a mock), we don't repeat
         repeat = mocks.repeat if isinstance(mocks, ModelMock) else 1
 
@@ -351,7 +351,7 @@ class ModelMockRunner:
                 raise Exception(
                     f'Model mock value for slug {slug} must be a string, dict, list, or tuple.')
 
-    def output_for_model(self, slug: str, input: dict) -> Union[dict, DTO, str]:
+    def output_for_model(self, slug: str, input: dict) -> Union[dict, DTOType, str]:
         match_list = self._slug_match_list_map.get(slug)
         if match_list is not None:
 

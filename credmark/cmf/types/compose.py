@@ -1,6 +1,6 @@
 from typing import List, Optional, TypeVar, Union, Generic, Tuple, Callable
 from .block_number import BlockNumber
-from credmark.dto import DTO, GenericDTO, DTOField, PrivateAttr, IterableListGenericDTO
+from credmark.dto import DTO, DTOType, GenericDTO, DTOField, PrivateAttr, IterableListGenericDTO
 from credmark.cmf.model.errors import ModelErrorDTO
 import pandas as pd
 from datetime import datetime
@@ -212,7 +212,7 @@ class MapBlockTimeSeriesInput(DTO):
     count: int = DTOField(description='Number of intervals in the series.')
     exclusive: Union[bool, None] = DTOField(
         default=False, description='If true, blocks are exclusive of end timestamp')
-    modelInput: Union[dict, DTO, None] = DTOField(
+    modelInput: Union[dict, DTOType, None] = DTOField(
         default=None,
         description='Input for the model run at each block number.')
     modelSlug: str = DTOField(description='Slug of model to run at each block number.')
@@ -225,7 +225,7 @@ class MapInputsInput(DTO):
     """
     Input for the compose.map-inputs model.
     """
-    modelInputs: List[Union[dict, DTO]] = DTOField(
+    modelInputs: List[Union[dict, DTOType]] = DTOField(
         description='A list of inputs. The specified model will be run once with each input.')
     modelSlug: str = DTOField(description='Slug of model to run with each input.')
     modelVersion: Optional[str] = DTOField(
@@ -240,7 +240,7 @@ class MapBlocksInput(DTO):
     blockNumbers: List[BlockNumber] = DTOField(
         description='List of block numbers. The specified model will be run for each block number.'
     )
-    modelInput: Union[dict, DTO, None] = DTOField(
+    modelInput: Union[dict, DTOType, None] = DTOField(
         default=None,
         description='Input for the model run at each block number.')
     modelSlug: str = DTOField(description='Slug of model to run at each block number.')

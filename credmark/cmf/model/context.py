@@ -7,7 +7,7 @@ from .print import print_manifest_description
 from .errors import ModelNoContextError
 from .ledger import Ledger
 import credmark.cmf.types
-from credmark.dto import DTO, EmptyInput
+from credmark.dto import DTOType, DTOTypesTuple, EmptyInput
 from .utils.historical_util import HistoricalUtil
 
 DTOT = TypeVar('DTOT')
@@ -47,23 +47,23 @@ class RunModelMethod:
     # run a model. args can be a positional DTO or dict or kwargs
     @overload
     def __call__(self,
-                 input: Union[DTO, dict, None] = None,
+                 input: Union[DTOType, dict, None] = None,
                  return_type: Union[dict, None] = None,
                  **kwargs) -> dict:
         ...
 
     @overload
     def __call__(self,
-                 input: Union[DTO, dict, None] = None,
-                 return_type: Type[DTO] = EmptyInput,
-                 **kwargs) -> DTO:
+                 input: Union[DTOType, dict, None] = None,
+                 return_type: Type[DTOType] = EmptyInput,
+                 **kwargs) -> DTOType:
         ...
 
     def __call__(self,
-                 input: Union[DTO, dict, None] = None,
-                 return_type: Union[dict, Type[DTO], None] = None,
-                 **kwargs) -> Union[dict, DTO]:
-        if isinstance(input, DTO):
+                 input: Union[DTOType, dict, None] = None,
+                 return_type: Union[dict, Type[DTOType], None] = None,
+                 **kwargs) -> Union[dict, DTOType]:
+        if isinstance(input, DTOTypesTuple):
             input = input.dict()
         elif input is None:
             input = kwargs
@@ -303,7 +303,7 @@ class ModelContext:
     @abstractmethod
     def run_model(self,
                   slug: str,
-                  input: Union[dict, DTO],
+                  input: Union[dict, DTOType],
                   return_type: Type[DTOT],
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,
@@ -313,7 +313,7 @@ class ModelContext:
     @abstractmethod
     def run_model(self,
                   slug: str,
-                  input: Union[dict, DTO] = EmptyInput(),
+                  input: Union[dict, DTOType] = EmptyInput(),
                   return_type: Union[Type[dict], None] = None,
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,

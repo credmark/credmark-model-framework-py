@@ -11,7 +11,8 @@ from web3.types import (
 )
 
 from credmark.dto import (
-    DTO
+    DTO,
+    IntDTO
 )
 
 import credmark.cmf.model
@@ -48,7 +49,18 @@ class BlockNumberOutOfRangeError(ModelInvalidStateError):
         return BlockNumberOutOfRangeError(message=message, detail=detail)
 
 
-class BlockNumber(int):
+class BlockNumber(IntDTO):
+    """
+    A block number which is a subclass of ``int`` so it can be used
+    as a normal integer. It can also be used to get the timestamp
+    for a block number and may have an associated sample_timestamp
+    if the block number was determined based on a timestamp (for example
+    when querying for block numbers from the ledger.)
+
+    A BlockNumber can be used as a DTO input or output to a model.
+    When used as a top-level DTO it is serialized as a dict, otherwise
+    it is serialized as a number.
+    """
     @classmethod
     def list_with_interval(cls,
                            end_block_number: int,
@@ -64,23 +76,35 @@ class BlockNumber(int):
         return [BlockNumber(end_block_number - (i * interval)) for i in range(count - 1, -1, -1)]
 
     @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    # A pydantic validator so instances can be deserialized
-    # from an int or a dict with number, timestamp, and sampleTimestamp.
-    @classmethod
-    def validate(cls, i):
-        if isinstance(i, int):
-            return cls(i)
-        if isinstance(i, dict):
-            return cls(**i)
-        raise TypeError('BlockNumber must be deserialized with an int or dict')
+    def schema(cls):
+        return {'title': cls.__name__,
+                'description': 'DTO for a block number.',
+                'type': 'object',
+                'properties': {
+                    'number': {
+                        'title': 'Number',
+                        'description': 'Block number as integer',
+                        'type': 'integer'
+                    },
+                    'timestamp': {
+                        'title': 'Timestamp',
+                        'description': 'Timestamp of the block as seconds since epoch',
+                        'type': 'integer'
+                    },
+                    'sampleTimestamp': {
+                        'title': 'SampleTimestamp',
+                        'description':
+                        'Timestamp used as an upper limit when sampling a block number',
+                        'type': 'integer'
+                    }
+                },
+                'required': ['number']}
 
     def __new__(cls,
                 number: int,
                 timestamp: Union[Timestamp, None] = None,  # pylint: disable=unused-argument
-                sampleTimestamp: Union[Timestamp, None] = None):  # pylint: disable=unused-argument
+                sampleTimestamp: Union[Timestamp, None] = None,
+                **_kwargs):  # pylint: disable=unused-argument
 
         context = credmark.cmf.model.ModelContext.get_current_context()
         if context is not None and number > context.block_number:
@@ -102,6 +126,17 @@ class BlockNumber(int):
         self._timestamp = timestamp
         self.sample_timestamp = sampleTimestamp
         super().__init__()
+
+    def dict(self):
+        """Dict to serialize if its a top-level DTO"""
+        d = {
+            "number": int(self),
+        }
+        if self._timestamp is not None:
+            d['timestamp'] = self._timestamp
+        if self.sample_timestamp is not None:
+            d['sampleTimestamp'] = self.sample_timestamp
+        return d
 
     def __add__(self, number):
         return BlockNumber(super().__add__(number))

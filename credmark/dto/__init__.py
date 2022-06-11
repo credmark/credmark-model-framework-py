@@ -1,7 +1,7 @@
 # pylint: disable=locally-disabled, unused-import
 
 import re
-from typing import Any, Dict, Generic, Iterator, List, TypeVar
+from typing import Any, Dict, Generic, Iterator, List, TypeVar, Union
 from pydantic import (
     BaseModel as DTO,
     Field as DTOField,
@@ -72,6 +72,145 @@ class EmptyInput(DTO):
         schema_extra: dict = {
             'examples': [{}]
         }
+
+
+class IntDTO(int):
+    """
+    A DTO that can be used as an integer output (or input) to a model.
+    When used as a top-level DTO it is serialized as a dict with a
+    ``value`` field ``{"value": 12345}``, otherwise it is serialized
+    as a number.
+
+    It can be used in python code as a normal integer.
+    """
+    @classmethod
+    def schema(cls):
+        return {'title': cls.__name__,
+                'description': 'DTO for an integer value.',
+                'type': 'object',
+                'properties': {
+                    'value': {
+                        'title': 'Value',
+                        'description': 'An integer',
+                        'type': 'integer'}
+                },
+                'required': ['value']}
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    # A pydantic validator so instances can be deserialized
+    # from an int or a dict.
+    @classmethod
+    def validate(cls, i):
+        if isinstance(i, int):
+            return cls(i)
+        if isinstance(i, dict):
+            return cls(**i)
+        raise TypeError(f'{cls.__name__} must be deserialized with an int or dict')
+
+    def __new__(cls, value: int, **_kwargs):
+        return super().__new__(cls, value)
+
+    def dict(self):
+        return {"value": self}
+
+
+class FloatDTO(float):
+    """
+    A DTO that can be used as an float output (or input) to a model.
+    When used as a top-level DTO it is serialized as a dict with a
+    ``value`` field ``{"value": 123.45}``, otherwise it is serialized
+    as a number.
+
+    It can be used in python code as a normal float.
+    """
+    @classmethod
+    def schema(cls):
+        return {'title': cls.__name__,
+                'description': 'DTO for a float value.',
+                'type': 'object',
+                'properties': {
+                    'value': {
+                        'title': 'Value',
+                        'description': 'A floating-point number',
+                        'type': 'number'}
+                },
+                'required': ['value']}
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    # A pydantic validator so instances can be deserialized
+    # from an float or a dict.
+    @classmethod
+    def validate(cls, i):
+        if isinstance(i, float):
+            return cls(i)
+        if isinstance(i, dict):
+            return cls(**i)
+        raise TypeError(f'{cls.__name__} must be deserialized with an float or dict')
+
+    def __new__(cls, value: float, **_kwargs):
+        return super().__new__(cls, value)
+
+    def dict(self):
+        return {"value": self}
+
+
+class StrDTO(str):
+    """
+    A DTO that can be used as an string output (or input) to a model.
+    When used as a top-level DTO it is serialized as a dict with a
+    ``value`` field ``{"value": "foobar"}``, otherwise it is serialized
+    as a string.
+
+    It can be used in python code as a normal string.
+    """
+    @classmethod
+    def schema(cls):
+        return {'title': cls.__name__,
+                'description': 'DTO for a string value.',
+                'type': 'object',
+                'properties': {
+                    'value': {
+                        'title': 'Value',
+                        'description': 'A string',
+                        'type': 'string'}
+                },
+                'required': ['value']}
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    # A pydantic validator so instances can be deserialized
+    # from an str or a dict.
+    @classmethod
+    def validate(cls, i):
+        if isinstance(i, str):
+            return cls(i)
+        if isinstance(i, dict):
+            return cls(**i)
+        raise TypeError(f'{cls.__name__} must be deserialized with a str or dict')
+
+    def __new__(cls, value: str, **_kwargs):
+        return super().__new__(cls, value)
+
+    def dict(self):
+        return {"value": self}
+
+
+DTOType = Union[DTO, IntDTO, StrDTO, FloatDTO]
+
+DTOTypesTuple = (DTO, IntDTO, StrDTO, FloatDTO)
+"""
+A tuple containing the DTO types superclasses.
+This can be used when checking if an instance is a DTOType
+subclass: ```isinstance(obj, DTOTypesTuple)```
+"""
 
 
 from .dto_schema import (
