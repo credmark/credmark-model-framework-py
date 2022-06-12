@@ -311,7 +311,6 @@ class FiatCurrency(Account):
 
 
 class Currency(DTO):
-
     """
     This is a converter for any Fungible Token and FiatCurrency.
     It's used as inputs to price models.
