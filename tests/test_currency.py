@@ -1,41 +1,79 @@
 import unittest
 from credmark.cmf.engine.model_unittest import ModelTestCase
+from credmark.cmf.model.errors import ModelDataError
 
-from credmark.cmf.types import Currency, FiatCurrency, Address
-from credmark.cmf.types.token import NativeToken, Token
-from credmark.cmf.types.data.fiat_currency_data import FIAT_CURRENCY_DATA
+from credmark.cmf.types import NativeToken, Token, Currency, FiatCurrency, Address
+from credmark.cmf.types.data.fiat_currency_data import (
+    FIAT_CURRENCY_DATA_BY_SYMBOL,
+    FIAT_CURRENCY_DATA_BY_ADDRESS
+)
 
 
 class TestCurrency(ModelTestCase):
     def test_run(self):
-        for symbol, fiat_entry in FIAT_CURRENCY_DATA.items():
-            fc = Currency(symbol=symbol)
-            self.assertTrue(isinstance(fc, FiatCurrency))
-            self.assertEqual(fc.symbol, symbol)
-            self.assertEqual(fc.name, fiat_entry['name'])
-            self.assertEqual(fc.address, Address(fiat_entry['address']))
-            self.assertTrue(fc.fiat)
+        names_set = set()
+        symbols_set = set()
+        addresses_set = set()
+        for symbol, fiat_entry in FIAT_CURRENCY_DATA_BY_SYMBOL.items():
+            self.assertEqual(symbol, fiat_entry['symbol'])
 
-            fc = FiatCurrency(symbol=symbol)
-            self.assertTrue(isinstance(fc, FiatCurrency))
-            self.assertEqual(fc.symbol, symbol)
-            self.assertEqual(fc.name, fiat_entry['name'])
-            self.assertEqual(fc.address, Address(fiat_entry['address']))
-            self.assertTrue(fc.fiat)
+            self.assertTrue('symbol' in fiat_entry)
+            self.assertTrue('name' in fiat_entry)
+            self.assertTrue('address' in fiat_entry)
 
-            fc = Currency(address=Address(fiat_entry['address']))
-            self.assertTrue(isinstance(fc, FiatCurrency))
-            self.assertEqual(fc.symbol, symbol)
-            self.assertEqual(fc.name, fiat_entry['name'])
-            self.assertEqual(fc.address, Address(fiat_entry['address']))
-            self.assertTrue(fc.fiat)
+            self.assertTrue(fiat_entry['symbol'] not in symbols_set and
+                            symbols_set.add(fiat_entry['symbol']) is None)
+            self.assertTrue(fiat_entry['name'] not in names_set and
+                            names_set.add(fiat_entry['name']) is None)
+            self.assertTrue(fiat_entry['address'] not in addresses_set and
+                            addresses_set.add(fiat_entry['address']) is None)
 
-            fc = FiatCurrency(address=Address(fiat_entry['address']))
-            self.assertTrue(isinstance(fc, FiatCurrency))
-            self.assertEqual(fc.symbol, symbol)
-            self.assertEqual(fc.name, fiat_entry['name'])
-            self.assertEqual(fc.address, Address(fiat_entry['address']))
-            self.assertTrue(fc.fiat)
+            for fc in (Currency(symbol=symbol),
+                       FiatCurrency(symbol=symbol),
+                       Currency(address=Address(fiat_entry['address'])),
+                       FiatCurrency(address=Address(fiat_entry['address']))):
+                self.assertTrue(isinstance(fc, FiatCurrency))
+                self.assertEqual(fc.symbol, fiat_entry['symbol'])
+                self.assertEqual(fc.name, fiat_entry['name'])
+                self.assertEqual(fc.address, Address(fiat_entry['address']))
+                self.assertTrue(fc.fiat)
+
+        names_set = set()
+        symbols_set = set()
+        addresses_set = set()
+        for fiat_addr, fiat_entry in FIAT_CURRENCY_DATA_BY_ADDRESS.items():
+            self.assertEqual(fiat_addr, fiat_entry['address'])
+
+            self.assertTrue('symbol' in fiat_entry)
+            self.assertTrue('name' in fiat_entry)
+            self.assertTrue('address' in fiat_entry)
+
+            self.assertTrue(fiat_entry['symbol'] not in symbols_set and
+                            symbols_set.add(fiat_entry['symbol']) is None)
+            self.assertTrue(fiat_entry['name'] not in names_set and
+                            names_set.add(fiat_entry['name']) is None)
+            self.assertTrue(fiat_entry['address'] not in addresses_set and
+                            addresses_set.add(fiat_entry['address']) is None)
+
+            for fc in (Currency(address=Address(fiat_addr)),
+                       FiatCurrency(address=Address(fiat_addr)),
+                       Currency(symbol=fiat_entry['symbol']),
+                       FiatCurrency(symbol=fiat_entry['symbol'])):
+                self.assertTrue(isinstance(fc, FiatCurrency))
+                self.assertEqual(fc.symbol, fiat_entry['symbol'])
+                self.assertEqual(fc.name, fiat_entry['name'])
+                self.assertEqual(fc.address, Address(fiat_entry['address']))
+                self.assertTrue(fc.fiat)
+
+        with self.assertRaises(ModelDataError):
+            FiatCurrency(address=Address('0x0000000000000000000000000000000000000349'))
+
+        with self.assertRaises(ModelDataError):
+            FiatCurrency(symbol='USE', address=Address(
+                '0x0000000000000000000000000000000000000348'))
+
+        with self.assertRaises(ModelDataError):
+            FiatCurrency(symbol='USE')
 
         token = Currency(symbol="CMK")
         self.assertTrue(isinstance(token, Token))
@@ -61,7 +99,15 @@ class TestCurrency(ModelTestCase):
             '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'))
         self.assertFalse(native_token.fiat)
 
-        native_token = NativeToken(symbol='ETH')
+        native_token = NativeToken()
+        self.assertTrue(isinstance(native_token, NativeToken))
+        self.assertEqual(native_token.symbol, "ETH")
+        self.assertEqual(native_token.name, "Ethereum")
+        self.assertEqual(native_token.address, Address(
+            '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'))
+        self.assertFalse(native_token.fiat)
+
+        native_token = NativeToken()
         self.assertTrue(isinstance(native_token, NativeToken))
         self.assertEqual(native_token.symbol, "ETH")
         self.assertEqual(native_token.name, "Ethereum")
