@@ -71,6 +71,8 @@ class EngineModelContext(ModelContext):
         cls._model_underscore_manifest_map.clear()
 
     # Set of model slugs to use the local version.
+    # If set contains "-", no local models will be used.
+    # If set contains "*", we favor using local version of all models.
     use_local_models_slugs: Set[str] = set()
 
     _model_run_listeners: List[Callable] = []
@@ -131,10 +133,17 @@ class EngineModelContext(ModelContext):
 
         if use_local_models is not None and len(use_local_models):
             local_model_slugs = use_local_models.split(',')
-            cls.logger.debug(f'Use local models {local_model_slugs}')
+            if '-' not in local_model_slugs:
+                cls.logger.debug(f'Using local models {local_model_slugs}')
+            else:
+                if len(local_model_slugs) > 1:
+                    cls.logger.warning(
+                        f'Using no local models (conflicting args: {use_local_models})')
+                else:
+                    cls.logger.debug('Using no local models')
             cls.use_local_models_slugs.update(local_model_slugs)
 
-        if cls.dev_mode:
+        if cls.dev_mode and '-' not in cls.use_local_models_slugs:
             cls.use_local_models_slugs.update(
                 model_loader.loaded_dev_model_slugs())
             cls.logger.debug(
@@ -343,6 +352,9 @@ class EngineModelContext(ModelContext):
         return '*' in self.use_local_models_slugs or \
             slug in self.use_local_models_slugs
 
+    def _use_no_local_model(self):
+        return '-' in self.use_local_models_slugs
+
     def run_model(self,
                   slug,
                   input=EmptyInput(),
@@ -419,8 +431,8 @@ class EngineModelContext(ModelContext):
         is_cli = (self.dev_mode and not self.run_id) or self.test_mode
         is_top_level_inactive = self.__is_top_level and not self.is_active
         force_local = self._force_local_model_for_slug(slug)
-        use_local = is_top_level_inactive or force_local or self.test_mode \
-            or self._favor_local_model_for_slug(slug)
+        use_local = (is_top_level_inactive or force_local or self.test_mode
+                     or self._favor_local_model_for_slug(slug)) and not self._use_no_local_model()
         # when using the cli, we allow running remote models as top level
         try_remote = not is_top_level_inactive or is_cli
 
@@ -547,7 +559,7 @@ class EngineModelContext(ModelContext):
 
             except ModelNotFoundError as err:
                 # We always fallback to local if model not found on server.
-                if model_class is not None:
+                if model_class is not None and not self._use_no_local_model():
                     self.logger.debug(f'Model {slug} not on server. Using local instead')
                     slug, version, output = self._run_local_model_with_class(
                         slug,
