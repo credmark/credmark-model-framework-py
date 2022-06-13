@@ -117,7 +117,8 @@ def main():  # pylint: disable=too-many-statements
         '-l', '--use_local_models', default=None,
         help='Comma-separated list of model slugs for models that should '
         'favor use of the local version. This is only required when a model is '
-        'calling another model. Use "*" to favor the use of local versions of all models.')
+        'calling another model. Use "*" to favor the use of local versions of all models.'
+        ' Use "-" to use no local models.')
     parser_run.add_argument(
         '-m', '--model_mocks', default=None,
         help='Module path and symbol of model mocks config to use. '
@@ -181,6 +182,7 @@ def config_logging(args, default_level='WARNING'):
         level=level,
         filename=log_file,
         filemode='w')
+
 
 def load_models(args, load_dev_models=False):
     manifest_file = args.get('manifest_file')
