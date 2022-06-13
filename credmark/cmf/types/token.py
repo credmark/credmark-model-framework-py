@@ -76,13 +76,11 @@ class Token(Contract):
             return super().__new__(cls)
 
         context = credmark.cmf.model.ModelContext.current_context()
-        token_data = None
         symbol = data.get('symbol', None)
         address = data.get('address', None)
 
-        print('__new__', cls, data)
         if symbol is None and address is None:
-            raise ModelDataError('One of address or symbol is required')
+            return super().__new__(cls)
 
         token_data = get_token_from_configuration(
             chain_id=str(context.chain_id),
@@ -92,11 +90,10 @@ class Token(Contract):
 
         if token_data is not None:
             return NativeToken()
-        else:
-            return super().__new__(cls)
+
+        return super().__new__(cls)
 
     def __init__(self, **data):
-        print('__init__', self, data)
         if 'address' not in data and 'symbol' not in data:
             raise ModelDataError('One of address or symbol is required')
 
