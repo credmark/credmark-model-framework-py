@@ -18,11 +18,11 @@ class ABI(list):
         def __repr__(self) -> str:
             return self.__str__()
 
-        @ property
+        @property
         def args(self) -> List[str]:
             return self._args
 
-        @ property
+        @property
         def types(self) -> List[str]:
             return self._types
 
@@ -37,7 +37,7 @@ class ABI(list):
                     f'Types: {self._types}{os.linesep}'
                     f'Output: {self._output}')
 
-        @ property
+        @property
         def output(self) -> List[str]:
             return self._output
 
@@ -105,7 +105,7 @@ class ABI(list):
         self._functions = ABI.Funcs({})
         self._events = ABI.Events({})
 
-    @ property
+    @property
     def functions(self):
         if len(self._functions) == 0:
             self._functions = ABI.Funcs(
@@ -114,7 +114,7 @@ class ABI(list):
                  if 'type' in v and 'name' in v and v['type'] == 'function'})
         return self._functions
 
-    @ property
+    @property
     def events(self):
         if len(self._events) == 0:
             self._events = ABI.Events(
