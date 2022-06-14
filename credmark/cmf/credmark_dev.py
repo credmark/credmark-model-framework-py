@@ -9,7 +9,6 @@ import inspect
 from typing import List, Union
 from dotenv import load_dotenv, find_dotenv
 
-sys.path.append('.')
 from .engine.context import EngineModelContext
 from .engine.model_loader import ModelLoader
 from .engine.mocks import MockGenerator, ModelMockRunner
@@ -34,12 +33,12 @@ def add_api_url_arg(parser):
 
 def main():  # pylint: disable=too-many-statements
     parser = argparse.ArgumentParser(
-        prog='credmark-dev',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='Credmark developer tool')
-
     parser.add_argument('--log_level', default=None, required=False,
                         help='Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL')
+    parser.add_argument('--log_file', default=None, required=False,
+                        help='log file to write')
     parser.add_argument('--model_path', default="models", required=False,
                         help='Semicolon separated paths to the model folders \
                             (or parent) or model python file. Defaults to models folder.')
@@ -117,7 +116,8 @@ def main():  # pylint: disable=too-many-statements
         '-l', '--use_local_models', default=None,
         help='Comma-separated list of model slugs for models that should '
         'favor use of the local version. This is only required when a model is '
-        'calling another model. Use "*" to favor the use of local versions of all models.')
+        'calling another model. Use "*" to favor the use of local versions of all models.'
+        ' Use "-" to use no local models.')
     parser_run.add_argument(
         '-m', '--model_mocks', default=None,
         help='Module path and symbol of model mocks config to use. '
@@ -173,11 +173,14 @@ def main():  # pylint: disable=too-many-statements
 
 def config_logging(args, default_level='WARNING'):
     level = args['log_level']
+    log_file = args['log_file']
     if not level:
         level = default_level
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=level)
+        level=level,
+        filename=log_file,
+        filemode='w')
 
 
 def load_models(args, load_dev_models=False):
@@ -490,11 +493,6 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
         model_mocks_config: Union[str, None] = args['model_mocks']
         generate_mocks: Union[str, None] = args.get('generate_mocks')
 
-        if use_local_models is not None and len(use_local_models):
-            local_model_slugs = use_local_models.split(',')
-            logger.debug(f'Use local models {local_model_slugs}')
-            EngineModelContext.use_local_models_slugs.update(local_model_slugs)
-
         if model_mocks_config:
             model_mock_runner = ModelMockRunner(model_mocks_config)
             EngineModelContext.use_model_mock_runner(model_mock_runner)
@@ -531,7 +529,8 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
             chain_to_provider_url=chain_to_provider_url,
             api_url=api_url,
             run_id=run_id,
-            depth=depth)
+            depth=depth,
+            use_local_models=use_local_models)
 
         if generate_mocks is not None and mock_gen is not None:
             logger.info(f'Writing mocks to file "{generate_mocks}"')

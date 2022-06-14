@@ -11,7 +11,7 @@ from credmark.cmf.types.series import (
     SeriesModelStartEndIntervalInput,
     SeriesModelWindowIntervalInput,
 )
-from credmark.dto import DTO
+from credmark.dto import DTOType
 
 DTOCLS = TypeVar('DTOCLS')
 
@@ -44,7 +44,7 @@ class HistoricalUtil:
     def run_model_historical(self,  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
                              model_slug: str,
                              window: Union[str, List[str]],
-                             model_input: Union[dict, DTO, None] = None,
+                             model_input: Union[dict, DTOType, None] = None,
                              interval: Union[str, None] = None,
                              end_timestamp: Union[int, None] = None,
                              snap_clock: Union[str, None] = 'interval',
@@ -128,7 +128,7 @@ class HistoricalUtil:
                                     model_slug: str,
                                     window: int,
                                     interval: int,
-                                    model_input: Union[dict, DTO, None] = None,
+                                    model_input: Union[dict, DTOType, None] = None,
                                     end_block: Union[int, None] = None,
                                     snap_block: Union[int, None] = None,
                                     model_return_type: Type[DTOCLS] = dict,

@@ -1,6 +1,6 @@
 
 from typing import Type, Union
-from . import DTO
+from . import DTOType, DTOTypesTuple
 
 
 class DataTransformError(Exception):
@@ -8,8 +8,8 @@ class DataTransformError(Exception):
 
 
 def transform_data_for_dto(  # pylint: disable=too-many-return-statements
-        data: Union[dict, DTO, None],
-        dto_class: Union[Type[DTO], None],
+        data: Union[dict, DTOType, None],
+        dto_class: Union[Type[DTOType], None],
         slug: str,
         data_source: str):
     """
@@ -38,7 +38,7 @@ def transform_data_for_dto(  # pylint: disable=too-many-return-statements
             if data is None:
                 # empty dict
                 return {}
-            if isinstance(data, DTO):
+            if isinstance(data, DTOTypesTuple):
                 # get dict from dto instance
                 return data.dict()
             else:
@@ -48,14 +48,15 @@ def transform_data_for_dto(  # pylint: disable=too-many-return-statements
             # Return a dto instance
             if data is None:
                 # construct the dto with no data
-                # (which will be fine if the dto has default values)
-                return dto_class()
+                # This will be fine if the dto has default values,
+                # otherwise it raises an exception which is caught below.
+                return dto_class()  # type: ignore
             if isinstance(data, dto_class):
                 # already the right dto class
                 return data
-            if isinstance(data, DTO):
+            if isinstance(data, DTOTypesTuple):
                 # convert one dto to another dto class
-                return dto_class(**data.dict())
+                return dto_class(**data.dict())  # type: ignore
             else:
                 # create dto from dict
                 return dto_class(**data)

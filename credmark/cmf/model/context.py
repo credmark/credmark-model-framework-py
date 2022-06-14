@@ -7,8 +7,7 @@ from .print import print_manifest_description
 from .errors import ModelNoContextError
 from .ledger import Ledger
 import credmark.cmf.types
-from credmark.dto import DTO, EmptyInput
-from .utils.contract_util import ContractUtil
+from credmark.dto import DTOType, DTOTypesTuple, EmptyInput
 from .utils.historical_util import HistoricalUtil
 
 DTOT = TypeVar('DTOT')
@@ -48,23 +47,23 @@ class RunModelMethod:
     # run a model. args can be a positional DTO or dict or kwargs
     @overload
     def __call__(self,
-                 input: Union[DTO, dict, None] = None,
+                 input: Union[DTOType, dict, None] = None,
                  return_type: Union[dict, None] = None,
                  **kwargs) -> dict:
         ...
 
     @overload
     def __call__(self,
-                 input: Union[DTO, dict, None] = None,
-                 return_type: Type[DTO] = EmptyInput,
-                 **kwargs) -> DTO:
+                 input: Union[DTOType, dict, None] = None,
+                 return_type: Type[DTOType] = EmptyInput,
+                 **kwargs) -> DTOType:
         ...
 
     def __call__(self,
-                 input: Union[DTO, dict, None] = None,
-                 return_type: Union[dict, Type[DTO], None] = None,
-                 **kwargs) -> Union[dict, DTO]:
-        if isinstance(input, DTO):
+                 input: Union[DTOType, dict, None] = None,
+                 return_type: Union[dict, Type[DTOType], None] = None,
+                 **kwargs) -> Union[dict, DTOType]:
+        if isinstance(input, DTOTypesTuple):
             input = input.dict()
         elif input is None:
             input = kwargs
@@ -182,6 +181,10 @@ class ModelContext:
             else:
                 return super().__dir__()
 
+        def reload(self):
+            if RunModelMethod.interactive_docs:
+                self.__context._model_reload()  # pylint: disable=protected-access
+
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry):
         self._chain_id = chain_id
@@ -189,7 +192,6 @@ class ModelContext:
         self._web3 = None
         self._web3_registry = web3_registry
         self._ledger = None
-        self._contract_util = None
         self._historical_util = None
         self._models = None
 
@@ -287,16 +289,6 @@ class ModelContext:
         return self._ledger
 
     @property
-    def contracts(self) -> ContractUtil:
-        """
-        A :class:`~credmark.cmf.model.utils.contract_util.ContractUtil`
-        instance which can be used to look up contracts.
-        """
-        if self._contract_util is None:
-            self._contract_util = ContractUtil(self)
-        return self._contract_util
-
-    @property
     def historical(self) -> HistoricalUtil:
         """
         A :class:`~credmark.cmf.model.utils.historical_util.HistoricalUtil`
@@ -311,7 +303,7 @@ class ModelContext:
     @abstractmethod
     def run_model(self,
                   slug: str,
-                  input: Union[dict, DTO],
+                  input: Union[dict, DTOType],
                   return_type: Type[DTOT],
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,
@@ -321,7 +313,7 @@ class ModelContext:
     @abstractmethod
     def run_model(self,
                   slug: str,
-                  input: Union[dict, DTO] = EmptyInput(),
+                  input: Union[dict, DTOType] = EmptyInput(),
                   return_type: Union[Type[dict], None] = None,
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,
