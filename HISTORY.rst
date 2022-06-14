@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.24 [2022-06-14]
+* Updated version support to use versioneer.
+
 0.8.23 [2022-06-13]
 * Jupyter notebook support
 * Currency as interface for FiatCurrency and Token
