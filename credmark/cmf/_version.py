@@ -1,4 +1,5 @@
 
+# type: ignore
 # This file helps to compute a version number in source trees obtained from
 # git-archive tarball (such as those provided by githubs download-from-tag
 # feature). Distribution tarballs (built by setup.py sdist) and build
@@ -43,7 +44,7 @@ def get_config():
     cfg = VersioneerConfig()
     cfg.VCS = "git"
     cfg.style = "pep440"
-    cfg.tag_prefix = "v"
+    cfg.tag_prefix = ""
     cfg.parentdir_prefix = "credmark-"
     cfg.versionfile_source = "credmark/cmf/_version.py"
     cfg.verbose = False
@@ -446,7 +447,7 @@ def render_pep440_pre(pieces):
             tag_version, post_version = pep440_split_post(pieces["closest-tag"])
             rendered = tag_version
             if post_version is not None:
-                rendered += ".post%d.dev%d" % (post_version+1, pieces["distance"])
+                rendered += ".post%d.dev%d" % (post_version + 1, pieces["distance"])
             else:
                 rendered += ".post0.dev%d" % (pieces["distance"])
         else:
