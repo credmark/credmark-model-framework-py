@@ -146,10 +146,10 @@ class Contract(Account):
                 raise ModelDataError(f'abi not available for address {self.address}')
         self._loaded = True
 
-    def set_abi(self, abi):
+    def set_abi(self, abi: Union[List, str]):
         self._meta.abi = ABI(abi)
 
-    @property
+    @ property
     def instance(self) -> Web3Contract:
         """
         A web3 Web3Contract instance or raises a
@@ -168,7 +168,7 @@ class Contract(Account):
         else:
             return self._instance
 
-    @property
+    @ property
     def proxy_for(self):
         """
         A proxy implementation if available
@@ -177,7 +177,7 @@ class Contract(Account):
             self._load()
         return self._meta.proxy_implementation
 
-    @property
+    @ property
     def functions(self):
         """
         A web3 ContractFunctions instance for the contract.
@@ -191,7 +191,7 @@ class Contract(Account):
         else:
             return self.instance.functions
 
-    @property
+    @ property
     def events(self):
         """
         A web3 ContractEvents instance for the contract.
@@ -201,7 +201,7 @@ class Contract(Account):
             return self.proxy_for.events
         return self.instance.events
 
-    @property
+    @ property
     def info(self):
         """
         A :class:`credmark.cmf.types.contract.ContractInfo` instance for the contract.
@@ -211,7 +211,7 @@ class Contract(Account):
         self._load()
         return ContractInfo(**self.dict(), meta=self._meta)
 
-    @property
+    @ property
     def deploy_tx_hash(self):
         """
         The deploy transaction hash, if available, otherwise None.
@@ -220,7 +220,7 @@ class Contract(Account):
             self._load()
         return self._meta.deploy_tx_hash
 
-    @property
+    @ property
     def contract_name(self):
         """
         Name of the contract, if available, otherwise None.
@@ -229,7 +229,7 @@ class Contract(Account):
             self._load()
         return self._meta.contract_name
 
-    @property
+    @ property
     def constructor_args(self):
         """
         Constructor args, if any, otherwise None.
@@ -238,7 +238,7 @@ class Contract(Account):
             self._load()
         return self._meta.constructor_args
 
-    @property
+    @ property
     def abi(self):
         """
         The ABI for the contract, if it's available, otherwise None.
@@ -247,7 +247,7 @@ class Contract(Account):
             self._load()
         return self._meta.abi
 
-    @property
+    @ property
     def is_transparent_proxy(self):
         """
         True if is a transparent proxy. Otherwise False or None.
@@ -256,7 +256,7 @@ class Contract(Account):
             self._load()
         return self._meta.is_transparent_proxy
 
-    @property
+    @ property
     def ledger(self):
         """
         A :class:`~credmark.cmf.types.ledger.ContractLedger` instance which can be

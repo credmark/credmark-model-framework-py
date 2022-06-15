@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 
 class ABI(list):
@@ -96,12 +96,10 @@ class ABI(list):
                 return ABI.EventDetails(_name, args, types)
             return None
 
-    def __init__(self, abi=None):
-        if abi is None:
-            abi = []
-        elif isinstance(abi, str):
+    def __init__(self, abi: Union[List, str, None] = None):
+        if isinstance(abi, str):
             abi = json.loads(abi)
-        super().__init__(abi)
+        super().__init__([] if abi is None else abi)
         self._functions = ABI.Funcs({})
         self._events = ABI.Events({})
 
