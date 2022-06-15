@@ -146,6 +146,9 @@ class Contract(Account):
                 raise ModelDataError(f'abi not available for address {self.address}')
         self._loaded = True
 
+    def set_abi(self, abi):
+        self._meta.abi = ABI(abi)
+
     @property
     def instance(self) -> Web3Contract:
         """
