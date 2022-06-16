@@ -24,7 +24,7 @@ from credmark.cmf.types import (
     Account, Contract, Token,
     Accounts, Contracts, Tokens, NativeToken,
     Currency, FiatCurrency,
-    Price, PriceList,
+    Price, Prices,
     BlockNumber,
     Portfolio, Position,
     LPPosition, YieldPosition,
