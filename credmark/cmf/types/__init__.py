@@ -6,7 +6,7 @@ from .block_number import BlockNumber
 from .contract import Contract, Contracts
 from .ledger import ContractLedger
 from .portfolio import Portfolio
-from .position import Position, NativePosition, TokenPosition
-from .price import Price, TokenPairPrice, PriceList
+from .position import Position, Positions, LPPosition, YieldPosition
+from .price import Price, PriceList
 from .token_wei import TokenWei
 from .token import Token, Tokens, NativeToken, Currency, FiatCurrency

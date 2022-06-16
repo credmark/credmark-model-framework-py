@@ -18,8 +18,6 @@ class Position(DTO):
                                        limit=10)
         }
 
-
-class SpotPosition(Position):
     def get_value(self, price_model='price.quote'):
         """
         Returns:
@@ -29,19 +27,22 @@ class SpotPosition(Position):
             ModelDataError: if no pools available for price data.
         """
         context = credmark.cmf.model.ModelContext.current_context()
-        token_price = context.run_model(price_model, input=self.asset, return_type=Price).price
+        token_price = context.run_model(
+            price_model,
+            input={'base': self.asset},
+            return_type=Price).price
         return token_price * self.amount
 
 
-class SpotPositions(IterableListGenericDTO[SpotPosition]):
-    spot_positions: List[SpotPosition] = DTOField(
+class Positions(IterableListGenericDTO[Position]):
+    positions: List[Position] = DTOField(
         default=[], description="A list of Spot Positions")
     _iterator: str = PrivateAttr('spot_positions')
 
     def get_value(self, price_model='price.quote'):
         total = 0
-        for pos in self.spot_positions:
-            total += pos.get_value()
+        for pos in self.positions:
+            total += pos.get_value(price_model=price_model)
         return total
 
 

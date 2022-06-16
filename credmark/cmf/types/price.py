@@ -8,7 +8,6 @@ from credmark.dto import (
     IterableListGenericDTO,
     PrivateAttr,
 )
-from .token import Token
 from .address import Address
 
 
@@ -20,18 +19,6 @@ class Price(DTO):
         schema_extra: dict = {
             'examples': [{'price': 4.2},
                          {'price': 4.2, 'src': 'uniswap-v3'}]
-        }
-
-
-class TokenPairPrice(Price):
-    token: Token = DTOField(..., description='Token')
-    reference_token: Token = DTOField(
-        default_factory=lambda: Token(symbol="USDC"),
-        description='The token as the reference price (Defaults to USDC)')
-
-    class Config:
-        schema_extra: dict = {
-            'examples': [{'token': Token.Config.schema_extra['examples']}]
         }
 
 

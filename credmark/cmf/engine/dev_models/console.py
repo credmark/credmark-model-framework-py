@@ -22,15 +22,13 @@ from credmark.cmf.model.print import print_manifest_description
 from credmark.cmf.types import (
     Address,
     Account, Contract, Token,
-    Accounts, Contracts, Tokens,
+    Accounts, Contracts, Tokens, NativeToken,
     Currency, FiatCurrency,
-    Portfolio, Position,
     Price, PriceList,
     BlockNumber,
-    NativeToken,
-    NativePosition,
-    TokenPosition,
-    ContractLedger,
+    Portfolio, Position,
+    LPPosition, YieldPosition,
+    ContractLedger
 )
 
 from credmark.dto import (DTO, IntDTO, StrDTO, FloatDTO, DTOField,
