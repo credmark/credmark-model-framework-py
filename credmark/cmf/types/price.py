@@ -22,7 +22,7 @@ class Price(DTO):
         }
 
 
-class PriceList(IterableListGenericDTO[float]):
+class Prices(IterableListGenericDTO[float]):
     prices: List[float] = DTOField(default=[], description='List of prices')
     tokenAddress: Address
     src: Union[str, None] = DTOField(None, description='Source')
