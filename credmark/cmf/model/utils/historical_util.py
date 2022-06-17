@@ -87,7 +87,6 @@ class HistoricalUtil:
                 f"Negative or zero interval '{interval}' specified for historical.")
 
         if snap_clock is None and end_timestamp is None:
-
             input = SeriesModelWindowIntervalInput(
                 modelSlug=model_slug,
                 modelInput=model_input,
@@ -200,3 +199,10 @@ class HistoricalUtil:
 
     def range_timestamp(self, key: str, num: int):
         return self.time_unit_seconds[key] * num
+
+    def to_seconds(self, time_str: str) -> int:
+        return self.range_timestamp(*self.parse_timerangestr(time_str))
+
+    def to_seconds_unit(self, time_str: str) -> int:
+        (w_k, _) = self.parse_timerangestr(time_str)
+        return self.range_timestamp(w_k, 1)
