@@ -122,7 +122,7 @@ This class allows you to load token information with an address or symbol as wel
 
 See [e_06_token.py](https://github.com/credmark/credmark-models-py/blob/main/models/examples/e_06_token.py) on how to use this class. Token_data.py lists all erc20 tokens currently supported.
 
-**5. Price and TokenPairPrice:** The {class}`~credmark.cmf.types.price.Price` and {class}`~credmark.cmf.types.price.TokenPairPrice` classes can be used to hold a price or a price of a token against a reference token (such as CMK-BTC, CMK-ETH etc.)
+**5. Price:** The {class}`~credmark.cmf.types.price.Price` classes can be used to hold a price.
 
 **6. Position:** A {class}`~credmark.cmf.types.position.Position` class holds a {class}`~credmark.cmf.types.token.Token` and an amount. It can calculate its value based on the token price in USD. You can also access the scaled amount property if you need the scaled amount of the erc20 token.
 
