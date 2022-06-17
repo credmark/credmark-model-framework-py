@@ -7,7 +7,6 @@ import json
 import unittest
 import inspect
 from typing import List, Union
-from importlib.metadata import version
 from dotenv import load_dotenv, find_dotenv
 
 from .engine.context import EngineModelContext
@@ -117,7 +116,8 @@ def main():  # pylint: disable=too-many-statements
         '-l', '--use_local_models', default=None,
         help='Comma-separated list of model slugs for models that should '
         'favor use of the local version. This is only required when a model is '
-        'calling another model. Use "*" to favor the use of local versions of all models.')
+        'calling another model. Use "*" to favor the use of local versions of all models.'
+        ' Use "-" to use no local models.')
     parser_run.add_argument(
         '-m', '--model_mocks', default=None,
         help='Module path and symbol of model mocks config to use. '
@@ -182,6 +182,7 @@ def config_logging(args, default_level='WARNING'):
         filename=log_file,
         filemode='w')
 
+
 def load_models(args, load_dev_models=False):
     manifest_file = args.get('manifest_file')
     model_path: str = args['model_path']
@@ -206,7 +207,8 @@ def load_models(args, load_dev_models=False):
 
 
 def show_version(_args):
-    ver = version('credmark-model-framework')
+    import credmark.cmf  # pylint: disable=import-outside-toplevel
+    ver = credmark.cmf.__version__
     print(f'credmark-model-framework version {ver}')
     sys.exit(0)
 

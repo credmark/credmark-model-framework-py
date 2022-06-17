@@ -23,6 +23,7 @@ from credmark.cmf.types import (
     Address,
     Account, Contract, Token,
     Accounts, Contracts, Tokens,
+    Currency, FiatCurrency,
     Portfolio, Position,
     Price, PriceList,
     BlockNumber,

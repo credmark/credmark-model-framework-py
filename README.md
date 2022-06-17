@@ -14,13 +14,16 @@ pip install git+https://github.com/credmark/credmark-model-framework-py.git@main
 
 ### Update Version
 
-- Update the version in `setup.py`, update `HISTORY.rst`, and git commit the changes.
+This package uses `versioneer` so you don't need to update the version number in the code. It is automatically determined from the git tag.
+
+- Update `HISTORY.rst`, and git commit the changes.
 
 - Tag in git, replacing the version string:
 
 ```bash
-git tag -a "0.1.0" -m "Version 0.1.0"
-git push origin "0.1.0"
+TAG='0.1.0'
+git tag -a "$TAG" -m "Version $TAG"
+git push origin "$TAG"
 ```
 
 ### Build

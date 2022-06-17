@@ -101,6 +101,7 @@ optional arguments:
                         Comma-separated list of model slugs for models that should favor
                         use of the local version. This is only required when a model is
                         calling another model. Use "*" to use local versions of all models.
+                        Use "-" to use no local models.
   -m MODEL_MOCKS, --model_mocks MODEL_MOCKS
                         Module path and symbol of model mocks config to use. For example,
                         models.contrib.mymodels.mymocks.mock_config

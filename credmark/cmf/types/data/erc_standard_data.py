@@ -1,5 +1,6 @@
 # pylint: disable=line-too-long
 
+
 ERC20_BASE_ABI = [
     {
         "constant": True,

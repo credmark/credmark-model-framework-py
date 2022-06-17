@@ -3,7 +3,16 @@
 History
 -------
 
-0.8.XX []
+0.8.24 [2022-06-14]
+* Updated version support to use versioneer.
+
+0.8.23 [2022-06-13]
+* Jupyter notebook support
+* Currency as interface for FiatCurrency and Token
+* DTOs for compose models and local compose models
+* Contract ABI class
+* Primitive DTO types: IntDTO, FloatDTO, StrDTO
+* Support for credmark-dev use-local-models flag "-" for no locals
 * Increase API run request timeout
 
 0.8.22 [2022-05-26]
