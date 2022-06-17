@@ -244,8 +244,7 @@ class Contract(Account):
             self._load()
         return self._meta.abi
 
-    @abi.setter
-    def abi(self, abi: Union[List, str]):
+    def set_abi(self, abi: Union[List, str]):
         """
         Set the ABI for the contract
         """
