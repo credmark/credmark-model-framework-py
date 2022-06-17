@@ -8,7 +8,6 @@ from credmark.dto import (
     IterableListGenericDTO,
     PrivateAttr,
 )
-from .token import Token
 from .address import Address
 
 
@@ -22,7 +21,7 @@ class Price(DTO):
                          {'price': 4.2, 'src': 'uniswap-v3'}]
         }
 
-    def cross_price(self, other):
+    def cross(self, other):
         return Price(price=self.price * other.price, src=f'{self.src},{other.src}')
 
     def inverse(self):
