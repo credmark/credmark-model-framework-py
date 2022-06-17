@@ -146,9 +146,6 @@ class Contract(Account):
                 raise ModelDataError(f'abi not available for address {self.address}')
         self._loaded = True
 
-    def set_abi(self, abi: Union[List, str]):
-        self._meta.abi = ABI(abi)
-
     @ property
     def instance(self) -> Web3Contract:
         """
@@ -238,7 +235,7 @@ class Contract(Account):
             self._load()
         return self._meta.constructor_args
 
-    @ property
+    @property
     def abi(self):
         """
         The ABI for the contract, if it's available, otherwise None.
@@ -246,6 +243,15 @@ class Contract(Account):
         if not self._loaded:
             self._load()
         return self._meta.abi
+
+    @abi.setter
+    def abi(self, abi: Union[List, str]):
+        """
+        Set the ABI for the contract
+        """
+        if not self._loaded:
+            self._load()
+        self._meta.abi = ABI(abi)
 
     @ property
     def is_transparent_proxy(self):
