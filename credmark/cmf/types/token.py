@@ -188,8 +188,19 @@ class Token(Contract):
             self._meta.total_supply = self.try_erc20_property('totalSupply')
         return self._meta.total_supply
 
+    @property
+    def total_supply_scaled(self) -> float:
+        return self.scaled(self.total_supply)
+
     def scaled(self, value) -> float:
         return value / (10 ** self.decimals)
+
+    def balance_of(self, address: Address) -> int:
+        balance = self.functions.balanceOf(address).call()
+        return balance
+
+    def balance_of_scaled(self, address: Address) -> float:
+        return self.scaled(self.balance_of(address))
 
     @property
     def fiat(self) -> bool:
@@ -227,10 +238,19 @@ class NativeToken(Token):
             self._meta.total_supply = 0
             self._loaded = True
 
-    def get_balance(self, address: Address) -> int:
+    def balance_of(self, address: Address) -> int:
         context = credmark.cmf.model.ModelContext.current_context()
         if context.chain_id == 1:
-            return context.web3.eth.get_balance(address)
+            balance = context.web3.eth.get_balance(address)
+            return balance
+        else:
+            raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
+
+    def balance_of_scaled(self, address: Address) -> float:
+        context = credmark.cmf.model.ModelContext.current_context()
+        if context.chain_id == 1:
+            balance = self.balance_of(address)
+            return float(context.web3.fromWei(balance, 'ether'))
         else:
             raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
 
