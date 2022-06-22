@@ -9,7 +9,7 @@ from web3.contract import Contract as Web3Contract
 
 from .abi import ABI
 from .account import Account
-from .block_number import BlockNumber
+from .block_number import BlockNumber, BlockNumberOutOfRangeError
 from .ledger import ContractLedger
 
 
@@ -119,14 +119,13 @@ class Contract(Account):
 
             block_number = res.get('block_number', None)
             if block_number is not None:
+                if block_number > context.block_number:
+                    raise BlockNumberOutOfRangeError(
+                        f'Contract {self.address} is initialized earlier than it was created '
+                        f'({res.get("block_number", None)}), current block {context.block_number}')
                 self._meta.deployed_block_number = BlockNumber(block_number)
             else:
                 self._meta.deployed_block_number = None
-            if (self._meta.deployed_block_number is not None and
-                    self._meta.deployed_block_number > context.block_number):
-                raise ModelDataError(
-                    f'Contract was deployed later ({res.get("block_number", None)}) '
-                    f'than the current block {context.block_number}')
 
             self._meta.contract_name = res.get('contract_name')
             self._meta.constructor_args = res.get('constructor_args')
