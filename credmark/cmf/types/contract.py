@@ -1,18 +1,17 @@
-from typing import (
-    Any,
-    Union,
-    List,
-)
-
-from web3.contract import Contract as Web3Contract
 import json
+import logging
+import sys
+from typing import Any, List, Union
+
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError
-from .ledger import ContractLedger
-from .account import Account
-from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
-import logging
+from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
+from web3.contract import Contract as Web3Contract
+
 from .abi import ABI
+from .account import Account
+from .block_number import BlockNumber
+from .ledger import ContractLedger
 
 
 class Singleton:
@@ -27,45 +26,32 @@ class ContractMetaCache(Singleton):
     _cache = {}
     _trace = False
 
-    def get(self, chain_id, block_number, address):
+    def get(self, chain_id, address):
         if chain_id not in self._cache:
-            # print(f'[Cache] Not found in cache {chain_id=}/{address}/{block_number}')
             return False, {}
 
         needle = self._cache[chain_id].get(address, None)
         if needle is None:
             if self._trace:
-                logging.info(f'[Cache] Not found in cache {chain_id=}/{address}/{block_number}')
+                logging.info(f'[Cache] Not found meta: {chain_id=}/{address}')
             return False, {}
 
-        if needle['block_number'] <= block_number:
-            # print(f'[Cache] Return from cache {chain_id=}/{address}/{block_number}')
-            return True, needle['meta']
-
         if self._trace:
-            logging.info(
-                f'[Cache] Not return from cache has a larger block_number '
-                f'{chain_id=}/{address}/{block_number} > {needle["block_number"]}')
-        return False, {}
+            logging.info(f'[Cache] Return meta: {chain_id=}/{address}')
+        return True, needle
 
-    def put(self, chain_id, block_number, address, meta):
+    def put(self, chain_id, address, meta):
         if chain_id not in self._cache:
             self._cache[chain_id] = {}
 
         if address not in self._cache[chain_id]:
+            block_number = None
+            if len(meta['contracts']) > 0:
+                block_number = meta['contracts'][0]['block_number']
+            self._cache[chain_id][address] = meta
             if self._trace:
-                logging.info(f'[Cache] Save to cache {chain_id=}/{address}/{block_number}')
-            self._cache[chain_id][address] = {'meta': meta, 'block_number': block_number}
-            return
-        else:
-            if self._cache[chain_id][address]['block_number'] > block_number:
-                if self._trace:
-                    logging.info(
-                        f'[Cache] Save to cache {chain_id=}/{address}/{block_number} '
-                        f'updated to earlier {block_number}')
-                self._cache[chain_id][address]['block_number'] = block_number
-                assert self._cache[chain_id][address]['meta'] == meta
-            return
+                logging.info(f'[Cache] Save {chain_id=}/{address} '
+                             f'valid from {block_number}')
 
 
 class Contract(Account):
@@ -78,6 +64,7 @@ class Contract(Account):
         abi: Union[ABI, None] = None
         is_transparent_proxy: Union[bool, None] = None
         proxy_implementation: Union[Any, None] = None
+        deployed_block_number: Union[BlockNumber, None] = None
 
     _meta: ContractMetaData = PrivateAttr(
         default_factory=lambda: Contract.ContractMetaData())  # pylint: disable=unnecessary-lambda
@@ -117,22 +104,32 @@ class Contract(Account):
             return
         context = credmark.cmf.model.ModelContext.current_context()
 
-        in_cache, cached_meta = ContractMetaCache().get(
-            context.chain_id,
-            context.block_number,
-            self.address)
+        in_cache, cached_meta = ContractMetaCache().get(context.chain_id, self.address)
+
         if in_cache:
             contract_q_results = cached_meta
         else:
             contract_q_results = context.run_model('contract.metadata',
                                                    {'contractAddress': self.address})
+            print(self.address, file=sys.stderr)
             ContractMetaCache().put(context.chain_id,
-                                    context.block_number,
                                     self.address,
                                     contract_q_results)
 
         if len(contract_q_results['contracts']) > 0:
             res = contract_q_results['contracts'][0]
+
+            block_number = res.get('block_number', None)
+            if block_number is not None:
+                self._meta.deployed_block_number = BlockNumber(block_number)
+            else:
+                self._meta.deployed_block_number = None
+            if (self._meta.deployed_block_number is not None and
+                    self._meta.deployed_block_number > context.block_number):
+                raise ModelDataError(
+                    f'Contract was deployed later ({res.get("block_number", None)}) '
+                    f'than the current block {context.block_number}')
+
             self._meta.contract_name = res.get('contract_name')
             self._meta.constructor_args = res.get('constructor_args')
             self._meta.abi = ABI(res.get('abi'))
@@ -243,6 +240,12 @@ class Contract(Account):
         if not self._loaded:
             self._load()
         return self._meta.abi
+
+    @property
+    def deployed_block_number(self):
+        if not self._loaded:
+            self._load()
+        return self._meta.deployed_block_number
 
     def set_abi(self, abi: Union[List, str]):
         """
