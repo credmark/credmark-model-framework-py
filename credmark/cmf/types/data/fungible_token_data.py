@@ -73,6 +73,12 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
             "name": "USD Coin",
             "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
         },
+        "EUROC": {
+            "symbol": "EUROC",
+            "decimals": 6,
+            "name": "Euro Coin",
+            "address": "0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c"
+        },
         "HEX": {
             "symbol": "HEX",
             "decimals": 8,
