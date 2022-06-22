@@ -8,8 +8,9 @@ from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 from web3.contract import Contract as Web3Contract
 
 from .abi import ABI
+from .address import Address
 from .account import Account
-from .block_number import BlockNumber
+from .block_number import BlockNumber, BlockNumberOutOfRangeError
 from .ledger import ContractLedger
 
 
@@ -99,6 +100,7 @@ class Contract(Account):
         self._ledger = None
 
     def _load(self):
+        # pylint: disable=locally-disabled, line-too-long, too-many-branches, too-many-statements
         if self._loaded:
             return
         context = credmark.cmf.model.ModelContext.current_context()
@@ -119,22 +121,64 @@ class Contract(Account):
 
             block_number = res.get('block_number', None)
             if block_number is not None:
+                if block_number > context.block_number:
+                    raise BlockNumberOutOfRangeError(
+                        f'Contract {self.address} is initialized earlier on the current block '
+                        f'({context.block_number}) than it was deployed '
+                        f'({res.get("block_number", None)}).')
                 self._meta.deployed_block_number = BlockNumber(block_number)
             else:
                 self._meta.deployed_block_number = None
-            if (self._meta.deployed_block_number is not None and
-                    self._meta.deployed_block_number > context.block_number):
-                raise ModelDataError(
-                    f'Contract was deployed later ({res.get("block_number", None)}) '
-                    f'than the current block {context.block_number}')
 
             self._meta.contract_name = res.get('contract_name')
             self._meta.constructor_args = res.get('constructor_args')
             self._meta.abi = ABI(res.get('abi'))
             self._meta.is_transparent_proxy = res.get('proxy', 0) == "1"
-            # TODO: Implementation needs to be validated on the db
+
             if self._meta.is_transparent_proxy:
-                self._meta.proxy_implementation = Contract(address=res.get('implementation'))
+                # TODO: as we only store the latest implementation in DB but not in the past.
+                proxy_address = res.get('implementation')
+                if context.chain_id == 1:
+                    # TODO: Implementation needs to be validated on the db
+                    if self._meta.contract_name in ['OwnedUpgradeabilityProxy']:
+                        if self.address == '0x0000000000085d4780B73119b644AE5ecd22b376':
+                            proxy_address = context.web3.eth.get_storage_at(
+                                self.address,
+                                context.web3.keccak(text="trueUSD.proxy.implementation").hex()).hex()
+                            proxy_address = '0x' + proxy_address[-40:]
+                    elif self._meta.contract_name in ["AdminUpgradeabilityProxy", 'FiatTokenProxy']:
+                        proxy_address = context.web3.eth.get_storage_at(
+                            self.address,
+                            context.web3.keccak(text='org.zeppelinos.proxy.implementation')).hex()
+                        proxy_address = '0x' + proxy_address[-40:]
+                        if proxy_address == Address.null():
+                            storage_addr = hex(int(context.web3.keccak(
+                                text='eip1967.proxy.implementation').hex(), 16) - 1)
+                            proxy_address = context.web3.eth.get_storage_at(
+                                self.address, storage_addr).hex()
+                        proxy_address = '0x' + proxy_address[-40:]
+                    elif (self._meta.contract_name == 'Unitroller' and
+                          self.address == '0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B'):
+                        cc = context.web3.eth.contract(address=Address(
+                            self.address).checksum, abi=self._meta.abi)
+                        proxy_address = cc.functions.comptrollerImplementation().call()
+                    elif self._meta.contract_name in ["RenERC20Proxy",
+                                                      "InitializableAdminUpgradeabilityProxy",
+                                                      "InitializableImmutableAdminUpgradeabilityProxy"]:
+                        # if eip-1967 compliant, https://eips.ethereum.org/EIPS/eip-1967
+                        proxy_address = context.web3.eth.get_storage_at(
+                            self.address,
+                            '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc').hex()
+                        proxy_address = '0x' + proxy_address[-40:]
+                    elif (self._meta.contract_name == 'Delegator' and
+                          self.address == '0x1985365e9f78359a9B6AD760e32412f4a445E862'):
+                        cc = context.web3.eth.contract(address=Address(
+                            self.address).checksum, abi=self._meta.abi)
+                        controller = Contract(address=Address(cc.functions.getController().call()))
+                        lookupName = '0x' + cc.functions.controllerLookupName().call().hex()
+                        proxy_address = controller.functions.lookup(lookupName).call()
+                        proxy_address = '0x' + proxy_address[-40:]
+                self._meta.proxy_implementation = Contract(address=proxy_address)
             self._loaded = True
         else:
             if self._meta.abi is None:
