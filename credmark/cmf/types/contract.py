@@ -111,7 +111,6 @@ class Contract(Account):
         else:
             contract_q_results = context.run_model('contract.metadata',
                                                    {'contractAddress': self.address})
-            print(self.address, file=sys.stderr)
             ContractMetaCache().put(context.chain_id,
                                     self.address,
                                     contract_q_results)
