@@ -106,6 +106,8 @@ def main():  # pylint: disable=too-many-statements
     parser_run.add_argument('-i', '--input', required=False, default='{}',
                             help='Input JSON or '
                             'if value is "-" it will read input JSON from stdin.')
+    parser_run.add_argument('-o', '--output', required=False, default=None,
+                            help='Output path to save model results as JSON file.')
     parser_run.add_argument('-v', '--model_version', default=None, required=False,
                             help='Version of the model to run. Defaults to latest.')
     parser_run.add_argument('-j', '--format_json', action='store_true', default=False,
@@ -550,6 +552,10 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
         if model_slug != 'console':
             if format_json:
                 print(json_dumps(result, indent=4).replace('\\n', '\n').replace('\\"', '\''))
+            elif args['output']:
+                logger.info(f"saving model results to {args['output']}")
+                with open(args['output'], 'w') as fp:
+                    json.dump(result, fp, indent=4)
             else:
                 json_dump(result, sys.stdout)
 
