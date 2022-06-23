@@ -107,6 +107,7 @@ class ModelApi:
                   input: Union[dict, None],
                   run_id: Union[str, None] = None,
                   depth: Union[int, None] = None,
+                  client: Union[str, None] = None,
                   raise_error_results=False) -> \
             tuple[str, str, Union[dict[str, Any], None],
                   Union[dict[str, Any], None], dict[str, Any]]:
@@ -130,6 +131,8 @@ class ModelApi:
                 req['runId'] = run_id
             if depth is not None:
                 req['depth'] = depth
+            if client is not None:
+                req['client'] = client
 
         headers = {'Authorization': 'Bearer ' +
                    self.__api_key} if self.__api_key is not None else None

@@ -108,9 +108,9 @@ class EngineModelContext(ModelContext):
                        api_url: Union[str, None] = None,
                        run_id: Union[str, None] = None,
                        depth: int = 0,
+                       client: Union[str, None] = None,
                        console: bool = False,
-                       use_local_models: Union[str, None] = None
-                       ):
+                       use_local_models: Union[str, None] = None):
         """
         Parameters:
             block_number: if None, latest block is used
@@ -157,7 +157,8 @@ class EngineModelContext(ModelContext):
 
         context = EngineModelContext(
             chain_id, block_number, web3_registry,
-            run_id, depth, model_loader, api, is_top_level=not console)
+            run_id, depth, model_loader, api, client,
+            is_top_level=not console)
 
         if console:
             context.is_active = True
@@ -178,6 +179,7 @@ class EngineModelContext(ModelContext):
                                      api_url: Union[str, None] = None,
                                      run_id: Union[str, None] = None,
                                      depth: int = 0,
+                                     client: Union[str, None] = None,
                                      use_local_models: Union[str, None] = None):
         """
         Parameters:
@@ -194,6 +196,7 @@ class EngineModelContext(ModelContext):
                                          api_url,
                                          run_id,
                                          depth,
+                                         client,
                                          console=False,
                                          use_local_models=use_local_models)
 
@@ -286,9 +289,11 @@ class EngineModelContext(ModelContext):
                  depth: int,
                  model_loader: ModelLoader,
                  api: Union[ModelApi, None],
+                 client: Union[str, None] = None,
                  is_top_level: bool = False):
         super().__init__(chain_id, block_number, web3_registry)
         self.run_id = run_id
+        self.__client = client
         self.__depth = depth
         self.__dependencies = {}
         self.__model_loader = model_loader
@@ -536,7 +541,7 @@ class EngineModelContext(ModelContext):
                     slug, version, self.chain_id,
                     run_block_number,
                     input if input is None or isinstance(input, dict) else input.dict(),
-                    self.run_id, self.__depth)
+                    self.run_id, self.__depth, self.__client)
 
                 if dependencies:
                     self._add_dependencies(dependencies)
@@ -611,8 +616,8 @@ class EngineModelContext(ModelContext):
                                          self.run_id,
                                          self.__depth,
                                          self.__model_loader,
-                                         self.__api
-                                         )
+                                         self.__api,
+                                         self.__client)
 
         try:
 
