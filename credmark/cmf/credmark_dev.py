@@ -553,7 +553,7 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
             if format_json:
                 print(json_dumps(result, indent=4).replace('\\n', '\n').replace('\\"', '\''))
             elif args['output']:
-                logger.info(f"saving model results to {args['output']}")
+                logger.info(f"Saving model results to {args['output']}")
                 with open(args['output'], 'w') as fp:
                     json.dump(result, fp, indent=4)
             else:
