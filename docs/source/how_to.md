@@ -52,7 +52,7 @@ credmark-dev run <Specify Slug> -b <Specify block number>  -i <Specify Input>
 so for example
 
 ```
-credmark-dev run cmk.circulating-supply -b 14000000  -i “{}”
+credmark-dev run cmk.circulating-supply -b 14000000  -i "{}"
 ```
 
 Tip: you can run the command
