@@ -8,8 +8,8 @@ from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 from web3.contract import Contract as Web3Contract
 
 from .abi import ABI
-from .address import Address
 from .account import Account
+from .address import Address
 from .block_number import BlockNumber, BlockNumberOutOfRangeError
 from .ledger import ContractLedger
 

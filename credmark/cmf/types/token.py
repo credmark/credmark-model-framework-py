@@ -1,24 +1,20 @@
 from typing import List, Union
-from web3.exceptions import (
-    BadFunctionCallOutput,
-    ABIFunctionNotFound
-)
 
-from credmark.dto import PrivateAttr, IterableListGenericDTO, DTOField, DTO
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
+from credmark.dto import DTOField, IterableListGenericDTO, PrivateAttr
+from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
 
 from .abi import ABI
-from .address import Address
 from .account import Account
+from .address import Address
 from .contract import Contract
-from .data.fungible_token_data import (
-    NATIVE_TOKEN,
-    FUNGIBLE_TOKEN_DATA_BY_SYMBOL,
-    FUNGIBLE_TOKEN_DATA_BY_ADDRESS
-)
 from .data.erc_standard_data import ERC20_BASE_ABI
-from .data.fiat_currency_data import FIAT_CURRENCY_DATA_BY_SYMBOL, FIAT_CURRENCY_DATA_BY_ADDRESS
+from .data.fiat_currency_data import (FIAT_CURRENCY_DATA_BY_ADDRESS,
+                                      FIAT_CURRENCY_DATA_BY_SYMBOL)
+from .data.fungible_token_data import (FUNGIBLE_TOKEN_DATA_BY_ADDRESS,
+                                       FUNGIBLE_TOKEN_DATA_BY_SYMBOL,
+                                       NATIVE_TOKEN)
 
 
 def get_token_from_configuration(
@@ -329,13 +325,12 @@ class FiatCurrency(Account):
         return True
 
 
-class Currency(DTO):
+class Currency(Account):
     """
     This is a converter for any Fungible Token and FiatCurrency.
     It's used as inputs to price models.
     """
 
-    address: Union[Address, None] = None
     symbol: Union[str, None] = None
     name: Union[str, None] = None
     fiat: Union[bool, None] = None
@@ -362,3 +357,6 @@ class Currency(DTO):
         raise ModelDataError(
             "Could not identify specific currency. Currency "
             "must be of type Token, NativeToken or FiatCurrency")
+
+    def __init__(self, **_data):
+        super().__init__(**_data)
