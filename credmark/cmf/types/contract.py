@@ -123,8 +123,8 @@ class Contract(Account):
             if block_number is not None:
                 if block_number > context.block_number:
                     raise BlockNumberOutOfRangeError(
-                        f'Contract {self.address} is initialized earlier on the current block '
-                        f'({context.block_number}) than it was deployed '
+                        f'Contract {self.address} is initialized on the current block '
+                        f'({context.block_number}) earlier than it was deployed '
                         f'({res.get("block_number", None)}).')
                 self._meta.deployed_block_number = BlockNumber(block_number)
             else:
