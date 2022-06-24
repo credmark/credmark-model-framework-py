@@ -81,14 +81,18 @@ def get_slot_proxy_address(context, contract_address, contract_name, contract_ab
                 slot_proxy_address = context.web3.eth.get_storage_at(
                     contract_address, SLOT_TRUEUSD).hex()
                 slot_proxy_address = '0x' + slot_proxy_address[-40:]
-        elif contract_name in ['FiatTokenProxy']:
+        elif contract_name in ['FiatTokenProxy', 'AdminUpgradeabilityProxy']:
             slot_proxy_address = context.web3.eth.get_storage_at(
-                contract_address, SLOT_ZEPPELINOS).hex()
+                contract_address, SLOT_EIP1967).hex()
             slot_proxy_address = '0x' + slot_proxy_address[-40:]
-        elif contract_name in ["RenERC20Proxy",
-                               'AdminUpgradeabilityProxy',
-                               "InitializableAdminUpgradeabilityProxy",
-                               "InitializableImmutableAdminUpgradeabilityProxy"]:
+            if slot_proxy_address == Address.null():
+                slot_proxy_address = context.web3.eth.get_storage_at(
+                    contract_address, SLOT_ZEPPELINOS).hex()
+            slot_proxy_address = '0x' + slot_proxy_address[-40:]
+        elif contract_name in ['RenERC20Proxy',
+                               'TransparentUpgradeableProxy'
+                               'InitializableAdminUpgradeabilityProxy',
+                               'InitializableImmutableAdminUpgradeabilityProxy']:
             # if eip-1967 compliant, https://eips.ethereum.org/EIPS/eip-1967
             slot_proxy_address = context.web3.eth.get_storage_at(
                 contract_address, SLOT_EIP1967).hex()
@@ -182,7 +186,7 @@ class Contract(Account):
                 # TODO: as we only store the latest implementation in DB but not for the history.
                 slot_proxy_address = get_slot_proxy_address(
                     context, self.address, self._meta.contract_name, self._meta.abi)
-                if slot_proxy_address is None:
+                if slot_proxy_address is not None:
                     self._meta.proxy_implementation = Contract(address=slot_proxy_address)
                 else:
                     proxy_address = res.get('implementation')
