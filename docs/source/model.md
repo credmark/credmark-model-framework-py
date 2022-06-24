@@ -10,6 +10,7 @@ Create a new class as a subclass of {class}`credmark.cmf.model.Model` and then d
                 display_name='Hello World',
                 description="A test model to say hi.",
                 developer='Credmark',
+                category='example',
                 input=EmptyInput,
                 output=dict)
 class HelloModel(Model):

@@ -147,6 +147,8 @@ def describe(slug: str,  # pylint: disable=too-many-arguments
              display_name: Union[str, None] = None,
              description: Union[str, None] = None,
              developer: Union[str, None] = None,
+             category: Union[str, None] = None,
+             subcategory: Union[str, None] = None,
              tags: Union[list[str], None] = None,
              input: Union[Type[DTOType], Type[dict]] = EmptyInput,
              output: Union[Type[DTOType], Type[dict], None] = None,
@@ -184,6 +186,8 @@ def describe(slug: str,  # pylint: disable=too-many-arguments
                 'displayName': display_name,
                 'description': model_desc,
                 'developer': developer if developer is not None else '',
+                'category': category,
+                'subcategory': subcategory,
                 'tags': tags,
                 'input': input.schema()
                 if input is not None and issubclass(input, DTOTypesTuple)
@@ -260,6 +264,8 @@ class Model:
                  display_name: Union[str, None] = None,
                  description: Union[str, None] = None,
                  developer: Union[str, None] = None,
+                 category: Union[str, None] = None,
+                 subcategory: Union[str, None] = None,
                  tags: Union[list[str], None] = None,
                  input: Union[Type[DTOType], Type[dict]] = EmptyInput,
                  output: Union[Type[DTOType], Type[dict], None] = None,
@@ -275,6 +281,8 @@ class Model:
                             version='1.0',
                             display_name='Echo',
                             description="A test model to echo the message property sent in input.",
+                            developer="my_username",
+                            category="financial",
                             input=EchoDto,
                             output=EchoDto)
             class EchoModel(Model):
@@ -290,6 +298,8 @@ class Model:
             description: Description of the model. If description is not set,
                         the doc string (``__doc__``) of the model class is used instead.
             developer: Name or nickname of the developer
+            category: Category of the model (ex. "financial", "protocol" etc.)
+            subcategory: Optional subcategory (ex. "aave")
             tags: optional list of string tags describing the model
             input: Type that model uses as input; a ``DTO`` subclass or dict.
                    Defaults to ``EmptyInput`` object.
@@ -304,6 +314,8 @@ class Model:
                         display_name,
                         description,
                         developer,
+                        category,
+                        subcategory,
                         tags,
                         input,
                         output,
