@@ -8,7 +8,7 @@ A Credmark model inherits from a simple base class called {class}`~credmark.cmf.
 
 All Models should import this class `from credmark.cmf.model import Model`, subclass it, and override the run() method. See examples [here](https://github.com/credmark/credmark-models-py/tree/main/models/examples).
 
-The {meth}`credmark.cmf.model.Model.describe` decorator `@Model.describe()` provides a simple interface to define the model properties such as slug, version, display_name, description, developer, input, output etc so that it can be used easily by consumers and other models.
+The {meth}`credmark.cmf.model.Model.describe` decorator `@Model.describe()` provides a simple interface to define the model properties such as slug, version, display_name, description, category, developer, input, output etc so that it can be used easily by consumers and other models.
 
 If description is not specified, the `__doc__` string of the model's class is used for the model description.
 

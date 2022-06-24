@@ -26,6 +26,7 @@ from credmark.cmf.model import Model, EmptyInput
                 display_name='Hello World',
                 description="A test model to say hi.",
                 developer='Credmark',
+                category='example',
                 input=EmptyInput,
                 output=dict)
 class HelloModel(Model):

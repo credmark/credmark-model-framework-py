@@ -189,6 +189,8 @@ example.model
  - displayName: Example - Model
  - description: First example model to echo the message property sent in input.
  - developer: Credmark
+ - category: example
+ - subcategory: None
  - tags: None
  - input schema (* for required field):
    ExampleEchoInput(ExampleEchoInput(*))
