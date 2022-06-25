@@ -89,7 +89,7 @@ def get_slot_proxy_address(context, contract_address, contract_name, contract_ab
                 slot_proxy_address = context.web3.eth.get_storage_at(
                     contract_address, SLOT_ZEPPELINOS).hex()
             slot_proxy_address = '0x' + slot_proxy_address[-40:]
-        elif contract_name in ['RenERC20Proxy',
+        elif contract_name in ['RenERC20Proxy', 'RenBTC',
                                'TransparentUpgradeableProxy'
                                'InitializableAdminUpgradeabilityProxy',
                                'InitializableImmutableAdminUpgradeabilityProxy']:
