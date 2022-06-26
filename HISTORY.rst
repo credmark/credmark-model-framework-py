@@ -3,6 +3,17 @@
 History
 -------
 
+0.8.25 [2022-06-26]
+* Added support for using no local models (#108)
+* add set_abi to contract (#109) and balance_of/balance_of_scaled to Token/NativeToken (#110)
+* Price DTO update (#111)
+* Add EUROC token symbol (#112)
+* Historical utility enhancement (#113)
+* Add block_number to contract.meta (#114) and optimized loading / error handling / proxy loading (#115, #116, and #118)
+* Doc fix for removal of smartquotes (#117)
+* Add --output argument to run subcommand (#119)
+* Added category and subcategory to model metadata (#120)
+
 0.8.24 [2022-06-14]
 * Updated version support to use versioneer.
 
