@@ -76,10 +76,11 @@ Below -h command shows the details of options available for run commands.
 ```
 $ credmark-dev run -h
 
-usage: credmark-dev run [-h] [-b BLOCK_NUMBER] [-c CHAIN_ID] [-i INPUT] [-v MODEL_VERSION]
-                        [-j] [-l USE_LOCAL_MODELS] [--provider_url_map PROVIDER_URL_MAP]
-                        [--api_url API_URL]
-                        model-slug
+usage: credmark-dev run [-h] [-b BLOCK_NUMBER] [-c CHAIN_ID] [-i INPUT] [-o OUTPUT]
+                       [-v MODEL_VERSION] [-j] [-d] [-l USE_LOCAL_MODELS] [-m MODEL_MOCKS]
+                       [--generate_mocks GENERATE_MOCKS]
+                       [--provider_url_map PROVIDER_URL_MAP] [--api_url API_URL]
+                       model-slug
 
 positional arguments:
   model-slug            Slug for the model to run or "console" for the interactive console.
@@ -93,6 +94,8 @@ optional arguments:
                         Chain ID. Defaults to 1.
   -i INPUT, --input INPUT
                         Input JSON or if value is "-" it will read input JSON from stdin.
+  -o OUTPUT, --output OUTPUT
+                        Output path to save model results as JSON file.
   -v MODEL_VERSION, --model_version MODEL_VERSION
                         Version of the model to run. Defaults to latest.
   -j, --format_json     Format output json to be more readable
@@ -101,6 +104,7 @@ optional arguments:
                         Comma-separated list of model slugs for models that should favor
                         use of the local version. This is only required when a model is
                         calling another model. Use "*" to use local versions of all models.
+                        Use "-" to use no local models.
   -m MODEL_MOCKS, --model_mocks MODEL_MOCKS
                         Module path and symbol of model mocks config to use. For example,
                         models.contrib.mymodels.mymocks.mock_config
@@ -185,6 +189,8 @@ example.model
  - displayName: Example - Model
  - description: First example model to echo the message property sent in input.
  - developer: Credmark
+ - category: example
+ - subcategory: None
  - tags: None
  - input schema (* for required field):
    ExampleEchoInput(ExampleEchoInput(*))

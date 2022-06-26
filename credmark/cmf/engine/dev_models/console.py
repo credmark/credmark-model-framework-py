@@ -23,6 +23,7 @@ from credmark.cmf.types import (
     Address,
     Account, Contract, Token,
     Accounts, Contracts, Tokens,
+    Currency, FiatCurrency,
     Portfolio, Position,
     Price, PriceList,
     BlockNumber,
@@ -32,13 +33,19 @@ from credmark.cmf.types import (
     ContractLedger,
 )
 
-from credmark.dto import DTO, DTOField, EmptyInput, IterableListGenericDTO, PrivateAttr
+from credmark.dto import (DTO, IntDTO, StrDTO, FloatDTO, DTOField,
+                          EmptyInput, IterableListGenericDTO, PrivateAttr)
 
 from credmark.cmf.types.ledger import (BlockTable, ContractTable,
                                        LogTable,
                                        ReceiptTable, TokenTable,
                                        TokenTransferTable, TraceTable,
                                        TransactionTable)
+
+from credmark.cmf.types.compose import (MapBlockResult, MapBlockTimeSeriesOutput,
+                                        MapBlockTimeSeriesInput, MapBlocksInput,
+                                        MapBlocksOutput, MapInputsInput,
+                                        MapInputsOutput, MapInputsResult)
 
 
 # pylint: disable= too-many-arguments
@@ -50,6 +57,31 @@ def get_dt(year: int, month: int, day: int, hour=0, minute=0, second=0, microsec
 def get_block(in_dt: datetime):
     """Get the BlockNumber instance at or before the datetime timestamp."""
     return BlockNumber.from_timestamp(in_dt.replace(tzinfo=timezone.utc).timestamp())
+
+
+def log_output(log_file=None,
+               log_level=logging.DEBUG,
+               formatter='%(asctime)s - %(name)s - %(levelname)s - %(message)s'):
+    EngineModelContext.logger.setLevel(log_level)
+    handler_name = 'console_log_output'
+    for handle in EngineModelContext.logger.handlers:
+        if handle.get_name() == handler_name:
+            EngineModelContext.logger.removeHandler(handle)
+    if log_file is not None:
+        fh = logging.FileHandler(log_file)
+        fh.set_name(handler_name)
+        fh.setLevel(log_level)
+        fh.setFormatter(logging.Formatter(fmt=formatter))
+        EngineModelContext.logger.addHandler(fh)
+        EngineModelContext.logger.info(
+            f'Enabled log to {log_file} with level={logging.getLevelName(log_level)}')
+    else:
+        fh = logging.StreamHandler(sys.stderr)
+        fh.set_name(handler_name)
+        fh.setLevel(log_level)
+        fh.setFormatter(logging.Formatter(fmt=formatter))
+        EngineModelContext.logger.addHandler(fh)
+        EngineModelContext.logger.info(f'Enabled log with level={logging.getLevelName(log_level)}')
 
 
 @Model.describe(slug='console',
@@ -123,6 +155,8 @@ class ConsoleModel(Model):
         print('describe_model(slug): Describe a model by slug')
         print('get_dt(y,m,d,h=0,m=0,s=0,ms=0): create UTC datetime')
         print('get_block(in_dt): get the block number before the datetime timestamp')
+        print('log_output(log_file, log_level=logging.DEBUG): set the logging output file, '
+              'e.g. tmp/debug.log')
         print('')
         print('# Console functions')
         print('self.where(): where you are in the chain of blocks')

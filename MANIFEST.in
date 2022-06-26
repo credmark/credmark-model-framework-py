@@ -11,3 +11,5 @@ recursive-exclude docs *
 recursive-exclude models *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
+include versioneer.py
+include credmark/cmf/_version.py

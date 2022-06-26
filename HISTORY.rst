@@ -3,6 +3,28 @@
 History
 -------
 
+0.8.24 [2022-06-14]
+* Updated version support to use versioneer.
+
+0.8.23 [2022-06-13]
+* Jupyter notebook support
+* Currency as interface for FiatCurrency and Token
+* DTOs for compose models and local compose models
+* Contract ABI class
+* Primitive DTO types: IntDTO, FloatDTO, StrDTO
+* Support for credmark-dev use-local-models flag "-" for no locals
+* Increase API run request timeout
+
+0.8.22 [2022-05-26]
+* Support for web3 websocket urls
+* Contract ledger event txn hash field name fix
+
+0.8.21 [2022-05-23]
+* Serialize datetimes and numpy and pandas datastructures to json
+* Pandas types conversion helpers
+* Improve types and typehints
+* Fix to load token ERC20 properties in Token.info() method
+
 0.8.20 [2022-05-14]
 * Changed manifest displayName field casing
 * Added get_value to Portfolio and Position DTOs

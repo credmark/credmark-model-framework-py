@@ -16,7 +16,7 @@ GET_MODELS_PATH = '/v1/models'
 GET_MODEL_PATH_FORMAT = '/v1/models/{}'
 GET_MODEL_DEPLOYMENTS_PATH_FORMAT = '/v1/models/{}/deployments'
 
-RUN_REQUEST_TIMEOUT = 600
+RUN_REQUEST_TIMEOUT = 930
 
 logger = logging.getLogger(__name__)
 

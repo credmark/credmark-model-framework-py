@@ -9,7 +9,7 @@ A model is simply a decorated class that inherits from {class}`credmark.cmf.mode
 To get started, you can use the {doc}`credmark_dev` command to create a new model skeleton python file using something like:
 
 ```
-credmark_dev create my_models hello_world
+credmark-dev create my_models hello_world
 ```
 
 This will create a model in the folder `models/contrib/my_models/hello_world.py`.
@@ -26,6 +26,7 @@ from credmark.cmf.model import Model, EmptyInput
                 display_name='Hello World',
                 description="A test model to say hi.",
                 developer='Credmark',
+                category='example',
                 input=EmptyInput,
                 output=dict)
 class HelloModel(Model):
@@ -52,7 +53,7 @@ credmark-dev run <Specify Slug> -b <Specify block number>  -i <Specify Input>
 so for example
 
 ```
-credmark-dev run cmk.circulating-supply -b 14000000  -i “{}”
+credmark-dev run cmk.circulating-supply -b 14000000  -i "{}"
 ```
 
 Tip: you can run the command

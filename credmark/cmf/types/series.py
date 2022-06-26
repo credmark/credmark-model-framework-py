@@ -1,6 +1,8 @@
-from typing import List, Optional, TypeVar, Union, Generic
-from credmark.dto import DTO, GenericDTO, DTOField, PrivateAttr, IterableListGenericDTO
+from typing import List, Optional, TypeVar, Union, Generic, Tuple, Callable
+from credmark.dto import DTO, DTOType, GenericDTO, DTOField, PrivateAttr, IterableListGenericDTO
 from credmark.cmf.model.errors import ModelErrorDTO
+import pandas as pd
+from datetime import datetime
 
 DTOCLS = TypeVar('DTOCLS')
 
@@ -67,12 +69,45 @@ class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS
                                  [s for s in self.series if s.blockTimestamp <= timestamp]))
         return None
 
+    def to_list(self, fields: Optional[List[Callable]] = None) -> List[List]:
+        """
+        Parameters:
+            fields (List[Callable] | None): List of lambda to extract certain field from output.
+                Leave empty to extract the entire output.
+        Extract tuples from series data
+        """
+        if fields is None:
+            return [[p.blockNumber,
+                    datetime.utcfromtimestamp(p.blockTimestamp),
+                    p.output]
+                    for p in self.series]
+        else:
+            return [([p.blockNumber,
+                    datetime.utcfromtimestamp(p.blockTimestamp)] +
+                    [f(p.output) for f in fields])
+                    for p in self.series]
+
+    def to_dataframe(self, fields: Optional[List[Tuple[str, Callable]]] = None) -> pd.DataFrame:
+        """
+        Parameters:
+            fields (List[Tuple[str, Callable]] | None): List of field name and lambda to extract
+                certain field from output. Leave empty to extract the entire output.
+        Extract tuples from series data
+
+        """
+        series_in_list = self.to_list(fields=None if fields is None else [f for (_, f) in fields])
+        if fields is None:
+            return pd.DataFrame(series_in_list, columns=['blockNumber', 'blockTime', 'output'])
+        else:
+            return pd.DataFrame(series_in_list,
+                                columns=['blockNumber', 'blockTime'] + [c for c, _ in fields])
+
 
 class SeriesModelStartEndIntervalInput(DTO):
     interval: int
     start: int
     end: int
-    modelInput: Union[dict, DTO, None] = None
+    modelInput: Union[dict, DTOType, None] = None
     modelSlug: str
     modelVersion: Optional[str] = None
 
@@ -80,6 +115,6 @@ class SeriesModelStartEndIntervalInput(DTO):
 class SeriesModelWindowIntervalInput(DTO):
     window: int
     interval: int
-    modelInput: Union[dict, DTO, None] = None
+    modelInput: Union[dict, DTOType, None] = None
     modelSlug: str
     modelVersion: Optional[str] = None

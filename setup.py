@@ -20,9 +20,12 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 with open('requirements.txt') as f:
     required = f.read().splitlines()
 
+import versioneer
+
 setup(
     name='credmark-model-framework',
-    version='0.8.20',
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     description='Credmark model development framework',
     long_description=readme + '\n\n' + history,
     author='Credmark',

@@ -4,6 +4,8 @@ from typing import List, Set, Union
 import inspect
 from credmark.dto import DTO, DTOField, PrivateAttr, IterableListGenericDTO
 import credmark.cmf.model
+from .block_number import BlockNumber
+import pandas as pd
 
 
 class LedgerAggregate(DTO):
@@ -23,6 +25,9 @@ class LedgerModelOutput(IterableListGenericDTO[dict]):
     data: List[dict] = DTOField(
         default=[], description='A list of dicts which are the rows of data')
     _iterator: str = PrivateAttr("data")
+
+    def to_dataframe(self):
+        return pd.DataFrame(self.data)
 
 
 class LedgerTable:
@@ -319,7 +324,7 @@ class ContractEventsTable(LedgerTable):
         """"""
         EVT_BLOCK_NUMBER = 'evt_block_number'
         """"""
-        EVT_HASH = 'evt_hash'
+        EVT_HASH = 'evt_tx_hash'
         """"""
         EVT_INDEX = 'evt_index'
         """"""
@@ -504,27 +509,27 @@ class ContractLedger:
             if columns is None:
                 columns = []
 
-            input = {'contractAddress': self.address,
-                     'columns': columns,
-                     'aggregates': aggregates,
-                     'where': where,
-                     'groupBy': group_by,
-                     'having': having,
-                     'orderBy': order_by,
-                     'limit': limit,
-                     'offset': offset}
+            model_input = {'contractAddress': self.address,
+                           'columns': columns,
+                           'aggregates': aggregates,
+                           'where': where,
+                           'groupBy': group_by,
+                           'having': having,
+                           'orderBy': order_by,
+                           'limit': limit,
+                           'offset': offset}
 
             if self.entity_type == ContractLedger.EntityType.FUNCTIONS:
                 model_slug = 'contract.function_data'
-                input['functionName'] = self.name
+                model_input['functionName'] = self.name
             elif self.entity_type == ContractLedger.EntityType.EVENTS:
                 model_slug = 'contract.event_data'
-                input['eventName'] = self.name
+                model_input['eventName'] = self.name
             else:
                 raise ValueError(f'Invalid ContractLedger entity type {self.entity_type}')
 
             return context.run_model(model_slug,
-                                     input,
+                                     model_input,
                                      return_type=LedgerModelOutput)
 
     class ContractEntityFactory:
@@ -553,3 +558,30 @@ class ContractLedger:
             ContractLedger.EntityType.FUNCTIONS, address)
         self.events = ContractLedger.ContractEntityFactory(
             ContractLedger.EntityType.EVENTS, address)
+
+
+class LedgerBlockTimeSeriesInput(DTO):
+    """
+    Input for the ledger.block-time-series model.
+    """
+    endTimestamp: int = DTOField(
+        description='End timestamp of block series, inclusive unless exclusive is True')
+    interval: int = DTOField(description='Series interval in seconds')
+    count: int = DTOField(description='Number of intervals in the series.')
+    exclusive: Union[bool, None] = DTOField(
+        default=False, description='If true, blocks are exclusive of end timestamp')
+
+
+class LedgerBlockNumberTimeSeries(DTO):
+    """
+    Output for the ledger.block-time-series model.
+    """
+    endTimestamp: int = DTOField(
+        description='End timestamp of block series, inclusive unless exclusive is True')
+    interval: int = DTOField(description='Series interval in seconds')
+    exclusive: Union[bool, None] = DTOField(
+        default=False, description='If true, blocks are exclusive of end timestamp')
+    blockNumbers: List[BlockNumber] = DTOField(
+        default=[],
+        description='List of block numbers'
+    )

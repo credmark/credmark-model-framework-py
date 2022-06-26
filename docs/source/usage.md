@@ -37,15 +37,16 @@ Some configuration is done with environment variables. They can be set in your s
 
 **Environment variables**
 
-The `CREDMARK_WEB3_PROVIDER_CHAIN_ID_{N}` is a JSON object where the keys are chain ids (as strings) and the values are URLs to HTTP providers.
+The `CREDMARK_WEB3_PROVIDER_CHAIN_ID_{N}` is a JSON object where the keys are chain ids (as strings) and the values are URLs to HTTP/Websocket providers.
 
-Set {N} with a chain id, for example `CREDMARK_WEB3_PROVIDER_CHAIN_ID_1` and set the value as the URL of the HTTP provider.
+Set {N} with a chain id, for example `CREDMARK_WEB3_PROVIDER_CHAIN_ID_1` and set the value as the URL of the HTTP/Websocket provider.
 
 For example, a `.env` file can contain the following:
 
 ```
 CREDMARK_WEB3_PROVIDER_CHAIN_ID_1=https://eth-mainnet.alchemyapi.io/v2/ABC123
 CREDMARK_WEB3_PROVIDER_CHAIN_ID_137=https://polygon-mainnet.g.alchemy.com/v2/ABC123
+CREDMARK_WEB3_PROVIDER_CHAIN_ID_10=wss://some.optimism.node/v1/ABC123
 ```
 
 **ALTERNATIVELY** you may set all your providers in a single env var:
@@ -53,7 +54,7 @@ CREDMARK_WEB3_PROVIDER_CHAIN_ID_137=https://polygon-mainnet.g.alchemy.com/v2/ABC
 For example, a `.env` file can contain the following:
 
 ```
-CREDMARK_WEB3_PROVIDERS='{1:"https://eth-mainnet.alchemyapi.io/v2/ABC123","137":"https://polygon-mainnet.g.alchemy.com/v2/ABC123"}'
+CREDMARK_WEB3_PROVIDERS='{1:"https://eth-mainnet.alchemyapi.io/v2/ABC123","137":"https://polygon-mainnet.g.alchemy.com/v2/ABC123","10":"wss://some.optimism.node/v1/ABC123"}'
 ```
 
 This variable is used to run models which require web3. It can be ignored for those models which do not require web3.

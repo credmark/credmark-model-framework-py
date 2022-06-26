@@ -122,16 +122,14 @@ class LedgerQuery(contextlib.AbstractContextManager):
                 model_slug,
                 f'{model_slug} call must have a where or limit value for non-aggregate queries.')
 
-        return self._context.run_model(model_slug,
-                                       {'columns': columns,
-                                        'aggregates': aggregates,
-                                        'where': where,
-                                        'groupBy': group_by,
-                                        'having': having,
-                                        'orderBy': order_by,
-                                        'limit': limit,
-                                        'offset': offset},
-                                       return_type=LedgerModelOutput)
+        model_input = {'columns': columns, 'aggregates': aggregates,
+                       'where': where, 'groupBy': group_by,
+                       'having': having, 'orderBy': order_by,
+                       'limit': limit, 'offset': offset}
+
+        return self.context.run_model(model_slug,
+                                      model_input,
+                                      return_type=LedgerModelOutput)
 
     @query_method
     def select(self,  # pylint: disable=too-many-arguments
