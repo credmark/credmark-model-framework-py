@@ -423,6 +423,8 @@ class EngineModelContext(ModelContext):
 
         api = self.__api
 
+        breakpoint()
+
         if use_local and model_class is not None:
 
             slug, version, output = self._run_local_model_with_class(
@@ -520,7 +522,6 @@ class EngineModelContext(ModelContext):
                                          )
 
         try:
-
             try:
                 input = transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
             except DataTransformError as err:
@@ -581,7 +582,7 @@ class EngineModelContext(ModelContext):
                 if debug_log:
                     self.debug_logger.debug(f"< Run model '{slug}' error: {err}")
             else:
-                err_msg = f'Exception running model {slug}({input}) on ' \
+                err_msg = f'Exception running model {slug}({version})({input}) on ' \
                     f'chain {context.chain_id} ' \
                     f'block {context.block_number} (' \
                     f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M:%S}) ' \
