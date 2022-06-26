@@ -679,11 +679,12 @@ class EngineModelContext(ModelContext):
                     self.debug_logger.debug(
                         f"< Run model '{slug}' error: {err}")
             else:
-                err_msg = f'Exception running model {slug}({version})({input}) on ' \
-                    f'chain {context.chain_id} ' \
-                    f'block {context.block_number} (' \
-                    f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M:%S}) ' \
-                    f'with {err}'
+                err_msg = (f'Exception running model {slug}({input}) on '
+                           f'version {version,model_class.version} '
+                           f'chain {context.chain_id} '
+                           f'block {context.block_number} ('
+                           f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M:%S}) '
+                           f'with {err}')
                 if self.dev_mode:
                     self.logger.exception(err_msg)
                 elif debug_log:
