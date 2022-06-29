@@ -329,11 +329,33 @@ class Currency(Account):
     """
     This is a converter for any Fungible Token and FiatCurrency.
     It's used as inputs to price models.
+
+    It can be constructed with a string (containing an address or symbol)
+    or with kwargs ``address`` or ``symbol``::
+
+        # The following constructions are equivalent:
+
+        c = Currency('CMK')
+
+        c = Currency('0x68cfb82eacb9f198d508b514d898a403c449533e')
+
+        c = Currency(symbol='CMK')
+
+        c = Currency(address='0x68cfb82eacb9f198d508b514d898a403c449533e')
+
     """
 
     symbol: Union[str, None] = None
     name: Union[str, None] = None
     fiat: Union[bool, None] = None
+
+    class Config:
+        schema_extra = {
+            'examples': [
+                {'address': '0x1F98431c8aD98523631AE4a59f267346ea31F984'},
+                {'symbol': 'CMK'},
+            ]
+        }
 
     @classmethod
     def validate(cls, d):
