@@ -7,7 +7,7 @@ from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
 
 from .abi import ABI
 from .account import Account
-from .address import Address
+from .address import Address, evm_address_regex
 from .contract import Contract
 from .data.erc_standard_data import ERC20_BASE_ABI
 from .data.fiat_currency_data import (FIAT_CURRENCY_DATA_BY_ADDRESS,
@@ -335,10 +335,26 @@ class Currency(Account):
     name: Union[str, None] = None
     fiat: Union[bool, None] = None
 
-    def __new__(cls, **data) -> Union[NativeToken, Token, FiatCurrency]:
+    @classmethod
+    def validate(cls, d):
+        if isinstance(d, str):
+            return cls(d)
+        if isinstance(d, dict):
+            return cls(**d)
+        raise TypeError(f'{cls.__name__} must be deserialized with an str or dict')
+
+    def __new__(cls, *args, **data) -> Union[NativeToken, Token, FiatCurrency]:
         addr = data.get("address", None)
         symbol = data.get("symbol", None)
         fiat = data.get("fiat", None)
+
+        if len(args) > 0:
+            arg = args[0]
+            if isinstance(arg, str):
+                if evm_address_regex.match(arg) is not None:
+                    return Token(address=arg)
+                else:
+                    return Token(symbol=arg)
 
         if addr is not None:
             if (FIAT_CURRENCY_DATA_BY_ADDRESS.get(addr, None) is not None and
@@ -358,5 +374,5 @@ class Currency(Account):
             "Could not identify specific currency. Currency "
             "must be of type Token, NativeToken or FiatCurrency")
 
-    def __init__(self, **_data):
+    def __init__(self, *_args, **_data):
         super().__init__(**_data)
