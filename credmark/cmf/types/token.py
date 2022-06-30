@@ -378,20 +378,26 @@ class Currency(Account):
             return cls(d)
         if isinstance(d, dict):
             return cls(**d)
+        if isinstance(d, NativeToken):
+            return d
+        if isinstance(d, Token):
+            return d
+        if isinstance(d, FiatCurrency):
+            return d
         raise TypeError(f'{cls.__name__} must be deserialized with an str or dict')
 
     def __new__(cls, *args, **data) -> Union[NativeToken, Token, FiatCurrency]:
-        addr = data.get("address", None)
-        symbol = data.get("symbol", None)
-        fiat = data.get("fiat", None)
-
         if len(args) > 0:
             arg = args[0]
             if isinstance(arg, str):
                 if evm_address_regex.match(arg) is not None:
-                    return Token(address=arg)
+                    return cls.__new__(cls, address=arg)
                 else:
-                    return Token(symbol=arg)
+                    return cls.__new__(cls, symbol=arg)
+
+        addr = data.get("address", None)
+        symbol = data.get("symbol", None)
+        fiat = data.get("fiat", None)
 
         if addr is not None:
             if (FIAT_CURRENCY_DATA_BY_ADDRESS.get(addr, None) is not None and
