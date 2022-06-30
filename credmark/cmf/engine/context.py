@@ -59,7 +59,7 @@ class EngineModelContext(ModelContext):
 
     dev_mode = False
     test_mode = False
-    max_run_depth = 20
+    max_run_depth = 25
 
     # map of slug to manifest, filled in lazily
     _model_manifest_map: dict[str, dict] = {}
