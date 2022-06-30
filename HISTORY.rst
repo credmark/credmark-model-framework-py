@@ -3,6 +3,13 @@
 History
 -------
 
+0.8.26 []
+* Added checking of latest version tag in github (#125)
+* Add client property support for model-api (#127)
+* Creation of Currency DTO with string or kwargs (#129)
+* Fix depth when calling api model run
+* Updated max depth to 25
+
 0.8.25 [2022-06-26]
 * Added support for using no local models (#108)
 * add set_abi to contract (#109) and balance_of/balance_of_scaled to Token/NativeToken (#110)

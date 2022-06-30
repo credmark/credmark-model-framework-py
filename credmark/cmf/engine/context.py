@@ -59,7 +59,7 @@ class EngineModelContext(ModelContext):
 
     dev_mode = False
     test_mode = False
-    max_run_depth = 20
+    max_run_depth = 25
 
     # map of slug to manifest, filled in lazily
     _model_manifest_map: dict[str, dict] = {}
@@ -537,11 +537,13 @@ class EngineModelContext(ModelContext):
                         f"> Run API model '{slug}' input: {input} "
                         f"run_block_number: {run_block_number}")
 
+                # We pass depth - 1 which is the callers depth
+                # since we already incremented for this model run request
                 slug, version, output, error, dependencies = api.run_model(
                     slug, version, self.chain_id,
                     run_block_number,
                     input if input is None or isinstance(input, dict) else input.dict(),
-                    self.run_id, self.__depth, self.__client)
+                    self.run_id, self.__depth - 1, self.__client)
 
                 if dependencies:
                     self._add_dependencies(dependencies)
