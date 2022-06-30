@@ -3,7 +3,7 @@
 History
 -------
 
-0.8.26 []
+0.8.26 [2022-06-30]
 * Added checking of latest version tag in github (#125)
 * Add client property support for model-api (#127)
 * Creation of Currency DTO with string or kwargs (#129)
