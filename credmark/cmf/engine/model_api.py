@@ -44,9 +44,11 @@ class ModelApi:
     def __init__(self, url: str, api_key=None, internal_api=False):
         self.__url = url
         self.__internal_api = internal_api
-        self.__api_key = api_key
         self.__session = requests.Session()
         self.__session.headers.update({'User-Agent': 'credmark-model-framework'})
+        if api_key is not None:
+            self.__session.headers.update({'Authorization': 'Bearer ' + api_key})
+
         retries = Retry(total=5, backoff_factor=1, allowed_methods=False,
                         status_forcelist=[429, 502], respect_retry_after_header=True)
         self.__session.mount('http://', HTTPAdapter(max_retries=retries))
@@ -57,12 +59,10 @@ class ModelApi:
         Return JSON object or None if not found.
         Other errors raise
         """
-        headers = {'Authorization': 'Bearer ' +
-                   self.__api_key} if self.__api_key is not None else None
         resp = None
 
         try:
-            resp = self.__session.get(url, headers=headers)
+            resp = self.__session.get(url)
             resp.raise_for_status()
             return resp.json()
         except requests.exceptions.ConnectionError as err:
@@ -107,6 +107,7 @@ class ModelApi:
                   input: Union[dict, None],
                   run_id: Union[str, None] = None,
                   depth: Union[int, None] = None,
+                  client: Union[str, None] = None,
                   raise_error_results=False) -> \
             tuple[str, str, Union[dict[str, Any], None],
                   Union[dict[str, Any], None], dict[str, Any]]:
@@ -130,14 +131,14 @@ class ModelApi:
                 req['runId'] = run_id
             if depth is not None:
                 req['depth'] = depth
+            if client is not None:
+                req['client'] = client
 
-        headers = {'Authorization': 'Bearer ' +
-                   self.__api_key} if self.__api_key is not None else None
         resp = None
         resp_obj = None
         url = urljoin(self.__url, RUN_MODEL_PATH)
         try:
-            resp = self.__session.post(url, json=req, headers=headers, timeout=RUN_REQUEST_TIMEOUT)
+            resp = self.__session.post(url, json=req, timeout=RUN_REQUEST_TIMEOUT)
             resp.raise_for_status()
             resp_obj = resp.json()
 

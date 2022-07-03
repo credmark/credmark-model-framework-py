@@ -1,51 +1,43 @@
 # pylint: disable=locally-disabled, unused-import, unused-variable
 import importlib
-import sys
 import inspect
+import sys
+from datetime import date, datetime, timedelta, timezone
 from typing import List
-from datetime import datetime, date, timezone, timedelta
-import IPython
 
-import os
+# Not to load console model when stdin/out/error are closed.
+if not sys.stdin.closed and not sys.stdout.closed and not sys.stderr.closed:
+    import IPython
+
 import logging
+import os
+
 import yaml
-
-from web3.exceptions import ABIFunctionNotFound
 from credmark.cmf.engine.context import EngineModelContext
-from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.engine.model_api import ModelApi
-
+from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.model import Model
 from credmark.cmf.model.context import RunModelMethod
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.cmf.model.print import print_manifest_description
-from credmark.cmf.types import (
-    Address,
-    Account, Contract, Token,
-    Accounts, Contracts, Tokens,
-    Currency, FiatCurrency,
-    Portfolio, Position,
-    Price, PriceList,
-    BlockNumber,
-    NativeToken,
-    NativePosition,
-    TokenPosition,
-    ContractLedger,
-)
-
-from credmark.dto import (DTO, IntDTO, StrDTO, FloatDTO, DTOField,
-                          EmptyInput, IterableListGenericDTO, PrivateAttr)
-
-from credmark.cmf.types.ledger import (BlockTable, ContractTable,
-                                       LogTable,
+from credmark.cmf.types import (Account, Accounts, Address, BlockNumber,
+                                Contract, ContractLedger, Contracts, Currency,
+                                FiatCurrency, NativePosition, NativeToken,
+                                Portfolio, Position, Price, PriceList, Token,
+                                TokenPosition, Tokens)
+from credmark.cmf.types.compose import (MapBlockResult, MapBlocksInput,
+                                        MapBlocksOutput,
+                                        MapBlockTimeSeriesInput,
+                                        MapBlockTimeSeriesOutput,
+                                        MapInputsInput, MapInputsOutput,
+                                        MapInputsResult)
+from credmark.cmf.types.ledger import (BlockTable, ContractTable, LogTable,
                                        ReceiptTable, TokenTable,
                                        TokenTransferTable, TraceTable,
                                        TransactionTable)
-
-from credmark.cmf.types.compose import (MapBlockResult, MapBlockTimeSeriesOutput,
-                                        MapBlockTimeSeriesInput, MapBlocksInput,
-                                        MapBlocksOutput, MapInputsInput,
-                                        MapInputsOutput, MapInputsResult)
+from credmark.dto import (DTO, DTOField, EmptyInput, FloatDTO, IntDTO,
+                          IterableListGenericDTO, PrivateAttr, StrDTO)
+from web3.exceptions import ABIFunctionNotFound
 
 
 # pylint: disable= too-many-arguments

@@ -59,7 +59,7 @@ class EngineModelContext(ModelContext):
 
     dev_mode = False
     test_mode = False
-    max_run_depth = 20
+    max_run_depth = 25
 
     # map of slug to manifest, filled in lazily
     _model_manifest_map: dict[str, dict] = {}
@@ -108,9 +108,9 @@ class EngineModelContext(ModelContext):
                        api_url: Union[str, None] = None,
                        run_id: Union[str, None] = None,
                        depth: int = 0,
+                       client: Union[str, None] = None,
                        console: bool = False,
-                       use_local_models: Union[str, None] = None
-                       ):
+                       use_local_models: Union[str, None] = None):
         """
         Parameters:
             block_number: if None, latest block is used
@@ -157,7 +157,8 @@ class EngineModelContext(ModelContext):
 
         context = EngineModelContext(
             chain_id, block_number, web3_registry,
-            run_id, depth, model_loader, api, is_top_level=not console)
+            run_id, depth, model_loader, api, client,
+            is_top_level=not console)
 
         if console:
             context.is_active = True
@@ -178,6 +179,7 @@ class EngineModelContext(ModelContext):
                                      api_url: Union[str, None] = None,
                                      run_id: Union[str, None] = None,
                                      depth: int = 0,
+                                     client: Union[str, None] = None,
                                      use_local_models: Union[str, None] = None):
         """
         Parameters:
@@ -194,6 +196,7 @@ class EngineModelContext(ModelContext):
                                          api_url,
                                          run_id,
                                          depth,
+                                         client,
                                          console=False,
                                          use_local_models=use_local_models)
 
@@ -286,9 +289,11 @@ class EngineModelContext(ModelContext):
                  depth: int,
                  model_loader: ModelLoader,
                  api: Union[ModelApi, None],
+                 client: Union[str, None] = None,
                  is_top_level: bool = False):
         super().__init__(chain_id, block_number, web3_registry)
         self.run_id = run_id
+        self.__client = client
         self.__depth = depth
         self.__dependencies = {}
         self.__model_loader = model_loader
@@ -532,11 +537,13 @@ class EngineModelContext(ModelContext):
                         f"> Run API model '{slug}' input: {input} "
                         f"run_block_number: {run_block_number}")
 
+                # We pass depth - 1 which is the callers depth
+                # since we already incremented for this model run request
                 slug, version, output, error, dependencies = api.run_model(
                     slug, version, self.chain_id,
                     run_block_number,
                     input if input is None or isinstance(input, dict) else input.dict(),
-                    self.run_id, self.__depth)
+                    self.run_id, self.__depth - 1, self.__client)
 
                 if dependencies:
                     self._add_dependencies(dependencies)
@@ -611,8 +618,8 @@ class EngineModelContext(ModelContext):
                                          self.run_id,
                                          self.__depth,
                                          self.__model_loader,
-                                         self.__api
-                                         )
+                                         self.__api,
+                                         self.__client)
 
         try:
             try:
@@ -679,8 +686,9 @@ class EngineModelContext(ModelContext):
                     self.debug_logger.debug(
                         f"< Run model '{slug}' error: {err}")
             else:
-                err_msg = (f'Exception running model {slug}({input}) on '
-                           f'version {version,model_class.version} '
+                input_json = json.dumps(transform_data_for_dto(
+                    input, None, slug, 'input'))
+                err_msg = (f'Exception running model {slug}({input_json}) on '
                            f'chain {context.chain_id} '
                            f'block {context.block_number} ('
                            f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M:%S}) '

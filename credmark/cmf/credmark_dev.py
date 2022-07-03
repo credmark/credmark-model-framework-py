@@ -9,6 +9,7 @@ import inspect
 from typing import List, Union
 from dotenv import load_dotenv, find_dotenv
 
+from .engine.github import get_latest_cmf_version_tag
 from .engine.context import EngineModelContext
 from .engine.model_loader import ModelLoader
 from .engine.mocks import MockGenerator, ModelMockRunner
@@ -211,7 +212,13 @@ def load_models(args, load_dev_models=False):
 def show_version(_args):
     import credmark.cmf  # pylint: disable=import-outside-toplevel
     ver = credmark.cmf.__version__
-    print(f'credmark-model-framework version {ver}')
+    print(f'Installed credmark-model-framework version {ver}')
+
+    latest_version = get_latest_cmf_version_tag()
+    if ver != latest_version:
+        print(f'\nLatest credmark-model-framework version {latest_version}')
+        print("\nVerify the credmark-model-framework version in requirements.txt and\n"
+              "run 'pip install -r requirements.txt'\n")
     sys.exit(0)
 
 

@@ -61,7 +61,7 @@ class ModelTestContextFactory:
 
         context = EngineModelContext(
             chain_id, block_number, self.web3_registry,
-            'test', 0, self.model_loader, self.api, True)
+            'test', 0, self.model_loader, self.api, is_top_level=True)
 
         ModelContext.set_current_context(context)
 

@@ -7,7 +7,7 @@ from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
 
 from .abi import ABI
 from .account import Account
-from .address import Address
+from .address import Address, evm_address_regex
 from .contract import Contract
 from .data.erc_standard_data import ERC20_BASE_ABI
 from .data.fiat_currency_data import (FIAT_CURRENCY_DATA_BY_ADDRESS,
@@ -47,8 +47,7 @@ def get_token_from_configuration(
 
 class Token(Contract):
     """
-    Token represents a fungible Token that conforms to ERC20
-    standards
+    Fungible Token that conforms to ERC20 standards.
     """
 
     class TokenMetadata(Contract.ContractMetaData):
@@ -204,10 +203,16 @@ class Token(Contract):
 
 
 class TokenInfo(Token):
+    """
+    Subclass of Token containing its related metadata.
+    """
     meta: Token.TokenMetadata
 
 
 class NativeToken(Token):
+    """
+    Native token for a chain, such as "ETH" or "MATIC".
+    """
 
     def __init__(self, **kwargs) -> None:
         context = credmark.cmf.model.ModelContext.current_context()
@@ -252,12 +257,22 @@ class NativeToken(Token):
 
 
 class NonFungibleToken(Contract):
+    """
+    Non-fungible token.
+
+    `This class is not yet implemented`
+    """
+
     def __init__(self, **data):
         super().__init__(**data)
         raise NotImplementedError()
 
 
 class Tokens(IterableListGenericDTO[Token]):
+    """
+    Iterable list of Token instances.
+    """
+
     tokens: List[Token] = DTOField(
         default=[], description="An iterable list of Token Objects")
     _iterator: str = PrivateAttr('tokens')
@@ -265,7 +280,7 @@ class Tokens(IterableListGenericDTO[Token]):
 
 class FiatCurrency(Account):
     """
-    This is DTO for Fiat Currency.
+    Fiat currency.
     """
 
     class FiatCurrencyMeta:
@@ -327,15 +342,59 @@ class FiatCurrency(Account):
 
 class Currency(Account):
     """
-    This is a converter for any Fungible Token and FiatCurrency.
+    Converter for any Fungible Token and FiatCurrency.
     It's used as inputs to price models.
+
+    It can be constructed with a string (containing an address or symbol)
+    or with kwargs ``address`` or ``symbol``::
+
+        # The following constructions are equivalent:
+
+        c = Currency('CMK')
+
+        c = Currency('0x68cfb82eacb9f198d508b514d898a403c449533e')
+
+        c = Currency(symbol='CMK')
+
+        c = Currency(address='0x68cfb82eacb9f198d508b514d898a403c449533e')
+
     """
 
     symbol: Union[str, None] = None
     name: Union[str, None] = None
     fiat: Union[bool, None] = None
 
-    def __new__(cls, **data) -> Union[NativeToken, Token, FiatCurrency]:
+    class Config:
+        schema_extra = {
+            'examples': [
+                {'address': '0x1F98431c8aD98523631AE4a59f267346ea31F984'},
+                {'symbol': 'CMK'},
+            ]
+        }
+
+    @classmethod
+    def validate(cls, d):
+        if isinstance(d, str):
+            return cls(d)
+        if isinstance(d, dict):
+            return cls(**d)
+        if isinstance(d, NativeToken):
+            return d
+        if isinstance(d, Token):
+            return d
+        if isinstance(d, FiatCurrency):
+            return d
+        raise TypeError(f'{cls.__name__} must be deserialized with an str or dict')
+
+    def __new__(cls, *args, **data) -> Union[NativeToken, Token, FiatCurrency]:
+        if len(args) > 0:
+            arg = args[0]
+            if isinstance(arg, str):
+                if evm_address_regex.match(arg) is not None:
+                    return cls.__new__(cls, address=arg)
+                else:
+                    return cls.__new__(cls, symbol=arg)
+
         addr = data.get("address", None)
         symbol = data.get("symbol", None)
         fiat = data.get("fiat", None)
@@ -358,5 +417,5 @@ class Currency(Account):
             "Could not identify specific currency. Currency "
             "must be of type Token, NativeToken or FiatCurrency")
 
-    def __init__(self, **_data):
+    def __init__(self, *_args, **_data):
         super().__init__(**_data)
