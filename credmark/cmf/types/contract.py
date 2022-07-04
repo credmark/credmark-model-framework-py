@@ -318,7 +318,7 @@ class Contract(Account):
             self._load()
         return self._meta.is_transparent_proxy
 
-    @ property
+    @property
     def ledger(self):
         """
         A :class:`~credmark.cmf.types.ledger.ContractLedger` instance which can be
@@ -333,7 +333,7 @@ class Contract(Account):
 
             contract = Contract(address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
             ret = contract.ledger.functions.approve(
-                    columns=[ContractLedger.Functions.InputCol('spender')],
+                    columns=[ContractLedger.Functions.spender')],
                     aggregates=[
                         ContractLedger.Aggregate(
                             f'MAX({ContractLedger.Functions.InputCol("value")})', 'max_value')
@@ -361,8 +361,17 @@ class Contract(Account):
 
         See :class:`~credmark.cmf.types.ledger.ContractLedger.ContractEntity` for more details.
         """
+        if not self._loaded:
+            self._load()
+
         if self._ledger is None:
-            self._ledger = ContractLedger(str(self.address))
+            if self.proxy_for is not None:
+                # TODO: Need to stitch all past proxied tables to become one table
+                self._ledger = ContractLedger(address=self.proxy_for.address,
+                                              abi=self.proxy_for.abi)
+            elif self.abi is not None:
+                self._ledger = ContractLedger(address=str(self.address),
+                                              abi=self.abi)
         return self._ledger
 
 
