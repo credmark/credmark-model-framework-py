@@ -1,17 +1,11 @@
-import contextlib
 import inspect
-from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List
 
-import credmark.cmf.model
 import pandas as pd
-from credmark.cmf.model.errors import ModelInputError
+from credmark.cmf.model.errors import ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 
-from .abi import ABI
-from .block_number import BlockNumber
-
-from credmark.cmf.model.ledger.errors import InvalidColumnException
+from .ledger_errors import InvalidColumnException
 
 
 class LedgerAggregate(DTO):
@@ -30,44 +24,168 @@ class LedgerModelOutput(IterableListGenericDTO[dict]):
     """
     data: List[dict] = DTOField(
         default=[], description='A list of dicts which are the rows of data')
-    _iterator: str = PrivateAttr("data")
+
+    _iterator: str = PrivateAttr('data')
 
     def to_dataframe(self):
         return pd.DataFrame(self.data)
 
 
+class ColumnField(str):
+    # pylint:disable=invalid-name, too-many-public-methods
+    def str(self):
+        return str(self)
+
+    def squote_and_lower(self):
+        return ColumnField(f"'{self.lower()}'")
+
+    def squote(self):
+        return ColumnField(f"'{self}'")
+
+    def dquote(self):
+        return ColumnField(f'"{self}"')
+
+    def desc(self):
+        return ColumnField(self + ' desc')
+
+    def asc(self):
+        return ColumnField(self + ' asc')
+
+    def _compare(self, value, force, op):
+        if isinstance(value, str):
+            if force:
+                return ColumnField(f'{self} {op} {ColumnField(value).squote()}')
+            else:
+                return ColumnField(f'{self} {op} {ColumnField(value).squote_and_lower()}')
+
+        return ColumnField(f'{self} {op} {value}')
+
+    def eq(self, value, force=False):
+        return self._compare(value, force, '=')
+
+    def gt(self, value, force=False):
+        return self._compare(value, force, '>')
+
+    def ge(self, value, force=False):
+        return self._compare(value, force, '>=')
+
+    def lt(self, value, force=False):
+        return self._compare(value, force, '<')
+
+    def le(self, value, force=False):
+        return self._compare(value, force, '<=')
+
+    def _list_of_fields(self, values, force):
+        if len(values) == 0:
+            raise ModelRunError(f'column {self} is not in empty set {values}')
+
+        if isinstance(values[0], str):
+            if force:
+                list_of_fields = ",".join([ColumnField(v).squote() for v in values])
+            else:
+                list_of_fields = ",".join([ColumnField(v).squote_and_lower() for v in values])
+        else:
+            list_of_fields = ",".join([str(v) for v in values])
+        return list_of_fields
+
+    def in_(self, values, force=False):
+        list_of_fields = self._list_of_fields(values, force)
+        return ColumnField(f'{self} in ({list_of_fields})')
+
+    def not_in_(self, values, force=False):
+        list_of_fields = self._list_of_fields(values, force)
+        return ColumnField(f'{self} not in ({list_of_fields})')
+
+    def _two_fields(self, value1, value2, force):
+        if not isinstance(value1, type(value2)) and not isinstance(value2, type(value1)):
+            raise ModelRunError(
+                f'{value1} and {value2} shall be of the same type for [not] between')
+
+        if isinstance(value1, str):
+            if force:
+                return (ColumnField(value1).squote(),
+                        ColumnField(value2).squote())
+            else:
+                return (ColumnField(value1).squote_and_lower(),
+                        ColumnField(value2).squote_and_lower())
+        return value1, value2
+
+    def between_(self, value1, value2, force=False):
+        f1, f2 = self._two_fields(value1, value2, force)
+        return ColumnField(f'{self} between {f1} and {f2}')
+
+    def not_between_(self, value1, value2, force=False):
+        f1, f2 = self._two_fields(value1, value2, force)
+        return ColumnField(f'{self} not between {f1} and {f2}')
+
+    def and_(self, value):
+        return ColumnField(self + ' and ' + value)
+
+    def or_(self, value):
+        return ColumnField(self + ' or ' + value)
+
+    def parentheses_(self):
+        return ColumnField('(' + self + ')')
+
+    def comma_(self, value):
+        return ColumnField(self + ', ' + value)
+
+    def func_(self, func_name):
+        return ColumnField(f'{func_name}({self})')
+
+    def sum_(self):
+        return self.func_('SUM')
+
+    def max_(self):
+        return self.func_('MAX')
+
+    def min_(self):
+        return self.func_('MIN')
+
+    def avg_(self):
+        return self.func_('AVG')
+
+    def neg_(self):
+        return '-' + self
+
+
 class LedgerTable:
     """
     Base class for ledger data tables
+
+    A mixin class with LedgerQuery to create class LedgerQuery{Table}
     """
 
     # Use a doc string """""" after each property so they will be
     # documented automatically.
 
-    __column_dict: Dict[str, str] = dict()
+    _column_dict: Dict[str, ColumnField] = {}
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        print('__init__ledger_table_')
-        self._more_cols = kwargs['more_cols']
-
-        self.__column_dict = dict()
+        self._column_dict = {}
         for i in inspect.getmembers(self.__class__):
-            if isinstance(getattr(self.__class__, i[0]), str) and i[0][0].isalpha():
-                self.__column_dict[i[0]] = i[1]
+            if isinstance(getattr(self.__class__, i[0]), ColumnField) and i[0][0].isalpha():
+                self._column_dict[i[0]] = i[1]
 
-        for i in self._more_cols:
-            self.__column_dict[i[0]] = i[1]
+        for i in kwargs['more_cols']:
+            self._column_dict[i[0]] = ColumnField(i[1])
+            setattr(self, i[0], ColumnField(i[1]))
 
     def __dir__(self):
-        return list(self.__column_dict.keys()) + list(super().__dir__())
+        return list(self._column_dict.keys()) + list(super().__dir__())
 
     def __repr__(self):
         return str(dir(self))
 
-    def getitem(self, name):
-        return self.__column_dict[name]
+    def __getitem__(self, name):
+        return self._column_dict[name]
+
+    def __getattr__(self, name):
+        if name in self._column_dict:
+            return self._column_dict[name]
+        raise AttributeError(name)
 
     @property
     def columns(self) -> List[str]:
@@ -78,7 +196,7 @@ class LedgerTable:
         For contract ledger tables, the set will include
         all contract-specific columns.
         """
-        return list(self.__column_dict.values())
+        return list(self._column_dict.values())
 
     @property
     def colnames(self) -> List[str]:
@@ -86,15 +204,14 @@ class LedgerTable:
         Return the set of column names in the table.
         They can be used in the query.
         """
-
-        return list(self.__column_dict.keys())
+        return list(self._column_dict.keys())
 
     def _validate_columns(self, model_slug: str,
                           columns: List[str]):
 
         column_set = set(self.columns)
         for column in columns:
-            if column.lower() not in column_set:
+            if column not in column_set:
                 raise InvalidColumnException(
                     model_slug,
                     column, list(column_set), "invalid column name")
@@ -106,35 +223,35 @@ class TransactionTable(LedgerTable):
     Column names
     """
 
-    HASH = 'hash'
+    HASH = ColumnField('hash')
     """"""
-    NONCE = 'nonce'
+    NONCE = ColumnField('nonce')
     """"""
-    BLOCK_HASH = 'block_hash'
+    BLOCK_HASH = ColumnField('block_hash')
     """"""
-    TRANSACTION_INDEX = 'transaction_index'
+    TRANSACTION_INDEX = ColumnField('transaction_index')
     """"""
-    FROM_ADDRESS = 'from_address'
+    FROM_ADDRESS = ColumnField('from_address')
     """"""
-    TO_ADDRESS = 'to_address'
+    TO_ADDRESS = ColumnField('to_address')
     """"""
-    VALUE = 'value'
+    VALUE = ColumnField('value')
     """"""
-    GAS = 'gas'
+    GAS = ColumnField('gas')
     """"""
-    GAS_PRICE = 'gas_price'
+    GAS_PRICE = ColumnField('gas_price')
     """"""
-    INPUT = 'input'
+    INPUT = ColumnField('input')
     """"""
-    BLOCK_TIMESTAMP = 'block_timestamp'
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
     """"""
-    MAX_FEE_PER_GAS = 'max_fee_per_gas'
+    MAX_FEE_PER_GAS = ColumnField('max_fee_per_gas')
     """"""
-    MAX_PRIORITY_FEE_PER_GAS = 'max_priority_fee_per_gas'
+    MAX_PRIORITY_FEE_PER_GAS = ColumnField('max_priority_fee_per_gas')
     """"""
-    TRANSACTION_TYPE = 'transaction_type'
+    TRANSACTION_TYPE = ColumnField('transaction_type')
     """"""
-    BLOCK_NUMBER = 'block_number'
+    BLOCK_NUMBER = ColumnField('block_number')
     """"""
 
     def __init__(self, **kwargs):
@@ -147,41 +264,41 @@ class TraceTable(LedgerTable):
     Column names
     """
 
-    BLOCK_NUMBER = 'block_number'
+    BLOCK_NUMBER = ColumnField('block_number')
     """"""
-    TRANSACTION_HASH = 'transaction_hash'
+    TRANSACTION_HASH = ColumnField('transaction_hash')
     """"""
-    TRANSACTION_INDEX = 'transaction_index'
+    TRANSACTION_INDEX = ColumnField('transaction_index')
     """"""
-    FROM_ADDRESS = 'from_address'
+    FROM_ADDRESS = ColumnField('from_address')
     """"""
-    TO_ADDRESS = 'to_address'
+    TO_ADDRESS = ColumnField('to_address')
     """"""
-    VALUE = 'value'
+    VALUE = ColumnField('value')
     """"""
-    INPUT = 'input'
+    INPUT = ColumnField('input')
     """"""
-    OUTPUT = 'output'
+    OUTPUT = ColumnField('output')
     """"""
-    TRACE_TYPE = 'trace_type'
+    TRACE_TYPE = ColumnField('trace_type')
     """"""
-    CALL_TYPE = 'call_type'
+    CALL_TYPE = ColumnField('call_type')
     """"""
-    REWARD_TYPE = 'reward_type'
+    REWARD_TYPE = ColumnField('reward_type')
     """"""
-    GAS = 'gas'
+    GAS = ColumnField('gas')
     """"""
-    GAS_USED = 'gas_used'
+    GAS_USED = ColumnField('gas_used')
     """"""
-    SUB_TRACES = 'sub_traces'
+    SUB_TRACES = ColumnField('sub_traces')
     """"""
-    TRACE_ADDRESS = 'trace_address'
+    TRACE_ADDRESS = ColumnField('trace_address')
     """"""
-    ERROR = 'error'
+    ERROR = ColumnField('error')
     """"""
-    STATUS = 'status'
+    STATUS = ColumnField('status')
     """"""
-    TRACE_ID = 'trace_id'
+    TRACE_ID = ColumnField('trace_id')
     """"""
 
     def __init__(self, **kwargs):
@@ -194,45 +311,45 @@ class BlockTable(LedgerTable):
     Column names
     """
 
-    NUMBER = 'number'
+    NUMBER = ColumnField('number')
     """"""
-    HASH = 'hash'
+    HASH = ColumnField('hash')
     """"""
-    PARENT_HASH = 'parent_hash'
+    PARENT_HASH = ColumnField('parent_hash')
     """"""
-    NONCE = 'nonce'
+    NONCE = ColumnField('nonce')
     """"""
-    SHA3_UNCLES = 'sha3_uncles'
+    SHA3_UNCLES = ColumnField('sha3_uncles')
     """"""
-    LOGS_BLOOM = 'logs_bloom'
+    LOGS_BLOOM = ColumnField('logs_bloom')
     """"""
-    TRANSACTIONS_ROOT = 'transactions_root'
+    TRANSACTIONS_ROOT = ColumnField('transactions_root')
     """"""
-    STATE_ROOT = 'state_root'
+    STATE_ROOT = ColumnField('state_root')
     """"""
-    RECEIPTS_ROOT = 'receipts_root'
+    RECEIPTS_ROOT = ColumnField('receipts_root')
     """"""
-    MINER = 'miner'
+    MINER = ColumnField('miner')
     """"""
-    DIFFICULTY = 'difficulty'
+    DIFFICULTY = ColumnField('difficulty')
     """"""
-    TOTAL_DIFFICULTY = 'total_difficulty'
+    TOTAL_DIFFICULTY = ColumnField('total_difficulty')
     """"""
-    SIZE = 'size'
+    SIZE = ColumnField('size')
     """"""
-    EXTRA_DATA = 'extra_data'
+    EXTRA_DATA = ColumnField('extra_data')
     """"""
-    GAS_LIMIT = 'gas_limit'
+    GAS_LIMIT = ColumnField('gas_limit')
     """"""
-    GAS_USED = 'gas_used'
+    GAS_USED = ColumnField('gas_used')
     """"""
-    TIMESTAMP = 'timestamp'
+    TIMESTAMP = ColumnField('timestamp')
     """"""
-    TS = 'ts'
+    TS = ColumnField('ts')
     """"""
-    TRANSACTION_COUNT = 'transaction_count'
+    TRANSACTION_COUNT = ColumnField('transaction_count')
     """"""
-    BASE_FEE_PER_GAS = 'base_fee_per_gas'
+    BASE_FEE_PER_GAS = ColumnField('base_fee_per_gas')
     """"""
 
     def __init__(self, **kwargs):
@@ -245,17 +362,17 @@ class ContractTable(LedgerTable):
     Column names
     """
 
-    ADDRESS = 'address'
+    ADDRESS = ColumnField('address')
     """"""
-    BYTECODE = 'bytecode'
+    BYTECODE = ColumnField('bytecode')
     """"""
-    FUNCTION_SIGHASHES = 'function_sighashes'
+    FUNCTION_SIGHASHES = ColumnField('function_sighashes')
     """"""
-    IS_ERC20 = 'is_erc20 '
+    IS_ERC20 = ColumnField('is_erc20 ')
     """"""
-    IS_ERC721 = 'is_erc721 '
+    IS_ERC721 = ColumnField('is_erc721 ')
     """"""
-    BLOCK_NUMBER = 'block_number'
+    BLOCK_NUMBER = ColumnField('block_number')
     """"""
 
     def __init__(self, **kwargs):
@@ -268,21 +385,21 @@ class LogTable(LedgerTable):
     Column names
     """
 
-    LOG_INDEX = 'log_index'
+    LOG_INDEX = ColumnField('log_index')
     """"""
-    TRANSACTION_HASH = 'transaction_hash'
+    TRANSACTION_HASH = ColumnField('transaction_hash')
     """"""
-    TRANSACTION_INDEX = 'transaction_index'
+    TRANSACTION_INDEX = ColumnField('transaction_index')
     """"""
-    BLOCK_HASH = 'block_hash'
+    BLOCK_HASH = ColumnField('block_hash')
     """"""
-    BLOCK_NUMBER = 'block_number'
+    BLOCK_NUMBER = ColumnField('block_number')
     """"""
-    ADDRESS = 'address'
+    ADDRESS = ColumnField('address')
     """"""
-    DATA = 'data'
+    DATA = ColumnField('data')
     """"""
-    TOPICS = 'topics'
+    TOPICS = ColumnField('topics')
     """"""
 
     def __init__(self, **kwargs):
@@ -295,25 +412,25 @@ class ReceiptTable(LedgerTable):
     Column names
     """
 
-    TRANSACTION_HASH = 'transaction_hash'
+    TRANSACTION_HASH = ColumnField('transaction_hash')
     """"""
-    TRANSACTION_INDEX = 'transaction_index'
+    TRANSACTION_INDEX = ColumnField('transaction_index')
     """"""
-    BLOCK_HASH = 'block_hash'
+    BLOCK_HASH = ColumnField('block_hash')
     """"""
-    BLOCK_NUMBER = 'block_number'
+    BLOCK_NUMBER = ColumnField('block_number')
     """"""
-    CUMULATIVE_GAS_USED = 'cumulative_gas_used'
+    CUMULATIVE_GAS_USED = ColumnField('cumulative_gas_used')
     """"""
-    GAS_USED = 'gas_used'
+    GAS_USED = ColumnField('gas_used')
     """"""
-    CONTRACT_ADDRESS = 'contract_address'
+    CONTRACT_ADDRESS = ColumnField('contract_address')
     """"""
-    ROOT = 'root'
+    ROOT = ColumnField('root')
     """"""
-    STATUS = 'status'
+    STATUS = ColumnField('status')
     """"""
-    EFFECTIVE_GAS_PRICE = 'effective_gas_price'
+    EFFECTIVE_GAS_PRICE = ColumnField('effective_gas_price')
     """"""
 
     def __init__(self, **kwargs):
@@ -326,17 +443,17 @@ class TokenTable(LedgerTable):
     Column names
     """
 
-    ADDRESS = 'address'
+    ADDRESS = ColumnField('address')
     """"""
-    SYMBOL = 'symbol'
+    SYMBOL = ColumnField('symbol')
     """"""
-    NAME = 'name'
+    NAME = ColumnField('name')
     """"""
-    DECIMALS = 'decimals'
+    DECIMALS = ColumnField('decimals')
     """"""
-    TOTAL_SUPPLY = 'total_supply'
+    TOTAL_SUPPLY = ColumnField('total_supply')
     """"""
-    BLOCK_NUMBER = 'block_number'
+    BLOCK_NUMBER = ColumnField('block_number')
     """"""
 
     def __init__(self, **kwargs):
@@ -349,368 +466,47 @@ class TokenTransferTable(LedgerTable):
     Column names
     """
 
-    TOKEN_ADDRESS = 'token_address'
+    TOKEN_ADDRESS = ColumnField('token_address')
     """"""
-    FROM_ADDRESS = 'from_address'
+    FROM_ADDRESS = ColumnField('from_address')
     """"""
-    TO_ADDRESS = 'to_address'
+    TO_ADDRESS = ColumnField('to_address')
     """"""
-    VALUE = 'value'
+    VALUE = ColumnField('value')
     """"""
-    TRANSACTION_HASH = 'transaction_hash'
+    TRANSACTION_HASH = ColumnField('transaction_hash')
     """"""
-    LOG_INDEX = 'log_index'
+    LOG_INDEX = ColumnField('log_index')
     """"""
-    BLOCK_NUMBER = 'block_number'
-    """"""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-
-class ContractFunctionsTable(LedgerTable):
-    """
-    Contract functions ledger data table
-    Column names common to all functions
-    Function-specific columns are added from ABI.
-    """
-
-    CONTRACT_ADDRESS = 'contract_address'
-    """"""
-    TXN_BLOCK_NUMBER = 'txn_block_number'
-    """"""
-    TXN_HASH = 'txn_hash'
-    """"""
-    TXN_INDEX = 'txn_index'
-    """"""
-    SUCCESS = 'success'  # boolean indicating txn was successful or not
+    BLOCK_NUMBER = ColumnField('block_number')
     """"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
-class ContractEventsTable(LedgerTable):
+class TokenBalanceTable(LedgerTable):
     """
-    Contract events ledger data table
-    Column names common to all events
-    Event-specific columns are added from ABI.
+    Token balance ledger data table
+    Column names
     """
 
-    CONTRACT_ADDRESS = 'contract_address'
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
     """"""
-    EVT_BLOCK_NUMBER = 'evt_block_number'
+    BLOCK_HASH = ColumnField('block_hash')
     """"""
-    EVT_HASH = 'evt_tx_hash'
+    BLOCK_NUMBER = ColumnField('block_number')
     """"""
-    EVT_INDEX = 'evt_index'
+    TOKEN_ADDRESS = ColumnField('token_address')
+    """"""
+    TRANSACTION_HASH = ColumnField('transaction_hash')
+    """"""
+    LOG_INDEX = ColumnField('log_index')
+    """"""
+    ADDRESS = ColumnField('address')
+    """"""
+    TRANSACTION_VALUE = ColumnField('transaction_value')
     """"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-
-class LedgerQueryContractFunctions(ContractFunctionsTable, LedgerQuery):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-
-class LedgerQueryContractEvents(ContractEventsTable, LedgerQuery):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-
-class ContractEntityFactory:
-    def __init__(self, entity_type: 'ContractLedger.EntityType', address: str, abi: ABI):
-        super().__init__()
-        self.entity_type = entity_type
-        self.address = address
-        self.abi = abi
-
-    def __dir__(self):
-        if self.entity_type == ContractLedger.EntityType.FUNCTIONS:
-            return self.abi.functions.names()
-        elif self.entity_type == ContractLedger.EntityType.EVENTS:
-            return self.abi.events.names()
-
-    def __repr__(self):
-        return self.__class__.__name__ + ' ' + str(dir(self))
-
-    def _ipython_key_completions_(self):
-        return dir(self)
-
-    def __getattr__(self, _name: str) -> Optional['ContractLedger.ContractEntity']:
-        if self.entity_type == ContractLedger.EntityType.FUNCTIONS:
-            if self.abi.functions is None:
-                raise ModelInputError(f'ABI for {self.address} is not loaded')
-
-            if _name in self.abi.functions:
-                more_cols = [(c['name'].upper(), f'inp_{c["name"]}')
-                             for c in self.abi.functions[_name]['inputs']]
-                return ContractLedger.ContractEntity(
-                    self.address,
-                    self.entity_type, _name,
-                    ContractFunctionsTable(more_cols=more_cols))
-
-        elif self.entity_type == ContractLedger.EntityType.EVENTS:
-            if self.abi.events is None:
-                raise ModelInputError(f'ABI for {self.address} is not loaded')
-
-            if _name in self.abi.events:
-                more_cols = [(c['name'].upper(), f'inp_{c["name"]}')
-                             for c in self.abi.events[_name]['inputs']]
-                return ContractLedger.ContractEntity(
-                    self.address,
-                    self.entity_type, _name,
-                    ContractEventsTable(more_cols=more_cols))
-
-        # raise ValueError(f'Invalid ContractLedger entity type {self.entity_type}')
-
-
-class ContractLedger:
-    # pylint: disable=locally-disabled,invalid-name
-
-    """
-    Helper class used by :class:`~credmark.cmf.types.contract.Contract` for ledger queries
-    on contract functions and events.
-
-    You do not need to create an instance yourself.
-    Access an instance from a :class:`credmark.cmf.types.contract.Contract`
-    instance with ``contract.ledger``.
-
-    See :class:`~credmark.cmf.types.ledger.ContractLedger.ContractEntity` below for info
-    on running queries.
-
-    Parameters:
-        address: Contract address
-    """
-
-    @classmethod
-    def Aggregate(cls, expression: str, as_name: str):  # pylint: disable=invalid-name
-        """
-        Return a new :class:`credmark.cmf.types.ledger.LedgerAggregate` instance that can be used in
-        an aggregates list.
-
-        For example::
-
-            aggregates=[
-                ContractLedger.Aggregate(
-                    f'MAX({ContractLedger.Functions.InputCol("value")})',
-                    'max_value')
-            ]
-
-        Parameters:
-
-            expression: an aggregate expression
-
-            as_name: the column name for the returned aggregate data column
-        """
-        return LedgerAggregate(expression=expression, asName=as_name)
-
-    class EntityType(Enum):
-
-        """"""
-        FUNCTIONS = 'functions'
-        """"""
-        EVENTS = 'events'
-        """"""
-
-    class ContractEntity():
-        """
-        Used by :class:`~credmark.cmf.types.ledger.ContractLedger` to query a
-        contract's function or event data.
-        You do not need to create an instance yourself.
-
-        Access an instance with ``contract.ledger.functions.contractFunctionName()``
-        or ``contract.ledger.events.contractEventName()`` where ``contractFunctionName``
-        and ``contractEventName`` are the actual names of functions and events
-        of the contract.
-
-        See the :meth:`~credmark.cmf.types.ledger.ContractLedger.ContractEntity.__call__`
-        method below for the query parameters.
-
-        Parameters:
-            address: Contract address
-
-            entity_type: Type of entity: functions or events
-
-            name: Name of function or event
-        """
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *exc):
-            return None
-
-        @property
-        def columns(self):
-            """
-            All columns in the table
-            """
-            return self._ledger_table.columns
-
-        @property
-        def colnames(self):
-            """
-            Column names to be used in the query
-            """
-            return self._ledger_table.colnames
-
-        def dir__(self):
-            return self._ledger_table.colnames + super().__dir__()
-
-        def getattr__(self, name):
-            if name in self._ledger_table.colnames:
-                return self._ledger_table.getitem(name)
-
-        def __init__(self, address: str,
-                     entity_type: 'ContractLedger.EntityType',
-                     name: str,
-                     ledger_table):
-            """"""
-            super().__init__()
-            self._address = address
-            self._entity_type = entity_type
-            self._name = name
-            self._ledger_table = ledger_table
-
-        def select(self,  # pylint: disable=too-many-arguments
-                   columns: Union[List[str], None] = None,
-                   where: Union[str, None] = None,
-                   group_by: Union[str, None] = None,
-                   order_by: Union[str, None] = None,
-                   limit: Union[str, None] = None,
-                   offset: Union[str, None] = None,
-                   aggregates: Union[List[LedgerAggregate], None] = None,
-                   having: Union[str, None] = None) -> LedgerModelOutput:
-            """
-            Run a query on a contract's function or event data.
-
-            Parameters:
-
-                columns: The columns list should be built from ``ContractLedger.Functions.Columns``
-                    and function input columns using
-                    ``ContractLedger.Functions.InputCol('input-name')``
-                    (where ``input-name`` is the name of an input for the particular contract
-                    function.)
-                    For events, use ``ContractLedger.Events.Columns`` and
-                    ``ContractLedger.Events.InputCol()``.
-
-                aggregates: The aggregates list should be built from ``ContractLedger.Aggregate()``
-                    calls where the expression contains an SQL function (ex. MAX, SUM etc.) and
-                    column names as described for the ``columns`` parameter.
-
-                where: The where portion of an SQL query (without the word WHERE.)
-                    The column names are as described for the ``columns`` parameter. Aggregate
-                    column names must be in double-quotes.
-
-                group_by: The "group by" portion of an SQL query (without the words "GROUP BY".)
-                    The column names are as described for the ``columns`` parameter. Aggregate
-                    column names must be in double-quotes.
-
-                order_by: The "order by" portion of an SQL query (without the words "ORDER BY".)
-                    The column names are as described for the ``columns`` parameter. Aggregate
-                    column names must be in double-quotes.
-
-                having: The "having" portion of an SQL query (without the word "HAVING".)
-                    The column names are as described for the ``columns`` parameter. Aggregate
-                    column names must be in double-quotes.
-
-                limit: The "limit" portion of an SQL query (without the word "LIMIT".)
-                    Typically this can be an integer as a string.
-
-                offset: The "offset" portion of an SQL query (without the word "OFFSET".)
-                    Typically this can be an integer as a string.
-
-            Returns:
-                An object with a ``data`` property which is a list
-                of dicts, each dict holding a row with the keys being the column
-                names. The column names can be referenced using
-                ``ContractLedger.Functions.Columns``,
-                ``ContractLedger.Functions.InputCol('...')``,
-                and aggregate columns names.
-
-            Example usage::
-
-                contract = Contract(address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
-                ret = contract.ledger.functions.approve(
-                        columns=[ContractLedger.Functions.InputCol('spender')],
-                        aggregates=[
-                            ContractLedger.Aggregate(
-                                f'MAX({ContractLedger.Functions.InputCol("value")})', 'max_value')
-                        ],
-                        group_by=ContractLedger.Functions.InputCol('spender'),
-                        order_by='"max_value" desc',
-                        limit='5')
-                # ret.data contains a list of row dicts, keyed by column name
-            """
-            context = credmark.cmf.model.ModelContext.current_context()
-
-            if columns is None:
-                columns = []
-
-            model_input = {'contractAddress': self._address,
-                           'columns': columns,
-                           'aggregates': aggregates,
-                           'where': where,
-                           'groupBy': group_by,
-                           'having': having,
-                           'orderBy': order_by,
-                           'limit': limit,
-                           'offset': offset}
-
-            if self._entity_type == ContractLedger.EntityType.FUNCTIONS:
-                model_slug = 'contract.function_data'
-                model_input['functionName'] = self._name
-            elif self._entity_type == ContractLedger.EntityType.EVENTS:
-                model_slug = 'contract.event_data'
-                model_input['eventName'] = self._name
-            else:
-                raise ValueError(f'Invalid ContractLedger entity type {self._entity_type}')
-
-            return context.run_model(model_slug,
-                                     model_input,
-                                     return_type=LedgerModelOutput)
-
-    def __init__(self, address: str, abi: ABI):
-        super().__init__()
-        self._address = address
-        self._abi = abi
-
-    @property
-    def functions(self):
-        return ContractEntityFactory(
-            ContractLedger.EntityType.FUNCTIONS, self._address, self._abi)
-
-    @property
-    def events(self):
-        return ContractEntityFactory(
-            ContractLedger.EntityType.EVENTS, self._address, self._abi)
-
-
-class LedgerBlockTimeSeriesInput(DTO):
-    """
-    Input for the ledger.block-time-series model.
-    """
-    endTimestamp: int = DTOField(
-        description='End timestamp of block series, inclusive unless exclusive is True')
-    interval: int = DTOField(description='Series interval in seconds')
-    count: int = DTOField(description='Number of intervals in the series.')
-    exclusive: Union[bool, None] = DTOField(
-        default=False, description='If true, blocks are exclusive of end timestamp')
-
-
-class LedgerBlockNumberTimeSeries(DTO):
-    """
-    Output for the ledger.block-time-series model.
-    """
-    endTimestamp: int = DTOField(
-        description='End timestamp of block series, inclusive unless exclusive is True')
-    interval: int = DTOField(description='Series interval in seconds')
-    exclusive: Union[bool, None] = DTOField(
-        default=False, description='If true, blocks are exclusive of end timestamp')
-    blockNumbers: List[BlockNumber] = DTOField(
-        default=[],
-        description='List of block numbers'
-    )

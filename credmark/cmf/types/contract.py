@@ -3,7 +3,7 @@ import logging
 from typing import Any, List, Union
 
 import credmark.cmf.model
-from credmark.cmf.model.errors import ModelDataError
+from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 from web3.contract import Contract as Web3Contract
 from web3 import Web3
@@ -12,7 +12,7 @@ from .abi import ABI
 from .account import Account
 from .address import Address
 from .block_number import BlockNumber, BlockNumberOutOfRangeError
-from .ledger import ContractLedger
+from .ledger_contract import ContractLedger
 
 
 class Singleton:
@@ -319,7 +319,7 @@ class Contract(Account):
         return self._meta.is_transparent_proxy
 
     @property
-    def ledger(self):
+    def ledger(self) -> ContractLedger:
         """
         A :class:`~credmark.cmf.types.ledger.ContractLedger` instance which can be
         used to query the ledger for a contract's functions or events.
@@ -332,32 +332,31 @@ class Contract(Account):
         Functions example::
 
             contract = Contract(address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
-            ret = contract.ledger.functions.approve(
-                    columns=[ContractLedger.Functions.spender')],
-                    aggregates=[
-                        ContractLedger.Aggregate(
-                            f'MAX({ContractLedger.Functions.InputCol("value")})', 'max_value')
-                    ],
-                    group_by=ContractLedger.Functions.InputCol('spender'),
-                    order_by='"max_value" desc',
-                    limit='5')
+            with contract.ledger.functions.approve as q:
+                ret = q.select(
+                        columns=[q.spender')],
+                        aggregates=[(f'MAX({q.value})', 'max_value')],
+                        group_by=q.spender,
+                        order_by='"max_value" desc',
+                        limit=5)
 
-            top_approvals = []
-            for row in ret.data:
-                top_approvals.append({
-                    "spender": row[ContractLedger.Functions.InputCol('spender')],
-                    "value": row['max_value']
-                })
+                top_approvals = []
+                for row in ret.data:
+                    top_approvals.append({
+                        "spender": row[q.spender],
+                        "value": row['max_value']
+                    })
 
         Events example::
 
-            ret = contract.ledger.events.Transfer(
-                    columns=[ContractLedger.Events.Columns.EVT_BLOCK_NUMBER,
-                        ContractLedger.Events.InputCol('from'),
-                        ContractLedger.Events.InputCol('to'),
-                        ContractLedger.Events.InputCol('value')],
-                    order_by=f'{ContractLedger.Events.Columns.EVT_BLOCK_NUMBER} desc',
-                    limit='4')
+            with contract.ledger.events.Transfer as q:
+                ret = q.select(
+                    columns=[q.EVT_BLOCK_NUMBER,
+                             q.from,
+                             q.to,
+                             q.value],
+                    order_by=q.EVT_BLOCK_NUMBER.desc(),
+                    limit=4)
 
         See :class:`~credmark.cmf.types.ledger.ContractLedger.ContractEntity` for more details.
         """
@@ -372,6 +371,8 @@ class Contract(Account):
             elif self.abi is not None:
                 self._ledger = ContractLedger(address=str(self.address),
                                               abi=self.abi)
+            else:
+                raise ModelRunError('Unable to obtain abi for the contract')
         return self._ledger
 
 
