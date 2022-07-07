@@ -1,6 +1,4 @@
 import unittest
-import logging
-from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_unittest import ModelTestCase
 from credmark.cmf.types import Many, Price
 

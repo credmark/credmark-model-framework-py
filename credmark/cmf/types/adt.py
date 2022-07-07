@@ -1,6 +1,6 @@
 # algebra data types
 
-from typing import Generic, Iterator, List, Optional, TypeVar
+from typing import Generic, Iterator, List, Optional, TypeVar, Callable, Tuple
 
 import pandas as pd
 from credmark.dto import DTOTypesTuple
@@ -36,14 +36,18 @@ class Many(GenericDTO, Generic[DTOCLS]):
     def __len__(self) -> int:
         return len(self.some)
 
-    def to_dataframe(self):
+    def to_dataframe(self, fields: Optional[List[Tuple[str, Callable]]] = None):
         first_elem = self.some[0]
         if isinstance(first_elem, DTOTypesTuple):
-            print('dto')
-            data_dict = [x.dict() for x in self.some]  # type: ignore
+            if fields is None:
+                data_dict = [x.dict() for x in self.some]  # type: ignore
+            else:
+                data_dict = [{n: f(x) for n, f in fields} for x in self.some]  # type: ignore
         elif isinstance(first_elem, dict):
-            print('dict')
-            data_dict = self.some
+            if fields is None:
+                data_dict = self.some
+            else:
+                data_dict = [{n: f(x) for n, f in fields} for x in self.some]  # type: ignore
         else:
             data_dict = [{0: x} for x in self.some]
 
