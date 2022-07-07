@@ -24,7 +24,8 @@ from credmark.cmf.types import (Account, Accounts, Address, BlockNumber,
                                 Contract, ContractLedger, Contracts, Currency,
                                 FiatCurrency, NativePosition, NativeToken,
                                 Portfolio, Position, Price, PriceList, Token,
-                                TokenPosition, Tokens)
+                                TokenPosition, Tokens,
+                                Maybe, Many)
 from credmark.cmf.types.compose import (MapBlockResult, MapBlocksInput,
                                         MapBlocksOutput,
                                         MapBlockTimeSeriesInput,
