@@ -373,17 +373,17 @@ class Currency(Account):
         }
 
     @classmethod
-    def validate(cls, d):
-        if isinstance(d, str):
-            return cls(d)
-        if isinstance(d, dict):
-            return cls(**d)
-        if isinstance(d, NativeToken):
-            return d
-        if isinstance(d, Token):
-            return d
-        if isinstance(d, FiatCurrency):
-            return d
+    def validate(cls, obj):
+        if isinstance(obj, str):
+            return cls(obj)
+        if isinstance(obj, dict):
+            return cls(**obj)
+        if isinstance(obj, NativeToken):
+            return obj
+        if isinstance(obj, Token):
+            return obj
+        if isinstance(obj, FiatCurrency):
+            return obj
         raise TypeError(f'{cls.__name__} must be deserialized with an str or dict')
 
     def __new__(cls, *args, **data) -> Union[NativeToken, Token, FiatCurrency]:
