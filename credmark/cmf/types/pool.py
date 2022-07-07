@@ -3,6 +3,7 @@ from credmark.cmf.model.errors import ModelDataError
 from credmark.cmf.types.token import Tokens, Token
 from credmark.cmf.types.contract import Contract
 from credmark.dto import DTOField, IterableListGenericDTO, PrivateAttr
+from credmark.cmf.types.portfolio import Portfolio
 
 
 class Pool(Contract):
@@ -11,8 +12,8 @@ class Pool(Contract):
     a financial function.
     """
 
-    tokens: Tokens = DTOField(description="The tokens that are stored in the pool.")
-    balances: List[float] = DTOField(description="The balances that are stored in the pool.")
+    tokens: Tokens = DTOField(description="The tokens that are supported by the pool.")
+    portfolio: Portfolio = DTOField(description="The positions of the pool")
 
     def __init__(self, **data):
         if len(data.get("tokens")) != len(data.get("balances")):
@@ -31,16 +32,41 @@ class SwapPool(Pool):
     """
 
 
-class FlatAmmPairedSwapPool(SwapPool):
+class ConstantProductSwapPool(SwapPool):
     """
-    Flat AMM Swap Pools are Swap Pools that follow an x*y=k based swap algoritm.
+    SymmetricSwapPools are Swap Pools that follow an x*y=k based swap algoritm.
     """
 
     def __init__(self, **data):
-        if len(data.get("tokens")) != 2 or len(data.get("balances")) != 2:
+        if len(data.get("tokens")) != 2:
             raise ModelDataError(
                 message="There must be 2 tokens and 2 balances in a FlatAMMSwapPool")
         super().__init__(**data)
+
+    @property
+    def swap_spot_price(self, base: Union[Token, None] = None):
+        quote = self.tokens[1]
+        if base is None:
+            base = self.tokens[0]
+        if base == self.tokens[1]:
+            quote = self.tokens[0]
+        base_liquidity = None
+        quote_liquidity = None
+        for position in self.portfolio:
+            if position.asset == base:
+                base_liquidity = position.amount
+            if position.asset == quote:
+                quote_liquidity = position.amount
+        if base_liquidity is None:
+            raise ModelDataError("Token " + base.symbol + " not found in Pool.")
+        if quote_liquidity is None:
+            raise ModelDataError("Token " + quote.symbol + " not found in Pool.")
+        if quote_liquidity == 0 or base_liquidity == 0:
+            raise ModelDataError("No Liquidity in Pool " + self.address)
+        return base_liquidity / quote_liquidity
+
+
+class TokenizedConstantProductSwapPool(SwapPool):
 
     lp_token: Union[Token, None] = DTOField(default=None,
                                             description="The Liquidity Provider "
@@ -59,7 +85,7 @@ class SwapPools(IterableListGenericDTO[SwapPool]):
     _iterator: str = PrivateAttr('pools')
 
 
-class FlatAmmPairedSwapPools(IterableListGenericDTO[FlatAmmPairedSwapPool]):
+class ConstantProductSwapPools(IterableListGenericDTO[ConstantProductSwapPool]):
     pools: List[Pool] = DTOField(
         default=[], description="An iterable list of FlatAmmPairedSwapPool Objects")
     _iterator: str = PrivateAttr('pools')
