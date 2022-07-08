@@ -17,7 +17,7 @@ class Maybe(GenericDTO, Generic[DTOCLS]):
         return self.just is not None
 
 
-class Many(GenericDTO, Generic[DTOCLS]):
+class Some(GenericDTO, Generic[DTOCLS]):
     some: List[DTOCLS] = DTOField([])
     _iterator: str = 'some'
 

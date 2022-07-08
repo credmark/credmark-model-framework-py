@@ -1,16 +1,16 @@
 import unittest
 from credmark.cmf.engine.model_unittest import ModelTestCase
-from credmark.cmf.types import Many, Price
+from credmark.cmf.types import Some, Price
 
 
 class TestModel(ModelTestCase):
     def test_many_plain(self):
-        mm = Many[int](some=[1, 2, 3])
+        mm = Some[int](some=[1, 2, 3])
         df = mm.to_dataframe()
         self.assertTrue(df[0].shape[0] == 3)
 
     def test_many_dict(self):
-        mm = Many[dict](some=[Price(price=1, src='a').dict(),
+        mm = Some[dict](some=[Price(price=1, src='a').dict(),
                               Price(price=2, src='b').dict()])
         df = mm.to_dataframe()
         self.assertTrue(df.shape[0] == 2)
@@ -23,7 +23,7 @@ class TestModel(ModelTestCase):
         self.assertTrue(df.shape[0] == 2)
 
     def test_many_dto(self):
-        mm = Many[Price](some=[Price(price=1, src='a'),
+        mm = Some[Price](some=[Price(price=1, src='a'),
                                Price(price=2, src='b')])
         df = mm.to_dataframe()
         self.assertTrue(df.shape[0] == 2)
