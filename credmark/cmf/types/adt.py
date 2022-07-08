@@ -37,6 +37,9 @@ class Some(GenericDTO, Generic[DTOCLS]):
         return len(self.some)
 
     def to_dataframe(self, fields: Optional[List[Tuple[str, Callable]]] = None):
+        if len(self.some) == 0:
+            return pd.DataFrame()
+        
         first_elem = self.some[0]
         if isinstance(first_elem, DTOTypesTuple):
             if fields is None:
