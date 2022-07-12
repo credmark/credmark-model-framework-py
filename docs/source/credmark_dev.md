@@ -130,7 +130,7 @@ Note: if chain ID is not mentioned explicitly in the parameter, it defaults to 1
 See the example below. Here, we are running the model “cmk.circulating-supply” at block_number 14000000.
 
 ```
-$ credmark-dev run -b 14000000 cmk.circulating-supply -i "{}"
+$ credmark-dev run -b 14000000 cmk.circulating-supply -i '{}'
 
 {"slug": "cmk.circulating-supply", "version": "1.0", "output": {"result": 28314402605762084044696668}, "dependencies": {"cmk.total-supply": {"1.0": 1}, "cmk.circulating-supply": {"1.0": 1}}}
 ```
