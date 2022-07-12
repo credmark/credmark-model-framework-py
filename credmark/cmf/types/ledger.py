@@ -505,6 +505,10 @@ class TokenBalanceTable(LedgerTable):
     """"""
     ADDRESS = ColumnField('address')
     """"""
+    FROM_ADDRESS = ColumnField('from_address')
+    """"""
+    TO_ADDRESS = ColumnField('to_address')
+    """"""
     TRANSACTION_VALUE = ColumnField('transaction_value')
     """"""
 
