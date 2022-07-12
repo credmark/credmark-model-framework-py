@@ -24,7 +24,8 @@ from credmark.cmf.types import (Account, Accounts, Address, BlockNumber,
                                 Contract, ContractLedger, Contracts, Currency,
                                 FiatCurrency, NativePosition, NativeToken,
                                 Portfolio, Position, Price, PriceList, Token,
-                                TokenPosition, Tokens)
+                                TokenPosition, Tokens,
+                                Maybe, Some)
 from credmark.cmf.types.compose import (MapBlockResult, MapBlocksInput,
                                         MapBlocksOutput,
                                         MapBlockTimeSeriesInput,
@@ -35,7 +36,7 @@ from credmark.cmf.types.ledger import (BlockTable, ContractTable, LogTable,
                                        ReceiptTable, TokenTable,
                                        TokenTransferTable, TraceTable,
                                        TransactionTable)
-from credmark.dto import (DTO, DTOField, EmptyInput, FloatDTO, IntDTO,
+from credmark.dto import (DTO, DTOField, DTOPretty, EmptyInput, FloatDTO, IntDTO,
                           IterableListGenericDTO, PrivateAttr, StrDTO)
 from web3.exceptions import ABIFunctionNotFound
 

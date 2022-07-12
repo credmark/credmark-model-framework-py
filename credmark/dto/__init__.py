@@ -18,6 +18,25 @@ from pydantic import (
 from pydantic.generics import GenericModel as GenericDTO
 
 
+class DTOPretty:
+    """
+    A Mixin class to add pretty print to DTO
+    """
+
+    def _repr_pretty_(self, p, cycle):  # pylint:disable=invalid-name
+        class_name = self.__class__.__name__
+        if cycle:
+            p.text(f'{class_name}(...)')
+        else:
+            with p.group(4, f'{class_name}(', ')'):
+                for k in self.__fields__:  # type: ignore #pylint:disable=no-member
+                    v = getattr(self, k)
+                    p.break_()
+                    p.pretty(k)
+                    p.text(':')
+                    p.pretty(v)
+
+
 def fixstr(fixed_length):
     return constr(min_length=fixed_length,
                   max_length=fixed_length)

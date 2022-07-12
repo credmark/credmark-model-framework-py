@@ -1,5 +1,6 @@
 # pylint: disable=locally-disabled, unused-import
 
+from .adt import Maybe, Some
 from .account import Account, Accounts
 from .address import Address, NULL_ADDRESS
 from .block_number import BlockNumber
