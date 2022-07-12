@@ -3,12 +3,16 @@
 History
 -------
 
+0.8.27 [2022-07-12]
+* Fix for parallel testing when stdout/stderr are not available (#136)
+* Add ADT types of Maybe/Some (#137, #138)
+
 0.8.26 [2022-06-30]
 * Added checking of latest version tag in github (#125)
 * Add client property support for model-api (#127)
-* Creation of Currency DTO with string or kwargs (#129)
-* Fix depth when calling api model run
-* Updated max depth to 25
+* Creation of Currency DTO with string or kwargs (#129, #132)
+* Fix depth when calling api model run (#134)
+* Updated max depth to 25 (#134)
 
 0.8.25 [2022-06-26]
 * Added support for using no local models (#108)
