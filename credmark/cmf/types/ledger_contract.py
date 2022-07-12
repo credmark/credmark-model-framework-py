@@ -66,12 +66,12 @@ class ContractEntityQuery(LedgerQueryBase):
     contract's function or event data.
     You do not need to create an instance yourself.
 
-    Access an instance with ``contract.ledger.functions.contractFunctionName()``
-    or ``contract.ledger.events.contractEventName()`` where ``contractFunctionName``
-    and ``contractEventName`` are the actual names of functions and events
-    of the contract.
+    Access an instance with ``contract.ledger.functions.{NameOfFunction}``
+    or ``contract.ledger.events.{NameOfEvent}``. The name of the function or event
+    can be auto-completed by pressing TAB after the ``.``. Alternatively, you could
+    looked up from ``contract.abi.functions`` or `contract.abi.events`.
 
-    See the :meth:`~credmark.cmf.types.ledger.ContractLedger.ContractEntity.__call__`
+    See the :meth:`~credmark.cmf.types.ledger_contract.ContractEntityQuery.select`
     method below for the query parameters.
 
     Parameters:

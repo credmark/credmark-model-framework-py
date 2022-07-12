@@ -324,10 +324,10 @@ class Contract(Account):
         A :class:`~credmark.cmf.types.ledger.ContractLedger` instance which can be
         used to query the ledger for a contract's functions or events.
 
-        To run a query, call a method ``contract.ledger.functions.contractFunctionName()``
-        or ``contract.ledger.events.contractEventName()`` where ``contractFunctionName``
-        and ``contractEventName`` are the actual names of functions and events
-        of the contract.
+        To run a query, call a property of ``contract.ledger.functions.{NameOfFunction}``
+        or ``contract.ledger.events.{NameOfEvent}``. The name of the function or event
+        can be auto-completed by pressing TAB after the ``.``. Alternatively, you could
+        looked up from ``contract.abi.functions`` or `contract.abi.events`.
 
         Functions example::
 
@@ -358,7 +358,8 @@ class Contract(Account):
                     order_by=q.EVT_BLOCK_NUMBER.desc(),
                     limit=4)
 
-        See :class:`~credmark.cmf.types.ledger.ContractLedger.ContractEntity` for more details.
+        See :class:`~credmark.cmf.types.ledger.ContractLedger.LedgerQueryContractFunctions` or
+        `~credmark.cmf.types.ledger.ContractLedger.LedgerQueryContractEvents`for more details.
         """
         if not self._loaded:
             self._load()
