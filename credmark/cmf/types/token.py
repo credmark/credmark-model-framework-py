@@ -208,6 +208,10 @@ class TokenInfo(Token):
     """
     meta: Token.TokenMetadata
 
+    @property
+    def ledger(self) -> None:
+        return None
+
 
 class NativeToken(Token):
     """
@@ -255,6 +259,10 @@ class NativeToken(Token):
         else:
             raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
 
+    @property
+    def ledger(self) -> None:
+        return None
+
 
 class NonFungibleToken(Contract):
     """
@@ -266,6 +274,10 @@ class NonFungibleToken(Contract):
     def __init__(self, **data):
         super().__init__(**data)
         raise NotImplementedError()
+
+    @property
+    def ledger(self) -> None:
+        return None
 
 
 class Tokens(IterableListGenericDTO[Token]):

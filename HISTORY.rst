@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.28 [2022-07-12]
+* Ledger utility update (#92)
+
 0.8.27 [2022-07-12]
 * Fix for parallel testing when stdout/stderr are not available (#136)
 * Add ADT types of Maybe/Some (#137, #138)

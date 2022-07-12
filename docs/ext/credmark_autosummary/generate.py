@@ -23,7 +23,7 @@ import sys
 import warnings
 from gettext import NullTranslations
 from os import path
-from typing import Any, Dict, List, NamedTuple, Sequence, Set, Tuple, Type, Union
+from typing import Any, Dict, List, NamedTuple, Sequence, Set, Tuple, Type, Union, Optional
 
 from jinja2 import TemplateNotFound
 from jinja2.sandbox import SandboxedEnvironment
@@ -34,13 +34,15 @@ from sphinx.application import Sphinx
 from sphinx.builders import Builder
 from sphinx.config import Config
 from sphinx.deprecation import RemovedInSphinx50Warning
+import sphinx.ext.autodoc.importer
 from sphinx.ext.autodoc import Documenter
 from sphinx.ext.autodoc.importer import import_module
 # credmark_autosummary change:
 from . import (ImportExceptionGroup, get_documenter, import_by_name,
                import_ivar_by_name)
 from sphinx.locale import __
-from sphinx.pycode import ModuleAnalyzer, PycodeError
+from sphinx.pycode import ModuleAnalyzer
+from sphinx.errors import PycodeError
 from sphinx.registry import SphinxComponentRegistry
 from sphinx.util import logging, rst, split_full_qualified_name
 from sphinx.util.inspect import getall, safe_getattr
@@ -115,7 +117,7 @@ def _underline(title: str, line: str = '=') -> str:
 class AutosummaryRenderer:
     """A helper class for rendering."""
 
-    def __init__(self, app: Union[Builder, Sphinx], template_dir: str = None) -> None:
+    def __init__(self, app: Union[Builder, Sphinx], template_dir: Optional[str] = None) -> None:
         if isinstance(app, Builder):
             warnings.warn('The first argument for AutosummaryRenderer has been '
                           'changed to Sphinx object',
@@ -176,7 +178,7 @@ class ModuleScanner:
         self.app = app
         self.object = obj
 
-    def get_object_type(self, name: str, value: Any) -> str:
+    def get_object_type(self, _name: str, value: Any) -> str:
         return get_documenter(self.app, value, self.object).objtype
 
     def is_skipped(self, name: str, value: Any, objtype: str) -> bool:
@@ -240,7 +242,8 @@ def generate_autosummary_content(name: str, obj: Any, parent: Any,
                                  template: AutosummaryRenderer, template_name: str,
                                  imported_members: bool, app: Any,
                                  recursive: bool, context: Dict,
-                                 modname: str = None, qualname: str = None) -> str:
+                                 modname: Optional[str] = None,
+                                 qualname: Optional[str] = None) -> str:
     doc = get_documenter(app, obj, parent)
 
     def skip_member(obj: Any, name: str, objtype: str) -> bool:
@@ -254,7 +257,10 @@ def generate_autosummary_content(name: str, obj: Any, parent: Any,
             return False
 
     def get_class_members(obj: Any) -> Dict[str, Any]:
-        members = sphinx.ext.autodoc.get_class_members(obj, [qualname], safe_getattr)
+        if qualname:
+            members = sphinx.ext.autodoc.importer.get_class_members(obj, [qualname], safe_getattr)
+        else:
+            members = sphinx.ext.autodoc.importer.get_class_members(obj, [], safe_getattr)
         return {name: member.object for name, member in members.items()}
 
     def get_module_members(obj: Any) -> Dict[str, Any]:
@@ -273,7 +279,9 @@ def generate_autosummary_content(name: str, obj: Any, parent: Any,
             return get_class_members(obj)
         return {}
 
-    def get_members(obj: Any, types: Set[str], include_public: List[str] = [],
+    def get_members(obj: Any,
+                    types: Set[str],
+                    include_public: List[str] = [],
                     imported: bool = True) -> Tuple[List[str], List[str]]:
         items: List[str] = []
         public: List[str] = []
@@ -390,9 +398,9 @@ def generate_autosummary_content(name: str, obj: Any, parent: Any,
         return template.render(doc.objtype, ns)
 
 
-def generate_autosummary_docs(sources: List[str], output_dir: str = None,
-                              suffix: str = '.rst', base_path: str = None,
-                              builder: Builder = None, template_dir: str = None,
+def generate_autosummary_docs(sources: List[str], output_dir: Optional[str] = None,
+                              suffix: str = '.rst', base_path: Optional[str] = None,
+                              builder: Optional[Builder] = None, template_dir: Optional[str] = None,
                               imported_members: bool = False, app: Any = None,
                               overwrite: bool = True, encoding: str = 'utf-8') -> None:
     if builder:
@@ -435,8 +443,8 @@ def generate_autosummary_docs(sources: List[str], output_dir: str = None,
             # a :toctree: option
             continue
 
-        path = output_dir or os.path.abspath(entry.path)
-        ensuredir(path)
+        path1 = output_dir or os.path.abspath(entry.path)
+        ensuredir(path1)
 
         try:
             name, obj, parent, modname = import_by_name(entry.name, grouped_exception=True)
@@ -465,7 +473,7 @@ def generate_autosummary_docs(sources: List[str], output_dir: str = None,
                                                imported_members, app, entry.recursive, context,
                                                modname, qualname)
 
-        filename = os.path.join(path, filename_map.get(name, name) + suffix)
+        filename = os.path.join(path1, filename_map.get(name, name) + suffix)
         if os.path.isfile(filename):
             with open(filename, encoding=encoding) as f:
                 old_content = f.read()
@@ -505,7 +513,9 @@ def find_autosummary_in_files(filenames: List[str]) -> List[AutosummaryEntry]:
     return documented
 
 
-def find_autosummary_in_docstring(name: str, module: str = None, filename: str = None
+def find_autosummary_in_docstring(name: str,
+                                  module: Optional[str] = None,
+                                  filename: Optional[str] = None
                                   ) -> List[AutosummaryEntry]:
     """Find out what items are documented in the given object's docstring.
 
@@ -516,7 +526,7 @@ def find_autosummary_in_docstring(name: str, module: str = None, filename: str =
                       RemovedInSphinx50Warning, stacklevel=2)
 
     try:
-        real_name, obj, parent, modname = import_by_name(name, grouped_exception=True)
+        _real_name, obj, _parent, _modname = import_by_name(name, grouped_exception=True)
         lines = pydoc.getdoc(obj).splitlines()
         return find_autosummary_in_lines(lines, module=name, filename=filename)
     except AttributeError:
@@ -530,7 +540,9 @@ def find_autosummary_in_docstring(name: str, module: str = None, filename: str =
     return []
 
 
-def find_autosummary_in_lines(lines: List[str], module: str = None, filename: str = None
+def find_autosummary_in_lines(lines: List[str],
+                              module: Optional[str] = None,
+                              filename: Optional[str] = None
                               ) -> List[AutosummaryEntry]:
     """Find out what items appear in autosummary:: directives in the
     given lines.
@@ -555,7 +567,7 @@ def find_autosummary_in_lines(lines: List[str], module: str = None, filename: st
     documented: List[AutosummaryEntry] = []
 
     recursive = False
-    toctree: str = None
+    toctree: Optional[str] = None
     template = None
     current_module = module
     in_autosummary = False
@@ -571,7 +583,7 @@ def find_autosummary_in_lines(lines: List[str], module: str = None, filename: st
             m = toctree_arg_re.match(line)
             if m:
                 toctree = m.group(1)
-                if filename:
+                if filename and toctree:
                     toctree = os.path.join(os.path.dirname(filename),
                                            toctree)
                 continue
@@ -592,7 +604,8 @@ def find_autosummary_in_lines(lines: List[str], module: str = None, filename: st
                 if current_module and \
                    not name.startswith(current_module + '.'):
                     name = "%s.%s" % (current_module, name)
-                documented.append(AutosummaryEntry(name, toctree, template, recursive))
+                if toctree and template:
+                    documented.append(AutosummaryEntry(name, toctree, template, recursive))
                 continue
 
             if not line.strip() or line.startswith(base_indent + " "):

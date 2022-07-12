@@ -4,7 +4,7 @@ from credmark.cmf.types.compose import (MapBlockResult, MapBlockTimeSeriesOutput
                                         MapBlockTimeSeriesInput, MapBlocksInput,
                                         MapBlocksOutput, MapInputsInput,
                                         MapInputsOutput, MapInputsResult)
-from credmark.cmf.types.ledger import LedgerBlockNumberTimeSeries, LedgerBlockTimeSeriesInput
+from credmark.cmf.types.ledger_series import LedgerBlockNumberTimeSeries, LedgerBlockTimeSeriesInput
 
 
 class LedgerModelSlugs:

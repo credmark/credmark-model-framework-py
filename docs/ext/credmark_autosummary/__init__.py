@@ -72,12 +72,14 @@ from sphinx.deprecation import (RemovedInSphinx50Warning, RemovedInSphinx60Warni
 from sphinx.environment import BuildEnvironment
 from sphinx.environment.adapters.toctree import TocTree
 from sphinx.ext.autodoc import INSTANCEATTR, Documenter
-from sphinx.ext.autodoc.directive import DocumenterBridge, Options
+from sphinx.ext.autodoc.directive import DocumenterBridge
+from sphinx.ext.autodoc import Options
 from sphinx.ext.autodoc.importer import import_module
 from sphinx.ext.autodoc.mock import mock
 from sphinx.locale import __
 from sphinx.project import Project
-from sphinx.pycode import ModuleAnalyzer, PycodeError
+from sphinx.pycode import ModuleAnalyzer
+from sphinx.errors import PycodeError
 from sphinx.registry import SphinxComponentRegistry
 from sphinx.util import logging, rst
 from sphinx.util.docutils import (NullReporter, SphinxDirective, SphinxRole, new_document,
@@ -108,24 +110,26 @@ def process_autosummary_toc(app: Sphinx, doctree: nodes.document) -> None:
     """
     warnings.warn('process_autosummary_toc() is deprecated',
                   RemovedInSphinx50Warning, stacklevel=2)
-    env = app.builder.env
-    crawled = {}
 
-    def crawl_toc(node: Element, depth: int = 1) -> None:
-        crawled[node] = True
-        for subnode in node:
-            try:
-                if (isinstance(subnode, autosummary_toc) and
-                        isinstance(subnode[0], addnodes.toctree)):
-                    TocTree(env).note(env.docname, subnode[0])
+    if app.builder and app.builder.env:
+        env = app.builder.env
+        crawled = {}
+
+        def crawl_toc(node: Element, depth: int = 1) -> None:
+            crawled[node] = True
+            for subnode in node:
+                try:
+                    if (isinstance(subnode, autosummary_toc) and
+                            isinstance(subnode[0], addnodes.toctree)):
+                        TocTree(env).note(env.docname, subnode[0])
+                        continue
+                except IndexError:
                     continue
-            except IndexError:
-                continue
-            if not isinstance(subnode, nodes.section):
-                continue
-            if subnode not in crawled:
-                crawl_toc(subnode, depth + 1)
-    crawl_toc(doctree)
+                if not isinstance(subnode, nodes.section):
+                    continue
+                if subnode not in crawled:
+                    crawl_toc(subnode, depth + 1)
+        crawl_toc(doctree)
 
 
 def autosummary_toc_visit_html(self: nodes.NodeVisitor, node: autosummary_toc) -> None:
@@ -133,7 +137,7 @@ def autosummary_toc_visit_html(self: nodes.NodeVisitor, node: autosummary_toc) -
     raise nodes.SkipNode
 
 
-def autosummary_noop(self: nodes.NodeVisitor, node: Node) -> None:
+def autosummary_noop(_self: nodes.NodeVisitor, _node: Node) -> None:
     pass
 
 
@@ -143,7 +147,7 @@ class autosummary_table(nodes.comment):
     pass
 
 
-def autosummary_table_visit_html(self: HTMLTranslator, node: autosummary_table) -> None:
+def autosummary_table_visit_html(_self: HTMLTranslator, node: autosummary_table) -> None:
     """Make the first column of the table non-breaking."""
     try:
         table = cast(nodes.table, node[0])
@@ -256,7 +260,7 @@ class Autosummary(SphinxDirective):
         names = [x.strip().split()[0] for x in self.content
                  if x.strip() and re.search(r'^[~a-zA-Z_]', x.strip()[0])]
         items = self.get_items(names)
-        nodes = self.get_table(items)
+        nodes2 = self.get_table(items)
 
         if 'toctree' in self.options:
             dirname = posixpath.dirname(self.env.docname)
@@ -270,7 +274,7 @@ class Autosummary(SphinxDirective):
                 docname = posixpath.join(tree_prefix, real_name)
                 docname = posixpath.normpath(posixpath.join(dirname, docname))
                 if docname not in self.env.found_docs:
-                    if excluded(self.env.doc2path(docname, None)):
+                    if excluded(self.env.doc2path(docname, False)):
                         msg = __('autosummary references excluded document %r. Ignored.')
                     else:
                         msg = __('autosummary: stub file not found %r. '
@@ -289,13 +293,13 @@ class Autosummary(SphinxDirective):
                 tocnode['glob'] = None
                 tocnode['caption'] = self.options.get('caption')
 
-                nodes.append(autosummary_toc('', '', tocnode))
+                nodes2.append(autosummary_toc('', '', tocnode))
 
         if 'toctree' not in self.options and 'caption' in self.options:
             logger.warning(__('A captioned autosummary requires :toctree: option. ignored.'),
-                           location=nodes[-1])
+                           location=nodes2[-1])
 
-        return nodes
+        return nodes2
 
     def import_by_name(self, name: str, prefixes: List[str]) -> Tuple[str, Any, Any, str]:
         with mock(self.config.autosummary_mock_imports):
@@ -356,6 +360,7 @@ class Autosummary(SphinxDirective):
             # NB. using full_name here is important, since Documenters
             #     handle module prefixes slightly differently
             documenter = self.create_documenter(self.env.app, obj, parent, full_name)
+
             if not documenter.parse_name():
                 logger.warning(__('failed to parse name %s'), real_name,
                                location=self.get_location())
@@ -628,7 +633,7 @@ class ImportExceptionGroup(Exception):
         self.exceptions = list(exceptions)
 
 
-def get_import_prefixes_from_env(env: BuildEnvironment) -> List[str]:
+def get_import_prefixes_from_env(env: BuildEnvironment) -> List[Optional[str]]:
     """
     Obtain current Python import prefixes (for `import_by_name`)
     from ``document.env``
@@ -649,7 +654,7 @@ def get_import_prefixes_from_env(env: BuildEnvironment) -> List[str]:
     return prefixes
 
 
-def import_by_name(name: str, prefixes: List[str] = [None], grouped_exception: bool = False
+def import_by_name(name: str, prefixes: List[Optional[str]] = [None], grouped_exception: bool = False
                    ) -> Tuple[str, Any, Any, str]:
     """Import a Python object that has the given *name*, under one of the
     *prefixes*.  The first name that succeeds is used.
@@ -657,11 +662,11 @@ def import_by_name(name: str, prefixes: List[str] = [None], grouped_exception: b
     tried = []
     errors: List[ImportExceptionGroup] = []
     for prefix in prefixes:
+        if prefix:
+            prefixed_name = '.'.join([prefix, name])
+        else:
+            prefixed_name = name
         try:
-            if prefix:
-                prefixed_name = '.'.join([prefix, name])
-            else:
-                prefixed_name = name
             obj, parent, modname = _import_by_name(prefixed_name, grouped_exception)
             return prefixed_name, obj, parent, modname
         except ImportError:
@@ -707,6 +712,9 @@ def _import_by_name(name: str, grouped_exception: bool = False) -> Tuple[Any, An
             if modname in sys.modules:
                 break
 
+        if not modname:
+            raise ValueError('modname is None.')
+
         if last_j < len(name_parts):
             parent = None
             obj = sys.modules[modname]
@@ -724,14 +732,14 @@ def _import_by_name(name: str, grouped_exception: bool = False) -> Tuple[Any, An
             raise ImportError(*exc.args) from exc
 
 
-def import_ivar_by_name(name: str, prefixes: List[str] = [None],
+def import_ivar_by_name(name: str, prefixes: List[str] = [],
                         grouped_exception: bool = False) -> Tuple[str, Any, Any, str]:
     """Import an instance variable that has the given *name*, under one of the
     *prefixes*.  The first name that succeeds is used.
     """
     try:
         name, attr = name.rsplit(".", 1)
-        real_name, obj, parent, modname = import_by_name(name, prefixes, grouped_exception)
+        real_name, obj, _parent, modname = import_by_name(name, prefixes, grouped_exception)
         qualname = real_name.replace(modname + ".", "")
         analyzer = ModuleAnalyzer.for_module(getattr(obj, '__module__', modname))
         analyzer.analyze()
@@ -740,7 +748,7 @@ def import_ivar_by_name(name: str, prefixes: List[str] = [None],
             return real_name + "." + attr, INSTANCEATTR, obj, modname
     except (ImportError, ValueError, PycodeError) as exc:
         raise ImportError from exc
-    except ImportExceptionGroup:
+    except ImportExceptionGroup as _err:
         raise  # pass through it as is
 
     raise ImportError
@@ -757,6 +765,9 @@ class AutoLink(SphinxRole):
 
     def run(self) -> Tuple[List[Node], List[system_message]]:
         pyobj_role = self.env.get_domain('py').role('obj')
+        if not pyobj_role:
+            raise ValueError('pyobj_role is empty')
+
         objects, errors = pyobj_role('obj', self.rawtext, self.text, self.lineno,
                                      self.inliner, self.options, self.content)
         if errors:
@@ -776,14 +787,13 @@ class AutoLink(SphinxRole):
         return objects, errors
 
 
-def get_rst_suffix(app: Sphinx) -> str:
+def get_rst_suffix(app: Sphinx) -> Optional[str]:
     def get_supported_format(suffix: str) -> Tuple[str, ...]:
         parser_class = app.registry.get_source_parsers().get(suffix)
         if parser_class is None:
             return ('restructuredtext',)
         return parser_class.supported
 
-    suffix: str = None
     for suffix in app.config.source_suffix:
         if 'restructuredtext' in get_supported_format(suffix):
             return suffix
@@ -794,9 +804,9 @@ def get_rst_suffix(app: Sphinx) -> str:
 def process_generate_options(app: Sphinx) -> None:
     genfiles = app.config.autosummary_generate
 
-    if genfiles is True:
+    if genfiles is True and app.builder and app.builder.env:
         env = app.builder.env
-        genfiles = [env.doc2path(x, base=None) for x in env.found_docs
+        genfiles = [env.doc2path(x, base=False) for x in env.found_docs
                     if os.path.isfile(env.doc2path(x))]
     elif genfiles is False:
         pass

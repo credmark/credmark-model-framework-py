@@ -34,7 +34,9 @@ class HelloModel(Model):
         return {'message': 'Hello world!'}
 ```
 
-From your model's `run()` method, you can access `self.context` which gives you access to the context chain id, block number, a configured web3 instance, ledger data access, the ability to call other models, and more. See {class}`credmark.cmf.model.context.ModelContext` for more details.
+From your model's `run()` method, you can access `self.context` which gives you access to the context of chain id, block number, a configured web3 instance, and utilitie to access ledger data, to call other models, and more. See {class}`credmark.cmf.model.context.ModelContext` for more details.
+
+
 
 ## Run a Model
 
@@ -53,7 +55,7 @@ credmark-dev run <Specify Slug> -b <Specify block number>  -i <Specify Input>
 so for example
 
 ```
-credmark-dev run cmk.circulating-supply -b 14000000  -i "{}"
+credmark-dev run cmk.circulating-supply -b 14000000  -i '{}'
 ```
 
 Tip: you can run the command

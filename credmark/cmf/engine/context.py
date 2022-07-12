@@ -622,7 +622,6 @@ class EngineModelContext(ModelContext):
                                          self.__client)
 
         try:
-
             try:
                 input = transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
             except DataTransformError as err:
@@ -689,11 +688,11 @@ class EngineModelContext(ModelContext):
             else:
                 input_json = json.dumps(transform_data_for_dto(
                     input, None, slug, 'input'))
-                err_msg = f'Exception running model {slug}({input_json}) on ' \
-                    f'chain {context.chain_id} ' \
-                    f'block {context.block_number} (' \
-                    f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M:%S}) ' \
-                    f'with {err}'
+                err_msg = (f'Exception running model {slug}({input_json}) on '
+                           f'chain {context.chain_id} '
+                           f'block {context.block_number} ('
+                           f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M:%S}) '
+                           f'with {err}')
                 if self.dev_mode:
                     self.logger.exception(err_msg)
                 elif debug_log:

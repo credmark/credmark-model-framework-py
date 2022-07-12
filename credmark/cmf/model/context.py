@@ -204,10 +204,8 @@ class ModelContext:
         For example:
 
         - ``context.run_model('example.model')`` becomes ``context.models.example.model()``
-
         - ``context.run_model('example.ledger-blocks')`` becomes
-        ``context.models.example.ledger_blocks()``
-
+          ``context.models.example.ledger_blocks()``
         - ``context.run_model('var-model')`` becomes ``context.models.var_model()``
 
         The input that you pass to ``context.run_model()`` can be
