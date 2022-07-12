@@ -327,7 +327,7 @@ class Contract(Account):
         To run a query, call a property of ``contract.ledger.functions.{NameOfFunction}``
         or ``contract.ledger.events.{NameOfEvent}``. The name of the function or event
         can be auto-completed by pressing TAB after the ``.``. Alternatively, you could
-        looked up from ``contract.abi.functions`` or `contract.abi.events`.
+        looked up from ``contract.abi.functions`` or ``contract.abi.events``.
 
         Functions example::
 
@@ -359,7 +359,8 @@ class Contract(Account):
                     limit=4)
 
         See :class:`~credmark.cmf.types.ledger.ContractLedger.LedgerQueryContractFunctions` or
-        `~credmark.cmf.types.ledger.ContractLedger.LedgerQueryContractEvents`for more details.
+        :class:`~credmark.cmf.types.ledger.ContractLedger.LedgerQueryContractEvents`
+        for more details.
         """
         if not self._loaded:
             self._load()
@@ -379,6 +380,10 @@ class Contract(Account):
 
 class ContractInfo(Contract):
     meta: Contract.ContractMetaData
+
+    @property
+    def ledger(self) -> None:
+        return None
 
 
 class Contracts(IterableListGenericDTO[Contract]):

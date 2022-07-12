@@ -106,8 +106,9 @@ class MapBlockResult(GenericDTO, Generic[DTOCLS]):
     The generic type specifies the class to use as the output.
 
     For example ``row = MapBlockResult[MyOutputClass](**data)``
-    where ``row.output`` will be an instance of ``MyOutputClass``
+    where ``row.output`` will be an instance of ``MyOutputClass``.
     """
+
     blockNumber: BlockNumber = DTOField(
         description='Block number of result.')
     output: Union[DTOCLS, None] = DTOField(
@@ -120,7 +121,7 @@ class MapBlockResult(GenericDTO, Generic[DTOCLS]):
 
 class MapBlocksOutput(IterableListGenericDTO[MapBlockResult[DTOCLS]], Generic[DTOCLS]):
     """
-    A DTO for the output of "compose.map-*" block models which run another
+    A DTO for the output of ``compose.map-*`` block models which run another
     model over a series of blocks.
 
     The generic type specifies the class to use as the output
@@ -138,6 +139,7 @@ class MapBlocksOutput(IterableListGenericDTO[MapBlockResult[DTOCLS]], Generic[DT
     with customized lambdas to extract certain field(s) of the output into
     values (in a list) or columns (in a dataframe).
     """
+
     results: List[MapBlockResult[DTOCLS]] = DTOField(
         default=[], description='List of results of block model run outputs')
     _iterator: str = PrivateAttr('results')
