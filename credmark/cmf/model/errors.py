@@ -1,8 +1,8 @@
-from typing import List, Type, Union, Generic, TypeVar
 import logging
-from pydantic import BaseModel as DTO, Field as DTOField
-from pydantic.generics import GenericModel as GenericDTO
+from typing import Generic, List, Type, TypeVar, Union
+
 from credmark.dto.transform import transform_data_for_dto
+from credmark.dto import DTO, DTOField, GenericDTO
 
 logger = logging.getLogger(__name__)
 

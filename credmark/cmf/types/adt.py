@@ -1,11 +1,9 @@
 # algebra data types
 
-from typing import Generic, Iterator, List, Optional, TypeVar, Callable, Tuple
+from typing import Callable, Generic, Iterator, List, Optional, Tuple, TypeVar
 
 import pandas as pd
-from credmark.dto import DTOTypesTuple
-from pydantic import Field as DTOField
-from pydantic.generics import GenericModel as GenericDTO
+from credmark.dto import DTOField, DTOTypesTuple, GenericDTO
 
 DTOCLS = TypeVar('DTOCLS')
 
