@@ -9,7 +9,7 @@ from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_loader import ModelLoader
 from IPython.core.magic import (Magics, cell_magic, line_cell_magic,
                                 line_magic, magics_class)
-from IPython.lib.pretty import pretty
+from IPython.lib.pretty import pretty, pprint
 import requests
 
 
@@ -48,9 +48,8 @@ class CredmarkMagic(Magics):
 
     @line_magic
     def cmf(self, line):
+        #pylint: disable=too-many-branches, too-many-statements
         if line == 'help':
-            print('Doc:')
-            print(CmfInit.__doc__)
             print('Example:')
             param = CmfInit()._asdict()
             print('%reload_ext credmark.cmf.ipython')
@@ -59,16 +58,31 @@ class CredmarkMagic(Magics):
 # or
 %cmf param
 context, model_loader = _""")
+            print("""Other commands:
+- %cmf default_param: returns default paramters
+Example: param = %cmf default_param
+- %cmf default: setup with default parameters
+Example: context, model_loader = %cmf default
+- %cmf help: get help
+- %cmf help_param: get help for paramters
+""")
+            return None
+
+        if line == 'help_param':
+            print('Doc:')
+            print(CmfInit.__doc__)
             return None
 
         if self.shell is None:
             raise ValueError('Shell is None')
 
         if line == 'default_param':
-            return CmfInit()
+            return CmfInit()._asdict()
 
-        if line == 'def':
+        if line == 'default':
             cmf_init = CmfInit()
+            print('Using default to initialize Cmf')
+            pprint(cmf_init._asdict())
         else:
             param_ext = self.shell.user_ns.get(line, None)
             if param_ext is None:
@@ -123,7 +137,8 @@ context, model_loader = _""")
             var_namespace['models'] = context.models
             var_namespace['block_number'] = context.block_number
             var_namespace['chain_id'] = context.chain_id
-            var_namespace['web3'] = context.web3
+            if provider_url is not None:
+                var_namespace['web3'] = context.web3
             var_namespace['run_model_historical'] = context.historical.run_model_historical
             var_namespace['run_model_historical_blocks'] = context.historical.run_model_historical_blocks
 
