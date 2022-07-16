@@ -91,8 +91,17 @@ context, model_loader = _""")
             if cmf_init.chain_id == 1:
                 headers = {'Content-Type': 'application/json'}
                 response = requests.post(
-                    provider_url, data=f'{"jsonrpc": "2.0","method": "eth_blockNumber","params": [], "id":{cmf_init.chain_id}}', headers=headers)
-                print(response)
+                    provider_url, data=f'{{"jsonrpc":"2.0","method": "eth_blockNumber","params": [], "id":{cmf_init.chain_id}}}', headers=headers)
+                if response.status_code in [200, 201]:
+                    res = response.json()
+                    if 'result' in res and int(res['result'], base=16) > 0:
+                        pass
+                    else:
+                        raise ValueError(
+                            f'Provider URL {provider_url} does not respond properly for querying block number: {res}')
+                else:
+                    raise ValueError(
+                        f'Provider URL {provider_url} for {cmf_init.chain_id} does not respond.')
 
         model_loader = ModelLoader(cmf_init.model_loader_path, None, True)
         context = EngineModelContext.create_context(chain_id=cmf_init.chain_id, block_number=cmf_init.block_number, model_loader=model_loader,
