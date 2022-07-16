@@ -5,9 +5,11 @@ import os
 import sys
 from typing import Dict, List, NamedTuple, Optional
 
-import IPython.core.magic as ipython
 from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_loader import ModelLoader
+from IPython.core.magic import (Magics, cell_magic, line_cell_magic,
+                                line_magic, magics_class)
+from IPython.lib.pretty import pretty
 
 
 class CmfInit(NamedTuple):
@@ -32,7 +34,7 @@ class CmfInit(NamedTuple):
     register_utility_global: bool = True
 
 
-def load_module_items(module_name, namespace, selection: Optional[List[str]] = None):
+def load_module_items(namespace, module_name, selection: Optional[List[str]] = None):
     imp = importlib.import_module(module_name)
     for a in dir(sys.modules[module_name]):
         if not a.startswith("_"):
@@ -40,27 +42,42 @@ def load_module_items(module_name, namespace, selection: Optional[List[str]] = N
                 namespace[a] = getattr(imp, a)
 
 
-@ipython.magics_class
-class CredmarkMagic(ipython.Magics):
-    @ipython.line_magic
+@magics_class
+class CredmarkMagic(Magics):
+
+    @line_magic
     def cmf(self, line):
+        if line == 'help':
+            print('Doc:')
+            print(CmfInit.__doc__)
+            print('Example:')
+            param = CmfInit()._asdict()
+            print('%reload_ext credmark.cmf.ipython')
+            print('param = ' + pretty(param))
+            print("""context, model_loader = %cmf param
+# or
+%cmf param
+context, model_loader = _""")
+            return None
+
         if self.shell is None:
             raise ValueError('Shell is None')
 
-        if line == 'help':
-            print(CmfInit.__doc__)
-            print(CmfInit()._asdict())
-            return None
+        if line == 'default_param':
+            return CmfInit()
 
-        param_ext = self.shell.user_ns.get(line, None)
-        if param_ext is None:
-            raise ValueError(
-                f'Undefined variable {line} for cmf initialization. Get help from %cmf help')
-        if not isinstance(param_ext, dict):
-            raise ValueError(
-                f'Variable {line} needs to be a dictionary. Get help from %cmf help')
+        if line == 'def':
+            cmf_init = CmfInit()
+        else:
+            param_ext = self.shell.user_ns.get(line, None)
+            if param_ext is None:
+                raise ValueError(
+                    f'Undefined variable {line} for cmf initialization. Get help from %cmf help')
+            if not isinstance(param_ext, dict):
+                raise ValueError(
+                    f'Variable {line} needs to be a dictionary. Get help from %cmf help')
+            cmf_init = CmfInit(**param_ext)
 
-        cmf_init = CmfInit(**param_ext)
         for p in cmf_init.model_loader_path:
             if not os.path.isdir(p):
                 raise ValueError(f'{p} specified for model_loader_path is not a valid path')
@@ -71,11 +88,13 @@ class CredmarkMagic(ipython.Magics):
                                                     api_url=cmf_init.api_url, run_id=None, console=True, use_local_models=cmf_init.use_local_models)
 
         var_namespace = self.shell.user_ns
-        load_module_items('credmark.cmf.types', var_namespace)
-        load_module_items('credmark.dto', var_namespace)
-        load_module_items('credmark.cmf.model', var_namespace, ['Model'])
-        load_module_items('credmark.cmf.model.errors', var_namespace,
+        load_module_items(var_namespace, 'credmark.cmf.types')
+        load_module_items(var_namespace, 'credmark.dto')
+        load_module_items(var_namespace, 'credmark.cmf.model', ['Model'])
+        load_module_items(var_namespace, 'credmark.cmf.model.errors',
                           ['ModelDataError', 'ModelRunError'])
+        load_module_items(var_namespace, 'credmark.cmf.engine.dev_models.console',
+                          ['get_dt', 'get_block', 'log_output'])
 
         if cmf_init.register_utility_global:
             var_namespace['ledger'] = context.ledger
@@ -87,8 +106,8 @@ class CredmarkMagic(ipython.Magics):
             var_namespace['run_model_historical'] = context.historical.run_model_historical
             var_namespace['run_model_historical_blocks'] = context.historical.run_model_historical_blocks
 
-        return context
+        return context, model_loader
 
 
 def load_ipython_extension(ipy_module):
-    ipy_module.register_magics(CredmarkMagic())
+    ipy_module.register_magics(CredmarkMagic)
