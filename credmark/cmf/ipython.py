@@ -10,6 +10,7 @@ from credmark.cmf.engine.model_loader import ModelLoader
 from IPython.core.magic import (Magics, cell_magic, line_cell_magic,
                                 line_magic, magics_class)
 from IPython.lib.pretty import pretty
+import requests
 
 
 class CmfInit(NamedTuple):
@@ -28,7 +29,7 @@ class CmfInit(NamedTuple):
     chain_id: int = 1
     block_number: Optional[int] = None
     model_loader_path: List[str] = []
-    chain_to_provider_url: Dict[str, str] = {'1': 'http://192.168.68.122:10444'}
+    chain_to_provider_url: Dict[str, str] = {}
     api_url: Optional[str] = None
     use_local_models: Optional[str] = None  # None, '*', or '-', or 'model_to_be_run_locally'
     register_utility_global: bool = True
@@ -81,6 +82,17 @@ context, model_loader = _""")
         for p in cmf_init.model_loader_path:
             if not os.path.isdir(p):
                 raise ValueError(f'{p} specified for model_loader_path is not a valid path')
+
+        provider_url = cmf_init.chain_to_provider_url.get(str(cmf_init.chain_id), None)
+        if provider_url is None:
+            print(f'Warning: missing provider for chain_id={cmf_init.chain_id}')
+        else:
+            # Test provider
+            if cmf_init.chain_id == 1:
+                headers = {'Content-Type': 'application/json'}
+                response = requests.post(
+                    provider_url, data=f'{"jsonrpc": "2.0","method": "eth_blockNumber","params": [], "id":{cmf_init.chain_id}}', headers=headers)
+                print(response)
 
         model_loader = ModelLoader(cmf_init.model_loader_path, None, True)
         context = EngineModelContext.create_context(chain_id=cmf_init.chain_id, block_number=cmf_init.block_number, model_loader=model_loader,
