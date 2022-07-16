@@ -123,11 +123,11 @@ Example: context, model_loader = %cmf default
                                                     api_url=cmf_init.api_url, run_id=None, console=True, use_local_models=cmf_init.use_local_models)
 
         var_namespace = self.shell.user_ns
-        load_module_items(var_namespace, 'credmark.cmf.types')
-        load_module_items(var_namespace, 'credmark.dto')
         load_module_items(var_namespace, 'credmark.cmf.model', ['Model'])
         load_module_items(var_namespace, 'credmark.cmf.model.errors',
                           ['ModelDataError', 'ModelRunError'])
+        load_module_items(var_namespace, 'credmark.cmf.types')
+        load_module_items(var_namespace, 'credmark.dto')
         load_module_items(var_namespace, 'credmark.cmf.engine.dev_models.console',
                           ['get_dt', 'get_block', 'log_output'])
 
