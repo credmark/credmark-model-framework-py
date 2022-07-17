@@ -14,6 +14,13 @@ class Maybe(GenericDTO, Generic[DTOCLS]):
     def is_just(self):
         return self.just is not None
 
+    def get_just(self, obj: DTOCLS) -> DTOCLS:
+        return self.just if self.just is not None else obj
+
+    @classmethod
+    def none(cls):
+        return cls(just=None)
+
 
 class Some(GenericDTO, Generic[DTOCLS]):
     some: List[DTOCLS] = DTOField([])
