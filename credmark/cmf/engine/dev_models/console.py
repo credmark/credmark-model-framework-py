@@ -23,8 +23,9 @@ from credmark.cmf.model.print import print_manifest_description
 from credmark.cmf.types import (Account, Accounts, Address, BlockNumber,
                                 Contract, ContractLedger, Contracts, Currency,
                                 FiatCurrency, Maybe, NativePosition,
-                                NativeToken, Portfolio, Position, Price,
-                                PriceList, Some, Token, TokenPosition, Tokens)
+                                NativeToken, Network, Portfolio, Position,
+                                Price, PriceList, Some, Token, TokenPosition,
+                                Tokens)
 from credmark.cmf.types.compose import (MapBlockResult, MapBlocksInput,
                                         MapBlocksOutput,
                                         MapBlockTimeSeriesInput,

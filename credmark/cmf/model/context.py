@@ -1,13 +1,14 @@
-from abc import abstractmethod
 import io
+from abc import abstractmethod
 from typing import Any, Type, TypeVar, Union, overload
-from web3 import Web3
 
-from .print import print_manifest_description
-from .errors import ModelNoContextError
-from .ledger import Ledger
 import credmark.cmf.types
 from credmark.dto import DTOType, DTOTypesTuple, EmptyInput
+from web3 import Web3
+
+from .errors import ModelNoContextError
+from .ledger import Ledger
+from .print import print_manifest_description
 from .utils.historical_util import HistoricalUtil
 
 DTOT = TypeVar('DTOT')
@@ -248,11 +249,18 @@ class ModelContext:
         ...
 
     @property
-    def chain_id(self):
+    def chain_id(self) -> int:
         """
         Context chain id as an integer
         """
         return self._chain_id
+
+    @property
+    def network(self) -> credmark.cmf.types.Network:
+        """
+        Context chain id as an integer
+        """
+        return credmark.cmf.types.Network(self._chain_id)
 
     @property
     def block_number(self):
