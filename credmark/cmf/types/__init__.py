@@ -17,3 +17,4 @@ from .position import NativePosition, Position, TokenPosition
 from .price import Price, PriceList
 from .token import Currency, FiatCurrency, NativeToken, Token, Tokens
 from .token_wei import TokenWei
+from .network import Network
