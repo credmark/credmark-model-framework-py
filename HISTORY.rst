@@ -5,6 +5,7 @@ History
 
 0.8.29-RC [2022-07-??]
 * Add ipython extension (#141)
+* Add network identifier (#142)
 
 0.8.28 [2022-07-12]
 * Ledger utility update (#92)
