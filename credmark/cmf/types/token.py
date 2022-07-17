@@ -48,6 +48,16 @@ def get_token_from_configuration(
 class Token(Contract):
     """
     Fungible Token that conforms to ERC20 standards.
+    You could create a token with the following
+
+        t = Token(symbol='CMK')
+
+        t = Token(address='0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
+
+        t = Token('CMK')
+
+        t = Token('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
+
     """
 
     class TokenMetadata(Contract.ContractMetaData):
@@ -66,7 +76,19 @@ class Token(Contract):
                          ] + Contract.Config.schema_extra['examples']
         }
 
-    def __new__(cls, **data):
+    @classmethod
+    def validate(cls, obj):
+        if isinstance(obj, str):
+            return cls(obj)
+        if isinstance(obj, dict):
+            return cls(**obj)
+        if isinstance(obj, NativeToken):
+            return obj
+        if isinstance(obj, Token):
+            return obj
+        raise TypeError(f'{cls.__name__} must be deserialized with an str or dict')
+
+    def __new__(cls, *_args, **data):
         if cls == NativeToken:
             return super().__new__(cls)
 
@@ -88,7 +110,18 @@ class Token(Contract):
 
         return super().__new__(cls)
 
-    def __init__(self, **data):
+    def __init__(self, *args, **data):
+        if len(args) > 0:
+            if isinstance(args[0], str):
+                if evm_address_regex.match(args[0]) is not None:
+                    if 'address' not in data:
+                        data['address'] = args[0]
+                else:
+                    if 'symbol' not in data:
+                        data['symbol'] = args[0]
+            elif isinstance(args[0], dict):
+                data = args[0] | data
+
         if 'address' not in data and 'symbol' not in data:
             raise ModelDataError('One of address or symbol is required')
 
