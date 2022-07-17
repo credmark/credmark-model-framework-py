@@ -12,6 +12,7 @@ from .ledger_contract import ContractLedger
 from .ledger_query import LedgerQuery
 from .ledger_series import (LedgerBlockNumberTimeSeries,
                             LedgerBlockTimeSeriesInput)
+from .network import Network
 from .portfolio import Portfolio
 from .position import NativePosition, Position, TokenPosition
 from .price import Price, PriceList

@@ -1,8 +1,7 @@
 import json
 import datetime
 import numpy as np
-from credmark.dto import DTOTypesTuple
-from pydantic import BaseModel as DTO
+from credmark.dto import DTOTypesTuple, DTO
 
 
 class PydanticJSONEncoder(json.JSONEncoder):

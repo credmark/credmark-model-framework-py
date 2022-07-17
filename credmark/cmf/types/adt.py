@@ -1,11 +1,9 @@
 # algebra data types
 
-from typing import Generic, Iterator, List, Optional, TypeVar, Callable, Tuple
+from typing import Callable, Generic, Iterator, List, Optional, Tuple, TypeVar
 
 import pandas as pd
-from credmark.dto import DTOTypesTuple
-from pydantic import Field as DTOField
-from pydantic.generics import GenericModel as GenericDTO
+from credmark.dto import DTOField, DTOTypesTuple, GenericDTO
 
 DTOCLS = TypeVar('DTOCLS')
 
@@ -15,6 +13,13 @@ class Maybe(GenericDTO, Generic[DTOCLS]):
 
     def is_just(self):
         return self.just is not None
+
+    def get_just(self, obj: DTOCLS) -> DTOCLS:
+        return self.just if self.just is not None else obj
+
+    @classmethod
+    def none(cls):
+        return cls(just=None)
 
 
 class Some(GenericDTO, Generic[DTOCLS]):
