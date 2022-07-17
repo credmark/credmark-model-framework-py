@@ -5,8 +5,8 @@ from typing import Any, List, Union
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
-from web3.contract import Contract as Web3Contract
 from web3 import Web3
+from web3.contract import Contract as Web3Contract
 
 from .abi import ABI
 from .account import Account
@@ -102,6 +102,15 @@ def get_slot_proxy_address(context, contract_address, contract_name, contract_ab
 
 
 class Contract(Account):
+    """
+    Contract object to make web3 call smart contract functions.
+    You could create a contrat with the following
+
+        c = Contract(address='0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
+
+        c = Contract('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
+
+    """
 
     class ContractMetaData(DTO):
         contract_name: Union[str, None] = None
@@ -130,8 +139,8 @@ class Contract(Account):
               }]
         }
 
-    def __init__(self, **data):
-        super().__init__(**data)
+    def __init__(self, *args, **data):
+        super().__init__(*args, **data)
 
         meta = data.get('meta', None)
         if meta is not None:

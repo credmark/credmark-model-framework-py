@@ -1,16 +1,68 @@
 import unittest
+
 from credmark.cmf.engine.model_unittest import ModelTestCase
 from credmark.cmf.model.errors import ModelBaseError
-
-from credmark.cmf.types import Token, Address
-from credmark.cmf.types.token import NativeToken
+from credmark.cmf.types import Account, Address, Contract, Token
 from credmark.cmf.types.data.fungible_token_data import (
-    FUNGIBLE_TOKEN_DATA_BY_SYMBOL,
-    FUNGIBLE_TOKEN_DATA_BY_ADDRESS
-)
+    FUNGIBLE_TOKEN_DATA_BY_ADDRESS, FUNGIBLE_TOKEN_DATA_BY_SYMBOL)
+from credmark.cmf.types.token import NativeToken
+from credmark.dto import DTO
+from credmark.dto.transform import transform_data_for_dto
+
+
+class TCA(DTO):
+    token1: Token
+    token2: Token
+    token3: Token
+    token4: Token
+    contract1: Contract
+    contract2: Contract
+    account1: Account
+    account2: Account
 
 
 class TestToken(ModelTestCase):
+    def test_creation(self):
+        a1 = Account(address='0xad529dabbd6201545ce9aac300b868f2443382b9')
+        a2 = Account('0xad529dabbd6201545ce9aac300b868f2443382b9')
+        a3 = Account({'address': '0xad529dabbd6201545ce9aac300b868f2443382b9'})
+        self.assertTrue(a1.address == a2.address)
+        self.assertTrue(a1.address == a3.address)
+
+        c1 = Contract(address='0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
+        c2 = Contract('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
+        c3 = Contract({'address': '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'})
+        self.assertTrue(c1.address == c2.address)
+        self.assertTrue(c1.address == c3.address)
+
+        t1 = Token(symbol='CMK')
+        t2 = Token('CMK')
+        t3 = Token({'symbol': 'CMK'})
+        self.assertTrue(t1.address == t2.address)
+        self.assertTrue(t1.address == t3.address)
+
+        t1 = Token(address='0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
+        t2 = Token('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
+        t3 = Token({'address': '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'})
+        self.assertTrue(t1.address == t2.address)
+        self.assertTrue(t1.address == t3.address)
+
+        tca = transform_data_for_dto(
+            {'token1': '0xad529dabbd6201545ce9aac300b868f2443382b9',
+             'token2': {'address': '0xad529dabbd6201545ce9aac300b868f2443382b9'},
+             'token3': 'CMK',
+             'token4': {'symbol': 'CMK'},
+             'contract1': '0xad529dabbd6201545ce9aac300b868f2443382b9',
+             'contract2': {'address': '0xad529dabbd6201545ce9aac300b868f2443382b9'},
+             'account1': '0xad529dabbd6201545ce9aac300b868f2443382b9',
+             'account2': {'address': '0xad529dabbd6201545ce9aac300b868f2443382b9'}
+             }, TCA, '', '')
+
+        self.assertTrue(tca.token1.address == tca.token2.address)  # type: ignore
+        self.assertTrue(tca.token3.address == tca.token4.address)  # type: ignore
+        self.assertTrue(tca.contract1.address == tca.contract2.address)  # type: ignore
+        self.assertTrue(tca.account1.address == tca.account2.address)  # type: ignore
+
     def test_run(self):
         with self.assertRaises(ModelBaseError):
             Token()
