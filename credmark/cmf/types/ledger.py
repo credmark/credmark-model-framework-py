@@ -174,7 +174,7 @@ class LedgerTable:
             setattr(self, i[0], ColumnField(i[1]))
 
     def __dir__(self):
-        return list(self._column_dict.keys()) + list(super().__dir__())
+        return list(super().__dir__())
 
     def __repr__(self):
         return str(dir(self))
