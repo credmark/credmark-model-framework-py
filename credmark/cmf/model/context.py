@@ -71,7 +71,8 @@ class RunModelMethod:
 
         return self.__context.run_model(
             f"{self.__prefix.replace('_', '-')}",
-            input, block_number=self.__block_number,
+            input,
+            block_number=self.__block_number,
             return_type=return_type)
 
     # Handle method calls where the prefix is the dot prefix of a model name
@@ -271,7 +272,11 @@ class ModelContext:
 
     @block_number.setter
     def block_number(self, block_number: int):
-        self._block_number = credmark.cmf.types.BlockNumber(block_number)
+        if block_number != self._block_number:
+            self._block_number = credmark.cmf.types.BlockNumber(block_number)
+            self._web3 = None
+            self._ledger = None
+            self._historical_util = None
 
     @property
     def web3(self) -> Web3:

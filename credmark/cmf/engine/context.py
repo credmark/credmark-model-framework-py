@@ -1,24 +1,25 @@
 import json
 import logging
-import traceback
 import sys
+import traceback
 from typing import Callable, List, Set, Type, Union
-from credmark.dto.encoder import json_dumps
-from credmark.cmf.model import Model
-from credmark.cmf.model.context import ModelContext
+
 from credmark.cmf.engine.errors import ModelRunRequestError
-from credmark.cmf.model.errors import MaxModelRunDepthError, ModelBaseError, \
-    ModelEngineError, ModelInputError, ModelNotFoundError, ModelInvalidStateError, \
-    ModelOutputError, ModelRunError, ModelCallStackEntry, ModelTypeError, \
-    create_instance_from_error_dict
+from credmark.cmf.engine.mocks import ModelMockException, ModelMockRunner
 from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
-from credmark.cmf.engine.mocks import ModelMockException, ModelMockRunner
-from credmark.cmf.model.context import RunModelMethod
-from credmark.dto.transform import DataTransformError, transform_data_for_dto
 from credmark.cmf.engine.web3_registry import Web3Registry
-from credmark.dto import DTOType, EmptyInput, DTOValidationError
-
+from credmark.cmf.model import Model
+from credmark.cmf.model.context import ModelContext, RunModelMethod
+from credmark.cmf.model.errors import (MaxModelRunDepthError, ModelBaseError,
+                                       ModelCallStackEntry, ModelEngineError,
+                                       ModelInputError, ModelInvalidStateError,
+                                       ModelNotFoundError, ModelOutputError,
+                                       ModelRunError, ModelTypeError,
+                                       create_instance_from_error_dict)
+from credmark.dto import DTOType, DTOValidationError, EmptyInput
+from credmark.dto.encoder import json_dumps
+from credmark.dto.transform import DataTransformError, transform_data_for_dto
 
 RPC_GET_LATEST_BLOCK_NUMBER_SLUG = 'rpc.get-latest-blocknumber'
 
@@ -191,7 +192,9 @@ class EngineModelContext(ModelContext):
         context: Union[EngineModelContext, None] = None
 
         try:
-            context = cls.create_context(chain_id, block_number, model_loader,
+            context = cls.create_context(chain_id,
+                                         block_number,
+                                         model_loader,
                                          chain_to_provider_url,
                                          api_url,
                                          run_id,

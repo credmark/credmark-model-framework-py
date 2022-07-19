@@ -90,7 +90,7 @@ def get_slot_proxy_address(context, contract_address, contract_name, contract_ab
                     contract_address, SLOT_ZEPPELINOS).hex()
             slot_proxy_address = '0x' + slot_proxy_address[-40:]
         elif contract_name in ['RenERC20Proxy', 'RenBTC',
-                               'TransparentUpgradeableProxy'
+                               'TransparentUpgradeableProxy',
                                'InitializableAdminUpgradeabilityProxy',
                                'InitializableImmutableAdminUpgradeabilityProxy']:
             # if eip-1967 compliant, https://eips.ethereum.org/EIPS/eip-1967
@@ -166,8 +166,10 @@ class Contract(Account):
         if in_cache:
             contract_q_results = cached_meta
         else:
+            # fix block number when looking up contract
             contract_q_results = context.run_model('contract.metadata',
-                                                   {'contractAddress': self.address})
+                                                   {'contractAddress': self.address},
+                                                   block_number=0)
             ContractMetaCache().put(context.chain_id,
                                     self.address,
                                     contract_q_results)
