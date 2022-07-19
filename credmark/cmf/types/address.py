@@ -1,15 +1,10 @@
 import re
-from typing import (
-    Dict,
-    Any,
-)
-
-from web3 import Web3
-from web3._utils.validation import (
-    validate_address as eth_utils_validate_address,
-)
+from typing import Any, Dict
 
 from credmark.cmf.model.errors import ModelTypeError
+from web3 import Web3
+from web3._utils.validation import \
+    validate_address as eth_utils_validate_address
 
 
 def validate_address(addr: str):

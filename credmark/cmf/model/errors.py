@@ -1,8 +1,8 @@
 import logging
 from typing import Generic, List, Type, TypeVar, Union
 
-from credmark.dto.transform import transform_data_for_dto
 from credmark.dto import DTO, DTOField, GenericDTO
+from credmark.dto.transform import transform_data_for_dto
 
 logger = logging.getLogger(__name__)
 

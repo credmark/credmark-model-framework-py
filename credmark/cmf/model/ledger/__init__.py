@@ -7,8 +7,8 @@ from credmark.cmf.types.ledger_query import LedgerQuery
 QUERY_METHOD_DOC_STRING = """
     Columns are defined in :class:`credmark.cmf.types.ledger.{TABLE}Table`
     which is also accessible as
-    - ``context.Ledger.{TABLE}.colnames()`` for the names to specify in the query, and
-    - ``context.Ledger.{TABLE}.columns()`` to include them all.
+    - ``context.Ledger.{TABLE}.colnames``: to get the individual column name(s) to specify in the query
+    - ``context.Ledger.{TABLE}.columns``: to include all columns.
 
     Parameters:
 
