@@ -1,7 +1,7 @@
 import json
 import os
-from typing import Dict, List, Union
 from collections import UserList
+from typing import Dict, List, Union
 
 
 class EventDetails:

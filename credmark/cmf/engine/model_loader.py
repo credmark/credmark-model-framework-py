@@ -1,17 +1,17 @@
-import logging
-import os
-import sys
 import importlib
 import importlib.util
 import inspect
 import json
-from typing import Set, Union, Type, List
+import logging
+import os
+import sys
+from typing import List, Set, Type, Union
+
+from credmark.cmf.engine.errors import ModelManifestWriteError
+from credmark.cmf.model import Model, validate_model_slug
+from credmark.cmf.model.errors import ModelNotFoundError
 from packaging import version
 from requests.structures import CaseInsensitiveDict
-from credmark.cmf.model import Model
-from credmark.cmf.engine.errors import ModelManifestWriteError
-from credmark.cmf.model.errors import ModelNotFoundError
-from credmark.cmf.model import validate_model_slug
 
 # "Dev models" are models that are implemented on the server
 # but we have a local version used for development (dev_mode).
@@ -21,6 +21,7 @@ from credmark.cmf.model import validate_model_slug
 DEV_MODELS_PATHS = ['cmf/engine/dev_models/series_models.py',
                     'cmf/engine/dev_models/compose_models.py',
                     'cmf/engine/dev_models/console.py']
+
 
 class ModelLoader:
     logger = logging.getLogger(__name__)

@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import List, Union
+
 from credmark.cmf.model.errors import ModelBaseError, ModelDataError
 from credmark.dto import DTOType
 

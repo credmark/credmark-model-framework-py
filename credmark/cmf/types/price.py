@@ -1,13 +1,7 @@
-from typing import (
-    Union,
-    List,
-)
-from credmark.dto import (
-    DTO,
-    DTOField,
-    IterableListGenericDTO,
-    PrivateAttr,
-)
+from typing import List, Union
+
+from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
+
 from .address import Address
 
 __all__ = ['Price', 'PriceList']

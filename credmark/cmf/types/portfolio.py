@@ -1,9 +1,6 @@
 from typing import List
-from credmark.dto import (
-    DTOField,
-    PrivateAttr,
-    IterableListGenericDTO,
-)
+
+from credmark.dto import DTOField, IterableListGenericDTO, PrivateAttr
 
 from .position import Position
 

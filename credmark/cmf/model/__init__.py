@@ -1,14 +1,14 @@
-from abc import abstractmethod
-import logging
 import inspect
+import logging
 import re
+from abc import abstractmethod
 from copy import deepcopy
 from typing import List, Tuple, Type, Union
 
-from .context import ModelContext
 from credmark.dto import DTOType, DTOTypesTuple, EmptyInput
 from credmark.dto.transform import transform_data_for_dto
 
+from .context import ModelContext
 from .errors import ModelBaseError, ModelDataErrorDTO, ModelDefinitionError
 
 

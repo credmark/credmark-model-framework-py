@@ -1,13 +1,15 @@
-from typing import Any, ClassVar, Union
-import os
-import logging
-import requests
-from requests.adapters import HTTPAdapter, Retry
 import json
-from urllib.parse import urljoin, quote
-from credmark.dto.encoder import json_dumps
+import logging
+import os
+from typing import Any, ClassVar, Union
+from urllib.parse import quote, urljoin
+
+import requests
 from credmark.cmf.engine.errors import ModelRunRequestError
-from credmark.cmf.model.errors import ModelBaseError, create_instance_from_error_dict
+from credmark.cmf.model.errors import (ModelBaseError,
+                                       create_instance_from_error_dict)
+from credmark.dto.encoder import json_dumps
+from requests.adapters import HTTPAdapter, Retry
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
 

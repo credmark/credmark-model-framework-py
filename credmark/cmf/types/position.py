@@ -1,7 +1,8 @@
 import credmark.cmf.model
 from credmark.dto import DTO, DTOField, cross_examples
-from .token import Token, NativeToken
+
 from .price import Price
+from .token import NativeToken, Token
 
 
 class Position(DTO):

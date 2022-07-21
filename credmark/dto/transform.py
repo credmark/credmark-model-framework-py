@@ -1,5 +1,6 @@
 
 from typing import Type, Union
+
 from . import DTOType, DTOTypesTuple
 
 

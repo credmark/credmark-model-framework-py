@@ -1,5 +1,6 @@
 import contextlib
-from typing import List, Union, Tuple
+from typing import List, Tuple, Union
+
 import credmark.cmf.model
 
 from .ledger import ColumnField, LedgerAggregate, LedgerModelOutput

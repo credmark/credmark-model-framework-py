@@ -1,5 +1,6 @@
 
 from typing import List
+
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 
 __all__ = ['RpcBlockStartEndIntervalInput', 'RpcBlockWindowIntervalInput',

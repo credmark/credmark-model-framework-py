@@ -1,8 +1,9 @@
 
-import os
 import json
+import os
 from typing import Union
-from web3 import HTTPProvider, WebsocketProvider, Web3
+
+from web3 import HTTPProvider, Web3, WebsocketProvider
 
 
 class Web3Registry:

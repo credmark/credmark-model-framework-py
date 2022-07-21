@@ -57,33 +57,31 @@ from os import path
 from types import ModuleType
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, cast
 
+import sphinx
 from docutils import nodes
 from docutils.nodes import Element, Node, system_message
 from docutils.parsers.rst import directives
 from docutils.parsers.rst.states import RSTStateMachine, Struct, state_classes
 from docutils.statemachine import StringList
-
-import sphinx
 from sphinx import addnodes
 from sphinx.application import Sphinx
 from sphinx.config import Config
-from sphinx.deprecation import (RemovedInSphinx50Warning, RemovedInSphinx60Warning,
-                                deprecated_alias)
+from sphinx.deprecation import (RemovedInSphinx50Warning,
+                                RemovedInSphinx60Warning, deprecated_alias)
 from sphinx.environment import BuildEnvironment
 from sphinx.environment.adapters.toctree import TocTree
-from sphinx.ext.autodoc import INSTANCEATTR, Documenter
+from sphinx.errors import PycodeError
+from sphinx.ext.autodoc import INSTANCEATTR, Documenter, Options
 from sphinx.ext.autodoc.directive import DocumenterBridge
-from sphinx.ext.autodoc import Options
 from sphinx.ext.autodoc.importer import import_module
 from sphinx.ext.autodoc.mock import mock
 from sphinx.locale import __
 from sphinx.project import Project
 from sphinx.pycode import ModuleAnalyzer
-from sphinx.errors import PycodeError
 from sphinx.registry import SphinxComponentRegistry
 from sphinx.util import logging, rst
-from sphinx.util.docutils import (NullReporter, SphinxDirective, SphinxRole, new_document,
-                                  switch_source_input)
+from sphinx.util.docutils import (NullReporter, SphinxDirective, SphinxRole,
+                                  new_document, switch_source_input)
 from sphinx.util.inspect import signature_from_str
 from sphinx.util.matching import Matcher
 from sphinx.util.typing import OptionSpec

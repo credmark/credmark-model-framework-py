@@ -1,24 +1,24 @@
 #! /usr/bin/env python3
+import argparse
+import inspect
+import json
+import logging
 import os
 import sys
-import argparse
-import logging
-import json
 import unittest
-import inspect
 from typing import List, Union
-from dotenv import load_dotenv, find_dotenv
 
-from .engine.github import get_latest_cmf_version_tag
-from .engine.context import EngineModelContext
-from .engine.model_loader import ModelLoader
-from .engine.mocks import MockGenerator, ModelMockRunner
-from .engine.web3_registry import Web3Registry
-from .engine.model_api import ModelApi
-from credmark.dto import json_dump, json_dumps
 from credmark.cmf.engine.model_unittest import ModelTestContextFactory
 from credmark.cmf.model.print import print_manifest, print_manifest_description
+from credmark.dto import json_dump, json_dumps
+from dotenv import find_dotenv, load_dotenv
 
+from .engine.context import EngineModelContext
+from .engine.github import get_latest_cmf_version_tag
+from .engine.mocks import MockGenerator, ModelMockRunner
+from .engine.model_api import ModelApi
+from .engine.model_loader import ModelLoader
+from .engine.web3_registry import Web3Registry
 
 logger = logging.getLogger(__name__)
 

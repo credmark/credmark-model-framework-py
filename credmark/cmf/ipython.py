@@ -5,12 +5,12 @@ import os
 import sys
 from typing import Dict, List, NamedTuple, Optional
 
+import requests
 from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_loader import ModelLoader
 from IPython.core.magic import (Magics, cell_magic, line_cell_magic,
                                 line_magic, magics_class)
-from IPython.lib.pretty import pretty, pprint
-import requests
+from IPython.lib.pretty import pprint, pretty
 
 
 class CmfInit(NamedTuple):

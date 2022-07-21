@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.30 [2022-07-??]
+* re-org imports (#144)
+
+
 0.8.29 [2022-07-18]
 * Add ipython extension (#141)
 * Add network identifier, re-organized DTO imports, enrich Maybe (#142)

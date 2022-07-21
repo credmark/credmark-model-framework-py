@@ -1,4 +1,5 @@
-from typing import Union, List
+from typing import List, Union
+
 from credmark.cmf.model.errors import ModelRunError
 
 
