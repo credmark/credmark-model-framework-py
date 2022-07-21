@@ -27,7 +27,7 @@ class Price(DTO):
         return Price(price=self.price * other.price, src=f'({self.src},{other.src})')
 
     def inverse(self):
-        return Price(price=1 / self.price, src=f'({self.src},Inv)')
+        return Price(price=1 / self.price, src=f'{self.src}|Inv')
 
 
 class PriceList(IterableListGenericDTO[float]):
