@@ -25,7 +25,8 @@ class RunModelMethod:
     # for an instance will be set to the model schema doc
     interactive_docs = False
 
-    def __init__(self, context, prefix: str, block_number: Union[int, None] = None, local: bool = False):
+    def __init__(self, context, prefix: str, block_number: Union[int, None] = None,
+                 local: bool = False):
         self.__context = context
         self.__prefix = prefix
         self.__block_number = block_number
@@ -172,10 +173,11 @@ class ModelContext:
             self.__local = local
 
         def __getattr__(self, __name: str) -> RunModelMethod:
-            return RunModelMethod(self.__context, __name, block_number=self.__block_number, local=self.__local)
+            return RunModelMethod(self.__context, __name, block_number=self.__block_number,
+                                  local=self.__local)
 
-        def __call__(self, block_number=None):
-            return ModelContext.Models(self.__context, block_number=block_number)
+        def __call__(self, block_number=None, local: bool = False):
+            return ModelContext.Models(self.__context, block_number=block_number, local=local)
 
         def __dir__(self):
             if RunModelMethod.interactive_docs:
