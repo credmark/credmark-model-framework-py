@@ -13,6 +13,7 @@ from .account import Account
 from .address import Address
 from .block_number import BlockNumber, BlockNumberOutOfRangeError
 from .ledger_contract import ContractLedger
+from .contract_web3 import fetch_events
 
 
 class Singleton:
@@ -387,6 +388,17 @@ class Contract(Account):
             else:
                 raise ModelRunError('Unable to obtain abi for the contract')
         return self._ledger
+
+    def fetch_events(self, event, argument_filters=None,
+                     from_block=None,
+                     address=None,
+                     topics=None):
+        context = credmark.cmf.model.ModelContext.current_context()
+        return fetch_events(event, argument_filters,
+                            from_block,
+                            context.block_number,
+                            address=address,
+                            topics=topics)
 
 
 class ContractInfo(Contract):
