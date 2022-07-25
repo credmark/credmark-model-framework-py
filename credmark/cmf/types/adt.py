@@ -32,6 +32,13 @@ class Some(GenericDTO, Generic[DTOCLS]):
     def __getitem__(self, key) -> DTOCLS:
         return getattr(self, self._iterator).__getitem__(key)
 
+    def is_empty(self) -> bool:
+        return len(self.some) == 0
+
+    @classmethod
+    def empty(cls):
+        return cls(some=[])
+
     def append(self, obj):
         return getattr(self, self._iterator).append(obj)
 
