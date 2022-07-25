@@ -689,7 +689,7 @@ class EngineModelContext(ModelContext):
                     self.debug_logger.debug(
                         f"< Run model '{slug}' error: {err}")
             else:
-                input_json = json.dumps(transform_data_for_dto(
+                input_json = json_dumps(transform_data_for_dto(
                     input, None, slug, 'input'))
                 err_msg = (f'Exception running model {slug}({input_json}) on '
                            f'chain {context.chain_id} '
