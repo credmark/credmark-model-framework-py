@@ -69,11 +69,12 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                 model_slug,
                 f'{offset=} needs to be a positive integer.')
 
+        aggregates_value = (None if aggregates is None
+                            else [LedgerAggregate(expression=agg[0], asName=agg[1])
+                                  for agg in aggregates])
+
         model_input = {'columns': columns,
-                       'aggregates':
-                       None if aggregates is None
-                       else [LedgerAggregate(expression=agg[0], asName=agg[1])
-                             for agg in aggregates],
+                       'aggregates': aggregates_value,
                        'where': where,
                        'groupBy': ','.join(group_by) if group_by is not None else None,
                        'having': having,
