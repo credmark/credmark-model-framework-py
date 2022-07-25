@@ -25,10 +25,11 @@ class RunModelMethod:
     # for an instance will be set to the model schema doc
     interactive_docs = False
 
-    def __init__(self, context, prefix: str, block_number: Union[int, None] = None):
+    def __init__(self, context, prefix: str, block_number: Union[int, None] = None, local: bool = False):
         self.__context = context
         self.__prefix = prefix
         self.__block_number = block_number
+        self.__local = local
 
         if self.interactive_docs:
             # In interactive mode, we set the docstring to the
@@ -73,7 +74,8 @@ class RunModelMethod:
             f"{self.__prefix.replace('_', '-')}",
             input,
             block_number=self.__block_number,
-            return_type=return_type)
+            return_type=return_type,
+            local=self.__local)
 
     # Handle method calls where the prefix is the dot prefix of a model name
 
@@ -164,12 +166,13 @@ class ModelContext:
         """
         """
 
-        def __init__(self, context, block_number: Union[int, None] = None):
+        def __init__(self, context, block_number: Union[int, None] = None, local: bool = False):
             self.__context = context
             self.__block_number = block_number
+            self.__local = local
 
         def __getattr__(self, __name: str) -> RunModelMethod:
-            return RunModelMethod(self.__context, __name, block_number=self.__block_number)
+            return RunModelMethod(self.__context, __name, block_number=self.__block_number, local=self.__local)
 
         def __call__(self, block_number=None):
             return ModelContext.Models(self.__context, block_number=block_number)
@@ -318,6 +321,7 @@ class ModelContext:
                   return_type: Type[DTOT],
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,
+                  local: bool = False
                   ) -> DTOT: ...
 
     @overload
@@ -328,6 +332,7 @@ class ModelContext:
                   return_type: Union[Type[dict], None] = None,
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,
+                  local: bool = False
                   ) -> dict: ...
 
     @abstractmethod
@@ -337,6 +342,7 @@ class ModelContext:
                   return_type=None,
                   block_number=None,
                   version=None,
+                  local: bool = False
                   ) -> Any:
         """
         Run a model by slug and optional version.

@@ -369,6 +369,7 @@ class EngineModelContext(ModelContext):
                   return_type=None,
                   block_number=None,
                   version=None,
+                  local: bool = False,
                   ):
         """Run a model by slug and optional version.
 
@@ -401,7 +402,7 @@ class EngineModelContext(ModelContext):
                 f'Attempt to run model {slug} at context block {self.block_number} '
                 f'with future block {block_number}')
 
-        res_tuple = self._run_model(slug, input, block_number, version)
+        res_tuple = self._run_model(slug, input, block_number, version, local)
 
         # The last item of the tuple is the output.
         output = res_tuple[-1]
@@ -427,7 +428,8 @@ class EngineModelContext(ModelContext):
                    slug: str,
                    input: Union[dict, DTOType],
                    block_number: Union[int, None],
-                   version: Union[str, None]
+                   version: Union[str, None],
+                   local: bool = False
                    ):
 
         mock_result = self._run_model_mock(slug, input, version)
@@ -441,6 +443,7 @@ class EngineModelContext(ModelContext):
         force_local = self._force_local_model_for_slug(slug)
         use_local = (is_top_level_inactive or force_local or self.test_mode
                      or self._favor_local_model_for_slug(slug)) and not self._use_no_local_model()
+        use_local = use_local or local
         # when using the cli, we allow running remote models as top level
         try_remote = not is_top_level_inactive or is_cli
 
