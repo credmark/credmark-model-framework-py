@@ -9,7 +9,7 @@ import requests
 from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_loader import ModelLoader
 from IPython.core.magic import (Magics, cell_magic, line_cell_magic,
-                                line_magic, magics_class)
+                                line_magic, magics_class, needs_local_scope)
 from IPython.lib.pretty import pprint, pretty
 
 
@@ -46,8 +46,9 @@ def load_module_items(namespace, module_name, selection: Optional[List[str]] = N
 @magics_class
 class CredmarkMagic(Magics):
 
+    @needs_local_scope
     @line_magic
-    def cmf(self, line):
+    def cmf(self, line, local_ns):
         #pylint: disable=too-many-branches, too-many-statements
         if line == 'help':
             print('Example:')
@@ -84,7 +85,7 @@ Example: context, model_loader = %cmf default
             print('Using default to initialize Cmf')
             pprint(cmf_init._asdict())
         else:
-            param_ext = self.shell.user_ns.get(line, None)
+            param_ext = local_ns.get(line, None)
             if param_ext is None:
                 raise ValueError(
                     f'Undefined variable {line} for cmf initialization. Get help from %cmf help')
@@ -122,7 +123,7 @@ Example: context, model_loader = %cmf default
                                                     chain_to_provider_url=cmf_init.chain_to_provider_url,
                                                     api_url=cmf_init.api_url, run_id=None, console=True, use_local_models=cmf_init.use_local_models)
 
-        var_namespace = self.shell.user_ns
+        var_namespace = local_ns
         load_module_items(var_namespace, 'credmark.cmf.model', ['Model'])
         load_module_items(var_namespace, 'credmark.cmf.model.errors',
                           ['ModelDataError', 'ModelRunError'])

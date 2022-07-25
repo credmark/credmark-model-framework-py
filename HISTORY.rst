@@ -4,7 +4,14 @@ History
 -------
 
 0.8.30 [2022-07-??]
-* re-org imports (#144)
+* re-org imports (#145)
+* enhancement and fix (#148)
+- Some (ADT) enhancement
+- Use json_dump for input/output serialization
+- ipython extension: use local_ns
+- add fetch_events() to contract object
+- enable local run mode for run_model()
+- sort imports
 
 
 0.8.29 [2022-07-18]
