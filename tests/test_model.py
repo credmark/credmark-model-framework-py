@@ -1,5 +1,6 @@
-import unittest
 import logging
+import unittest
+
 from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_unittest import ModelTestCase, model_context
 from credmark.cmf.model import Model

@@ -1,10 +1,13 @@
 from credmark.cmf.model import Model
 from credmark.cmf.model.errors import ModelDataError
-from credmark.cmf.types.compose import (MapBlockResult, MapBlockTimeSeriesOutput,
-                                        MapBlockTimeSeriesInput, MapBlocksInput,
-                                        MapBlocksOutput, MapInputsInput,
-                                        MapInputsOutput, MapInputsResult)
-from credmark.cmf.types.ledger_series import LedgerBlockNumberTimeSeries, LedgerBlockTimeSeriesInput
+from credmark.cmf.types.compose import (MapBlockResult, MapBlocksInput,
+                                        MapBlocksOutput,
+                                        MapBlockTimeSeriesInput,
+                                        MapBlockTimeSeriesOutput,
+                                        MapInputsInput, MapInputsOutput,
+                                        MapInputsResult)
+from credmark.cmf.types.ledger_series import (LedgerBlockNumberTimeSeries,
+                                              LedgerBlockTimeSeriesInput)
 
 
 class LedgerModelSlugs:

@@ -1,6 +1,7 @@
 import unittest
+
 from credmark.cmf.engine.model_unittest import ModelTestCase
-from credmark.cmf.types import Some, Price
+from credmark.cmf.types import Price, Some
 
 
 class TestModel(ModelTestCase):
