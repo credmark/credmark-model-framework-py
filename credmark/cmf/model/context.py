@@ -97,7 +97,8 @@ class RunModelMethod:
 
         return RunModelMethod(
             self.__context, f"{self.__prefix}.{__name}",
-            block_number=self.__block_number)
+            block_number=self.__block_number,
+            local=self.__local)
 
     def __dir__(self):
         if self.interactive_docs:
