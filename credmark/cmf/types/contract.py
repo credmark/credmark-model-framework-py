@@ -391,12 +391,18 @@ class Contract(Account):
 
     def fetch_events(self, event, argument_filters=None,
                      from_block=None,
+                     to_block=None,
                      address=None,
                      topics=None):
         context = credmark.cmf.model.ModelContext.current_context()
+        if to_block is None:
+            to_block = context.block_number
+        elif to_block > context.block_number:
+            raise ModelRunError(
+                f'{to_block=} can not be later than current block {context.block_number}')
         return fetch_events(event, argument_filters,
                             from_block,
-                            context.block_number,
+                            to_block,
                             address=address,
                             topics=topics)
 
