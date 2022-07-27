@@ -132,6 +132,7 @@ class EngineModelContext(ModelContext):
 
         web3_registry = Web3Registry(chain_to_provider_url)
 
+        cls.use_local_models_slugs = set()
         if use_local_models is not None and len(use_local_models):
             local_model_slugs = use_local_models.split(',')
             if '-' not in local_model_slugs:
@@ -441,8 +442,9 @@ class EngineModelContext(ModelContext):
         is_cli = (self.dev_mode and not self.run_id) or self.test_mode
         is_top_level_inactive = self.__is_top_level and not self.is_active
         force_local = self._force_local_model_for_slug(slug)
-        use_local = (is_top_level_inactive or force_local or self.test_mode
-                     or self._favor_local_model_for_slug(slug)) and not self._use_no_local_model()
+        use_local = ((is_top_level_inactive or force_local or self.test_mode
+                     or self._favor_local_model_for_slug(slug))
+                     and not self._use_no_local_model())
         use_local = use_local or local
         # when using the cli, we allow running remote models as top level
         try_remote = not is_top_level_inactive or is_cli
@@ -452,7 +454,8 @@ class EngineModelContext(ModelContext):
         if debug_log:
             self.debug_logger.debug(
                 f'Run model states: {self.dev_mode=}, {self.run_id=}, {self.test_mode=}, '
-                f'{self._favor_local_model_for_slug(slug)=} {self.is_active=}')
+                f'{self._favor_local_model_for_slug(slug)=} {self._use_no_local_model()=}, '
+                f'{self.is_active=}')
             self.debug_logger.debug(
                 f'{is_cli=}, {is_top_level_inactive=}, {try_remote=}, {slug=}, '
                 f'{force_local=}, {use_local=}, '
