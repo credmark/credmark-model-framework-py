@@ -60,6 +60,7 @@ class CredmarkMagic(Magics):
 %cmf param
 context, model_loader = _""")
             print("""Other commands:
+- %cmf param -v: verbose
 - %cmf default_param: returns default paramters
 Example: param = %cmf default_param
 - %cmf default: setup with default parameters
@@ -85,13 +86,20 @@ Example: context, model_loader = %cmf default
             print('Using default to initialize Cmf')
             pprint(cmf_init._asdict())
         else:
-            param_ext = local_ns.get(line, None)
+            params = line.split(' ')
+            param_ext = local_ns.get(params[0], None)
+            verbose = False
+            if len(params) == 2 and params[1] == '-v':
+                verbose = True
             if param_ext is None:
                 raise ValueError(
                     f'Undefined variable {line} for cmf initialization. Get help from %cmf help')
             if not isinstance(param_ext, dict):
                 raise ValueError(
                     f'Variable {line} needs to be a dictionary. Get help from %cmf help')
+            if verbose:
+                print('Cmf to be initialized with:')
+                pprint(param_ext)
             cmf_init = CmfInit(**param_ext)
 
         for p in cmf_init.model_loader_path:
