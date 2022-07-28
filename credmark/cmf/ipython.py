@@ -49,7 +49,7 @@ class CredmarkMagic(Magics):
     @needs_local_scope
     @line_magic
     def cmf(self, line, local_ns):
-        #pylint: disable=too-many-branches, too-many-statements
+        #pylint: disable=too-many-branches, too-many-statements, too-many-locals
         if line == 'help':
             print('Example:')
             param = CmfInit()._asdict()

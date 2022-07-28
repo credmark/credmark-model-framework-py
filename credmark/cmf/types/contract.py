@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
@@ -12,8 +12,8 @@ from .abi import ABI
 from .account import Account
 from .address import Address
 from .block_number import BlockNumber, BlockNumberOutOfRangeError
-from .ledger_contract import ContractLedger
 from .contract_web3 import fetch_events
+from .ledger_contract import ContractLedger
 
 
 class Singleton:
@@ -61,7 +61,8 @@ SLOT_ZEPPELINOS = Web3.keccak(text='org.zeppelinos.proxy.implementation').hex()
 SLOT_EIP1967 = hex(int(Web3.keccak(text='eip1967.proxy.implementation').hex(), 16) - 1)
 
 
-def get_slot_proxy_address(context, contract_address, contract_name, contract_abi):
+def get_slot_proxy_address(context, contract_address,
+                           contract_name, contract_abi) -> Optional[Address]:
     slot_proxy_address = None
     if context.chain_id == 1:
         if contract_name == 'Unitroller':
@@ -74,31 +75,27 @@ def get_slot_proxy_address(context, contract_address, contract_name, contract_ab
             cc = context.web3.eth.contract(address=Address(
                 contract_address).checksum, abi=contract_abi)
             controller = Contract(address=Address(cc.functions.getController().call()))
-            lookupName = '0x' + cc.functions.controllerLookupName().call().hex()
-            slot_proxy_address = controller.functions.lookup(lookupName).call()
-            slot_proxy_address = '0x' + slot_proxy_address[-40:]
+            lookupName = Address(cc.functions.controllerLookupName().call())
+            slot_proxy_address = controller.functions.lookup(lookupName.checksum).call()
+            slot_proxy_address = Address(slot_proxy_address)
         elif contract_name in ['OwnedUpgradeabilityProxy']:
             if contract_address == Address('0x0000000000085d4780B73119b644AE5ecd22b376'):
                 slot_proxy_address = context.web3.eth.get_storage_at(
-                    contract_address, SLOT_TRUEUSD).hex()
-                slot_proxy_address = '0x' + slot_proxy_address[-40:]
+                    contract_address, SLOT_TRUEUSD)
+                slot_proxy_address = Address(slot_proxy_address)
         elif contract_name in ['FiatTokenProxy', 'AdminUpgradeabilityProxy']:
-            slot_proxy_address = context.web3.eth.get_storage_at(
-                contract_address, SLOT_EIP1967).hex()
-            slot_proxy_address = '0x' + slot_proxy_address[-40:]
-            if slot_proxy_address == Address.null():
-                slot_proxy_address = context.web3.eth.get_storage_at(
-                    contract_address, SLOT_ZEPPELINOS).hex()
-            slot_proxy_address = '0x' + slot_proxy_address[-40:]
+            slot_proxy_address = Address(context.web3.eth.get_storage_at(
+                contract_address, SLOT_EIP1967))
+            if slot_proxy_address.is_null():
+                slot_proxy_address = Address(context.web3.eth.get_storage_at(
+                    contract_address, SLOT_ZEPPELINOS))
         elif contract_name in ['RenERC20Proxy', 'RenBTC',
                                'TransparentUpgradeableProxy',
                                'InitializableAdminUpgradeabilityProxy',
                                'InitializableImmutableAdminUpgradeabilityProxy']:
             # if eip-1967 compliant, https://eips.ethereum.org/EIPS/eip-1967
-            slot_proxy_address = context.web3.eth.get_storage_at(
-                contract_address, SLOT_EIP1967).hex()
-            slot_proxy_address = '0x' + slot_proxy_address[-40:]
-
+            slot_proxy_address = Address(context.web3.eth.get_storage_at(
+                contract_address, SLOT_EIP1967))
     return slot_proxy_address
 
 
