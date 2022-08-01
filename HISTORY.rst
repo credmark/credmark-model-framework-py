@@ -4,10 +4,11 @@ History
 -------
 
 0.8.31 [2022-07-28]
-* Fix (#149)
+* Various Fix (#149)
 - Reset local_model_list during initialization.
 - Address can be initialized with int and hex str with less than 40+2 length (2 from '0x')
 - Fix for proxy address lookup for returning less 40 long address
+- Decouple with context from utilities
 
 0.8.30 [2022-07-25]
 * re-org imports (#145)
