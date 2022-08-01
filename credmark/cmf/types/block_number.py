@@ -94,6 +94,8 @@ class BlockNumber(IntDTO):
                 **_kwargs):  # pylint: disable=unused-argument
 
         context = credmark.cmf.model.ModelContext.get_current_context()
+        # Block number is initialized during the creation of the first context,
+        # skip the check for such case.
         if context is not None and number > context.block_number:
             raise BlockNumberOutOfRangeError.create(number, context.block_number)
 

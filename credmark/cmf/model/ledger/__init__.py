@@ -117,69 +117,68 @@ class Ledger:
     """
     # pylint: disable=locally-disabled,invalid-name
 
-    def __init__(self, _context):
-        # We type the property here to avoid circular ref
-        self._context = _context
+    def __init__(self):
+        pass
 
     @property
     @ledger_table_doc
     def Transaction(self):
         return LedgerQueryTransaction(
             cwgo_query_table='ledger.transaction_data',
-            context=self._context, more_cols=[])
+            more_cols=[])
 
     @property
     @ledger_table_doc
     def Trace(self):
         return LedgerQueryTrace(
             cwgo_query_table='ledger.trace_data',
-            context=self._context, more_cols=[])
+            more_cols=[])
 
     @property
     @ledger_table_doc
     def Block(self):
         return LedgerQueryBlock(
             cwgo_query_table='ledger.block_data',
-            context=self._context, more_cols=[])
+            more_cols=[])
 
     @property
     @ledger_table_doc
     def Contract(self):
         return LedgerQueryContract(
             cwgo_query_table='ledger.contract_data',
-            context=self._context, more_cols=[])
+            more_cols=[])
 
     @property
     @ledger_table_doc
     def Log(self):
         return LedgerQueryLog(
             cwgo_query_table='ledger.log_data',
-            context=self._context, more_cols=[])
+            more_cols=[])
 
     @property
     @ledger_table_doc
     def Receipt(self):
         return LedgerQueryReceipt(
             cwgo_query_table='ledger.receipt_data',
-            context=self._context, more_cols=[])
+            more_cols=[])
 
     @property
     @ledger_table_doc
     def Token(self):
         return LedgerQueryToken(
             cwgo_query_table='ledger.erc20_token_data',
-            context=self._context, more_cols=[])
+            more_cols=[])
 
     @property
     @ledger_table_doc
     def TokenTransfer(self):
         return LedgerQueryTokenTransfer(
             cwgo_query_table='ledger.erc20_token_transfer_data',
-            context=self._context, more_cols=[])
+            more_cols=[])
 
     @property
     @ledger_table_doc
     def TokenBalance(self):
         return LedgerQueryTokenBalance(
             cwgo_query_table='ledger.token_balance',
-            context=self._context, more_cols=[])
+            more_cols=[])

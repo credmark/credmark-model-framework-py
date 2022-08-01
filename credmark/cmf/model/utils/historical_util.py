@@ -38,8 +38,8 @@ class HistoricalUtil:
         'second': 1,
     }
 
-    def __init__(self, context) -> None:
-        self.context: credmark.cmf.model.ModelContext = context
+    def __init__(self) -> None:
+        pass
 
     def run_model_historical(self,  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
                              model_slug: str,
@@ -61,6 +61,8 @@ class HistoricalUtil:
         :param model_return_type: the DTO class or dict for the output of the model
              being run. This will be the type of the BlockSeriesRow.output
         """
+        context = credmark.cmf.model.ModelContext.current_context()
+
         if model_input is None:
             model_input = {}
         run_return_type = BlockSeries[model_return_type]
@@ -94,13 +96,14 @@ class HistoricalUtil:
                 window=window_timestamp,
                 interval=interval_timestamp
             )
-            return self.context.run_model('series.time-window-interval',
-                                          input,
-                                          return_type=run_return_type)  # type: ignore
+            context = credmark.cmf.model.ModelContext.current_context()
+            return context.run_model('series.time-window-interval',
+                                     input,
+                                     return_type=run_return_type)  # type: ignore
         else:
 
             if end_timestamp is None:
-                end_timestamp = self.context.block_number.timestamp
+                end_timestamp = context.block_number.timestamp
             if snap_clock is not None:
                 if snap_clock == 'interval':
                     snap_sec = interval_timestamp
@@ -119,9 +122,10 @@ class HistoricalUtil:
                 interval=interval_timestamp
             )
 
-            return self.context.run_model('series.time-start-end-interval',
-                                          input,
-                                          return_type=run_return_type)  # type: ignore
+            context = credmark.cmf.model.ModelContext.current_context()
+            return context.run_model('series.time-start-end-interval',
+                                     input,
+                                     return_type=run_return_type)  # type: ignore
 
     def run_model_historical_blocks(self,  # pylint: disable=too-many-arguments
                                     model_slug: str,
@@ -142,6 +146,8 @@ class HistoricalUtil:
         :param model_return_type: the DTO class or dict for the output of the model
              being run. This will be the type of the BlockSeriesRow.output
         """
+        context = credmark.cmf.model.ModelContext.current_context()
+
         if model_version is None:
             model_version = ''
         if model_input is None:
@@ -156,12 +162,12 @@ class HistoricalUtil:
                 window=window,
                 interval=interval
             )
-            return self.context.run_model('series.block-window-interval',
-                                          series_input,
-                                          return_type=run_return_type)  # type: ignore
+            return context.run_model('series.block-window-interval',
+                                     series_input,
+                                     return_type=run_return_type)  # type: ignore
         else:
             if end_block is None:
-                end_block = self.context.block_number
+                end_block = context.block_number
             if snap_block is not None:
                 end_block = end_block - (end_block % snap_block)
 
@@ -173,9 +179,10 @@ class HistoricalUtil:
                 end=end_block,
                 interval=interval
             )
-            return self.context.run_model('series.block-start-end-interval',
-                                          series_input,
-                                          return_type=run_return_type)  # type: ignore
+
+            return context.run_model('series.block-start-end-interval',
+                                     series_input,
+                                     return_type=run_return_type)  # type: ignore
 
     def parse_timerangestr(self, time_str: str):
         key = None
