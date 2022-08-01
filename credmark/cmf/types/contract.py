@@ -75,9 +75,8 @@ def get_slot_proxy_address(context, contract_address,
             cc = context.web3.eth.contract(address=Address(
                 contract_address).checksum, abi=contract_abi)
             controller = Contract(address=Address(cc.functions.getController().call()))
-            lookupName = Address(cc.functions.controllerLookupName().call())
-            slot_proxy_address = controller.functions.lookup(lookupName.checksum).call()
-            slot_proxy_address = Address(slot_proxy_address)
+            lookupName = cc.functions.controllerLookupName().call()
+            slot_proxy_address = Address(controller.functions.lookup(lookupName).call())
         elif contract_name in ['OwnedUpgradeabilityProxy']:
             if contract_address == Address('0x0000000000085d4780B73119b644AE5ecd22b376'):
                 slot_proxy_address = context.web3.eth.get_storage_at(
