@@ -33,6 +33,15 @@ class TestLedger(ModelTestCase):
                 limit=5).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
+        with contract.ledger.events.BalanceTransfer as q:
+            df = q.select(
+                aggregates=[
+                    (q._VALUE.max_().to_char(), 'max_value'),
+                    (q._VALUE.max_().plus_(q._VALUE.max_()).to_char(), 'max_valuex2'),
+                    (q._VALUE.max_(), 'max_value2')],
+                order_by=q.field('max_value').dquote().desc(),
+                bigint_cols=['max_value', 'max_valuex2']).to_dataframe()
+
     def test_ledger_contract_functions(self):
         contract = Contract(address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
 
@@ -57,7 +66,6 @@ class TestLedger(ModelTestCase):
                     group_by=[q.SPENDER],
                     order_by=q.field('max_value').dquote().desc(),
                     limit=5).to_dataframe()
-                self.assertTrue(df.shape[0] > 0)
 
     def test_aggregate(self):
         context = credmark.cmf.model.ModelContext.current_context()

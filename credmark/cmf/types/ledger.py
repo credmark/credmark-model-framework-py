@@ -4,7 +4,6 @@ from typing import Dict, List
 import pandas as pd
 from credmark.cmf.model.errors import ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
-
 from .ledger_errors import InvalidColumnException
 
 
@@ -21,14 +20,35 @@ class LedgerAggregate(DTO):
 class LedgerModelOutput(IterableListGenericDTO[dict]):
     """
     The return value for a ledger query.
+
+    _bigint_cols stores the list of columns of big integer.
+    They are extracted as character from DB and converted back to int in .to_dataframe().
     """
     data: List[dict] = DTOField(
         default=[], description='A list of dicts which are the rows of data')
 
     _iterator: str = PrivateAttr('data')
 
+    _bigint_cols: List[str] = PrivateAttr([])
+
     def to_dataframe(self):
-        return pd.DataFrame(self.data)
+        df = pd.DataFrame(self.data)
+        if df.shape[0] > 0:
+            for c in self._bigint_cols:
+                if c in df.columns:
+                    try:
+                        df = df.astype({c: "Int64"})
+                    except ValueError:
+                        pass
+                    except OverflowError:
+                        df = df.assign(**{c: (lambda x, c=c: x[c].apply(int))})
+        return df
+
+    def bigint_cols(self):
+        return self._bigint_cols
+
+    def set_bigint_cols(self, cols):
+        self._bigint_cols = cols
 
 
 class ColumnField(str):
@@ -148,6 +168,21 @@ class ColumnField(str):
     def neg_(self):
         return '-' + self
 
+    def op_(self, col, op):
+        return ColumnField(self + op + col).parentheses_()
+
+    def plus_(self, col):
+        return self.op_(col, ' + ')
+
+    def minus_(self, col):
+        return self.op_(col, ' - ')
+
+    def mul_(self, col):
+        return self.op_(col, ' * ')
+
+    def div_(self, col):
+        return self.op_(col, ' / ')
+
     def to_char(self):
         return self.func_('to_char')
 
@@ -222,6 +257,10 @@ class LedgerTable:
                     model_slug,
                     column, list(column_set), "invalid column name")
 
+    @property
+    def bigint_cols(self):
+        return []
+
 
 class TransactionTable(LedgerTable):
     """
@@ -262,6 +301,10 @@ class TransactionTable(LedgerTable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self):
+        return [self.VALUE, self.GAS_PRICE, self.MAX_FEE_PER_GAS, self.MAX_PRIORITY_FEE_PER_GAS]
 
 
 class TraceTable(LedgerTable):
@@ -309,6 +352,10 @@ class TraceTable(LedgerTable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self):
+        return [self.VALUE]
 
 
 class BlockTable(LedgerTable):
@@ -360,6 +407,10 @@ class BlockTable(LedgerTable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self):
+        return [self.DIFFICULTY, self.TOTAL_DIFFICULTY]
 
 
 class ContractTable(LedgerTable):
@@ -442,6 +493,10 @@ class ReceiptTable(LedgerTable):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    @property
+    def bigint_cols(self):
+        return [self.CUMULATIVE_GAS_USED, self.GAS_USED, self.EFFECTIVE_GAS_PRICE]
+
 
 class TokenTable(LedgerTable):
     """
@@ -464,6 +519,10 @@ class TokenTable(LedgerTable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self):
+        return [self.TOTAL_SUPPLY]
 
 
 class TokenTransferTable(LedgerTable):
@@ -489,6 +548,10 @@ class TokenTransferTable(LedgerTable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self):
+        return [self.VALUE]
 
 
 class TokenBalanceTable(LedgerTable):
@@ -520,3 +583,7 @@ class TokenBalanceTable(LedgerTable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self):
+        return [self.TRANSACTION_VALUE]

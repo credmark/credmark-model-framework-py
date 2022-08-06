@@ -72,8 +72,10 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
         # Fix for contract ledger
         # Customized columns needs to be converted to string to avoid losing precision.
         # https://github.com/credmark/credmark-model-runner-api/issues/50
-        cols_customized = [(f'to_char({c})', c) for c in columns if c.startswith('inp_')]
-        columns = [c for c in columns if not c.startswith('inp_')]
+        # pylint:disable=no-member
+        cols_customized = [(f'to_char({c})', c)
+                           for c in columns if c in self.bigint_cols]  # type: ignore
+        columns = [c for c in columns if c not in self.bigint_cols]  # type: ignore
 
         aggregates = ([] if aggregates is None else aggregates) + cols_customized
         aggregates_value = (None if len(aggregates) == 0
@@ -105,7 +107,8 @@ class LedgerQuery(LedgerQueryBase):
                limit: Union[int, None] = None,
                offset: Union[int, None] = None,
                aggregates: Union[List[Tuple[str, str]], None] = None,
-               having: Union[str, None] = None) -> LedgerModelOutput:
+               having: Union[str, None] = None,
+               bigint_cols: Union[List[str], None] = None) -> LedgerModelOutput:
         """
         Query data from the table.
         """
@@ -120,6 +123,11 @@ class LedgerQuery(LedgerQueryBase):
                                             having=having)
 
         context = credmark.cmf.model.ModelContext.current_context()
-        return context.run_model(slug=self._cwgo_query,
-                                 input=model_input,
-                                 return_type=LedgerModelOutput)
+        ledger_out = context.run_model(slug=self._cwgo_query,
+                                       input=model_input,
+                                       return_type=LedgerModelOutput)
+        # pylint:disable=no-member, protected-access
+        ledger_out.set_bigint_cols(
+            self.bigint_cols +  # type: ignore
+            ([] if bigint_cols is None else bigint_cols))
+        return ledger_out
