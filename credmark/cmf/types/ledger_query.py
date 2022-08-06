@@ -69,7 +69,14 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                 model_slug,
                 f'{offset=} needs to be a positive integer.')
 
-        aggregates_value = (None if aggregates is None
+        # Fix for contract ledger
+        # Customized columns needs to be converted to string to avoid losing precision.
+        # https://github.com/credmark/credmark-model-runner-api/issues/50
+        cols_customized = [(f'to_char({c})', c) for c in columns if c.startswith('inp_')]
+        columns = [c for c in columns if not c.startswith('inp_')]
+
+        aggregates = ([] if aggregates is None else aggregates) + cols_customized
+        aggregates_value = (None if len(aggregates) == 0
                             else [LedgerAggregate(expression=agg[0], asName=agg[1])
                                   for agg in aggregates])
 
