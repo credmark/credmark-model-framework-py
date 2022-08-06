@@ -148,6 +148,12 @@ class ColumnField(str):
     def neg_(self):
         return '-' + self
 
+    def to_char(self):
+        return self.func_('to_char')
+
+    def as_integer(self):
+        return self.func_('as_integer')
+
 
 class LedgerTable:
     """
