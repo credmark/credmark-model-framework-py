@@ -3,6 +3,7 @@ from typing import List, Union
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.dto import DTOField, IterableListGenericDTO, PrivateAttr
+from eth_typing.evm import ChecksumAddress
 from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
 
 from .abi import ABI
@@ -223,11 +224,11 @@ class Token(Contract):
     def scaled(self, value) -> float:
         return value / (10 ** self.decimals)
 
-    def balance_of(self, address: Address) -> int:
+    def balance_of(self, address: ChecksumAddress) -> int:
         balance = self.functions.balanceOf(address).call()
         return balance
 
-    def balance_of_scaled(self, address: Address) -> float:
+    def balance_of_scaled(self, address: ChecksumAddress) -> float:
         return self.scaled(self.balance_of(address))
 
     @property
@@ -276,7 +277,7 @@ class NativeToken(Token):
             self._meta.total_supply = 0
             self._loaded = True
 
-    def balance_of(self, address: Address) -> int:
+    def balance_of(self, address: ChecksumAddress) -> int:
         context = credmark.cmf.model.ModelContext.current_context()
         if context.chain_id == 1:
             balance = context.web3.eth.get_balance(address)
@@ -284,7 +285,7 @@ class NativeToken(Token):
         else:
             raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
 
-    def balance_of_scaled(self, address: Address) -> float:
+    def balance_of_scaled(self, address: ChecksumAddress) -> float:
         context = credmark.cmf.model.ModelContext.current_context()
         if context.chain_id == 1:
             balance = self.balance_of(address)
