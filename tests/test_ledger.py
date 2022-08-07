@@ -33,11 +33,13 @@ class TestLedger(ModelTestCase):
                 limit=5).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
+        # Operations with integer number will convert it to float and losses precision
         with contract.ledger.events.BalanceTransfer as q:
             df = q.select(
                 aggregates=[
                     (q._VALUE.max_().to_char(), 'max_value'),
-                    (q._VALUE.max_().plus_(q._VALUE.max_()).to_char(), 'max_valuex2'),
+                    (q._VALUE.as_integer().max_().plus_(
+                        q._VALUE.as_integer().max_()).to_char(), 'max_valuex2'),
                     (q._VALUE.max_(), 'max_value2')],
                 order_by=q.field('max_value').dquote().desc(),
                 bigint_cols=['max_value', 'max_valuex2']).to_dataframe()
