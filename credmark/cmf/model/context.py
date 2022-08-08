@@ -302,7 +302,7 @@ class ModelContext:
         used to query the ledger for data.
         """
         if self._ledger is None:
-            self._ledger = Ledger(self)
+            self._ledger = Ledger()
         return self._ledger
 
     @property
@@ -313,7 +313,7 @@ class ModelContext:
         on time or block intervals.
         """
         if self._historical_util is None:
-            self._historical_util = HistoricalUtil(self)
+            self._historical_util = HistoricalUtil()
         return self._historical_util
 
     @overload

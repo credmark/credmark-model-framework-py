@@ -30,6 +30,10 @@ class ContractFunctionsTable(LedgerTable):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    @property
+    def bigint_cols(self):
+        return [c for c in self.columns if c.startswith('inp_')]
+
 
 class ContractEventsTable(LedgerTable):
     """
@@ -49,6 +53,10 @@ class ContractEventsTable(LedgerTable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self):
+        return [c for c in self.columns if c.startswith('inp_')]
 
 
 class ContractEntityType(Enum):
@@ -97,7 +105,8 @@ class ContractEntityQuery(LedgerQueryBase):
                limit: Union[int, None] = None,
                offset: Union[int, None] = None,
                aggregates: Union[List[Tuple[str, str]], None] = None,
-               having: Union[str, None] = None) -> LedgerModelOutput:
+               having: Union[str, None] = None,
+               bigint_cols: Union[List[str], None] = None) -> LedgerModelOutput:
         """
         Run a query on a contract's function or event data.
 
@@ -182,9 +191,14 @@ class ContractEntityQuery(LedgerQueryBase):
         model_input['contractAddress'] = self._address
 
         context = credmark.cmf.model.ModelContext.current_context()
-        return context.run_model(slug=model_slug,
-                                 input=model_input,
-                                 return_type=LedgerModelOutput)
+        ledger_out = context.run_model(slug=model_slug,
+                                       input=model_input,
+                                       return_type=LedgerModelOutput)
+        # pylint:disable=no-member, protected-access
+        ledger_out.set_bigint_cols(
+            self.bigint_cols +  # type: ignore
+            ([] if bigint_cols is None else bigint_cols))
+        return ledger_out
 
 
 class LedgerQueryContractFunctions(ContractFunctionsTable, ContractEntityQuery):
@@ -213,6 +227,10 @@ class ContractLedger:
 
     Parameters:
         address: Contract address
+
+    All event/function-specific fields are loaded as character
+    to preserve its full precision for integer types.
+    They will be converted back to integer with .to_dataframe().
     """
 
     def __init__(self, address: str, abi: ABI):

@@ -136,3 +136,5 @@ dmypy.json
 # model manifest
 models.json
 
+# PyCharm
+.idea/

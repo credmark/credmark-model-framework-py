@@ -3,7 +3,21 @@
 History
 -------
 
-0.8.30 [2022-07-??]
+0.8.31 [2022-08-08]
+* Various Fix (#149)
+- Reset local_model_list during initialization.
+- Address can be initialized with int and hex str with less than 40+2 length (2 from '0x')
+- Fix for proxy address lookup for returning less 40 long address
+- Decouple with context from utilities
+- Fix address lookup
+- Add helper to ColumnField
+- Ledger model update: force all VARIANT column to char type for contract ledger query
+- Ledger model update: add bigint_cols to load those columns as character and later convert to Int64/int
+- Expand args in event_log in contract.fetch_events()
+- Add wrapper to Token
+- Add local model cache
+
+0.8.30 [2022-07-25]
 * re-org imports (#145)
 * enhancement and fix (#148)
 - Some (ADT) enhancement

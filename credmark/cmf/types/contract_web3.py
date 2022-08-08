@@ -52,5 +52,6 @@ def fetch_events(
 
     # Convert raw binary event data to easily manipulable Python objects
     for entry in logs:
-        data = get_event_data(abi_codec, abi, entry)
-        yield data
+        data = {**get_event_data(abi_codec, abi, entry)}
+        args = data['args']
+        yield {**data, **args}  # type: ignore

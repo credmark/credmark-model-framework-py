@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from credmark.cmf.model import Model
 from credmark.cmf.model.errors import ModelDataError
 from credmark.cmf.types.compose import (MapBlockResult, MapBlocksInput,
@@ -23,16 +24,13 @@ class LedgerModelSlugs:
 # locally, they need to run locally.
 
 
-@Model.describe(slug='compose.map-block-time-series',
-                version='0.0',
-                display_name='Compose Map Block Time Series',
-                description='Run a model on each of a time series of blocks',
-                developer='Credmark',
-                input=MapBlockTimeSeriesInput,
-                output=MapBlockTimeSeriesOutput[dict])
-class ComposeMapBlockTimeSeriesModel(Model):
-
+class ComposeMapBlockTimeSeriesModelMeta(Model):
+    @abstractmethod
     def run(self, input: MapBlockTimeSeriesInput) -> MapBlockTimeSeriesOutput[dict]:
+        ...
+
+    def run_with_local(self, input: MapBlockTimeSeriesInput,
+                       local: bool) -> MapBlockTimeSeriesOutput[dict]:
         context = self.context
 
         ts_input = LedgerBlockTimeSeriesInput(
@@ -60,7 +58,8 @@ class ComposeMapBlockTimeSeriesModel(Model):
         for block_number in block_series.blockNumbers:
             try:
                 run_output = context.run_model(
-                    model_slug, model_input, block_number=block_number, version=model_version)
+                    model_slug, model_input, block_number=block_number, version=model_version,
+                    local=local)
 
                 row = MapBlockResult[dict](blockNumber=block_number,
                                            output=run_output)
@@ -74,6 +73,30 @@ class ComposeMapBlockTimeSeriesModel(Model):
                                               interval=input.interval,
                                               exclusive=bool(input.exclusive),
                                               results=results)
+
+
+@Model.describe(slug='compose.map-block-time-series',
+                version='0.0',
+                display_name='Compose Map Block Time Series',
+                description='Run a model on each of a time series of blocks',
+                developer='Credmark',
+                input=MapBlockTimeSeriesInput,
+                output=MapBlockTimeSeriesOutput[dict])
+class ComposeMapBlockTimeSeriesModel(ComposeMapBlockTimeSeriesModelMeta):
+    def run(self, input: MapBlockTimeSeriesInput) -> MapBlockTimeSeriesOutput[dict]:
+        return self.run_with_local(input, local=False)
+
+
+@Model.describe(slug='compose.map-block-time-series-local',
+                version='0.0',
+                display_name='Compose Map Block Time Series',
+                description='Run a model on each of a time series of blocks',
+                developer='Credmark',
+                input=MapBlockTimeSeriesInput,
+                output=MapBlockTimeSeriesOutput[dict])
+class ComposeMapBlockTimeSeriesModelLocal(ComposeMapBlockTimeSeriesModelMeta):
+    def run(self, input: MapBlockTimeSeriesInput) -> MapBlockTimeSeriesOutput[dict]:
+        return self.run_with_local(input, local=True)
 
 
 @Model.describe(slug='compose.map-blocks',

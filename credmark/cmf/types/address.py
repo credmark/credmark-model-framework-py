@@ -1,13 +1,14 @@
 import re
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from credmark.cmf.model.errors import ModelTypeError
+from eth_typing.evm import ChecksumAddress
 from web3 import Web3
 from web3._utils.validation import \
     validate_address as eth_utils_validate_address
 
 
-def validate_address(addr: str):
+def validate_address(addr: str) -> ChecksumAddress:
     try:
         checksum_addr = Web3.toChecksumAddress(addr)
         eth_utils_validate_address(checksum_addr)
@@ -17,6 +18,9 @@ def validate_address(addr: str):
 
 
 evm_address_regex = re.compile(r'^0x[a-fA-F0-9]{40}$')
+
+
+MAX_ADDRESS_VALUE = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 
 
 class Address(str):
@@ -41,6 +45,9 @@ class Address(str):
     def null(cls):
         return NULL_ADDRESS
 
+    def is_null(self):
+        return self == NULL_ADDRESS
+
     @classmethod
     def __get_validators__(cls):
         yield cls.validate
@@ -57,12 +64,22 @@ class Address(str):
 
     def __new__(cls, addr):
         if isinstance(addr, int):
-            addr = hex(addr)
-        elif not isinstance(addr, str):
-            raise TypeError('Address instance must be created with a string or int')
+            if addr > MAX_ADDRESS_VALUE:
+                raise ValueError(
+                    f'Address {hex(addr)} has exceeded maximum value {MAX_ADDRESS_VALUE}')
+            addr = f'{addr:#042x}'
+        elif isinstance(addr, str):
+            if len(addr) != 42:
+                addr = f'{int(addr, 16):#042x}'
+        elif isinstance(addr, bytes):
+            addr = addr.hex()
+            if len(addr) != 42:
+                addr = f'{int(addr, 16):#042x}'
+        else:
+            raise TypeError(f'Address instance must be created with a string, int or bytes {addr}')
         return str.__new__(cls, addr.lower())
 
-    def __init__(self, _addr: str):
+    def __init__(self, _addr: Union[str, int]):
         super().__init__()
         self._checksum = validate_address(self)
 
@@ -100,6 +117,9 @@ class Address(str):
         except Exception:
             return False
         return True
+
+    def to_int(self):
+        return int(self, 16)
 
     @property
     def checksum(self):

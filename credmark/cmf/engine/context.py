@@ -17,6 +17,7 @@ from credmark.cmf.model.errors import (MaxModelRunDepthError, ModelBaseError,
                                        ModelNotFoundError, ModelOutputError,
                                        ModelRunError, ModelTypeError,
                                        create_instance_from_error_dict)
+from credmark.cmf.types.singleton import ModelRunCache
 from credmark.dto import DTOType, DTOValidationError, EmptyInput
 from credmark.dto.encoder import json_dumps
 from credmark.dto.transform import DataTransformError, transform_data_for_dto
@@ -132,6 +133,7 @@ class EngineModelContext(ModelContext):
 
         web3_registry = Web3Registry(chain_to_provider_url)
 
+        cls.use_local_models_slugs = set()
         if use_local_models is not None and len(use_local_models):
             local_model_slugs = use_local_models.split(',')
             if '-' not in local_model_slugs:
@@ -441,8 +443,9 @@ class EngineModelContext(ModelContext):
         is_cli = (self.dev_mode and not self.run_id) or self.test_mode
         is_top_level_inactive = self.__is_top_level and not self.is_active
         force_local = self._force_local_model_for_slug(slug)
-        use_local = (is_top_level_inactive or force_local or self.test_mode
-                     or self._favor_local_model_for_slug(slug)) and not self._use_no_local_model()
+        use_local = ((is_top_level_inactive or force_local or self.test_mode
+                     or self._favor_local_model_for_slug(slug))
+                     and not self._use_no_local_model())
         use_local = use_local or local
         # when using the cli, we allow running remote models as top level
         try_remote = not is_top_level_inactive or is_cli
@@ -452,7 +455,8 @@ class EngineModelContext(ModelContext):
         if debug_log:
             self.debug_logger.debug(
                 f'Run model states: {self.dev_mode=}, {self.run_id=}, {self.test_mode=}, '
-                f'{self._favor_local_model_for_slug(slug)=} {self.is_active=}')
+                f'{self._favor_local_model_for_slug(slug)=} {self._use_no_local_model()=}, '
+                f'{self.is_active=}')
             self.debug_logger.debug(
                 f'{is_cli=}, {is_top_level_inactive=}, {try_remote=}, {slug=}, '
                 f'{force_local=}, {use_local=}, '
@@ -635,30 +639,41 @@ class EngineModelContext(ModelContext):
                 # from output transform errors below
                 raise ModelInputError(str(err))
 
-            ModelContext._current_context = context
-            context.is_active = True
+            in_cache, cached_output = ModelRunCache().get(context.chain_id, context.block_number,
+                                                          model_class.slug, model_class.version,
+                                                          input)
 
-            # Errors in this section will add the callee
-            # model to the call stack
+            if in_cache:
+                output = cached_output
+            else:
+                ModelContext._current_context = context
+                context.is_active = True
 
-            model = model_class(context)
+                # Errors in this section will add the callee
+                # model to the call stack
 
-            if debug_log:
-                self.debug_logger.debug(
-                    f"> Run model '{slug}' input: {input} block_number: {block_number}")
+                model = model_class(context)
 
-            output = model.run(input)
+                if debug_log:
+                    self.debug_logger.debug(
+                        f"> Run model '{slug}' input: {input} block_number: {block_number}")
 
-            try:
-                # transform to the defined outputDTO for validation of output
-                output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
-                if self.dev_mode:
-                    # In dev mode we do a deep transform to dicts (convert all DTOs)
-                    # We do this to ensure dev is same as production.
-                    # Production mode will serialize all input and output.
-                    output = json.loads(json_dumps(output))
-            except DataTransformError as err:
-                raise ModelOutputError(str(err))
+                output = model.run(input)
+
+                try:
+                    # transform to the defined outputDTO for validation of output
+                    output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
+                    if self.dev_mode:
+                        # In dev mode we do a deep transform to dicts (convert all DTOs)
+                        # We do this to ensure dev is same as production.
+                        # Production mode will serialize all input and output.
+                        output = json.loads(json_dumps(output))
+
+                    ModelRunCache().put(context.chain_id, context.block_number,
+                                        model_class.slug, model_class.version, input, output)
+
+                except DataTransformError as err:
+                    raise ModelOutputError(str(err))
 
             EngineModelContext.notify_model_run(slug, model_class.version, context.chain_id,
                                                 context.block_number, input, output, None)

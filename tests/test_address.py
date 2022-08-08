@@ -47,9 +47,8 @@ class TestAddress(ModelTestCase):
         self.assertTrue(Address.valid('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'))
         self.assertFalse(Address.valid('0xD905e2eaeBe'))
 
-        expect_exception(
-            functools.partial(Address, 123)
-        )
+        self.assertEqual(functools.partial(Address, 123)(),
+                         '0x000000000000000000000000000000000000007b')
 
         expect_exception(
             functools.partial(
@@ -59,6 +58,14 @@ class TestAddress(ModelTestCase):
 
         addr3 = '0xd905e2eaebe188fc92179b6350807d8bd91db0d8'
         self.assertEqual(hash(Address(addr3)), hash(addr3))
+
+        self.assertEqual(Address(0xc92eb9eba1e4f90233b5e4c846a97ddace0f5b),
+                         '0x00c92eb9eba1e4f90233b5e4c846a97ddace0f5b')
+
+        self.assertEqual(Address('0xc92eb9eba1e4f90233b5e4c846a97ddace0f5b'),
+                         '0x00c92eb9eba1e4f90233b5e4c846a97ddace0f5b')
+
+        self.assertTrue(Address(0), Address.null())
 
 
 if __name__ == '__main__':

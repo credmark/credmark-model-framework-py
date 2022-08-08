@@ -3,6 +3,7 @@ from typing import List, Union
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.dto import DTOField, IterableListGenericDTO, PrivateAttr
+from eth_typing.evm import ChecksumAddress
 from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
 
 from .abi import ABI
@@ -65,6 +66,7 @@ class Token(Contract):
         name: Union[str, None] = None
         decimals: Union[int, None] = None
         total_supply: Union[int, None] = None
+        wrapped: Union[Address, None] = None
 
     _meta: TokenMetadata = PrivateAttr(
         default_factory=lambda: Token.TokenMetadata())  # pylint: disable=unnecessary-lambda
@@ -140,6 +142,8 @@ class Token(Contract):
             data['meta']['symbol'] = token_data['symbol']
             data['meta']['name'] = token_data['name']
             data['meta']['decimals'] = token_data['decimals']
+            data['meta']['wrapped'] = (Address(token_data['wrapped'])
+                                       if 'wrapped' in token_data else None)
 
             if token_data.get('set_loaded_true', False):  # Special case for BTC
                 self._loaded = True
@@ -223,11 +227,11 @@ class Token(Contract):
     def scaled(self, value) -> float:
         return value / (10 ** self.decimals)
 
-    def balance_of(self, address: Address) -> int:
+    def balance_of(self, address: ChecksumAddress) -> int:
         balance = self.functions.balanceOf(address).call()
         return balance
 
-    def balance_of_scaled(self, address: Address) -> float:
+    def balance_of_scaled(self, address: ChecksumAddress) -> float:
         return self.scaled(self.balance_of(address))
 
     @property
@@ -273,10 +277,11 @@ class NativeToken(Token):
             self._meta.symbol = token_data['symbol']
             self._meta.name = token_data['name']
             self._meta.decimals = token_data['decimals']
+            self._meta.wrapped = Address(token_data['wrapped'])
             self._meta.total_supply = 0
             self._loaded = True
 
-    def balance_of(self, address: Address) -> int:
+    def balance_of(self, address: ChecksumAddress) -> int:
         context = credmark.cmf.model.ModelContext.current_context()
         if context.chain_id == 1:
             balance = context.web3.eth.get_balance(address)
@@ -284,7 +289,7 @@ class NativeToken(Token):
         else:
             raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
 
-    def balance_of_scaled(self, address: Address) -> float:
+    def balance_of_scaled(self, address: ChecksumAddress) -> float:
         context = credmark.cmf.model.ModelContext.current_context()
         if context.chain_id == 1:
             balance = self.balance_of(address)
@@ -295,6 +300,11 @@ class NativeToken(Token):
     @property
     def ledger(self) -> None:
         return None
+
+    def wrapped(self) -> Token:
+        if self._meta.wrapped is not None:
+            return Token(address=self._meta.wrapped)
+        raise ValueError('No wrapper Token found')
 
 
 class NonFungibleToken(Contract):
