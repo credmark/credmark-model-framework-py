@@ -1,5 +1,4 @@
 import json
-import logging
 from typing import Any, List, Optional, Union
 
 import credmark.cmf.model
@@ -14,46 +13,7 @@ from .address import Address
 from .block_number import BlockNumber, BlockNumberOutOfRangeError
 from .contract_web3 import fetch_events
 from .ledger_contract import ContractLedger
-
-
-class Singleton:
-    def __new__(cls, *args, **kw):
-        if not hasattr(cls, '_instance'):
-            orig = super(Singleton, cls)
-            cls._instance = orig.__new__(cls, *args, **kw)
-        return cls._instance
-
-
-class ContractMetaCache(Singleton):
-    _cache = {}
-    _trace = False
-
-    def get(self, chain_id, address):
-        if chain_id not in self._cache:
-            return False, {}
-
-        needle = self._cache[chain_id].get(address, None)
-        if needle is None:
-            if self._trace:
-                logging.info(f'[Cache] Not found meta: {chain_id=}/{address}')
-            return False, {}
-
-        if self._trace:
-            logging.info(f'[Cache] Return meta: {chain_id=}/{address}')
-        return True, needle
-
-    def put(self, chain_id, address, meta):
-        if chain_id not in self._cache:
-            self._cache[chain_id] = {}
-
-        if address not in self._cache[chain_id]:
-            block_number = None
-            if len(meta['contracts']) > 0:
-                block_number = meta['contracts'][0]['block_number']
-            self._cache[chain_id][address] = meta
-            if self._trace:
-                logging.info(f'[Cache] Save {chain_id=}/{address} '
-                             f'valid from {block_number}')
+from .singleton import ContractMetaCache
 
 
 SLOT_TRUEUSD = Web3.keccak(text="trueUSD.proxy.implementation").hex()
