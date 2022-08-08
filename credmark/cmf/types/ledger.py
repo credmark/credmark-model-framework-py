@@ -36,12 +36,20 @@ class LedgerModelOutput(IterableListGenericDTO[dict]):
         if df.shape[0] > 0:
             for c in self._bigint_cols:
                 if c in df.columns:
-                    try:
-                        df = df.astype({c: "Int64"})
-                    except ValueError:
+                    col_type = df[c].dtype
+                    if col_type == 'float64':
+                        df = df.assign(**{c: (lambda x, c=c: x[c].apply(round))})
+                    elif col_type == 'int64':
                         pass
-                    except OverflowError:
-                        df = df.assign(**{c: (lambda x, c=c: x[c].apply(int))})
+                    elif col_type == 'O':
+                        try:
+                            df = df.astype({c: "Int64"})
+                        except ValueError:
+                            pass
+                        except OverflowError:
+                            df = df.assign(**{c: (lambda x, c=c: x[c].apply(int))})
+                    else:
+                        raise TypeError(f'column {c} has unsupported column type {col_type}')
         return df
 
     def bigint_cols(self):
@@ -228,7 +236,7 @@ class LedgerTable:
             return self._column_dict[name]
         raise AttributeError(name)
 
-    @property
+    @ property
     def columns(self) -> List[str]:
         """
         Return the set of column names for the table.
@@ -239,7 +247,7 @@ class LedgerTable:
         """
         return list(self._column_dict.values())
 
-    @property
+    @ property
     def colnames(self) -> List[str]:
         """
         Return the set of column names in the table.
