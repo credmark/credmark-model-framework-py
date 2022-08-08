@@ -287,7 +287,7 @@ class ModelInvalidStateError(ModelRunError):
     """
 
 
-class ModelTypeError(ModelRunError):
+class ModelTypeError(ModelRunError, TypeError):
     """
     There was an error in a model while converting data to a DTO class.
     This can happen when constructing a new DTO instance, for example

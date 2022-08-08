@@ -55,10 +55,10 @@ class Address(str):
     @classmethod
     def validate(cls, addr: str):
         if not isinstance(addr, str):
-            raise TypeError('Address must be a string')
+            raise ModelTypeError('Address must be a string')
         m = evm_address_regex.fullmatch(addr)
         if not m:
-            raise ValueError(f"Invalid address string '{addr}'")
+            raise ModelTypeError(f"Invalid address string '{addr}'")
 
         return cls(addr)
 
@@ -69,14 +69,18 @@ class Address(str):
                     f'Address {hex(addr)} has exceeded maximum value {MAX_ADDRESS_VALUE}')
             addr = f'{addr:#042x}'
         elif isinstance(addr, str):
-            if len(addr) != 42:
-                addr = f'{int(addr, 16):#042x}'
+            try:
+                if len(addr) != 42:
+                    addr = f'{int(addr, 16):#042x}'
+            except Exception as e:
+                raise ModelTypeError(f'Address validation error: {str(e)}')
         elif isinstance(addr, bytes):
             addr = addr.hex()
             if len(addr) != 42:
                 addr = f'{int(addr, 16):#042x}'
         else:
-            raise TypeError(f'Address instance must be created with a string, int or bytes {addr}')
+            raise ModelTypeError(
+                f'Address instance must be created with a string, int or bytes {addr}')
         return str.__new__(cls, addr.lower())
 
     def __init__(self, _addr: Union[str, int]):
