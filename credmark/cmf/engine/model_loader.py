@@ -24,6 +24,7 @@ DEV_MODELS_PATHS = ['cmf/engine/dev_models/series_models.py',
 
 
 class ModelLoader:
+    # pylint:disable=too-many-instance-attributes
     logger = logging.getLogger(__name__)
 
     def __init__(self,
@@ -51,6 +52,7 @@ class ModelLoader:
         )
 
         self.__model_manifest_list: List[dict] = []
+        self.__model_manifest_list_with_class: List[dict] = []
 
         self.manifest_file = manifest_file
 
@@ -83,6 +85,7 @@ class ModelLoader:
                                 break
 
         self.__model_manifest_list.sort(key=lambda m: m['slug'])
+        self.__model_manifest_list_with_class.sort(key=lambda m: m['slug'])
 
     def reload(self):
         self.__init__(self._model_paths, self.manifest_file, self._load_dev_models)
@@ -93,6 +96,7 @@ class ModelLoader:
         self.__slug_version_to_class_dict.clear()
         self.__slug_to_versions_dict.clear()
         self.__model_manifest_list.clear()
+        self.__model_manifest_list_with_class.clear()
         self.__dev_model_slugs.clear()
 
     def log_errors(self):
@@ -114,6 +118,9 @@ class ModelLoader:
 
     def loaded_model_manifests(self):
         return self.__model_manifest_list
+
+    def loaded_model_manifests_with_class(self):
+        return self.__model_manifest_list_with_class
 
     def loaded_dev_model_slugs(self):
         return self.__dev_model_slugs
@@ -210,8 +217,7 @@ class ModelLoader:
             model_slug = model_manifest['slug']
             validate_model_slug(model_slug)
             # ensure version is a string
-            _model_version = model_manifest['version'] = str(
-                model_manifest['version'])
+            model_manifest['version'] = str(model_manifest['version'])
         except KeyError as err:
             raise Exception(
                 f'Missing field {err} for model {model_manifest.get("slug", "<unknown>")}')
@@ -219,6 +225,7 @@ class ModelLoader:
         if mclass is not None:
             self._add_model_class(mclass)
             self.__model_manifest_list.append(model_manifest)
+            self.__model_manifest_list_with_class.append(model_manifest | {'mclass': mclass})
 
     def add_model(self, model_class, replace=True):
         model_manifest = model_class.__dict__['__manifest']
@@ -239,6 +246,10 @@ class ModelLoader:
             self.__slug_to_versions_dict.pop(slug)
 
         for m in self.__model_manifest_list:
+            if m['slug'] == slug:
+                del m
+
+        for m in self.__model_manifest_list_with_class:
             if m['slug'] == slug:
                 del m
 
