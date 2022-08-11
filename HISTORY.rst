@@ -4,7 +4,8 @@ History
 -------
 
 0.8.32 [2022-08-10]
-* Make models call available to Account/Contract/Token (#??)
+* Make models call available to Account/Contract/Token (#150)
+* Add api model cache (#151))
 
 0.8.31 [2022-08-08]
 * Various Fix (#149)

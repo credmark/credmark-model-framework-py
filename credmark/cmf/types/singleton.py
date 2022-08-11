@@ -48,12 +48,32 @@ class ContractMetaCache(Singleton):
 class ModelRunCache(Singleton):
     _cache = {}
     _trace = False
+    _stats = {'total': 0, 'hit': 0, 'miss': 0, 'exclude': 0}
+
+    exclude_slugs = ['rpc.get-latest-blocknumber']
+
+    def cache_exclude(self):
+        self._stats['exclude'] += 1
+        self._stats['total'] += 1
+
+    def cache_hit(self):
+        self._stats['hit'] += 1
+        self._stats['total'] += 1
+
+    def cache_miss(self):
+        self._stats['miss'] += 1
+        self._stats['total'] += 1
 
     def get(self, chain_id, block_number, slug, version, input):
+        if slug in self.exclude_slugs:
+            self.cache_exclude()
+            return False, {}
+
         if chain_id not in self._cache:
             if self._trace:
                 logging.info(f'[{self.__class__.__name__}] Not found '
                              f'[{chain_id}]/{block_number}/{(slug, version)}/{input}')
+            self.cache_miss()
             return False, {}
 
         needle = self._cache[chain_id].get(block_number, None)
@@ -61,6 +81,7 @@ class ModelRunCache(Singleton):
             if self._trace:
                 logging.info(f'[{self.__class__.__name__}] Not found '
                              f'{chain_id}/[{block_number}]/{(slug, version)}/{input}')
+            self.cache_miss()
             return False, {}
 
         needle = needle.get((slug, version), None)
@@ -68,6 +89,7 @@ class ModelRunCache(Singleton):
             if self._trace:
                 logging.info(f'[{self.__class__.__name__}] Not found '
                              f'{chain_id}/{block_number}/[{(slug, version)}]/{input}')
+            self.cache_miss()
             return False, {}
 
         encoded_input = self.encode(repr(input))
@@ -76,15 +98,20 @@ class ModelRunCache(Singleton):
             if self._trace:
                 logging.info(f'[{self.__class__.__name__}] Not found: '
                              f'{chain_id}/{block_number}/{(slug, version)}/[{input}]')
+            self.cache_miss()
             return False, {}
 
         if self._trace:
             logging.info(f'[{self.__class__.__name__}] Found: '
                          f'{chain_id}/{block_number}/{(slug, version)}/{input}'
                          f'={needle}')
+        self.cache_hit()
         return True, needle['output']
 
     def put(self, chain_id, block_number, slug, version, input, output):
+        if slug in self.exclude_slugs:
+            return
+
         if chain_id not in self._cache:
             self._cache[chain_id] = {}
 
