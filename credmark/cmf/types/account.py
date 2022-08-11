@@ -1,5 +1,7 @@
 from typing import List
 
+import credmark.cmf.model
+from credmark.cmf.model.models import Models
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 
 from .address import Address, evm_address_regex
@@ -18,6 +20,8 @@ class Account(DTO):
     """
 
     address: Address
+
+    _models = PrivateAttr(None)
 
     @classmethod
     def validate(cls, obj):
@@ -43,6 +47,16 @@ class Account(DTO):
         schema_extra = {
             'examples': [{'address': '0x1F98431c8aD98523631AE4a59f267346ea31F984', }]
         }
+
+    @property
+    def models(self):
+        if self._models is None:
+            # The models instance can be used to run models like a method
+            # We don't pass the block_number so it uses the default
+            # (our context) block number.
+            context = credmark.cmf.model.ModelContext.current_context()
+            self._models = Models(context, input=self)
+        return self._models
 
 
 class Accounts(IterableListGenericDTO[Account]):

@@ -77,10 +77,10 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                            for c in columns if c in self.bigint_cols]  # type: ignore
         columns = [c for c in columns if c not in self.bigint_cols]  # type: ignore
 
-        aggregates = ([] if aggregates is None else aggregates) + cols_customized
-        aggregates_value = (None if len(aggregates) == 0
+        aggregates_list = ([] if aggregates is None else aggregates) + cols_customized
+        aggregates_value = (None if len(aggregates_list) == 0
                             else [LedgerAggregate(expression=agg[0], asName=agg[1])
-                                  for agg in aggregates])
+                                  for agg in aggregates_list])
 
         model_input = {'columns': columns,
                        'aggregates': aggregates_value,

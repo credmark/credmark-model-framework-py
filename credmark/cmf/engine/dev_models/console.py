@@ -17,7 +17,7 @@ from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.model import Model
-from credmark.cmf.model.context import RunModelMethod
+from credmark.cmf.model.models import RunModelMethod
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.cmf.model.print import print_manifest_description
 from credmark.cmf.types import (Account, Accounts, Address, BlockNumber,

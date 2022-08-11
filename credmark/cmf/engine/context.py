@@ -10,7 +10,8 @@ from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.engine.web3_registry import Web3Registry
 from credmark.cmf.model import Model
-from credmark.cmf.model.context import ModelContext, RunModelMethod
+from credmark.cmf.model.context import ModelContext
+from credmark.cmf.model.models import RunModelMethod
 from credmark.cmf.model.errors import (MaxModelRunDepthError, ModelBaseError,
                                        ModelCallStackEntry, ModelEngineError,
                                        ModelInputError, ModelInvalidStateError,
@@ -316,7 +317,7 @@ class EngineModelContext(ModelContext):
         and remote, which is lazily built for the class on the first call.
         """
         if len(self._model_manifest_map) == 0:
-            manifests = self.__model_loader.loaded_model_manifests()
+            manifests = self.__model_loader.loaded_model_manifests_with_class()
             for m in manifests:
                 slug = m['slug']
                 self._model_manifest_map[slug] = m
@@ -326,6 +327,8 @@ class EngineModelContext(ModelContext):
                 try:
                     deployed_manifests = self.__api.get_models()
                     for m in deployed_manifests:
+                        m |= {'mclass': self.__model_loader.get_model_class(
+                            m['slug'], m['version'])}
                         slug = m['slug']
                         self._model_manifest_map[slug] = m
                         self._model_underscore_manifest_map[slug.replace('-', '_')] = m

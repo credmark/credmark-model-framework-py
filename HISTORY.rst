@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.32 [2022-08-10]
+* Make models call available to Account/Contract/Token (#??)
+
 0.8.31 [2022-08-08]
 * Various Fix (#149)
 - Reset local_model_list during initialization.
