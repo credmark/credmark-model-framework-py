@@ -550,13 +550,29 @@ class EngineModelContext(ModelContext):
                         f"> Run API model '{slug}' input: {input} "
                         f"run_block_number: {run_block_number}")
 
-                # We pass depth - 1 which is the callers depth
-                # since we already incremented for this model run request
-                slug, version, output, error, dependencies = api.run_model(
-                    slug, version, self.chain_id,
-                    run_block_number,
-                    input if input is None or isinstance(input, dict) else input.dict(),
-                    self.run_id, self.__depth - 1, self.__client)
+                slug_keep = slug
+                version_keep = version
+                input_as_dict = input if input is None or isinstance(input, dict) else input.dict()
+
+                in_cache, cached_output = ModelRunCache().get(self.chain_id, run_block_number,
+                                                              slug_keep, version_keep,
+                                                              input_as_dict)
+
+                if in_cache:
+                    slug, version, output, error, dependencies = cached_output
+                else:
+                    # We pass depth - 1 which is the callers depth
+                    # since we already incremented for this model run request
+                    slug, version, output, error, dependencies = api.run_model(
+                        slug, version, self.chain_id,
+                        run_block_number,
+                        input_as_dict,
+                        self.run_id, self.__depth - 1, self.__client)
+
+                    ModelRunCache().put(self.chain_id, run_block_number,
+                                        slug_keep, version_keep,
+                                        input_as_dict,
+                                        (slug, version, output, error, dependencies))
 
                 if dependencies:
                     self._add_dependencies(dependencies)
@@ -645,7 +661,6 @@ class EngineModelContext(ModelContext):
             in_cache, cached_output = ModelRunCache().get(context.chain_id, context.block_number,
                                                           model_class.slug, model_class.version,
                                                           input)
-
             if in_cache:
                 output = cached_output
             else:
