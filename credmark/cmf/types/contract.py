@@ -2,6 +2,7 @@ import json
 from typing import Any, List, Optional, Union
 
 import credmark.cmf.model
+from credmark.cmf.engine.cache import ContractMetaCache
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 from web3 import Web3
@@ -13,8 +14,6 @@ from .address import Address
 from .block_number import BlockNumber, BlockNumberOutOfRangeError
 from .contract_web3 import fetch_events
 from .ledger_contract import ContractLedger
-from .singleton import ContractMetaCache
-
 
 SLOT_TRUEUSD = Web3.keccak(text="trueUSD.proxy.implementation").hex()
 SLOT_ZEPPELINOS = Web3.keccak(text='org.zeppelinos.proxy.implementation').hex()
