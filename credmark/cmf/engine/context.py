@@ -560,10 +560,11 @@ class EngineModelContext(ModelContext):
                 version_keep = version
                 input_as_dict = transform_dto_to_dict(input)
 
-                in_cache, cached_output = (EngineModelContext
-                                           ._model_cache.get(self.chain_id, int(run_block_number),
-                                                             slug_keep, version_keep,
-                                                             input_as_dict))
+                in_cache, cached_output = (
+                    EngineModelContext
+                    ._model_cache.get(self.chain_id, int(run_block_number),
+                                      slug_keep, version_keep,
+                                      input_as_dict))
 
                 if in_cache:
                     slug, version, output, error, dependencies = cached_output
@@ -577,10 +578,10 @@ class EngineModelContext(ModelContext):
                         self.run_id, self.__depth - 1, self.__client)
 
                     (EngineModelContext
-                     ._model_cache.put(self.chain_id, int(run_block_number),
-                                       slug_keep, version_keep,
-                                       input_as_dict,
-                                       (slug, version, output, error, dependencies)))
+                        ._model_cache.put(self.chain_id, int(run_block_number),
+                                          slug_keep, version_keep,
+                                          input_as_dict,
+                                          (slug, version, output, error, dependencies)))
 
                 if dependencies:
                     self._add_dependencies(dependencies)
@@ -667,6 +668,7 @@ class EngineModelContext(ModelContext):
                 raise ModelInputError(str(err))
 
             input_as_dict = transform_dto_to_dict(input)
+
             in_cache, cached_output = (
                 EngineModelContext
                 ._model_cache.get(context.chain_id, int(context.block_number),
@@ -699,6 +701,7 @@ class EngineModelContext(ModelContext):
                         output = json.loads(json_dumps(output))
 
                     output_as_dict = transform_dto_to_dict(output)
+
                     (EngineModelContext
                      ._model_cache.put(context.chain_id, int(context.block_number),
                                        model_class.slug, model_class.version,

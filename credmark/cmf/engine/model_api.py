@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from typing import Any, ClassVar, Union
@@ -8,7 +7,6 @@ import requests
 from credmark.cmf.engine.errors import ModelRunRequestError
 from credmark.cmf.model.errors import (ModelBaseError,
                                        create_instance_from_error_dict)
-from credmark.dto.encoder import json_dumps
 from requests.adapters import HTTPAdapter, Retry
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
@@ -106,7 +104,7 @@ class ModelApi:
                   version: Union[str, None],
                   chain_id: int,
                   block_number: int,
-                  input: Union[dict, None],
+                  input_jsonify: dict,
                   run_id: Union[str, None] = None,
                   depth: Union[int, None] = None,
                   client: Union[str, None] = None,
@@ -114,17 +112,11 @@ class ModelApi:
             tuple[str, str, Union[dict[str, Any], None],
                   Union[dict[str, Any], None], dict[str, Any]]:
 
-        # We use json_dumps to ensure any DTOs embedded in a dict
-        # are serialized properly. If we just set the input in the
-        # req object and let requests serializes, any embedded DTOs
-        # would fail.
-        input_json = json_dumps(input) if input is not None else '{}'
-
         req = {
             'slug': slug,
             'chainId': chain_id,
             'blockNumber': block_number,
-            'input': json.loads(input_json),
+            'input': input_jsonify,
         }
         if version is not None:
             req['version'] = version

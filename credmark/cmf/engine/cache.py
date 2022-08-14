@@ -9,6 +9,8 @@ import json
 import sqlite3
 import zlib
 
+from credmark.dto.encoder import json_dumps
+
 
 class Singleton:
     def __new__(cls, *args, **kw):
@@ -57,7 +59,7 @@ class ContractMetaCache(Cache):
 
 
 def my_encode(obj):
-    return sqlite3.Binary(zlib.compress(json.dumps(obj).encode()))
+    return sqlite3.Binary(zlib.compress(json_dumps(obj).encode()))
 
 
 def my_decode(obj):

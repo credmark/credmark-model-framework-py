@@ -1,5 +1,7 @@
-
+import json
 from typing import Type, Union
+
+from credmark.dto.encoder import json_dumps
 
 from . import DTOType, DTOTypesTuple
 
@@ -9,8 +11,13 @@ class DataTransformError(Exception):
 
 
 def transform_dto_to_dict(data: Union[dict, DTOType, None]):
-    return data if data is None or isinstance(
-        data, dict) else data.dict()
+    # We use json_dumps to ensure any DTOs embedded in a dict
+    # are serialized properly. If we just set the input in the
+    # req object and let requests serializes, any embedded DTOs
+    # would fail.
+    input_json = json_dumps(data) if data is not None else '{}'
+    input_json = json.loads(input_json)
+    return input_json
 
 
 def transform_data_for_dto(  # pylint: disable=too-many-return-statements
