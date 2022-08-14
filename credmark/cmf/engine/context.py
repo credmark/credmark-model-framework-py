@@ -667,10 +667,11 @@ class EngineModelContext(ModelContext):
                 raise ModelInputError(str(err))
 
             input_as_dict = transform_dto_to_dict(input)
-            in_cache, cached_output = (EngineModelContext
-                                       ._model_cache.get(context.chain_id, int(context.block_number),
-                                                         model_class.slug, model_class.version,
-                                                         input_as_dict))
+            in_cache, cached_output = (
+                EngineModelContext
+                ._model_cache.get(context.chain_id, int(context.block_number),
+                                  model_class.slug, model_class.version,
+                                  input_as_dict))
             if in_cache:
                 output = cached_output
             else:
