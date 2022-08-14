@@ -1,12 +1,13 @@
 import hashlib
 import logging
+
 from sqlitedict import SqliteDict, logger
 
 logger.setLevel(logging.ERROR)
 
-import zlib
-import pickle
+import json
 import sqlite3
+import zlib
 
 
 class Singleton:
@@ -56,11 +57,11 @@ class ContractMetaCache(Cache):
 
 
 def my_encode(obj):
-    return sqlite3.Binary(zlib.compress(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)))
+    return sqlite3.Binary(zlib.compress(json.dumps(obj).encode()))
 
 
 def my_decode(obj):
-    return pickle.loads(zlib.decompress(bytes(obj)))
+    return json.loads(zlib.decompress(bytes(obj)))
 
 
 class SqliteDB:
@@ -74,7 +75,7 @@ class SqliteDB:
         self._db.close()
 
     def encode(self, key):
-        return hashlib.sha3_512(key.encode('utf-8')).hexdigest()
+        return hashlib.sha256(key.encode('utf-8')).hexdigest()
 
 
 class ModelRunCache(SqliteDB):
@@ -95,6 +96,12 @@ class ModelRunCache(SqliteDB):
 
     def __del__(self):
         super().__del__()
+
+    def __getitem__(self, key):
+        return self._db.__getitem__(key)
+
+    def __setitem__(self, key, value):
+        return self._db.__setitem__(key, value)
 
     def cache_exclude(self):
         self._stats['exclude'] += 1
@@ -134,7 +141,7 @@ class ModelRunCache(SqliteDB):
                 for x in self._db.values()]
 
     def encode_runkey(self, chain_id, block_number, slug, version, input):
-        return super().encode(f'{slug}{version}{chain_id}{block_number}{input}')
+        return super().encode(repr((slug, version, chain_id, block_number, input)))
 
     def get(self, chain_id, block_number, slug, version, input):
         if not self._enabled:

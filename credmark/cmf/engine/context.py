@@ -561,7 +561,7 @@ class EngineModelContext(ModelContext):
                 input_as_dict = transform_dto_to_dict(input)
 
                 in_cache, cached_output = (EngineModelContext
-                                           ._model_cache.get(self.chain_id, run_block_number,
+                                           ._model_cache.get(self.chain_id, int(run_block_number),
                                                              slug_keep, version_keep,
                                                              input_as_dict))
 
@@ -577,7 +577,7 @@ class EngineModelContext(ModelContext):
                         self.run_id, self.__depth - 1, self.__client)
 
                     (EngineModelContext
-                     ._model_cache.put(self.chain_id, run_block_number,
+                     ._model_cache.put(self.chain_id, int(run_block_number),
                                        slug_keep, version_keep,
                                        input_as_dict,
                                        (slug, version, output, error, dependencies)))
@@ -668,7 +668,7 @@ class EngineModelContext(ModelContext):
 
             input_as_dict = transform_dto_to_dict(input)
             in_cache, cached_output = (EngineModelContext
-                                       ._model_cache.get(context.chain_id, context.block_number,
+                                       ._model_cache.get(context.chain_id, int(context.block_number),
                                                          model_class.slug, model_class.version,
                                                          input_as_dict))
             if in_cache:
@@ -699,7 +699,7 @@ class EngineModelContext(ModelContext):
 
                     output_as_dict = transform_dto_to_dict(output)
                     (EngineModelContext
-                     ._model_cache.put(context.chain_id, context.block_number,
+                     ._model_cache.put(context.chain_id, int(context.block_number),
                                        model_class.slug, model_class.version,
                                        input_as_dict, output_as_dict))
 
