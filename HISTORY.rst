@@ -3,6 +3,11 @@
 History
 -------
 
+0.8.33 [2022-08-14]
+* Improve local cache with Sqllitedict
+* Create function for ipython extension
+
+
 0.8.32 [2022-08-10]
 * Make models call available to Account/Contract/Token (#150)
 * Add api model cache (#151)
