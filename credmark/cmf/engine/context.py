@@ -11,17 +11,18 @@ from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.engine.web3_registry import Web3Registry
 from credmark.cmf.model import Model
 from credmark.cmf.model.context import ModelContext
-from credmark.cmf.model.models import RunModelMethod
 from credmark.cmf.model.errors import (MaxModelRunDepthError, ModelBaseError,
                                        ModelCallStackEntry, ModelEngineError,
                                        ModelInputError, ModelInvalidStateError,
                                        ModelNotFoundError, ModelOutputError,
                                        ModelRunError, ModelTypeError,
                                        create_instance_from_error_dict)
-from credmark.cmf.types.singleton import ModelRunCache
+from credmark.cmf.model.models import RunModelMethod
+from credmark.cmf.engine.cache import ModelRunCache
 from credmark.dto import DTOType, DTOValidationError, EmptyInput
 from credmark.dto.encoder import json_dumps
-from credmark.dto.transform import DataTransformError, transform_data_for_dto
+from credmark.dto.transform import (DataTransformError, transform_data_for_dto,
+                                    transform_dto_to_dict)
 
 RPC_GET_LATEST_BLOCK_NUMBER_SLUG = 'rpc.get-latest-blocknumber'
 
@@ -67,6 +68,11 @@ class EngineModelContext(ModelContext):
     # map of slug to manifest, filled in lazily
     _model_manifest_map: dict[str, dict] = {}
     _model_underscore_manifest_map: dict[str, dict] = {}
+
+    _model_cache = ModelRunCache()
+
+    def reset_cache(self, db_uri):
+        EngineModelContext._model_cache = ModelRunCache(db_uri)
 
     @classmethod
     def _clear_model_manifest_maps(cls):
@@ -552,11 +558,12 @@ class EngineModelContext(ModelContext):
 
                 slug_keep = slug
                 version_keep = version
-                input_as_dict = input if input is None or isinstance(input, dict) else input.dict()
+                input_as_dict = transform_dto_to_dict(input)
 
-                in_cache, cached_output = ModelRunCache().get(self.chain_id, run_block_number,
-                                                              slug_keep, version_keep,
-                                                              input_as_dict)
+                in_cache, cached_output = (EngineModelContext
+                                           ._model_cache.get(self.chain_id, run_block_number,
+                                                             slug_keep, version_keep,
+                                                             input_as_dict))
 
                 if in_cache:
                     slug, version, output, error, dependencies = cached_output
@@ -569,10 +576,11 @@ class EngineModelContext(ModelContext):
                         input_as_dict,
                         self.run_id, self.__depth - 1, self.__client)
 
-                    ModelRunCache().put(self.chain_id, run_block_number,
-                                        slug_keep, version_keep,
-                                        input_as_dict,
-                                        (slug, version, output, error, dependencies))
+                    (EngineModelContext
+                     ._model_cache.put(self.chain_id, run_block_number,
+                                       slug_keep, version_keep,
+                                       input_as_dict,
+                                       (slug, version, output, error, dependencies)))
 
                 if dependencies:
                     self._add_dependencies(dependencies)
@@ -658,9 +666,11 @@ class EngineModelContext(ModelContext):
                 # from output transform errors below
                 raise ModelInputError(str(err))
 
-            in_cache, cached_output = ModelRunCache().get(context.chain_id, context.block_number,
-                                                          model_class.slug, model_class.version,
-                                                          input)
+            input_as_dict = transform_dto_to_dict(input)
+            in_cache, cached_output = (EngineModelContext
+                                       ._model_cache.get(context.chain_id, context.block_number,
+                                                         model_class.slug, model_class.version,
+                                                         input_as_dict))
             if in_cache:
                 output = cached_output
             else:
@@ -687,8 +697,11 @@ class EngineModelContext(ModelContext):
                         # Production mode will serialize all input and output.
                         output = json.loads(json_dumps(output))
 
-                    ModelRunCache().put(context.chain_id, context.block_number,
-                                        model_class.slug, model_class.version, input, output)
+                    output_as_dict = transform_dto_to_dict(output)
+                    (EngineModelContext
+                     ._model_cache.put(context.chain_id, context.block_number,
+                                       model_class.slug, model_class.version,
+                                       input_as_dict, output_as_dict))
 
                 except DataTransformError as err:
                     raise ModelOutputError(str(err))

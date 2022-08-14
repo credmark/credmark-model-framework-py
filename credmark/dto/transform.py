@@ -8,6 +8,11 @@ class DataTransformError(Exception):
     pass
 
 
+def transform_dto_to_dict(data: Union[dict, DTOType, None]):
+    return data if data is None or isinstance(
+        data, dict) else data.dict()
+
+
 def transform_data_for_dto(  # pylint: disable=too-many-return-statements
         data: Union[dict, DTOType, None],
         dto_class: Union[Type[DTOType], None],
