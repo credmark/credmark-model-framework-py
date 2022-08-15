@@ -2,8 +2,9 @@ import json
 import logging
 import sys
 import traceback
-from typing import Callable, List, Set, Type, Union
+from typing import Callable, List, Optional, Set, Type, Union
 
+from credmark.cmf.engine.cache import ModelRunCache
 from credmark.cmf.engine.errors import ModelRunRequestError
 from credmark.cmf.engine.mocks import ModelMockException, ModelMockRunner
 from credmark.cmf.engine.model_api import ModelApi
@@ -18,7 +19,6 @@ from credmark.cmf.model.errors import (MaxModelRunDepthError, ModelBaseError,
                                        ModelRunError, ModelTypeError,
                                        create_instance_from_error_dict)
 from credmark.cmf.model.models import RunModelMethod
-from credmark.cmf.engine.cache import ModelRunCache
 from credmark.dto import DTOType, DTOValidationError, EmptyInput
 from credmark.dto.encoder import json_dumps
 from credmark.dto.transform import (DataTransformError, transform_data_for_dto,
@@ -71,8 +71,9 @@ class EngineModelContext(ModelContext):
 
     _model_cache = ModelRunCache()
 
-    def reset_cache(self, db_uri):
-        EngineModelContext._model_cache = ModelRunCache(db_uri)
+    def reset_cache(self, db_uri, flag: str = 'c', db_base_uris: Optional[List[str]] = None):
+        EngineModelContext._model_cache = ModelRunCache(
+            db_uri=db_uri, flag=flag,  db_base_uris=db_base_uris)
 
     @classmethod
     def _clear_model_manifest_maps(cls):
