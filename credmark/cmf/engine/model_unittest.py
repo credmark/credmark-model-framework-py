@@ -2,6 +2,7 @@ import logging
 import unittest
 from typing import Union
 
+from credmark.cmf.engine.cache import ModelRunCache
 from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.mocks import ModelMockConfig, ModelMockRunner
 from credmark.cmf.engine.model_api import ModelApi
@@ -59,9 +60,12 @@ class ModelTestContextFactory:
         # Clear the current context first
         ModelContext.set_current_context(None)
 
+        model_cache = ModelRunCache(enabled=False)
+
         context = EngineModelContext(
             chain_id, block_number, self.web3_registry,
-            'test', 0, self.model_loader, self.api, is_top_level=True)
+            'test', 0, self.model_loader, model_cache,
+            self.api, is_top_level=True)
 
         ModelContext.set_current_context(context)
 

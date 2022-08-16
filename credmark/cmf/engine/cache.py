@@ -88,6 +88,7 @@ class SqliteDB:
                              for db_base_uri in db_base_uris]
         else:
             self._db_base = None
+        self._logger = logging.getLogger(self.__class__.__name__)
 
     def __del__(self):
         self._db.commit()
@@ -117,12 +118,17 @@ class SqliteDB:
     def disable(self):
         self._enabled = False
 
+    @property
+    def enabled(self):
+        return self._enabled
+
 
 class ModelRunCache(SqliteDB):
-    def __init__(self, db_uri=':memory:', flag='c', db_base_uris: Optional[List[str]] = None):
+    def __init__(self, db_uri=':memory:', flag='c',
+                 db_base_uris: Optional[List[str]] = None, enabled=True):
         super().__init__(db_uri=db_uri, tablename='model_run_cache',
                          flag=flag, db_base_uris=db_base_uris)
-        self._logger = logging.getLogger(self.__class__.__name__)
+        self._enabled = enabled
 
     def stats(self):
         return self._stats
@@ -146,6 +152,14 @@ class ModelRunCache(SqliteDB):
 
     def __setitem__(self, key, value):
         return self._db.__setitem__(key, value)
+
+    def log_on(self):
+        self._trace = True
+        self._logger.setLevel(logging.INFO)
+
+    def log_off(self):
+        self._trace = False
+        self._logger.setLevel(logging.INFO)
 
     def keys(self):
         yield from self._db.keys()
@@ -231,9 +245,15 @@ class ModelRunCache(SqliteDB):
             return
 
         key = self.encode_runkey(chain_id, block_number, slug, version, input)
-        if self._trace and (key in self._db or (self._db_base is None or key in self._db_base)):
+        if key in self._db:
             raise KeyError('No case for overwriting cache: '
                            f'{chain_id}/{block_number}/{(slug, version)}/{input}')
+
+        if self._db_base is not None:
+            for d in self._db_base:
+                if key in d:
+                    raise KeyError('No case for overwriting cache: '
+                                   f'{chain_id}/{block_number}/{(slug, version)}/{input}')
 
         result = dict(chain_id=chain_id, block_number=block_number,
                       slug=slug, version=version, input=input, output=output)

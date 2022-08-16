@@ -69,11 +69,13 @@ class EngineModelContext(ModelContext):
     _model_manifest_map: dict[str, dict] = {}
     _model_underscore_manifest_map: dict[str, dict] = {}
 
-    _model_cache = ModelRunCache()
-
     def reset_cache(self, db_uri, flag: str = 'c', db_base_uris: Optional[List[str]] = None):
-        EngineModelContext._model_cache = ModelRunCache(
-            db_uri=db_uri, flag=flag,  db_base_uris=db_base_uris)
+        self.__model_cache = ModelRunCache(
+            db_uri=db_uri, flag=flag, db_base_uris=db_base_uris)
+
+    @property
+    def model_cache(self):
+        return self.__model_cache
 
     @classmethod
     def _clear_model_manifest_maps(cls):
@@ -166,9 +168,11 @@ class EngineModelContext(ModelContext):
             block_number = cls.get_latest_block_number(api, chain_id)
             cls.logger.info(f'Using latest block number {block_number}')
 
+        model_cache = ModelRunCache()
+
         context = EngineModelContext(
             chain_id, block_number, web3_registry,
-            run_id, depth, model_loader, api, client,
+            run_id, depth, model_loader, model_cache, api, client,
             is_top_level=not console)
 
         if console:
@@ -301,6 +305,7 @@ class EngineModelContext(ModelContext):
                  run_id: Union[str, None],
                  depth: int,
                  model_loader: ModelLoader,
+                 model_cache: ModelRunCache,
                  api: Union[ModelApi, None],
                  client: Union[str, None] = None,
                  is_top_level: bool = False):
@@ -310,6 +315,7 @@ class EngineModelContext(ModelContext):
         self.__depth = depth
         self.__dependencies = {}
         self.__model_loader = model_loader
+        self.__model_cache = model_cache
         self.__api = api
         self.__is_top_level = is_top_level
         self.is_active = False
@@ -562,10 +568,9 @@ class EngineModelContext(ModelContext):
                 input_as_dict = transform_dto_to_dict(input)
 
                 in_cache, cached_output = (
-                    EngineModelContext
-                    ._model_cache.get(self.chain_id, int(run_block_number),
-                                      slug_keep, version_keep,
-                                      input_as_dict))
+                    self.__model_cache.get(self.chain_id, int(run_block_number),
+                                           slug_keep, version_keep,
+                                           input_as_dict))
 
                 if in_cache:
                     slug, version, output, error, dependencies = cached_output
@@ -578,11 +583,10 @@ class EngineModelContext(ModelContext):
                         input_as_dict,
                         self.run_id, self.__depth - 1, self.__client)
 
-                    (EngineModelContext
-                        ._model_cache.put(self.chain_id, int(run_block_number),
-                                          slug_keep, version_keep,
-                                          input_as_dict,
-                                          (slug, version, output, error, dependencies)))
+                    (self.__model_cache.put(self.chain_id, int(run_block_number),
+                                            slug_keep, version_keep,
+                                            input_as_dict,
+                                            (slug, version, output, error, dependencies)))
 
                 if dependencies:
                     self._add_dependencies(dependencies)
@@ -657,6 +661,7 @@ class EngineModelContext(ModelContext):
                                          self.run_id,
                                          self.__depth,
                                          self.__model_loader,
+                                         self.__model_cache,
                                          self.__api,
                                          self.__client)
 
@@ -671,10 +676,10 @@ class EngineModelContext(ModelContext):
             input_as_dict = transform_dto_to_dict(input)
 
             in_cache, cached_output = (
-                EngineModelContext
-                ._model_cache.get(context.chain_id, int(context.block_number),
-                                  model_class.slug, model_class.version,
-                                  input_as_dict))
+                self
+                .__model_cache.get(context.chain_id, int(context.block_number),
+                                   model_class.slug, model_class.version,
+                                   input_as_dict))
             if in_cache:
                 output = cached_output
             else:
@@ -703,10 +708,9 @@ class EngineModelContext(ModelContext):
 
                     output_as_dict = transform_dto_to_dict(output)
 
-                    (EngineModelContext
-                     ._model_cache.put(context.chain_id, int(context.block_number),
-                                       model_class.slug, model_class.version,
-                                       input_as_dict, output_as_dict))
+                    (self.__model_cache.put(context.chain_id, int(context.block_number),
+                                            model_class.slug, model_class.version,
+                                            input_as_dict, output_as_dict))
 
                 except DataTransformError as err:
                     raise ModelOutputError(str(err))
