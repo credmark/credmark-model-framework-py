@@ -38,6 +38,7 @@ from credmark.cmf.types.ledger import (BlockTable, ContractTable, LogTable,
                                        TransactionTable)
 from credmark.dto import (DTO, DTOField, DTOPretty, EmptyInput, FloatDTO,
                           IntDTO, IterableListGenericDTO, PrivateAttr, StrDTO)
+from credmark.dto.encoder import json_dump, json_dumps
 from web3.exceptions import ABIFunctionNotFound
 
 # pylint: disable= too-many-arguments
