@@ -1,6 +1,6 @@
 import hashlib
 import logging
-from typing import List, Optional
+from typing import List, Optional, Tuple, Generator
 
 from sqlitedict import SqliteDict
 from sqlitedict import logger as sqlitedict_logger
@@ -176,14 +176,14 @@ class ModelRunCache(SqliteDB):
                 (0 if self._db_base is None
                 else sum([len(d) for d in self._db_base])))
 
-    def slugs(self):
-        for x in self._db.values():
-            yield (x['slug'], x['version'], x['block_number'])
+    def slugs(self) -> Generator[Tuple[str, str, int, str], None, None]:
+        for k, v in self._db.items():
+            yield (v['slug'], v['version'], v['block_number'], k)
 
         if self._db_base is not None:
             for d in self._db_base:
-                for x in d.values():
-                    yield (x['slug'], x['version'], x['block_number'])
+                for k, v in d.items():
+                    yield (v['slug'], v['version'], v['block_number'], k)
 
     def encode_runkey(self, chain_id, block_number, slug, version, input):
         return super().encode(repr((slug, version, chain_id, block_number, input)))
