@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.34 [2022-08-??]
+* Cache is changed to an instance variable for EngineModelContext, use autocommit = True (#155)
+
 0.8.33 [2022-08-14]
 * Improve local cache with Sqllitedict (#152), allow multiple readonly base cache (#153) and type annotation (#154)
 * Create function for ipython extension (#152)
