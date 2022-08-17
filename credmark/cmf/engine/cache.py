@@ -74,20 +74,20 @@ class SqliteDB:
     _trace = False
     _stats = {'total': 0, 'hit': 0, 'miss': 0, 'exclude': 0}
     _enabled = True
-    _commit_freq = 1000
 
     def __init__(self, db_uri, tablename, flag='c',
-                 db_base_uris: Optional[List[str]] = None, outer_stack=False):
+                 db_base_uris: Optional[List[str]] = None, outer_stack=True):
         self._db = SqliteDict(db_uri, outer_stack=outer_stack, flag=flag,
-                              autocommit=False, tablename=tablename,
+                              autocommit=True, tablename=tablename,
                               encode=my_encode, decode=my_decode)
         if db_base_uris is not None:
             self._db_base = [SqliteDict(db_base_uri, outer_stack=outer_stack, flag='r',
-                                        autocommit=False, tablename=tablename,
+                                        tablename=tablename,
                                         encode=my_encode, decode=my_decode)
                              for db_base_uri in db_base_uris]
         else:
             self._db_base = None
+        self._logger = logging.getLogger(self.__class__.__name__)
 
     def __del__(self):
         self._db.commit()
@@ -117,19 +117,30 @@ class SqliteDB:
     def disable(self):
         self._enabled = False
 
+    @property
+    def enabled(self):
+        return self._enabled
+
+    def close(self):
+        self._db.commit()
+        self._db.close()
+
+    def commit(self):
+        self._db.commit()
+
 
 class ModelRunCache(SqliteDB):
-    def __init__(self, db_uri=':memory:', flag='c', db_base_uris: Optional[List[str]] = None):
+    def __init__(self, db_uri=':memory:', flag='c',
+                 db_base_uris: Optional[List[str]] = None, enabled=True):
         super().__init__(db_uri=db_uri, tablename='model_run_cache',
                          flag=flag, db_base_uris=db_base_uris)
-        self._logger = logging.getLogger(self.__class__.__name__)
+        self._enabled = enabled
 
     def stats(self):
         return self._stats
 
     def __del__(self):
         super().__del__()
-
     def __getitem__(self, key):
         try:
             return self._db.__getitem__(key)
@@ -146,6 +157,14 @@ class ModelRunCache(SqliteDB):
 
     def __setitem__(self, key, value):
         return self._db.__setitem__(key, value)
+
+    def log_on(self):
+        self._trace = True
+        self._logger.setLevel(logging.INFO)
+
+    def log_off(self):
+        self._trace = False
+        self._logger.setLevel(logging.INFO)
 
     def keys(self):
         yield from self._db.keys()
@@ -231,9 +250,15 @@ class ModelRunCache(SqliteDB):
             return
 
         key = self.encode_runkey(chain_id, block_number, slug, version, input)
-        if self._trace and (key in self._db or (self._db_base is None or key in self._db_base)):
+        if key in self._db:
             raise KeyError('No case for overwriting cache: '
                            f'{chain_id}/{block_number}/{(slug, version)}/{input}')
+
+        if self._db_base is not None:
+            for d in self._db_base:
+                if key in d:
+                    raise KeyError('No case for overwriting cache: '
+                                   f'{chain_id}/{block_number}/{(slug, version)}/{input}')
 
         result = dict(chain_id=chain_id, block_number=block_number,
                       slug=slug, version=version, input=input, output=output)
@@ -243,6 +268,3 @@ class ModelRunCache(SqliteDB):
                 self._logger.info(result)
 
         self._db[key] = result
-
-        if self._stats['miss'] // self._commit_freq == 0:
-            self._db.commit()
