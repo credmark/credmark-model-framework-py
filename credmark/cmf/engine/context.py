@@ -69,7 +69,7 @@ class EngineModelContext(ModelContext):
     _model_manifest_map: dict[str, dict] = {}
     _model_underscore_manifest_map: dict[str, dict] = {}
 
-    def reset_cache(self, db_uri, flag: str = 'c', db_base_uris: Optional[List[str]] = None):
+    def reset_cache(self, db_uri: str = ':memory:', flag: str = 'c', db_base_uris: Optional[List[str]] = None):
         self.__model_cache = ModelRunCache(
             db_uri=db_uri, flag=flag, db_base_uris=db_base_uris)
 
