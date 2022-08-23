@@ -59,13 +59,20 @@ class RunModelMethod:
                  input: Union[DTOType, dict, None] = None,
                  return_type: Union[dict, Type[DTOType], None] = None,
                  **kwargs) -> Union[dict, DTOType]:
+
+        model_input = {}
         if self.__input is not None:
-            input = self.__input
+            if isinstance(self.__input, DTOTypesTuple):
+                model_input = self.__input.dict()
+            elif isinstance(self.__input, dict):
+                model_input = self.__input
 
         if isinstance(input, DTOTypesTuple):
-            input = input.dict()
-        elif input is None:
-            input = kwargs
+            input = model_input | input.dict() | kwargs
+        elif input is not None:
+            input = model_input | input
+        else:
+            input = model_input | kwargs
 
         return self.__context.run_model(
             f"{self.__prefix.replace('_', '-')}",
