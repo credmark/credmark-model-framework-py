@@ -1,9 +1,11 @@
 import io
-from typing import Type, Union, overload
+from typing import Type, Union, overload, Optional
 
 from credmark.dto import DTO, DTOType, DTOTypesTuple, EmptyInput
 
 from .print import print_manifest_description
+
+from credmark.cmf.model.errors import ModelInputError
 
 
 class RunModelMethod:
@@ -69,8 +71,11 @@ class RunModelMethod:
 
         if isinstance(input, DTOTypesTuple):
             input = model_input | input.dict() | kwargs
+        elif isinstance(input, dict):
+            input = model_input | input | kwargs
         elif input is not None:
-            input = model_input | input
+            raise ModelInputError(
+                f'You shall not send non-DTO/non-dict ({input=}) as input to model.')
         else:
             input = model_input | kwargs
 
@@ -99,7 +104,8 @@ class RunModelMethod:
                             return mclassdict[__name]
 
         return RunModelMethod(
-            self.__context, f"{self.__prefix}.{__name}",
+            self.__context,
+            f"{self.__prefix}.{__name}",
             block_number=self.__block_number,
             local=self.__local,
             input=self.__input)
@@ -144,9 +150,13 @@ class Models:
         return RunModelMethod(self.__context, __name, block_number=self.__block_number,
                               local=self.__local, input=self.__input)
 
-    def __call__(self, block_number=None, local: bool = False):
-        return self.__class__(self.__context, block_number=block_number, local=local,
-                              input=self.__input)
+    def __call__(self, block_number=None, local: bool = False, slug: Optional[str] = None):
+        if slug:
+            return RunModelMethod(self.__context, slug, block_number=self.__block_number,
+                                  local=self.__local, input=self.__input)
+        else:
+            return self.__class__(self.__context, block_number=block_number, local=local,
+                                  input=self.__input)
 
     def __dir__(self):
         if RunModelMethod.interactive_docs:
