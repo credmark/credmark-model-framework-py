@@ -224,6 +224,7 @@ class ConsoleModel(Model):
         'block_number = self.context.block_number',
         'chain_id = self.context.chain_id',
         'web3 = self.context.web3',
+        'model_cache = self.context.model_cache',
 
         'run_model = self.context.run_model #(model_slug, input=EmptyInput(), return_type=dict)',
 
@@ -250,6 +251,7 @@ class ConsoleModel(Model):
         block_number = self.context.block_number
         chain_id = self.context.chain_id
         web3 = self.context.web3
+        model_cache = self.context.model_cache  # type: ignore
         run_model_historical = self.context.historical.run_model_historical
         run_model_historical_blocks = self.context.historical.run_model_historical_blocks
 

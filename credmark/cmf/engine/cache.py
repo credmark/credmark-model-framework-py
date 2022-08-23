@@ -1,6 +1,6 @@
 import hashlib
 import logging
-from typing import List, Optional, Tuple, Generator
+from typing import Dict, Generator, List, Optional, Tuple
 
 from sqlitedict import SqliteDict
 from sqlitedict import logger as sqlitedict_logger
@@ -159,6 +159,9 @@ class ModelRunCache(SqliteDB):
     def __setitem__(self, key, value):
         return self._db.__setitem__(key, value)
 
+    def __delitem__(self, key):
+        return self._db.__delitem__(key)
+
     def log_on(self):
         self._trace = True
         self._logger.setLevel(logging.INFO)
@@ -208,13 +211,13 @@ class ModelRunCache(SqliteDB):
     def encode_runkey(self, chain_id, block_number, slug, version, input):
         return super().encode(repr((slug, version, chain_id, block_number, input)))
 
-    def get(self, chain_id, block_number, slug, version, input):
+    def get(self, chain_id, block_number, slug, version, input) -> Tuple[Optional[str], Dict]:
         if not self._enabled:
-            return False, {}
+            return None, {}
 
         if slug in self.exclude_slugs:
             self.cache_exclude()
-            return False, {}
+            return None, {}
 
         key = self.encode_runkey(chain_id, block_number, slug, version, input)
         needle = self._db.get(key, None)
@@ -230,7 +233,7 @@ class ModelRunCache(SqliteDB):
                     self._logger.info(f'[{self.__class__.__name__}] Not found: '
                                       f'{chain_id}/{block_number}/{(slug, version)}/[{input}]')
                 self.cache_miss()
-                return False, {}
+                return None, {}
 
         self.cache_hit()
         if self._trace:
@@ -244,7 +247,7 @@ class ModelRunCache(SqliteDB):
         assert needle['version'] == version
         assert needle['input'] == input
 
-        return True, needle['output']
+        return key, needle['output']
 
     def put(self, chain_id, block_number, slug, version, input, output):
         if not self._enabled or slug in self.exclude_slugs:
