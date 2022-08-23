@@ -100,6 +100,13 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
             "address": "0xa47c8bf37f92aBed4A126BDA807A7b7498661acD",
             "protocol": "terra chain"
         },
+        "UST (Wormhole)": {
+            "symbol": "UST",
+            "decimals": 18,
+            "name": "UST (Wormhole)",
+            "address": "0xa693B19d2931d498c5B318dF961919BB4aee87a5",
+            "protocol": "terra chain"
+        },
         "SHIB": {
             "symbol": "SHIB",
             "decimals": 18,
