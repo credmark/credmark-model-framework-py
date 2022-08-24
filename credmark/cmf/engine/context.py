@@ -79,6 +79,10 @@ class EngineModelContext(ModelContext):
     def model_cache(self):
         return self.__model_cache
 
+    @property
+    def model_loader(self):
+        return self.__model_loader
+
     @classmethod
     def _clear_model_manifest_maps(cls):
         cls._model_manifest_map.clear()
@@ -226,6 +230,7 @@ class EngineModelContext(ModelContext):
                                                   model_slug,
                                                   model_version,
                                                   input)
+
         except Exception as e:
             err = ModelEngineError(str(e))
             response = {
@@ -307,7 +312,7 @@ class EngineModelContext(ModelContext):
                  run_id: Union[str, None],
                  depth: int,
                  model_loader: ModelLoader,
-                 model_cache: ModelRunCache,
+                 model_cache: Optional[ModelRunCache],
                  api: Union[ModelApi, None],
                  client: Union[str, None] = None,
                  is_top_level: bool = False):
@@ -570,9 +575,10 @@ class EngineModelContext(ModelContext):
                 input_as_dict = transform_dto_to_dict(input)
 
                 in_cache, cached_output = (
-                    self.__model_cache.get(self.chain_id, int(run_block_number),
-                                           slug_keep, version_keep,
-                                           input_as_dict))
+                    (None, {}) if self.__model_cache is None
+                    else self.__model_cache.get(self.chain_id, int(run_block_number),
+                                                slug_keep, version_keep,
+                                                input_as_dict))
 
                 if in_cache:
                     slug, version, output, error, dependencies = cached_output
@@ -585,10 +591,11 @@ class EngineModelContext(ModelContext):
                         input_as_dict,
                         self.run_id, self.__depth - 1, self.__client)
 
-                    (self.__model_cache.put(self.chain_id, int(run_block_number),
-                                            slug_keep, version_keep,
-                                            input_as_dict,
-                                            (slug, version, output, error, dependencies)))
+                    if self.__model_cache is not None:
+                        self.__model_cache.put(self.chain_id, int(run_block_number),
+                                               slug_keep, version_keep,
+                                               input_as_dict,
+                                               (slug, version, output, error, dependencies))
 
                 if dependencies:
                     self._add_dependencies(dependencies)
@@ -678,10 +685,12 @@ class EngineModelContext(ModelContext):
             input_as_dict = transform_dto_to_dict(input)
 
             in_cache, cached_output = (
-                self
-                .__model_cache.get(context.chain_id, int(context.block_number),
-                                   model_class.slug, model_class.version,
-                                   input_as_dict))
+                (None, {}) if self.__model_cache is None
+                else self.__model_cache.get(context.chain_id,
+                                            int(context.block_number),
+                                            model_class.slug,
+                                            model_class.version,
+                                            input_as_dict))
             if in_cache:
                 output = cached_output
             else:
@@ -710,15 +719,23 @@ class EngineModelContext(ModelContext):
 
                     output_as_dict = transform_dto_to_dict(output)
 
-                    (self.__model_cache.put(context.chain_id, int(context.block_number),
-                                            model_class.slug, model_class.version,
-                                            input_as_dict, output_as_dict))
+                    if self.__model_cache is not None:
+                        self.__model_cache.put(context.chain_id,
+                                               int(context.block_number),
+                                               model_class.slug,
+                                               model_class.version,
+                                               input_as_dict, output_as_dict)
 
                 except DataTransformError as err:
                     raise ModelOutputError(str(err))
 
-            EngineModelContext.notify_model_run(slug, model_class.version, context.chain_id,
-                                                context.block_number, input, output, None)
+            EngineModelContext.notify_model_run(slug,
+                                                model_class.version,
+                                                context.chain_id,
+                                                context.block_number,
+                                                input,
+                                                output,
+                                                None)
 
             if debug_log:
                 self.debug_logger.debug(

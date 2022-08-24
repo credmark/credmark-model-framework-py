@@ -78,7 +78,7 @@ class SqliteDB:
     def __init__(self, db_uri, tablename, flag='c',
                  db_base_uris: Optional[List[str]] = None, outer_stack=True):
         self._db = SqliteDict(db_uri, outer_stack=outer_stack, flag=flag,
-                              autocommit=False, tablename=tablename,
+                              autocommit=True, tablename=tablename,
                               encode=my_encode, decode=my_decode)
         if db_base_uris is not None:
             self._db_base = [SqliteDict(db_base_uri, outer_stack=outer_stack, flag='r',
@@ -89,12 +89,15 @@ class SqliteDB:
             self._db_base = None
         self._logger = logging.getLogger(self.__class__.__name__)
 
+    def close(self):
+        self._db.commit()
+        self._db.close()
+
+    def commit(self):
+        self._db.commit()
+
     def __del__(self):
-        self.close()
-        if self._db_base is not None:
-            for d in self._db_base:
-                d.commit()
-                d.close()
+        pass
 
     def encode(self, key):
         return hashlib.sha256(key.encode('utf-8')).hexdigest()
@@ -121,13 +124,6 @@ class SqliteDB:
     def enabled(self):
         return self._enabled
 
-    def close(self):
-        self._db.commit()
-        self._db.close()
-
-    def commit(self):
-        self._db.commit()
-
 
 class ModelRunCache(SqliteDB):
     def __init__(self, db_uri=':memory:', flag='c',
@@ -138,9 +134,6 @@ class ModelRunCache(SqliteDB):
 
     def stats(self):
         return self._stats
-
-    def __del__(self):
-        super().__del__()
 
     def __getitem__(self, key):
         try:
