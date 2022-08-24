@@ -154,12 +154,14 @@ class ConsoleModel(Model):
               'e.g. tmp/debug.log')
         print('')
         print('# Console functions')
-        print('self.where(): where you are in the chain of blocks')
-        print('self.save("output_filename"): save console history to {output_filename}.py')
-        print('self.save_shortcuts("output_filename"): '
+        print('help(): print this quick help')
+        print('where(): where you are in the chain of blocks')
+        print('save("output_filename"): save console history to {output_filename}.py')
+        print('save_shortcuts("output_filename"): '
               'save shortcut variables code to {output_filename}.py')
-        print('self.load("input_filename"): load and run {input_filename}.py')
-        print('self.goto_block(block_number): Change context to a past block number')
+        print('load("input_filename"): load and run {input_filename}.py')
+        print('goto_block(block_number): Change context to a past block number')
+        print('reload_model(): Reload models')
         print('')
         print('With "models." use tab to auto-complete the slug. '
               'Add ? at end to get docs for the model.')
@@ -225,39 +227,52 @@ class ConsoleModel(Model):
         'chain_id = self.context.chain_id',
         'web3 = self.context.web3',
         'model_cache = self.context.model_cache',
+        'model_loader = self.context.model_loader',
 
         'run_model = self.context.run_model #(model_slug, input=EmptyInput(), return_type=dict)',
-
-        'run_model_historical = self.context.historical.run_model_historical'
-        ' #(model_slug, model_input, model_return_type, window, interval, '
-        'end_timestamp, snap_clock, model_version)',
-
-        'run_model_historical_blocks = self.context.run_model_historical_blocks'
-        ' #(model_slug, model_input, model_return_type, window, interval, '
-        'end_block, snap_block, model_version)',
     ]
 
     utility_functions = [get_dt, get_block]
 
+    def load_locals(self, local_context=globals):
+        local_context()['list_models'] = self.list_models
+        local_context()['describe_model'] = self.describe_model
+        local_context()['context'] = self.context
+        local_context()['ledger'] = self.context.ledger
+        local_context()['run_model'] = self.context.run_model
+        local_context()['models'] = self.context.models
+        local_context()['block_number'] = self.context.block_number
+        local_context()['chain_id'] = self.context.chain_id
+        local_context()['web3'] = self.context.web3
+        local_context()['model_cache'] = self.context.model_cache  # type: ignore
+        local_context()['model_loader'] = self.context.model_loader  # type: ignore
+        local_context()['goto_block'] = self.goto_block
+        local_context()['where'] = self.where
+        local_context()['help'] = self.help
+        local_context()['save'] = self.save
+        local_context()['save_shortcuts'] = self.save_shortcuts
+        local_context()['load'] = self.load
+        local_context()['reload_model'] = self.reload_model
+
+    def reload_model(self):
+        """
+        Reload model and reset cache
+        """
+
+        self.context.reload_model()  # type: ignore
+        self.context.reset_cache()   # type: ignore
+        self.load_locals()
+        # pylint:disable=line-too-long
+        print(f'Loaded {len(self.context.model_loader.loaded_model_version_lists())} models. '  # type: ignore
+              'Use model_loader.loaded_model_version_lists() to find details.')
+
     def run(self, _) -> dict:
         self.blocks.append(self.context.block_number)
-
-        list_models = self.list_models
-        describe_model = self.describe_model
-        context = self.context
-        ledger = self.context.ledger
-        run_model = self.context.run_model
-        models = self.context.models
-        block_number = self.context.block_number
-        chain_id = self.context.chain_id
-        web3 = self.context.web3
-        model_cache = self.context.model_cache  # type: ignore
-        run_model_historical = self.context.historical.run_model_historical
-        run_model_historical_blocks = self.context.historical.run_model_historical_blocks
+        self.load_locals()
 
         if len(self.blocks) == 1:
             banner1 = f'Entering Credmark Model Console at block {self.context.block_number}.'
-            banner2 = 'Help: self.help(), Quit: quit()\n' \
+            banner2 = 'Help: help(), Quit: quit()\n' \
                 'Available vars: context, models, ledger, web3, etc.\n' \
                 'Available types: BlockNumber, Address, Contract, Token...\n'
             exit_msg = f'\nExiting Credmark Model Console at block {self.context.block_number}. '
