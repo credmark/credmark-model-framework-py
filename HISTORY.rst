@@ -3,7 +3,10 @@
 History
 -------
 
-0.8.34 [2022-08-??]
+0.8.35 [2022-08-25]
+* cache.get() returns key, context.models() takes all DTO and kwargs, improve console, set cache to autocommit (#156)
+
+0.8.34 [2022-08-23]
 * Cache is changed to an instance variable for EngineModelContext (#155)
 
 0.8.33 [2022-08-14]
