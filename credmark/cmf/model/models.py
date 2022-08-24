@@ -1,9 +1,11 @@
 import io
-from typing import Type, Union, overload
+from typing import Type, Union, overload, Optional
 
 from credmark.dto import DTO, DTOType, DTOTypesTuple, EmptyInput
 
 from .print import print_manifest_description
+
+from credmark.cmf.model.errors import ModelInputError
 
 
 class RunModelMethod:
@@ -59,13 +61,23 @@ class RunModelMethod:
                  input: Union[DTOType, dict, None] = None,
                  return_type: Union[dict, Type[DTOType], None] = None,
                  **kwargs) -> Union[dict, DTOType]:
+
+        model_input = {}
         if self.__input is not None:
-            input = self.__input
+            if isinstance(self.__input, DTOTypesTuple):
+                model_input = self.__input.dict()
+            elif isinstance(self.__input, dict):
+                model_input = self.__input
 
         if isinstance(input, DTOTypesTuple):
-            input = input.dict()
-        elif input is None:
-            input = kwargs
+            input = model_input | input.dict() | kwargs
+        elif isinstance(input, dict):
+            input = model_input | input | kwargs
+        elif input is not None:
+            raise ModelInputError(
+                f'You shall not send non-DTO/non-dict ({input=}) as input to model.')
+        else:
+            input = model_input | kwargs
 
         return self.__context.run_model(
             f"{self.__prefix.replace('_', '-')}",
@@ -92,7 +104,8 @@ class RunModelMethod:
                             return mclassdict[__name]
 
         return RunModelMethod(
-            self.__context, f"{self.__prefix}.{__name}",
+            self.__context,
+            f"{self.__prefix}.{__name}",
             block_number=self.__block_number,
             local=self.__local,
             input=self.__input)
@@ -137,9 +150,13 @@ class Models:
         return RunModelMethod(self.__context, __name, block_number=self.__block_number,
                               local=self.__local, input=self.__input)
 
-    def __call__(self, block_number=None, local: bool = False):
-        return self.__class__(self.__context, block_number=block_number, local=local,
-                              input=self.__input)
+    def __call__(self, block_number=None, local: bool = False, slug: Optional[str] = None):
+        if slug:
+            return RunModelMethod(self.__context, slug, block_number=self.__block_number,
+                                  local=self.__local, input=self.__input)
+        else:
+            return self.__class__(self.__context, block_number=block_number, local=local,
+                                  input=self.__input)
 
     def __dir__(self):
         if RunModelMethod.interactive_docs:

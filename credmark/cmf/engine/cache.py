@@ -1,6 +1,6 @@
 import hashlib
 import logging
-from typing import List, Optional, Tuple, Generator
+from typing import Dict, Generator, List, Optional, Tuple
 
 from sqlitedict import SqliteDict
 from sqlitedict import logger as sqlitedict_logger
@@ -78,7 +78,7 @@ class SqliteDB:
     def __init__(self, db_uri, tablename, flag='c',
                  db_base_uris: Optional[List[str]] = None, outer_stack=True):
         self._db = SqliteDict(db_uri, outer_stack=outer_stack, flag=flag,
-                              autocommit=False, tablename=tablename,
+                              autocommit=True, tablename=tablename,
                               encode=my_encode, decode=my_decode)
         if db_base_uris is not None:
             self._db_base = [SqliteDict(db_base_uri, outer_stack=outer_stack, flag='r',
@@ -89,12 +89,15 @@ class SqliteDB:
             self._db_base = None
         self._logger = logging.getLogger(self.__class__.__name__)
 
+    def close(self):
+        self._db.commit()
+        self._db.close()
+
+    def commit(self):
+        self._db.commit()
+
     def __del__(self):
-        self.close()
-        if self._db_base is not None:
-            for d in self._db_base:
-                d.commit()
-                d.close()
+        pass
 
     def encode(self, key):
         return hashlib.sha256(key.encode('utf-8')).hexdigest()
@@ -121,13 +124,6 @@ class SqliteDB:
     def enabled(self):
         return self._enabled
 
-    def close(self):
-        self._db.commit()
-        self._db.close()
-
-    def commit(self):
-        self._db.commit()
-
 
 class ModelRunCache(SqliteDB):
     def __init__(self, db_uri=':memory:', flag='c',
@@ -138,9 +134,6 @@ class ModelRunCache(SqliteDB):
 
     def stats(self):
         return self._stats
-
-    def __del__(self):
-        super().__del__()
 
     def __getitem__(self, key):
         try:
@@ -158,6 +151,9 @@ class ModelRunCache(SqliteDB):
 
     def __setitem__(self, key, value):
         return self._db.__setitem__(key, value)
+
+    def __delitem__(self, key):
+        return self._db.__delitem__(key)
 
     def log_on(self):
         self._trace = True
@@ -208,13 +204,13 @@ class ModelRunCache(SqliteDB):
     def encode_runkey(self, chain_id, block_number, slug, version, input):
         return super().encode(repr((slug, version, chain_id, block_number, input)))
 
-    def get(self, chain_id, block_number, slug, version, input):
+    def get(self, chain_id, block_number, slug, version, input) -> Tuple[Optional[str], Dict]:
         if not self._enabled:
-            return False, {}
+            return None, {}
 
         if slug in self.exclude_slugs:
             self.cache_exclude()
-            return False, {}
+            return None, {}
 
         key = self.encode_runkey(chain_id, block_number, slug, version, input)
         needle = self._db.get(key, None)
@@ -230,7 +226,7 @@ class ModelRunCache(SqliteDB):
                     self._logger.info(f'[{self.__class__.__name__}] Not found: '
                                       f'{chain_id}/{block_number}/{(slug, version)}/[{input}]')
                 self.cache_miss()
-                return False, {}
+                return None, {}
 
         self.cache_hit()
         if self._trace:
@@ -244,7 +240,7 @@ class ModelRunCache(SqliteDB):
         assert needle['version'] == version
         assert needle['input'] == input
 
-        return True, needle['output']
+        return key, needle['output']
 
     def put(self, chain_id, block_number, slug, version, input, output):
         if not self._enabled or slug in self.exclude_slugs:
