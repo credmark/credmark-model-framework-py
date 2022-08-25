@@ -580,7 +580,7 @@ class EngineModelContext(ModelContext):
                                                 slug_keep, version_keep,
                                                 input_as_dict))
 
-                if in_cache:
+                if in_cache is not None:
                     slug, version, output, error, dependencies = cached_output
                 else:
                     # We pass depth - 1 which is the callers depth
@@ -691,7 +691,7 @@ class EngineModelContext(ModelContext):
                                             model_class.slug,
                                             model_class.version,
                                             input_as_dict))
-            if in_cache:
+            if in_cache is not None:
                 output = cached_output
             else:
                 ModelContext._current_context = context
