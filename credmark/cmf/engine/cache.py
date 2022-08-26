@@ -1,6 +1,6 @@
 import hashlib
 import logging
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
 from sqlitedict import SqliteDict
 from sqlitedict import logger as sqlitedict_logger
@@ -196,14 +196,25 @@ class ModelRunCache(SqliteDB):
                 (0 if self._db_base is None
                 else sum([len(d) for d in self._db_base])))
 
-    def slugs(self) -> Generator[Tuple[str, str, int, str], None, None]:
+    def slugs(self,
+              is_v: Callable[[Any], bool] = (lambda _: True)) -> Generator[Tuple[str, str, int, str], None, None]:
         for k, v in self._db.items():
-            yield (v['slug'], v['version'], v['block_number'], k)
+            if is_v(v):
+                yield (v['slug'], v['version'], v['block_number'], k)
 
         if self._db_base is not None:
             for d in self._db_base:
                 for k, v in d.items():
-                    yield (v['slug'], v['version'], v['block_number'], k)
+                    if is_v(v):
+                        yield (v['slug'], v['version'], v['block_number'], k)
+
+    def slugs_by_block_number(self, block_numbers: List[int]):
+        return self.slugs(is_v=lambda v, block_numbers=block_numbers:
+                          v['block_number'] in block_numbers)
+
+    def slugs_by_name(self, slugs: List[str]):
+        return self.slugs(is_v=lambda v, slugs=slugs:
+                          v['slug'] in slugs)
 
     def encode_runkey(self, chain_id, block_number, slug, version, input):
         return super().encode(repr((slug, version, chain_id, block_number, input)))
@@ -252,14 +263,18 @@ class ModelRunCache(SqliteDB):
 
         key = self.encode_runkey(chain_id, block_number, slug, version, input)
         if key in self._db:
-            raise KeyError('No case for overwriting cache: '
-                           f'{chain_id}/{block_number}/{(slug, version)}/{input}')
+            if self._trace:
+                self._logger.info('No case for overwriting cache: '
+                                  f'{chain_id}/{block_number}/{(slug, version)}/{input}/'
+                                  f'{self._db.filename=}')
 
         if self._db_base is not None:
             for d in self._db_base:
                 if key in d:
-                    raise KeyError('No case for overwriting cache: '
-                                   f'{chain_id}/{block_number}/{(slug, version)}/{input}')
+                    if self._trace:
+                        self._logger.info('No case for overwriting cache: '
+                                          f'{chain_id}/{block_number}/{(slug, version)}/{input}/'
+                                          f'{self._db.filename=}')
 
         result = dict(chain_id=chain_id, block_number=block_number,
                       slug=slug, version=version, input=input, output=output)
