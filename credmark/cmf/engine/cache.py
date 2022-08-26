@@ -80,6 +80,7 @@ class SqliteDB:
         self._db = SqliteDict(db_uri, outer_stack=outer_stack, flag=flag,
                               autocommit=True, tablename=tablename,
                               encode=my_encode, decode=my_decode)
+
         if db_base_uris is not None:
             self._db_base = [SqliteDict(db_base_uri, outer_stack=outer_stack, flag='r',
                                         tablename=tablename,
@@ -87,17 +88,19 @@ class SqliteDB:
                              for db_base_uri in db_base_uris]
         else:
             self._db_base = None
+
         self._logger = logging.getLogger(self.__class__.__name__)
 
     def close(self):
-        self._db.commit()
+        self._db.commit(blocking=False)
         self._db.close()
 
     def commit(self):
-        self._db.commit()
+        self._db.commit(blocking=False)
 
     def __del__(self):
-        pass
+        if self._db.filename != ':memory:':
+            self.commit()
 
     def encode(self, key):
         return hashlib.sha256(key.encode('utf-8')).hexdigest()
@@ -132,6 +135,7 @@ class ModelRunCache(SqliteDB):
                          flag=flag, db_base_uris=db_base_uris)
         self._enabled = enabled
 
+    @property
     def stats(self):
         return self._stats
 
