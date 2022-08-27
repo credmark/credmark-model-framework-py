@@ -49,6 +49,12 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
             "name": "Wrapped Ether",
             "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
         },
+        "cbETH": {
+            "symbol": "cbETH",
+            "decimals": 18,
+            "name": "Coinbase Wrapped Staked ETH",
+            "address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704"
+        },
         "CMK": {
             "symbol": "CMK",
             "decimals": 18,
