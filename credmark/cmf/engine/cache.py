@@ -197,7 +197,8 @@ class ModelRunCache(SqliteDB):
                 else sum([len(d) for d in self._db_base])))
 
     def slugs(self,
-              is_v: Callable[[Any], bool] = (lambda _: True)) -> Generator[Tuple[str, str, int, str], None, None]:
+              is_v: Callable[[Any], bool] = (lambda _: True)
+              ) -> Generator[Tuple[str, str, int, str], None, None]:
         for k, v in self._db.items():
             if is_v(v):
                 yield (v['slug'], v['version'], v['block_number'], k)
@@ -208,6 +209,13 @@ class ModelRunCache(SqliteDB):
                     if is_v(v):
                         yield (v['slug'], v['version'], v['block_number'], k)
 
+    def block_numbers(self):
+        block_numbers = set()
+        for v in self._db.values():
+            if v['block_number'] not in block_numbers:
+                block_numbers.add(v['block_number'])
+                yield v['block_number']
+
     def slugs_by_block_number(self, block_numbers: List[int]):
         return self.slugs(is_v=lambda v, block_numbers=block_numbers:
                           v['block_number'] in block_numbers)
@@ -215,6 +223,10 @@ class ModelRunCache(SqliteDB):
     def slugs_by_name(self, slugs: List[str]):
         return self.slugs(is_v=lambda v, slugs=slugs:
                           v['slug'] in slugs)
+
+    def slugs_by_name_block_number(self, slugs: List[str], block_numbers: List[int]):
+        return self.slugs(is_v=lambda v, slugs=slugs, block_numbers=block_numbers:
+                          v['slug'] in slugs and v['block_number'] in block_numbers)
 
     def encode_runkey(self, chain_id, block_number, slug, version, input):
         return super().encode(repr((slug, version, chain_id, block_number, input)))
