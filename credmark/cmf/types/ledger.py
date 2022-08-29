@@ -164,6 +164,12 @@ class ColumnField(str):
     def sum_(self):
         return self.func_('SUM')
 
+    def count_(self):
+        return self.func_('COUNT')
+
+    def count_distinct_(self):
+        return ColumnField(f'DISTINCT {self}').func_('COUNT')
+
     def max_(self):
         return self.func_('MAX')
 
