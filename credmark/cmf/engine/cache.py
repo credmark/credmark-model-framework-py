@@ -198,7 +198,7 @@ class ModelRunCache(SqliteDB):
     def __len__(self):
         return (self._db.__len__() +
                 (0 if self._db_base is None
-                else sum([len(d) for d in self._db_base])))
+                else sum(len(d) for d in self._db_base)))
 
     def slugs(self,
               is_v: Callable[[Any], bool] = (lambda _: True)
@@ -300,3 +300,9 @@ class ModelRunCache(SqliteDB):
                 self._logger.info(result)
 
         self._db[key] = result
+
+    def get_contract(self, address, chain_id=0):
+        return self.get(chain_id, 0,
+                        'contract.metadata',
+                        None,
+                        {"contractAddress": address.lower()})[1][2]

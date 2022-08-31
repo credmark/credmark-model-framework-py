@@ -234,27 +234,33 @@ class ConsoleModel(Model):
 
     utility_functions = [get_dt, get_block]
 
-    def load_locals(self, local_context=globals):
-        local_context()['list_models'] = self.list_models
-        local_context()['describe_model'] = self.describe_model
-        local_context()['context'] = self.context
-        local_context()['ledger'] = self.context.ledger
-        local_context()['run_model'] = self.context.run_model
-        local_context()['models'] = self.context.models
-        local_context()['block_number'] = self.context.block_number
-        local_context()['chain_id'] = self.context.chain_id
-        local_context()['web3'] = self.context.web3
-        local_context()['model_cache'] = self.context.model_cache  # type: ignore
-        local_context()['model_loader'] = self.context.model_loader  # type: ignore
-        local_context()['goto_block'] = self.goto_block
-        local_context()['where'] = self.where
-        local_context()['help'] = self.help
-        local_context()['save'] = self.save
-        local_context()['save_shortcuts'] = self.save_shortcuts
-        local_context()['load'] = self.load
-        local_context()['reload_model'] = self.reload_model
+    def load_locals(self, _ns=globals):
+        _ns()['list_models'] = self.list_models
+        _ns()['describe_model'] = self.describe_model
+        _ns()['context'] = self.context
+        _ns()['ledger'] = self.context.ledger
+        _ns()['run_model'] = self.context.run_model
+        _ns()['models'] = self.context.models
+        _ns()['block_number'] = self.context.block_number
+        _ns()['chain_id'] = self.context.chain_id
+        _ns()['web3'] = self.context.web3
+        _ns()['model_cache'] = self.context.model_cache  # type: ignore
+        _ns()['model_loader'] = self.context.model_loader  # type: ignore
+        _ns()['goto_block'] = self.goto_block
+        _ns()['where'] = self.where
+        _ns()['help'] = self.help
+        _ns()['save'] = self.save
+        _ns()['save_shortcuts'] = self.save_shortcuts
+        _ns()['load'] = self.load
+        _ns()['reload_model'] = self.reload_model
+        _ns()['load_locals'] = self.load_locals
+        _ns()['reset_cache'] = self.reset_cache
 
-    def reload_model(self, do_clear=True):
+    def reset_cache(self, *args, **kwargs):
+        self.context.reset_cache(*args, **kwargs)  # type: ignore
+        self.load_locals()
+
+    def reload_model(self, do_clear=False):
         """
         Reload model and reset cache
         """
@@ -262,6 +268,7 @@ class ConsoleModel(Model):
         self.context.reload_model()  # type: ignore
         if do_clear:
             self.context.model_cache.clear(do_clear)   # type: ignore
+
         self.load_locals()
         # pylint:disable=line-too-long
         print(f'Loaded {len(self.context.model_loader.loaded_model_version_lists())} models. '  # type: ignore

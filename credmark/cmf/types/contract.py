@@ -29,6 +29,12 @@ def get_slot_proxy_address(context, contract_address,
                 cc = context.web3.eth.contract(address=Address(
                     contract_address).checksum, abi=contract_abi)
                 slot_proxy_address = cc.functions.comptrollerImplementation().call()
+        elif contract_name == 'YAMDelegator':
+            # EIP-897
+            cc = context.web3.eth.contract(address=Address(
+                contract_address).checksum, abi=contract_abi)
+            if cc.abi is not None and 'implementation' in cc.abi.functions:
+                slot_proxy_address = cc.functions.implementation().call()
         elif (contract_name == 'Delegator' and
                 contract_address == Address('0x1985365e9f78359a9B6AD760e32412f4a445E862')):
             cc = context.web3.eth.contract(address=Address(

@@ -17,7 +17,7 @@ class Portfolio(IterableListGenericDTO[Position]):
         Raises:
             ModelDataError: if no pools available for a position's price data.
         """
-        return sum([pos.get_value(price_model) for pos in self.positions])
+        return sum(pos.get_value(price_model) for pos in self.positions)
 
     class Config:
         schema_extra: dict = {
