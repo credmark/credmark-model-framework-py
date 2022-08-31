@@ -592,10 +592,14 @@ class EngineModelContext(ModelContext):
                         self.run_id, self.__depth - 1, self.__client)
 
                     if self.__model_cache is not None:
-                        self.__model_cache.put(self.chain_id, int(run_block_number),
-                                               slug_keep, version_keep,
+                        self.__model_cache.put(self.chain_id,
+                                               int(run_block_number),
+                                               slug_keep,
+                                               version_keep,
                                                input_as_dict,
-                                               (slug, version, output, error, dependencies))
+                                               output,
+                                               dependencies,
+                                               error)
 
                 if dependencies:
                     self._add_dependencies(dependencies)
@@ -717,15 +721,6 @@ class EngineModelContext(ModelContext):
                         # Production mode will serialize all input and output.
                         output = json.loads(json_dumps(output))
 
-                    output_as_dict = transform_dto_to_dict(output)
-
-                    if self.__model_cache is not None:
-                        self.__model_cache.put(context.chain_id,
-                                               int(context.block_number),
-                                               model_class.slug,
-                                               model_class.version,
-                                               input_as_dict, output_as_dict)
-
                 except DataTransformError as err:
                     raise ModelOutputError(str(err))
 
@@ -805,5 +800,16 @@ class EngineModelContext(ModelContext):
             # Now we add dependency for this run
             version = model_class.version
             self._add_dependency(slug, version, 1)
+
+        if self.__model_cache is not None:
+            output_as_dict = transform_dto_to_dict(output)
+            self.__model_cache.put(context.chain_id,
+                                   int(context.block_number),
+                                   slug,
+                                   version,
+                                   input_as_dict,
+                                   output_as_dict,
+                                   self.dependencies,
+                                   None)
 
         return slug, version, output

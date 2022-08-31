@@ -273,7 +273,7 @@ class ModelRunCache(SqliteDB):
 
         return key, needle['output']
 
-    def put(self, chain_id, block_number, slug, version, input, output):
+    def put(self, chain_id, block_number, slug, version, input, output, dependencies, errors=None):
         if not self._enabled or slug in self.exclude_slugs:
             return
 
@@ -293,7 +293,8 @@ class ModelRunCache(SqliteDB):
                                           f'{self._db.filename=}')
 
         result = dict(chain_id=chain_id, block_number=block_number,
-                      slug=slug, version=version, input=input, output=output)
+                      slug=slug, version=version, input=input, output=output,
+                      dependencies=dependencies, errors=errors)
 
         if slug != 'contract.metadata':
             if self._trace:
