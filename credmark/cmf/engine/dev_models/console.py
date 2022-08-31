@@ -254,13 +254,14 @@ class ConsoleModel(Model):
         local_context()['load'] = self.load
         local_context()['reload_model'] = self.reload_model
 
-    def reload_model(self):
+    def reload_model(self, cache=True):
         """
         Reload model and reset cache
         """
 
         self.context.reload_model()  # type: ignore
-        self.context.reset_cache()   # type: ignore
+        if cache:
+            self.context.reset_cache()   # type: ignore
         self.load_locals()
         # pylint:disable=line-too-long
         print(f'Loaded {len(self.context.model_loader.loaded_model_version_lists())} models. '  # type: ignore
