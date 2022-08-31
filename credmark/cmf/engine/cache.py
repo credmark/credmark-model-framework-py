@@ -167,6 +167,10 @@ class ModelRunCache(SqliteDB):
         self._trace = False
         self._logger.setLevel(logging.INFO)
 
+    def clear(self, do_clear):
+        if do_clear:
+            self._db.clear()
+
     def keys(self):
         yield from self._db.keys()
         if self._db_base is not None:
