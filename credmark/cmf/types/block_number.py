@@ -138,9 +138,9 @@ class BlockNumber(IntDTO):
         if self._timestamp is None:
             context = credmark.cmf.model.ModelContext.current_context()
 
-            block: BlockData = context.web3.eth.get_block(self.__int__())
+            block: BlockData = context.web3.eth.get_block(int(self))
             if 'timestamp' not in block:
-                raise ModelInputError(f'No timestamp for block {self.__int__()}')
+                raise ModelInputError(f'No timestamp for block {int(self)}')
             self._timestamp = block['timestamp']
 
         return self._timestamp
