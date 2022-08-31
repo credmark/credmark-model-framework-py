@@ -300,3 +300,9 @@ class ModelRunCache(SqliteDB):
                 self._logger.info(result)
 
         self._db[key] = result
+
+    def get_contract(self, address, chain_id=0):
+        return self.get(chain_id, 0,
+                        'contract.metadata',
+                        None,
+                        {"contractAddress": address.lower()})[1][2]
