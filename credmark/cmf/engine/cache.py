@@ -198,7 +198,7 @@ class ModelRunCache(SqliteDB):
     def __len__(self):
         return (self._db.__len__() +
                 (0 if self._db_base is None
-                else sum([len(d) for d in self._db_base])))
+                else sum(len(d) for d in self._db_base)))
 
     def slugs(self,
               is_v: Callable[[Any], bool] = (lambda _: True)

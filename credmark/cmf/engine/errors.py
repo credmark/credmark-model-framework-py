@@ -1,4 +1,5 @@
-from credmark.cmf.model.errors import ModelEngineError, ModelErrorDTO
+# pylint:disable=ungrouped-imports
+from credmark.cmf.model.errors import ModelErrorDTO, ModelEngineError
 
 
 class ModelRunRequestErrorDTO(ModelErrorDTO):

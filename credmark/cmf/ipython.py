@@ -56,7 +56,9 @@ def create_cmf_context(cmf_init, local_ns):
         if cmf_init.chain_id == 1:
             headers = {'Content-Type': 'application/json'}
             response = requests.post(
-                provider_url, data=f'{{"jsonrpc":"2.0","method": "eth_blockNumber","params": [], "id":{cmf_init.chain_id}}}', headers=headers)
+                provider_url, data=f'{{"jsonrpc":"2.0","method": "eth_blockNumber","params": [], "id":{cmf_init.chain_id}}}',
+                headers=headers,
+                timeout=60)
             if response.status_code in [200, 201]:
                 res = response.json()
                 if 'result' in res and int(res['result'], base=16) > 0:

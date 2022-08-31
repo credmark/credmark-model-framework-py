@@ -3,6 +3,12 @@
 History
 -------
 
+0.8.36 [2022-08-31]
+* context.reload_model(do_clear=True): add option for clear cache for reload_model
+* cache.clear(do_clear=True): add clear for cache
+* EIP-897 proxy implementation
+
+
 0.8.35 [2022-08-25]
 * cache.get() returns key, context.models() takes all DTO and kwargs, improve console, set cache to autocommit (#156)
 

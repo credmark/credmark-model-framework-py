@@ -88,7 +88,7 @@ class ModelLoader:
         self.__model_manifest_list_with_class.sort(key=lambda m: m['slug'])
 
     def reload(self):
-        self.__init__(self._model_paths, self.manifest_file, self._load_dev_models)
+        self.__class__(self._model_paths, self.manifest_file, self._load_dev_models)
 
     def clear(self):
         self.errors.clear()

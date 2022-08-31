@@ -1,3 +1,5 @@
+# pylint:disable=comparison-of-constants
+
 import logging
 import os
 from typing import List, Union
@@ -451,13 +453,15 @@ def test():  # pylint: disable=too-many-branches,too-many-statements
         else:
             assert output == 'contrib.b-rep'
 
-    output = mock.output_for_model('contrib.c', {"address": "0x00000000", "symbol": "foo"})
+    token_foo = {"address": "0x00000000", "symbol": "foo"}
+
+    output = mock.output_for_model('contrib.c', token_foo)
     assert output == {"c": 42}
-    output = mock.output_for_model('contrib.c', {"address": "0x00000000", "symbol": "foo"})
+    output = mock.output_for_model('contrib.c', token_foo)
     assert output == {"c": 42}
 
     try:
-        output = mock.output_for_model('contrib.c', {"address": "0x00000000", "symbol": "foo"})
+        output = mock.output_for_model('contrib.c', token_foo)
         assert 'Repeat limit reached' == 'expected to raise'
     except ModelMockException:
         print('No output as expected.')
@@ -469,16 +473,16 @@ def test():  # pylint: disable=too-many-branches,too-many-statements
         print('No input match as expected.')
 
     for i in range(0, 2):
-        output = mock.output_for_model('contrib.d', {"address": "0x00000000", "symbol": "foo"})
+        output = mock.output_for_model('contrib.d', token_foo)
         print(output)
         m = i % 2
         assert output == {'d': m + 1}
 
-    output = mock.output_for_model('contrib.e', {"address": "0x00000000", "symbol": "foo"})
+    output = mock.output_for_model('contrib.e', token_foo)
     assert output == {"e": 42}
     output = mock.output_for_model('contrib.e', {"address": "0xffffffff", "symbol": "foo"})
     assert output == {"e": 1}
-    output = mock.output_for_model('contrib.f', {"address": "0x00000000", "symbol": "foo"})
+    output = mock.output_for_model('contrib.f', token_foo)
     assert output == {"f": 42}
     output = mock.output_for_model('contrib.f', {"address": "0xffffffff", "symbol": "foo"})
     assert output == 'contrib.f'
