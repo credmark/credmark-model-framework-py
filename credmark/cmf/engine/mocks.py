@@ -1,5 +1,3 @@
-# pylint:disable=comparison-of-constants
-
 import logging
 import os
 from typing import List, Union
