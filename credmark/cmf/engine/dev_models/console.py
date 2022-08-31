@@ -234,7 +234,6 @@ class ConsoleModel(Model):
 
     utility_functions = [get_dt, get_block]
 
-<<<<<<< HEAD
     def load_locals(self, _ns=globals):
         _ns()['list_models'] = self.list_models
         _ns()['describe_model'] = self.describe_model
@@ -256,29 +255,6 @@ class ConsoleModel(Model):
         _ns()['reload_model'] = self.reload_model
         _ns()['load_locals'] = self.load_locals
         _ns()['reset_cache'] = self.reset_cache
-=======
-    def load_locals(self, ns=globals):
-        ns()['list_models'] = self.list_models
-        ns()['describe_model'] = self.describe_model
-        ns()['context'] = self.context
-        ns()['ledger'] = self.context.ledger
-        ns()['run_model'] = self.context.run_model
-        ns()['models'] = self.context.models
-        ns()['block_number'] = self.context.block_number
-        ns()['chain_id'] = self.context.chain_id
-        ns()['web3'] = self.context.web3
-        ns()['model_cache'] = self.context.model_cache  # type: ignore
-        ns()['model_loader'] = self.context.model_loader  # type: ignore
-        ns()['goto_block'] = self.goto_block
-        ns()['where'] = self.where
-        ns()['help'] = self.help
-        ns()['save'] = self.save
-        ns()['save_shortcuts'] = self.save_shortcuts
-        ns()['load'] = self.load
-        ns()['reload_model'] = self.reload_model
-        ns()['load_locals'] = self.load_locals
-        ns()['reset_cache'] = self.reset_cache
->>>>>>> b964e75 (feat: console improvement)
 
     def reset_cache(self, *args, **kwargs):
         self.context.reset_cache(*args, **kwargs)  # type: ignore
