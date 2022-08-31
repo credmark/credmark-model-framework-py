@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.37 [2022-09-01]
+* chore: store dependencies in cache
+
 0.8.36 [2022-08-31]
 * context.reload_model(do_clear=True): add option for clear cache for reload_model
 * cache.clear(do_clear=True): add clear for cache
