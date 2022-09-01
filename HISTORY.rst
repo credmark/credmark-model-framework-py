@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.38 [2022-09-01]
+* chore: fix cache storage the same for both local and remote
+
 0.8.37 [2022-09-01]
 * chore: store dependencies in cache
 
