@@ -47,6 +47,7 @@ class RunModelMethod:
     def __call__(self,
                  input: Union[DTOType, dict, None] = None,
                  return_type: Union[dict, None] = None,
+                 version: Union[str, None] = None,
                  **kwargs) -> dict:
         ...
 
@@ -54,12 +55,14 @@ class RunModelMethod:
     def __call__(self,
                  input: Union[DTOType, dict, None] = None,
                  return_type: Type[DTOType] = EmptyInput,
+                 version: Union[str, None] = None,
                  **kwargs) -> DTOType:
         ...
 
     def __call__(self,
                  input: Union[DTOType, dict, None] = None,
                  return_type: Union[dict, Type[DTOType], None] = None,
+                 version: Union[str, None] = None,
                  **kwargs) -> Union[dict, DTOType]:
 
         model_input = {}
@@ -83,6 +86,7 @@ class RunModelMethod:
             f"{self.__prefix.replace('_', '-')}",
             input,
             block_number=self.__block_number,
+            version=version,
             return_type=return_type,
             local=self.__local)
 
