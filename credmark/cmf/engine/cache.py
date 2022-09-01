@@ -221,7 +221,7 @@ class ModelRunCache(SqliteDB):
                 block_numbers.add(v['block_number'])
                 yield v['block_number']
 
-    def slugs_by_block_number(self, block_numbers: List[int]):
+    def slugs_by_block(self, block_numbers: List[int]):
         return self.slugs(is_v=lambda v, block_numbers=block_numbers:
                           v['block_number'] in block_numbers)
 
@@ -229,20 +229,21 @@ class ModelRunCache(SqliteDB):
         return self.slugs(is_v=lambda v, slugs=slugs:
                           v['slug'] in slugs)
 
-    def slugs_by_name_block_number(self, slugs: List[str], block_numbers: List[int]):
+    def slugs_by_name_block(self, slugs: List[str], block_numbers: List[int]):
         return self.slugs(is_v=lambda v, slugs=slugs, block_numbers=block_numbers:
                           v['slug'] in slugs and v['block_number'] in block_numbers)
 
     def encode_runkey(self, chain_id, block_number, slug, version, input):
         return super().encode(repr((slug, version, chain_id, block_number, input)))
 
-    def get(self, chain_id, block_number, slug, version, input) -> Tuple[Optional[str], Dict]:
+    def get(self, chain_id, block_number,
+            slug, version, input) -> Tuple[Optional[str], Tuple[Dict, Any, Dict]]:
         if not self._enabled:
-            return None, {}
+            return None, ({}, None, {})
 
         if slug in self.exclude_slugs:
             self.cache_exclude()
-            return None, {}
+            return None, ({}, None, {})
 
         key = self.encode_runkey(chain_id, block_number, slug, version, input)
         needle = self._db.get(key, None)
@@ -258,7 +259,7 @@ class ModelRunCache(SqliteDB):
                     self._logger.info(f'[{self.__class__.__name__}] Not found: '
                                       f'{chain_id}/{block_number}/{(slug, version)}/[{input}]')
                 self.cache_miss()
-                return None, {}
+                return None, ({}, None, {})
 
         self.cache_hit()
         if self._trace:
@@ -272,7 +273,9 @@ class ModelRunCache(SqliteDB):
         assert needle['version'] == version
         assert needle['input'] == input
 
-        return key, needle['output']
+        return key, (needle['output'],
+                     needle['error'] if 'error' in needle else None,
+                     needle['dependencies'] if 'dependencies' in needle else {})
 
     def put(self, chain_id, block_number, slug, version, input, output, dependencies, errors=None):
         if not self._enabled or slug in self.exclude_slugs:
