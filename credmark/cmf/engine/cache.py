@@ -73,7 +73,7 @@ class SqliteDB:
     exclude_slugs = ['rpc.get-latest-blocknumber']
 
     _trace = False
-    _stats = {'total': 0, 'hit': 0, 'miss': 0, 'exclude': 0}
+    _stats = {'total': 0, 'hit': 0, 'miss': 0, 'exclude': 0, 'new': 0}
     _enabled = True
 
     def __init__(self, db_uri, tablename, flag='c',
