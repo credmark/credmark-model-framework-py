@@ -805,7 +805,7 @@ class EngineModelContext(ModelContext):
             version=model_class.version
             self._add_dependency(slug, version, 1)
 
-        if self.__model_cache is not None:
+        if in_cache is None and self.__model_cache is not None:
             output_as_dict=transform_dto_to_dict(output)
             self.__model_cache.put(context.chain_id,
                                    int(context.block_number),

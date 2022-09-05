@@ -304,11 +304,11 @@ class ModelRunCache(SqliteDB):
                       slug=slug, version=version, input=input, output=output,
                       dependencies=dependencies, errors=errors)
 
-        self.cache_new()
         if slug != 'contract.metadata':
             if self._trace:
                 self._logger.info(result)
 
+        self.cache_new()
         self._db[key] = result
 
     def get_contract(self, address, chain_id=0):
