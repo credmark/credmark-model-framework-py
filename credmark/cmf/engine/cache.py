@@ -118,6 +118,10 @@ class SqliteDB:
         self._stats['miss'] += 1
         self._stats['total'] += 1
 
+    def cache_new(self):
+        self._stats['new'] += 1
+        self._stats['total'] += 1
+
     def enable(self):
         self._enabled = True
 
@@ -300,6 +304,7 @@ class ModelRunCache(SqliteDB):
                       slug=slug, version=version, input=input, output=output,
                       dependencies=dependencies, errors=errors)
 
+        self.cache_new()
         if slug != 'contract.metadata':
             if self._trace:
                 self._logger.info(result)
