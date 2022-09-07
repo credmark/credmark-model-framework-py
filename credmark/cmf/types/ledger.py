@@ -203,6 +203,11 @@ class ColumnField(str):
     def as_integer(self):
         return self.func_('as_integer')
 
+    def is_null(self):
+        return ColumnField(self + ' is null')
+
+    def is_not_null(self):
+        return ColumnField(self + ' is not null')
 
 class LedgerTable:
     """
@@ -242,7 +247,7 @@ class LedgerTable:
             return self._column_dict[name]
         raise AttributeError(name)
 
-    @ property
+    @property
     def columns(self) -> List[str]:
         """
         Return the set of column names for the table.
@@ -253,7 +258,7 @@ class LedgerTable:
         """
         return list(self._column_dict.values())
 
-    @ property
+    @property
     def colnames(self) -> List[str]:
         """
         Return the set of column names in the table.
