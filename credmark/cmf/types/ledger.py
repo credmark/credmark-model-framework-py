@@ -264,7 +264,7 @@ class LedgerTable:
     def __getattr__(self, name):
         if name in self._column_dict:
             return self._column_dict[name]
-        raise AttributeError(name)
+        raise AttributeError(f'{name} not found in {self.colnames}')
 
     @property
     def columns(self) -> List[str]:
