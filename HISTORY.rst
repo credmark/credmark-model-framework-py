@@ -3,6 +3,12 @@
 History
 -------
 
+0.8.39 [2022-09-06]
+* feat: upgrade to new database setup (L2)
+    - remove table TokenBalance
+    - rename Event/Functions table column names (breaking)
+    - Event/Function-specific columns are prefixed with `EVT_` or `FN_`
+
 0.8.38 [2022-09-01]
 * chore: fix cache storage the same for both local and remote
 
@@ -10,8 +16,8 @@ History
 * chore: store dependencies in cache
 
 0.8.36 [2022-08-31]
-* context.reload_model(do_clear=True): add option for clear cache for reload_model
-* cache.clear(do_clear=True): add clear for cache
+* context.reload_model(do_clear:bool): add option for clear cache for reload_model
+* cache.clear(do_clear:bool): add clear for cache
 * EIP-897 proxy implementation
 
 
