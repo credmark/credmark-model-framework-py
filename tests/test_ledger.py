@@ -2,7 +2,7 @@ import unittest
 
 import credmark.cmf.model
 from credmark.cmf.engine.dev_models.console import get_block, get_dt
-from credmark.cmf.engine.errors import ModelEngineError
+from credmark.cmf.engine.errors import ModelEngineError # pylint:disable=unused-import
 from credmark.cmf.engine.model_unittest import ModelTestCase
 from credmark.cmf.types import Contract
 from credmark.cmf.types.ledger_errors import InvalidQueryException
@@ -23,13 +23,13 @@ class TestLedger(ModelTestCase):
 
             df = q.select(
                 columns=q.columns,
-                order_by=q.CONTRACT_ADDRESS.comma_(q._FROMINDEX),
+                order_by=q.CONTRACT_ADDRESS.comma_(q.EVT__FROMINDEX),
                 limit=5).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
             df = q.select(
-                columns=[q.EVT_HASH, q.CONTRACT_ADDRESS],
-                order_by=q.CONTRACT_ADDRESS.comma_(q._FROMINDEX),
+                columns=[q.TXN_HASH, q.CONTRACT_ADDRESS],
+                order_by=q.CONTRACT_ADDRESS.comma_(q.EVT__FROMINDEX),
                 limit=5).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
@@ -37,37 +37,44 @@ class TestLedger(ModelTestCase):
         with contract.ledger.events.BalanceTransfer as q:
             df = q.select(
                 aggregates=[
-                    (q._VALUE.max_().to_char(), 'max_value'),
-                    (q._VALUE.as_integer().max_().plus_(
-                        q._VALUE.as_integer().max_()).to_char(), 'max_valuex2'),
-                    (q._VALUE.max_(), 'max_value2')],
+                    (q.EVT__VALUE.max_().to_char(), 'max_value'),
+                    (q.EVT__VALUE.as_integer().max_().plus_(
+                        q.EVT__VALUE.as_integer().max_()).to_char(), 'max_valuex2'),
+                    (q.EVT__VALUE.max_(), 'max_value2')],
                 order_by=q.field('max_value').dquote().desc(),
                 bigint_cols=['max_value', 'max_valuex2']).to_dataframe()
 
     def test_ledger_contract_functions(self):
+        """
+        select distinct name from ETHEREUM.DECODED.FUNCTIONS
+            where to_address = '0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04';
+        """
+
         contract = Contract(address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
 
-        with contract.ledger.functions.approve as q:
+        with contract.ledger.functions.transfer as q:
             df = q.select(
                 columns=q.columns,
-                order_by=q.CONTRACT_ADDRESS,
+                order_by=q.FROM_ADDRESS,
                 limit=5).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
 
-        with contract.ledger.functions.approve as q:
+        with contract.ledger.functions.transfer as q:
             df = q.select(
-                columns=[q.TXN_BLOCK_NUMBER],
-                order_by=q.CONTRACT_ADDRESS,
+                columns=[q.BLOCK_NUMBER],
+                order_by=q.FROM_ADDRESS,
                 limit=5).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
 
-        with contract.ledger.functions.approve as q:
-            with self.assertRaises(ModelEngineError):
-                df = q.select(
-                    aggregates=[(q.VALUE.max_(), 'max_value')],
-                    group_by=[q.SPENDER],
-                    order_by=q.field('max_value').dquote().desc(),
-                    limit=5).to_dataframe()
+        with contract.ledger.functions.transfer as q:
+            df = q.select(
+                aggregates=[(q.FN_AMOUNT.max_(), 'max_amount')],
+                group_by=[q.FN_RECIPIENT],
+                order_by=q.field('max_amount').dquote().desc(),
+                where=q.FN_AMOUNT.is_not_null(),
+                limit=5).to_dataframe()
+
+        # with self.assertRaises(ModelEngineError):
 
     def test_aggregate(self):
         context = credmark.cmf.model.ModelContext.current_context()
@@ -323,10 +330,10 @@ class TestLedger(ModelTestCase):
                            where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
-        with context.ledger.TokenBalance as oo:
-            df = oo.select(columns=oo.columns, limit=5, order_by=oo.TOKEN_ADDRESS,
-                           where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
-            self.assertTrue(df.shape[0] == 5)
+        # with context.ledger.TokenBalance as oo:
+        #     df = oo.select(columns=oo.columns, limit=5, order_by=oo.TOKEN_ADDRESS,
+        #                     where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
+        #     self.assertTrue(df.shape[0] == 5)
 
 
 if __name__ == '__main__':

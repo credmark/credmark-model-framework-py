@@ -40,6 +40,7 @@ class ModelTestContextFactory:
                  model_loader: Union[ModelLoader, None] = None,
                  chain_to_provider_url: Union[dict[str, str], None] = None,
                  api_url: Union[str, None] = None):
+
         if model_loader is None:
             model_loader = ModelLoader(['.'])
 
@@ -56,7 +57,7 @@ class ModelTestContextFactory:
 
     def create_context(self,
                        chain_id: int = 1,
-                       block_number: int = 14000000):
+                       block_number: int = 15133762):
         # Clear the current context first
         ModelContext.set_current_context(None)
 
@@ -84,7 +85,7 @@ class ModelTestContextFactory:
 
 
 def model_context(chain_id: int = 1,
-                  block_number: int = 14000000,
+                  block_number: int = 15133762,
                   mocks: Union[ModelMockConfig, None] = None):
     """
     A decorator that can be used on a test method in a
@@ -148,7 +149,7 @@ class ModelTestCase(unittest.TestCase):
 
     def create_model_context(self,
                              chain_id: int = 1,
-                             block_number: int = 14000000,
+                             block_number: int = 15133762,
                              mocks: Union[ModelMockConfig, None] = None):
         """
         Create a new model context and set it as the current context.

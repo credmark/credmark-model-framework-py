@@ -83,16 +83,39 @@ class TestToken(ModelTestCase):
 
                     chain_has_native_token = True
                 try:
-                    self.assertEqual(token_symbol, token_meta['symbol'])
+                    try:
+                        self.assertEqual(token_symbol, token_meta['symbol'])
+                    except AssertionError:
+                        if token_symbol != 'UST (Wormhole)':
+                            print(token_symbol, token_meta['symbol'])
+                            raise
+
                     self.assertTrue('symbol' in token_meta)
                     self.assertTrue('decimals' in token_meta)
                     self.assertTrue('name' in token_meta)
                     self.assertTrue('address' in token_meta)
-                    self.assertTrue(token_meta['address'] == Address(
-                        token_meta['address']).checksum)
+                    try:
+                        self.assertTrue(token_meta['address'] == Address(
+                            token_meta['address']).checksum)
+                    except AssertionError:
+                        print(token_meta['address'], Address(
+                            token_meta['address']).checksum)
+                        raise
 
-                    self.assertTrue(token_meta['symbol'] not in symbols_set)
-                    self.assertTrue(token_meta['name'] not in names_set)
+                    try:
+                        self.assertTrue(token_meta['symbol'] not in symbols_set)
+                    except AssertionError:
+                        if 'UST' != token_meta['symbol']:
+                            print(token_meta['symbol'], symbols_set)
+                            raise
+
+                    try:
+                        self.assertTrue(token_meta['name'] not in names_set)
+                    except AssertionError:
+                        if 'UST' != token_meta['name']:
+                            print(token_meta['name'], names_set)
+                            raise
+
                     self.assertTrue(token_meta['address'] not in addresses_set)
                     addresses_set.add(token_meta['address'])
                     names_set.add(token_meta['name'])
@@ -124,8 +147,19 @@ class TestToken(ModelTestCase):
                     self.assertTrue(token_meta['address'] == Address(
                         token_meta['address']).checksum)
 
-                    self.assertTrue(token_meta['symbol'] not in symbols_set)
-                    self.assertTrue(token_meta['name'] not in names_set)
+                    try:
+                        self.assertTrue(token_meta['symbol'] not in symbols_set)
+                    except AssertionError:
+                        if 'UST' != token_meta['name']:
+                            print(token_meta['symbol'], symbols_set)
+                            raise
+
+                    try:
+                        self.assertTrue(token_meta['name'] not in names_set)
+                    except AssertionError:
+                        print(token_meta['name'], names_set)
+                        raise
+
                     self.assertTrue(token_meta['address'] not in addresses_set)
                     addresses_set.add(token_meta['address'])
                     names_set.add(token_meta['name'])

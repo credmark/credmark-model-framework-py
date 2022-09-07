@@ -176,9 +176,9 @@ class Ledger:
             cwgo_query_table='ledger.erc20_token_transfer_data',
             more_cols=[])
 
-    @property
-    @ledger_table_doc
-    def TokenBalance(self):
-        return LedgerQueryTokenBalance(
-            cwgo_query_table='ledger.token_balance',
-            more_cols=[])
+    # @property
+    # @ledger_table_doc
+    # def TokenBalance(self):
+    #     return LedgerQueryTokenBalance(
+    #         cwgo_query_table='ledger.token_balance',
+    #         more_cols=[])
