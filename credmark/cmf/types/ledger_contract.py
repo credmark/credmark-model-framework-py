@@ -16,23 +16,26 @@ class ContractFunctionsTable(LedgerTable):
     Function-specific columns are added from ABI.
     """
 
-    CONTRACT_ADDRESS = ColumnField('contract_address')
+    BLOCK_NUMBER = ColumnField('block_number')
     """"""
-    TXN_BLOCK_NUMBER = ColumnField('txn_block_number')
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
     """"""
-    TXN_HASH = ColumnField('txn_hash')
+    TRACE_ADDRESS = ColumnField('trace_address')
     """"""
-    TXN_INDEX = ColumnField('txn_index')
+    FROM_ADDRESS = ColumnField('from_address')
     """"""
-    SUCCESS = ColumnField('success')  # boolean indicating txn was successful or not
+    TO_ADDRESS = ColumnField('to_address')
     """"""
+    TXN_HASH = ColumnField('transaction_hash')
+    """"""
+    SIGNATURE = ColumnField('signature')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     @property
     def bigint_cols(self):
-        return [c for c in self.columns if c.startswith('inp_')]
+        return [v for k, v in self._column_dict.items() if k.startswith('FN_')]
 
 
 class ContractEventsTable(LedgerTable):
@@ -42,21 +45,24 @@ class ContractEventsTable(LedgerTable):
     Event-specific columns are added from ABI.
     """
 
+    BLOCK_NUMBER = ColumnField('block_number')
+    """"""
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
+    """"""
+    LOG_INDEX = ColumnField('log_index')
+    """"""
     CONTRACT_ADDRESS = ColumnField('contract_address')
     """"""
-    EVT_BLOCK_NUMBER = ColumnField('evt_block_number')
+    TXN_HASH = ColumnField('transaction_hash')
     """"""
-    EVT_HASH = ColumnField('evt_tx_hash')
-    """"""
-    EVT_INDEX = ColumnField('evt_index')
-    """"""
+    SIGNATURE = ColumnField('signature')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    @property
+    @ property
     def bigint_cols(self):
-        return [c for c in self.columns if c.startswith('inp_')]
+        return [v for k, v in self._column_dict.items() if k.startswith('EVT_')]
 
 
 class ContractEntityType(Enum):
@@ -190,10 +196,14 @@ class ContractEntityQuery(LedgerQueryBase):
 
         model_input['contractAddress'] = self._address
 
+        # pylint:disable=no-member, protected-access
+        model_input['l2_columns'] = self.bigint_cols  # type: ignore
+
         context = credmark.cmf.model.ModelContext.current_context()
         ledger_out = context.run_model(slug=model_slug,
                                        input=model_input,
                                        return_type=LedgerModelOutput)
+
         # pylint:disable=no-member, protected-access
         ledger_out.set_bigint_cols(
             self.bigint_cols +  # type: ignore
@@ -238,12 +248,12 @@ class ContractLedger:
         self._address = address
         self._abi = abi
 
-    @property
+    @ property
     def functions(self):
         return ContractEntityFactory(
             ContractEntityType.FUNCTIONS, self._address, self._abi)
 
-    @property
+    @ property
     def events(self):
         return ContractEntityFactory(
             ContractEntityType.EVENTS, self._address, self._abi)
@@ -275,7 +285,7 @@ class ContractEntityFactory:
                 raise ModelInputError(f'ABI for {self.address} is not loaded')
 
             if _name in self.abi.functions:
-                more_cols = [(c['name'].upper(), f'inp_{c["name"]}')
+                more_cols = [(f"FN_{c['name'].upper()}", c["name"])
                              for c in self.abi.functions[_name]['inputs']]
 
                 return LedgerQueryContractFunctions(
@@ -289,7 +299,7 @@ class ContractEntityFactory:
                 raise ModelInputError(f'ABI for {self.address} is not loaded')
 
             if _name in self.abi.events:
-                more_cols = [(c['name'].upper(), f'inp_{c["name"]}')
+                more_cols = [(f"EVT_{c['name'].upper()}", c["name"])
                              for c in self.abi.events[_name]['inputs']]
 
                 return LedgerQueryContractEvents(
