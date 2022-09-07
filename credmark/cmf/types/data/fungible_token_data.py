@@ -53,7 +53,7 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
             "symbol": "cbETH",
             "decimals": 18,
             "name": "Coinbase Wrapped Staked ETH",
-            "address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704"
+            "address": "0xBe9895146f7AF43049ca1c1AE358B0541Ea49704"
         },
         "CMK": {
             "symbol": "CMK",
@@ -109,7 +109,7 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
         "UST (Wormhole)": {
             "symbol": "UST",
             "decimals": 18,
-            "name": "UST (Wormhole)",
+            "name": "UST",
             "address": "0xa693B19d2931d498c5B318dF961919BB4aee87a5",
             "protocol": "terra chain"
         },
