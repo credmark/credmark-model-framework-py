@@ -167,8 +167,11 @@ class ColumnField(str):
     def count_(self):
         return self.func_('COUNT')
 
+    def distinct(self):
+        return ColumnField(f'DISTINCT {self}')
+
     def count_distinct_(self):
-        return ColumnField(f'DISTINCT {self}').func_('COUNT')
+        return self.distinct().func_('COUNT')
 
     def max_(self):
         return self.func_('MAX')
@@ -208,6 +211,7 @@ class ColumnField(str):
 
     def is_not_null(self):
         return ColumnField(self + ' is not null')
+
 
 class LedgerTable:
     """
@@ -274,7 +278,9 @@ class LedgerTable:
             if column not in column_set:
                 raise InvalidColumnException(
                     model_slug,
-                    column, list(column_set), "invalid column name")
+                    column,
+                    list(column_set),
+                    f"invalid column name '{column}' not found in {list(column_set)}")
 
     @property
     def bigint_cols(self):
