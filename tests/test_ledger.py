@@ -170,11 +170,12 @@ class TestLedger(ModelTestCase):
                 aggregates=[(oo.BLOCK_NUMBER.max_(), 'max_block_number'),
                             (oo.BLOCK_NUMBER.min_(), 'min_block_number')],
                 where=oo.BLOCK_NUMBER.not_between_(6949017, 13949017),
-                group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
+                group_by=[oo.HASH, oo.BLOCK_NUMBER]
+            ).to_dataframe()  # , oo.BLOCK_NUMBER
+
             self.assertTrue(df.shape[0] > 0)
-            breakpoint()
-            self.assertTrue(df.min_block_number < 6949017)
-            self.assertTrue(df.max_block_number > 13949017)
+            self.assertTrue(df.min_block_number.min() < 6949017)
+            self.assertTrue(df.max_block_number.max() > 13949017)
 
     def test_group_by(self):
         context = credmark.cmf.model.ModelContext.current_context()

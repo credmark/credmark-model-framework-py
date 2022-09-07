@@ -106,7 +106,7 @@ class ColumnField(str):
     def le(self, value, str_lower=False):
         return self._compare(value, str_lower, '<=')
 
-    def _list_of_fields(self, values, force):
+    def _list_of_fields(self, values, str_lower):
         """
         str_lower: True for string to be lower case
         """
@@ -114,7 +114,7 @@ class ColumnField(str):
             raise ModelRunError(f'column {self} is not in empty set {values}')
 
         if isinstance(values[0], str):
-            if force:
+            if str_lower:
                 list_of_fields = ",".join([ColumnField(v).squote() for v in values])
             else:
                 list_of_fields = ",".join([ColumnField(v).squote_and_lower() for v in values])
@@ -136,7 +136,7 @@ class ColumnField(str):
         list_of_fields = self._list_of_fields(values, str_lower)
         return ColumnField(f'{self} not in ({list_of_fields})')
 
-    def _two_fields(self, value1, value2, force):
+    def _two_fields(self, value1, value2, str_lower):
         """
         str_lower: True for string to be lower case
         """
@@ -145,7 +145,7 @@ class ColumnField(str):
                 f'{value1} and {value2} shall be of the same type for [not] between')
 
         if isinstance(value1, str):
-            if force:
+            if str_lower:
                 return (ColumnField(value1).squote(),
                         ColumnField(value2).squote())
             else:
