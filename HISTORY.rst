@@ -8,6 +8,7 @@ History
     - remove table TokenBalance
     - rename Event/Functions table column names (breaking)
     - Event/Function-specific columns are prefixed with `EVT_` or `FN_`
+* chore: Some ColumnField methods to have `str_lower` as a bool to quote and lower case the string
 
 0.8.38 [2022-09-01]
 * chore: fix cache storage the same for both local and remote

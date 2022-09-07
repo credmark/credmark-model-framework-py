@@ -2,7 +2,7 @@ import unittest
 
 import credmark.cmf.model
 from credmark.cmf.engine.dev_models.console import get_block, get_dt
-from credmark.cmf.engine.errors import ModelEngineError # pylint:disable=unused-import
+from credmark.cmf.engine.errors import ModelEngineError  # pylint:disable=unused-import
 from credmark.cmf.engine.model_unittest import ModelTestCase
 from credmark.cmf.types import Contract
 from credmark.cmf.types.ledger_errors import InvalidQueryException
@@ -98,7 +98,7 @@ class TestLedger(ModelTestCase):
                 aggregates=[(oo.GAS_PRICE.sum_(), 'sum_gas_price')],
                 where=oo.HASH.eq(
                     '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261dE',
-                    force=True),
+                    str_lower=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] == 0)
 
@@ -107,32 +107,31 @@ class TestLedger(ModelTestCase):
                 aggregates=[(oo.GAS_PRICE.sum_(), 'sum_gas_price')],
                 where=oo.HASH.eq(
                     '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de',
-                    force=True),
+                    str_lower=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] == 1)
 
-            # in with force
+            # in with str_lower
             # Change the last e => E with force shall return 0 rows
-
             df = oo.select(
                 where=oo.HASH.in_(
                     ['0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261dE'],
-                    force=True),
+                    str_lower=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] == 0)
 
-            # in with force
+            # in with str_lower
             # restore the last E => e with force to return 1 row
             df = oo.select(
                 where=oo.HASH.in_(
                     ['0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de'],
-                    force=True),
+                    str_lower=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
 
-            # in with number with force True/False
+            # in with number with str_lower True/False
             df = oo.select(
-                where=oo.BLOCK_NUMBER.in_([6949017, 13949017], force=True),
+                where=oo.BLOCK_NUMBER.in_([6949017, 13949017], str_lower=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
             self.assertTrue(6949017 in df.block_number.unique())
@@ -152,14 +151,6 @@ class TestLedger(ModelTestCase):
             self.assertTrue(6949017 not in df.block_number.unique())
             self.assertTrue(13949017 not in df.block_number.unique())
 
-            # between with number with force True/False
-            df = oo.select(
-                where=oo.BLOCK_NUMBER.between_(6949017, 6949018, force=True),
-                group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
-            self.assertTrue(df.shape[0] > 0)
-            self.assertTrue(df.block_number.min() >= 6949017)
-            self.assertTrue(df.block_number.max() <= 13949017)
-
             df = oo.select(
                 where=oo.BLOCK_NUMBER.between_(6949017, 13949017),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
@@ -167,12 +158,23 @@ class TestLedger(ModelTestCase):
             self.assertTrue(df.block_number.min() >= 6949017)
             self.assertTrue(df.block_number.max() <= 13949017)
 
+            # between with number with str_lower True/False: ineffective
             df = oo.select(
+                where=oo.BLOCK_NUMBER.between_(6949017, 6949018, str_lower=True),
+                group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
+            self.assertTrue(df.shape[0] > 0)
+            self.assertTrue(df.block_number.min() >= 6949017)
+            self.assertTrue(df.block_number.max() <= 13949017)
+
+            df = oo.select(
+                aggregates=[(oo.BLOCK_NUMBER.max_(), 'max_block_number'),
+                            (oo.BLOCK_NUMBER.min_(), 'min_block_number')],
                 where=oo.BLOCK_NUMBER.not_between_(6949017, 13949017),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
-            self.assertTrue(df.block_number.min() < 6949017)
-            self.assertTrue(df.block_number.max() > 13949017)
+            breakpoint()
+            self.assertTrue(df.min_block_number < 6949017)
+            self.assertTrue(df.max_block_number > 13949017)
 
     def test_group_by(self):
         context = credmark.cmf.model.ModelContext.current_context()

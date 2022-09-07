@@ -285,7 +285,7 @@ class ContractEntityFactory:
                 raise ModelInputError(f'ABI for {self.address} is not loaded')
 
             if _name in self.abi.functions:
-                more_cols = [(f"FN_{c['name'].upper()}", c["name"])
+                more_cols = [(f"FN_{c['name'].upper()}", 'fn_' + c["name"])
                              for c in self.abi.functions[_name]['inputs']]
 
                 return LedgerQueryContractFunctions(
@@ -299,7 +299,7 @@ class ContractEntityFactory:
                 raise ModelInputError(f'ABI for {self.address} is not loaded')
 
             if _name in self.abi.events:
-                more_cols = [(f"EVT_{c['name'].upper()}", c["name"])
+                more_cols = [(f"EVT_{c['name'].upper()}", 'evt_' + c["name"])
                              for c in self.abi.events[_name]['inputs']]
 
                 return LedgerQueryContractEvents(

@@ -79,31 +79,37 @@ class ColumnField(str):
     def asc(self):
         return ColumnField(self + ' asc')
 
-    def _compare(self, value, force, op):
+    def _compare(self, value, str_lower, op):
         if isinstance(value, str):
-            if force:
+            if str_lower:
                 return ColumnField(f'{self} {op} {ColumnField(value).squote()}')
             else:
                 return ColumnField(f'{self} {op} {ColumnField(value).squote_and_lower()}')
 
         return ColumnField(f'{self} {op} {value}')
 
-    def eq(self, value, force=False):
-        return self._compare(value, force, '=')
+    def eq(self, value, str_lower=False):
+        """
+        str_lower: True for string to be lower case
+        """
+        return self._compare(value, str_lower, '=')
 
-    def gt(self, value, force=False):
-        return self._compare(value, force, '>')
+    def gt(self, value, str_lower=False):
+        return self._compare(value, str_lower, '>')
 
-    def ge(self, value, force=False):
-        return self._compare(value, force, '>=')
+    def ge(self, value, str_lower=False):
+        return self._compare(value, str_lower, '>=')
 
-    def lt(self, value, force=False):
-        return self._compare(value, force, '<')
+    def lt(self, value, str_lower=False):
+        return self._compare(value, str_lower, '<')
 
-    def le(self, value, force=False):
-        return self._compare(value, force, '<=')
+    def le(self, value, str_lower=False):
+        return self._compare(value, str_lower, '<=')
 
     def _list_of_fields(self, values, force):
+        """
+        str_lower: True for string to be lower case
+        """
         if len(values) == 0:
             raise ModelRunError(f'column {self} is not in empty set {values}')
 
@@ -116,15 +122,24 @@ class ColumnField(str):
             list_of_fields = ",".join([str(v) for v in values])
         return list_of_fields
 
-    def in_(self, values, force=False):
-        list_of_fields = self._list_of_fields(values, force)
+    def in_(self, values, str_lower=False):
+        """
+        str_lower: True for string to be lower case
+        """
+        list_of_fields = self._list_of_fields(values, str_lower)
         return ColumnField(f'{self} in ({list_of_fields})')
 
-    def not_in_(self, values, force=False):
-        list_of_fields = self._list_of_fields(values, force)
+    def not_in_(self, values, str_lower=False):
+        """
+        str_lower: True for string to be lower case
+        """
+        list_of_fields = self._list_of_fields(values, str_lower)
         return ColumnField(f'{self} not in ({list_of_fields})')
 
     def _two_fields(self, value1, value2, force):
+        """
+        str_lower: True for string to be lower case
+        """
         if not isinstance(value1, type(value2)) and not isinstance(value2, type(value1)):
             raise ModelRunError(
                 f'{value1} and {value2} shall be of the same type for [not] between')
@@ -138,12 +153,12 @@ class ColumnField(str):
                         ColumnField(value2).squote_and_lower())
         return value1, value2
 
-    def between_(self, value1, value2, force=False):
-        f1, f2 = self._two_fields(value1, value2, force)
+    def between_(self, value1, value2, str_lower=False):
+        f1, f2 = self._two_fields(value1, value2, str_lower)
         return ColumnField(f'{self} between {f1} and {f2}')
 
-    def not_between_(self, value1, value2, force=False):
-        f1, f2 = self._two_fields(value1, value2, force)
+    def not_between_(self, value1, value2, str_lower=False):
+        f1, f2 = self._two_fields(value1, value2, str_lower)
         return ColumnField(f'{self} not between {f1} and {f2}')
 
     def and_(self, value):
