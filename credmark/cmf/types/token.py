@@ -174,10 +174,11 @@ class Token(Contract):
     def try_erc20_property(self, prop_name):
         try:
             prop_value = self.functions[prop_name]().call()  # type: ignore
-        except (BadFunctionCallOutput, ABIFunctionNotFound):
+        except (BadFunctionCallOutput, ABIFunctionNotFound) as err:
             raise ModelDataError(
                 f'No {prop_name} function on token {self.address}, non ERC20 Compliant'
-                f' proxied by {self.proxy_for.address}' if self.proxy_for is not None else '')
+                f' proxied by {self.proxy_for.address}' if self.proxy_for is not None else ''
+                ) from err
         if prop_value is None:
             raise ModelDataError(f"Token.{prop_name} is None")
         return prop_value
