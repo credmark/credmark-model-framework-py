@@ -279,7 +279,11 @@ class Contract(Account):
         Set the ABI for the contract
         """
         if not self._loaded:
-            self._load()
+            try:
+                self._load()
+            except ModelDataError as err:
+                if 'abi not available for addres' not in err.data.message:
+                    raise
         self._meta.abi = ABI(abi)
 
     @ property
