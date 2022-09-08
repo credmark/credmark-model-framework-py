@@ -1,5 +1,5 @@
 import json
-from typing import Any, List, Optional, Union
+from typing import List, Optional, Union
 
 import credmark.cmf.model
 from credmark.cmf.engine.cache import ContractMetaCache
@@ -75,14 +75,14 @@ class Contract(Account):
     """
 
     class ContractMetaData(DTO):
-        contract_name: Union[str, None] = None
-        deploy_tx_hash: Union[str, None] = None
-        constructor_args: Union[str, None] = None
-        abi_hash: Union[str, None] = None
-        abi: Union[ABI, None] = None
-        is_transparent_proxy: Union[bool, None] = None
-        proxy_implementation: Union[Any, None] = None
-        deployed_block_number: Union[BlockNumber, None] = None
+        contract_name: Optional[str] = None
+        deploy_tx_hash: Optional[str] = None
+        constructor_args: Optional[str] = None
+        abi_hash: Optional[str] = None
+        abi: Optional[ABI] = None
+        is_transparent_proxy: Optional[bool] = None
+        proxy_implementation: Optional['Contract'] = None
+        deployed_block_number: Optional[BlockNumber] = None
 
     _meta: ContractMetaData = PrivateAttr(
         default_factory=lambda: Contract.ContractMetaData())  # pylint: disable=unnecessary-lambda
@@ -343,7 +343,7 @@ class Contract(Account):
             self._load()
 
         if self._ledger is None:
-            if self.proxy_for is not None:
+            if self.proxy_for is not None and self.proxy_for.abi is not None:
                 # TODO: Need to stitch all past proxied tables to become one table
                 self._ledger = ContractLedger(address=self.proxy_for.address,
                                               abi=self.proxy_for.abi)
