@@ -119,6 +119,18 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
             "name": "SHIBA INU",
             "address": "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE"
         },
+        "SUSHI": {
+            "symbol": "SHIB",
+            "decimals": 18,
+            "name": "SushiToken",
+            "address": "0x6B3595068778DD592e39A122f4f5a5cF09C90fE2"
+        },
+        "ENS": {
+            "symbol": "ENS",
+            "decimals": 18,
+            "name": "Ethereum Name Service",
+            "address": "0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72",
+        },
         "MATIC": {
             "symbol": "MATIC",
             "decimals": 18,
@@ -198,10 +210,17 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
             "address": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
             "protocol": "uniswap"
         },
-        "wMANA": {
-            "symbol": "wMANA",
+        "COMP": {
+            "symbol": "COMP",
             "decimals": 18,
-            "name": "Wrapped Decentraland MANA",
+            "name": "Compound",
+            "address": "0xc00e94Cb662C3520282E6f5717214004A7f26888",
+            "protocol": "compound"
+        },
+        "MANA": {
+            "symbol": "MANA",
+            "decimals": 18,
+            "name": "Decentraland MANA",
             "address": "0xFd09Cf7cFffa9932e33668311C4777Cb9db3c9Be"
         },
         "FTM": {
@@ -263,6 +282,18 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
             "decimals": 8,
             "name": "Gala",
             "address": "0x15D4c048F83bd7e37d49eA4C83a07267Ec4203dA"
+        },
+        "GAL": {
+            "symbol": "GAL",
+            "decimals": 18,
+            "name": "Project Galaxy",
+            "address": "0x5fAa989Af96Af85384b8a938c2EdE4A7378D9875"
+        },
+        "DYDX": {
+            "symbol": "DYDX",
+            "decimals": 18,
+            "name": "dYdX",
+            "address": "0x92D6C1e31e14520e676a687F0a93788B716BEff5"
         },
         "MKR": {
             "symbol": "MKR",
@@ -373,6 +404,12 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
             "decimals": 18,
             "name": "LoopringCoin V2",
             "address": "0xBBbbCA6A901c926F240b89EacB641d8Aec7AEafD"
+        },
+        "API3": {
+            "symbol": "API3",
+            "decimals": 18,
+            "name": "API3",
+            "address": "0x0b38210ea11411557c13457D4dA7dC6ea731B88a"
         },
         "aCRV": {
             "symbol": "aCRV",
