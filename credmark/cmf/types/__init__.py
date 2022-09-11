@@ -2,7 +2,7 @@
 
 from .account import Account, Accounts
 from .address import NULL_ADDRESS, Address
-from .adt import Maybe, Some
+from .adt import Maybe, Records, Some
 from .block_number import BlockNumber
 from .compose import (MapBlockResult, MapBlocksInput, MapBlocksOutput,
                       MapBlockTimeSeriesInput, MapBlockTimeSeriesOutput,
@@ -15,6 +15,6 @@ from .ledger_series import (LedgerBlockNumberTimeSeries,
 from .network import Network
 from .portfolio import Portfolio
 from .position import NativePosition, Position, TokenPosition
-from .price import Price, PriceWithQuote, PriceList
+from .price import Price, PriceList, PriceWithQuote
 from .token import Currency, FiatCurrency, NativeToken, Token, Tokens
 from .token_wei import TokenWei
