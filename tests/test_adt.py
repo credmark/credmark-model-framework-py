@@ -1,14 +1,24 @@
 import unittest
 
 from credmark.cmf.engine.model_unittest import ModelTestCase
-from credmark.cmf.types import PriceWithQuote, Some
+from credmark.cmf.types import PriceWithQuote, Records, Some
 
 
 class TestModel(ModelTestCase):
+    def test_records(self):
+        mm = Records(records=[(1, 2, 3), (1, 2, 3)], fields=['c1', 'c2', 'c3'])
+        df = mm.to_dataframe()
+        self.assertTrue(df.shape == (2, 3))
+        self.assertTrue(df.loc[0].shape[0] == 3)
+
+        nn = Records.from_dataframe(df)
+        self.assertTrue(len(nn) == 2)
+        self.assertEqual(nn, mm)
+
     def test_some_plain(self):
         mm = Some[int](some=[1, 2, 3])
         df = mm.to_dataframe()
-        self.assertTrue(df[0].shape[0] == 3)
+        self.assertEqual(df.shape, (3, 1))
 
     def test_some_dict(self):
         mm = Some[dict](some=[PriceWithQuote.usd(price=1, src='a').dict(),

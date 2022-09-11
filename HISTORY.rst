@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.41 [2022-09-11]
+* feat: new Records type to hold list of tuples and list of field names.
+
 0.8.40 [2022-09-09]
 * various fixes
   - chore: fix type in Contract

@@ -67,3 +67,43 @@ class Some(GenericDTO, Generic[DTOCLS]):
             data_dict = [{0: x} for x in self.some]
 
         return pd.DataFrame(data_dict)
+
+
+class Records(GenericDTO):
+    records: List[Tuple] = DTOField([])
+    fields: List[str] = DTOField([], description='List of fields')
+    _iterator: str = 'records'
+
+    def __iter__(self) -> Iterator[Tuple]:
+        return getattr(self, self._iterator).__iter__()
+
+    def __getitem__(self, key) -> Tuple:
+        return getattr(self, self._iterator).__getitem__(key)
+
+    def is_empty(self) -> bool:
+        return len(self.records) == 0
+
+    @classmethod
+    def empty(cls):
+        return cls(records=[], fields=[])
+
+    def append(self, obj):
+        return getattr(self, self._iterator).append(obj)
+
+    def extend(self, obj):
+        return getattr(self, self._iterator).extend(obj)
+
+    def __len__(self) -> int:
+        return len(self.records)
+
+    def to_dataframe(self):
+        if len(self.records) == 0:
+            return pd.DataFrame(columns=self.fields, data=[])
+
+        data_dict = [dict(zip(self.fields, r)) for r in self.records]
+        return pd.DataFrame(data_dict)
+
+    @classmethod
+    def from_dataframe(cls, _df):
+        return cls(records=list(_df.itertuples(index=False, name=None)),
+                   fields=_df.columns.tolist())
