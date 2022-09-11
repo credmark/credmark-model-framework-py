@@ -1,7 +1,7 @@
 import unittest
 
 from credmark.cmf.engine.model_unittest import ModelTestCase
-from credmark.cmf.types import Price, Some
+from credmark.cmf.types import PriceWithQuote, Some
 
 
 class TestModel(ModelTestCase):
@@ -11,8 +11,8 @@ class TestModel(ModelTestCase):
         self.assertTrue(df[0].shape[0] == 3)
 
     def test_some_dict(self):
-        mm = Some[dict](some=[Price(price=1, src='a').dict(),
-                              Price(price=2, src='b').dict()])
+        mm = Some[dict](some=[PriceWithQuote.usd(price=1, src='a').dict(),
+                              PriceWithQuote.usd(price=2, src='b').dict()])
         df = mm.to_dataframe()
         self.assertTrue(df.shape[0] == 2)
 
@@ -24,8 +24,8 @@ class TestModel(ModelTestCase):
         self.assertTrue(df.shape[0] == 2)
 
     def test_some_dto(self):
-        mm = Some[Price](some=[Price(price=1, src='a'),
-                               Price(price=2, src='b')])
+        mm = Some[PriceWithQuote](some=[PriceWithQuote.usd(price=1, src='a'),
+                                        PriceWithQuote.usd(price=2, src='b')])
         df = mm.to_dataframe()
         self.assertTrue(df.shape[0] == 2)
 

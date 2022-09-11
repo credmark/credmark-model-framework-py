@@ -3,6 +3,13 @@
 History
 -------
 
+0.8.40 [2022-09-09]
+* various fixes
+  - chore: fix type in Contract
+  - fix: override abi missing when set_abi()
+  - chore: update on error to raise...from
+  - feat: add PriceWithQuote
+
 0.8.39 [2022-09-06]
 * feat: upgrade to new database setup (L2)
     - remove table TokenBalance

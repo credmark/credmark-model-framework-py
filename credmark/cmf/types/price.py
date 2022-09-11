@@ -3,6 +3,7 @@ from typing import List, Union
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 
 from .address import Address
+from .token import Currency
 
 __all__ = ['Price', 'PriceList']
 
@@ -17,11 +18,34 @@ class Price(DTO):
                          {'price': 4.2, 'src': 'uniswap-v3'}]
         }
 
-    def cross(self, other):
-        return Price(price=self.price * other.price, src=f'({self.src},{other.src})')
 
-    def inverse(self):
-        return Price(price=1 / self.price, src=f'{self.src}|Inv')
+class PriceWithQuote(Price):
+    quoteAddress: Address = DTOField(description='The address of quoted currency')
+
+    def cross(self, other: 'PriceWithQuote'):
+        return PriceWithQuote(price=self.price * other.price,
+                              src=f'({self.src},{other.src})',
+                              quoteAddress=other.quoteAddress)
+
+    def inverse(self, quoteAddress):  # pylint: disable=invalid-name
+        return PriceWithQuote(price=1 / self.price,
+                              src=f'{self.src}|Inv',
+                              quoteAddress=quoteAddress)
+
+    @classmethod
+    def usd(cls, **data):
+        if 'quoteAddres' in data:
+            raise ValueError(f'quoteAddres is default to USD but specified {data["quoteAddres"]=}')
+        return cls(**data, quoteAddress=Currency('USD').address)
+
+    @classmethod
+    def eth(cls, **data):
+        if 'quoteAddres' in data:
+            raise ValueError(f'quoteAddres is default to ETH but specified {data["quoteAddres"]=}')
+        return cls(**data, quoteAddress=Currency('ETH').address)
+
+    def to_price(self):
+        return Price(price=self.price, src=self.src)
 
 
 class PriceList(IterableListGenericDTO[float]):
