@@ -18,7 +18,7 @@ class TestModel(ModelTestCase):
     def test_some_plain(self):
         mm = Some[int](some=[1, 2, 3])
         df = mm.to_dataframe()
-        self.assertTrue(df.loc[0].shape[0] == 3)
+        self.assertEqual(df.shape, (3, 1))
 
     def test_some_dict(self):
         mm = Some[dict](some=[PriceWithQuote.usd(price=1, src='a').dict(),
