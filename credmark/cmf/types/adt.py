@@ -1,7 +1,6 @@
 # algebra data types
 
-from typing import (Callable, Generic, Iterator, List, Optional, Tuple,
-                    TypeVar, Union)
+from typing import Callable, Generic, Iterator, List, Optional, Tuple, TypeVar
 
 import pandas as pd
 from credmark.dto import DTOField, DTOTypesTuple, GenericDTO
@@ -49,7 +48,7 @@ class Some(GenericDTO, Generic[DTOCLS]):
     def __len__(self) -> int:
         return len(self.some)
 
-    def to_dataframe(self, fields: Optional[Union[List[Tuple[str, Callable]], List[str]]] = None):
+    def to_dataframe(self, fields: Optional[List[Tuple[str, Callable]]] = None):
         if len(self.some) == 0:
             return pd.DataFrame()
 
