@@ -15,6 +15,6 @@ from .ledger_series import (LedgerBlockNumberTimeSeries,
 from .network import Network
 from .portfolio import Portfolio
 from .position import NativePosition, Position, TokenPosition
-from .price import Price, PriceList
+from .price import Price, PriceWithQuote, PriceList
 from .token import Currency, FiatCurrency, NativeToken, Token, Tokens
 from .token_wei import TokenWei

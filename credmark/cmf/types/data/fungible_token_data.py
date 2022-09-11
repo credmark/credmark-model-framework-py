@@ -120,7 +120,7 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
             "address": "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE"
         },
         "SUSHI": {
-            "symbol": "SHIB",
+            "symbol": "SUSHI",
             "decimals": 18,
             "name": "SushiToken",
             "address": "0x6B3595068778DD592e39A122f4f5a5cF09C90fE2"
