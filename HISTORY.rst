@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.42 [2022-09-11]
+* feat: support CErc20Delegator proxy
+
 0.8.41 [2022-09-11]
 * feat: new Records type to hold list of tuples and list of field names.
 

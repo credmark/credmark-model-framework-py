@@ -29,7 +29,7 @@ def get_slot_proxy_address(context, contract_address,
                 cc = context.web3.eth.contract(address=Address(
                     contract_address).checksum, abi=contract_abi)
                 slot_proxy_address = cc.functions.comptrollerImplementation().call()
-        elif contract_name == 'YAMDelegator':
+        elif contract_name in ['YAMDelegator', 'CErc20Delegator']:
             # EIP-897
             cc = context.web3.eth.contract(address=Address(
                 contract_address).checksum, abi=contract_abi)
