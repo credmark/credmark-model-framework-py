@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.43 [2022-09-??]
+* chore: extend model api timeout to 1500 seconds
+
 0.8.42 [2022-09-11]
 * feat: support CErc20Delegator proxy
 
