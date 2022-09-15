@@ -874,7 +874,7 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
             "name": "Compound 0x",
             "address": "0xB3319f5D18Bc0D84dD1b4825Dcde5d5f7266d407"
         },
-        "Global GMT": {
+        "GMT": {
             "symbol": "GMT",
             "decimals": 18,
             "name": "Global Messaging Token",

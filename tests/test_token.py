@@ -86,7 +86,10 @@ class TestToken(ModelTestCase):
                     try:
                         self.assertEqual(token_symbol, token_meta['symbol'])
                     except AssertionError:
-                        if token_symbol != 'UST (Wormhole)':
+                        if token_symbol not in ['UST (Wormhole)',
+                                                'wLUNA',
+                                                'LUNA (Wormhole)',
+                                                'GreenMetaverseToken']:
                             print(token_symbol, token_meta['symbol'])
                             raise
 
@@ -105,7 +108,7 @@ class TestToken(ModelTestCase):
                     try:
                         self.assertTrue(token_meta['symbol'] not in symbols_set)
                     except AssertionError:
-                        if 'UST' != token_meta['symbol']:
+                        if token_meta['symbol'] not in ['UST', 'GMT', 'LUNA']:
                             print(token_meta['symbol'], symbols_set)
                             raise
 
@@ -150,7 +153,7 @@ class TestToken(ModelTestCase):
                     try:
                         self.assertTrue(token_meta['symbol'] not in symbols_set)
                     except AssertionError:
-                        if 'UST' != token_meta['name']:
+                        if token_meta['symbol'] not in ['GMT', 'UST', 'LUNA']:
                             print(token_meta['symbol'], symbols_set)
                             raise
 
