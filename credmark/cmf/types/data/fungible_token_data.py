@@ -1,3 +1,4 @@
+# pylint:disable=too-many-lines
 # All address in the field shall be checksum address
 
 NATIVE_TOKEN = {
