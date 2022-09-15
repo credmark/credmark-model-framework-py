@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.44 [2022-09-15]
+* feat: added list of ERC-20 tokens
+
 0.8.43 [2022-09-14]
 * chore: extend model api timeout to 1800 seconds
 
