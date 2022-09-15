@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.45 [2022-09-15]
+* fix: token list: symbol and name.
+* feat: add ne() to ColumnField
+
 0.8.44 [2022-09-15]
 * feat: added list of ERC-20 tokens
 

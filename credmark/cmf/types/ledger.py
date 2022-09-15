@@ -94,6 +94,9 @@ class ColumnField(str):
         """
         return self._compare(value, str_lower, '=')
 
+    def ne(self, value, str_lower=False):
+        return self._compare(value, str_lower, '!=')
+
     def gt(self, value, str_lower=False):
         return self._compare(value, str_lower, '>')
 
