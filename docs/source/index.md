@@ -22,7 +22,6 @@ credmark_dev
 components
 errors
 tests
-model_docs
 api
 reference
 ```
