@@ -16,8 +16,6 @@ This project is under active development.
 ```{toctree}
 :maxdepth: 20
 
-usage
-how_to
 credmark_dev
 components
 errors
