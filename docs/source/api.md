@@ -1,19 +1,4 @@
-# Credmark API
-
-The Credmark Framework provides access to remote models and access to on-chain data via [Credmark API](https://gateway.credmark.com/api/).
-
-## Interactive HTTP requests
-
-If you go to the [Credmark API interactive docs](https://gateway.credmark.com/api/) you can use the popup in the top right of the window to choose between the different model groups:
-
-- [Credmark Models](https://gateway.credmark.com/api/?urls.primaryName=Credmark%20Models)
-- [Utility Models](https://gateway.credmark.com/api/?urls.primaryName=Utility%20Models)
-- [Contributor Models](https://gateway.credmark.com/api/?urls.primaryName=Contributor%20Models)
-- [Example Models](https://gateway.credmark.com/api/?urls.primaryName=Example%20Models)
-
-For each group, you will get the docs for all the models within the group and you are able to run them interactively. Note that not all models are fully documented yet.
-
-## API client for consumers
+# Credmark API Client
 
 For consumers of the API there exists a separate Credmark Client that includes a command-line tool and a SDK. The focus of this tool is for developing client-side apps and it is not needed for writing models.
 
