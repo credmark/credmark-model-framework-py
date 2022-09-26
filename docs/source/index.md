@@ -3,9 +3,7 @@
 **Credmark Model Framework** is a Python library
 building models that run on the Credmark Data Platform.
 
-Check out the {doc}`usage` section to get started building models!
-
-Check out the {doc}`reference` section for further information on the how to use the model framework and data classes.
+This site gives you some deep technical details of the CMF and its components. For an introduction and simple how-to-guide, please head over to the [Github Readme](https://github.com/credmark/credmark-models-py/blob/main/README.md) for the CMF.
 
 :::{note}
 This project is under active development.
