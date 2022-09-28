@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.46 [2022-09-28]
+* fix: pandas starts use uint64
+
 0.8.45 [2022-09-15]
 * fix: token list: symbol and name.
 * feat: add ne() to ColumnField

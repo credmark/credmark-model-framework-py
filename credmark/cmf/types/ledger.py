@@ -39,7 +39,7 @@ class LedgerModelOutput(IterableListGenericDTO[dict]):
                     col_type = df[c].dtype
                     if col_type == 'float64':
                         df = df.assign(**{c: (lambda x, c=c: x[c].apply(round))})
-                    elif col_type == 'int64':
+                    elif col_type in ['int64', 'uint64']:
                         pass
                     elif col_type == 'O':
                         try:
