@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.47 [2022-10-03]
+* fix: decoded table names "unnamed variable" to _0, _1, ...
+
 0.8.46 [2022-09-28]
 * fix: pandas starts use uint64
 
