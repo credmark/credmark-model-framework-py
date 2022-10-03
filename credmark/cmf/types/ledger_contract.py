@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelInputError, ModelRunError
@@ -266,6 +266,21 @@ class ContractEntityFactory:
         self.address = address
         self.abi = abi
 
+    def decoded_cols(self,
+                     prefix: Tuple[str, str],
+                     names: List[Dict[str, Any]]) -> List[Tuple[str, str]]:
+        more_cols = []
+        unnamed_sn = 0
+        for n, _ in enumerate(names):
+            if names[n]['name'] == '':
+                more_cols.append((f"{prefix[0]}__{unnamed_sn}",
+                                  f'{prefix[1]}__{unnamed_sn}'))
+                unnamed_sn += 1
+            else:
+                more_cols.append((f"{prefix[0]}_{names[n]['name'].upper()}",
+                                  f'{prefix[1]}_{names[n]["name"]}'))
+        return more_cols
+
     def __dir__(self):
         if self.entity_type == ContractEntityType.FUNCTIONS:
             return self.abi.functions.names()
@@ -285,8 +300,7 @@ class ContractEntityFactory:
                 raise ModelInputError(f'ABI for {self.address} is not loaded')
 
             if _name in self.abi.functions:
-                more_cols = [(f"FN_{c['name'].upper()}", 'fn_' + c["name"])
-                             for c in self.abi.functions[_name]['inputs']]
+                more_cols = self.decoded_cols(('FN', 'fn'), self.abi.functions[_name]['inputs'])
 
                 return LedgerQueryContractFunctions(
                     address=self.address,
@@ -299,8 +313,7 @@ class ContractEntityFactory:
                 raise ModelInputError(f'ABI for {self.address} is not loaded')
 
             if _name in self.abi.events:
-                more_cols = [(f"EVT_{c['name'].upper()}", 'evt_' + c["name"])
-                             for c in self.abi.events[_name]['inputs']]
+                more_cols = self.decoded_cols(('EVT', 'evt'), self.abi.events[_name]['inputs'])
 
                 return LedgerQueryContractEvents(
                     address=self.address,
