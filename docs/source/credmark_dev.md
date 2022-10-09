@@ -371,14 +371,15 @@ Out[3]: credmark.dto.EmptyInput
 In [4]: models.aave_v2.get_lending_pool.outputDTO
 Out[4]: credmark.cmf.types.contract.Contract
 
-In [5]: models.token.price.inputDTO
-Out[5]: credmark.cmf.types.token.Token
+In [5]: models.price.quote.inputDTO
+Out[5]: models.dtos.price.PriceInput
 
-In [6]: models.token.price.inputDTO(symbol='CMK')
-Out[6]: Token(address='0x68cfb82eacb9f198d508b514d898a403c449533e')
+In [6]: models.price.quote.inputDTO(base='CMK')
+Out[6]: PriceInput(base=Token(address='0x68cfb82eacb9f198d508b514d898a403c449533e'),
+        quote=FiatCurrency(address='0x0000000000000000000000000000000000000348'))
 
-In [7]: models.token.price.outputDTO
-Out[7]: credmark.cmf.types.price.Price
+In [7]: models.price.quote.outputDTO
+Out[7]: credmark.cmf.types.price.PriceWithQuote
 ```
 
 #### Run a model
@@ -391,25 +392,31 @@ Out[1]: {'address': '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9'}
 ##### Run a model with parameters
 
 ```
-In [1]: models.token.price(Token(symbol='CMK'))
-Out[1]: {'price': 0.30365299879260643,
- 'src': 'token.price:sushiswap.get-pool-price-info|uniswap-v3.get-pool-price-info'}
+In [1]: models.price.quote(base=Token(symbol='CMK'))
+Out[1]: {'price': 0.010790053113674614,
+ 'src': 'sushiswap,uniswap-v3|Non-zero:2|Zero:2|4.0',
+ 'quoteAddress': '0x0000000000000000000000000000000000000348'}
 
 # Or use args to get the same result:
-In [2]: models.token.price(symbol='CMK')
-Out[2]: {'price': 0.30365299879260643,
- 'src': 'token.price:sushiswap.get-pool-price-info|uniswap-v3.get-pool-price-info'}
+In [2]: models.price.quote(base='CMK')
+Out[2]: {'price': 0.010790053113674614,
+ 'src': 'sushiswap,uniswap-v3|Non-zero:2|Zero:2|4.0',
+ 'quoteAddress': '0x0000000000000000000000000000000000000348'}
 ```
 
 ##### Run a model and get a DTO result
 
 ```
-In [2]: models.token.price(Token(symbol='CMK'), return_type=Price)
-Out[2]: Price(price=0.30365299879260643, src='token.price:sushiswap.get-pool-price-info|uniswap-v3.get-pool-price-info')
+In [2]: models.price.quote(base=Token(symbol='CMK'), return_type=PriceWithQuote)
+Out[2]: PriceWithQuote(price=0.010790053113674614,
+  src='sushiswap,uniswap-v3|Non-zero:2|Zero:2|4.0',
+  quoteAddress='0x0000000000000000000000000000000000000348')
 
 # Or another way to get the same result:
-In [2]: Price(**models.token.price(Token(symbol='CMK')))
-Out[2]: Price(price=0.30365299879260643, src='token.price:sushiswap.get-pool-price-info|uniswap-v3.get-pool-price-info')
+In [2]: PriceWithQuote(**models.price.quote(base=Token(symbol='CMK')))
+Out[2]: PriceWithQuote(price=0.010790053113674614,
+  src='sushiswap,uniswap-v3|Non-zero:2|Zero:2|4.0',
+  quoteAddress='0x0000000000000000000000000000000000000348')
 ```
 
 #### Switch context to an earlier block number

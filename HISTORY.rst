@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.48 [2022-10-09]
+* fix: price model used in portfolio/position
+
 0.8.47 [2022-10-03]
 * fix: decoded table names "unnamed variable" to _0, _1, ...
 

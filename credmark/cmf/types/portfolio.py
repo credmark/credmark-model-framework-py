@@ -9,7 +9,7 @@ class Portfolio(IterableListGenericDTO[Position]):
     positions: List[Position] = DTOField(default=[], description='List of positions')
     _iterator: str = PrivateAttr('positions')
 
-    def get_value(self, price_model='token.price'):
+    def get_value(self, price_model='price.quote'):
         """
         Returns:
             The value of the portfolio using the price_model.
