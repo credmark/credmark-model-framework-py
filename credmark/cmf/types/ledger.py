@@ -1,10 +1,20 @@
+from enum import Enum
 import inspect
-from typing import Dict, List
+from typing import Dict, List, Tuple, Union
 
 import pandas as pd
 from credmark.cmf.model.errors import ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 from .ledger_errors import InvalidColumnException
+
+
+class JoinType(str, Enum):
+    INNER = 'inner'
+    LEFT_OUTER = 'leftOuter'
+    RIGHT_OUTER = 'rightOuter'
+    FULL_OUTER = 'fullOuter'
+    CROSS = 'cross'
+    NATURAL = 'natural'
 
 
 class LedgerAggregate(DTO):
@@ -15,6 +25,18 @@ class LedgerAggregate(DTO):
     """
     expression: str = DTOField(..., description='Aggregate expression, for example "MAX(GAS_USED)"')
     asName: str = DTOField(..., description='Returned as data column name')
+
+
+class LedgerJoin(DTO):
+    """
+    Join in a query.
+    It is defined by table key, table alias and
+    expression to join on.
+    """
+    type: Union[JoinType, None] = DTOField(description='Type of join. Defaults to inner join.')
+    tableKey: str = DTOField(..., description='Key of the table to be joined')
+    alias: Union[str, None] = DTOField(description='Alias for the table')
+    on: str = DTOField(..., description='Join expression, for example "a.address = b.address"')
 
 
 class LedgerModelOutput(IterableListGenericDTO[dict]):
@@ -80,6 +102,13 @@ class ColumnField(str):
         return ColumnField(self + ' asc')
 
     def _compare(self, value, str_lower, op):
+        # Don't quote when comparing with another column
+        if isinstance(value, ColumnField):
+            if str_lower:
+                return ColumnField(f'{self} {op} {ColumnField(value)}')
+            else:
+                return ColumnField(f'{self} {op} {ColumnField(value).lower()}')
+
         if isinstance(value, str):
             if str_lower:
                 return ColumnField(f'{self} {op} {ColumnField(value).squote()}')
@@ -241,17 +270,22 @@ class LedgerTable:
     # Use a doc string """""" after each property so they will be
     # documented automatically.
 
+    _table_key: str
+    _alias: Union[str, None] = None
+    _more_cols: Union[List[Tuple[str, str]], None]
     _column_dict: Dict[str, ColumnField] = {}
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self._table_key = kwargs['table_key']
+        self._more_cols = kwargs['more_cols']
 
         self._column_dict = {}
         for i in inspect.getmembers(self.__class__):
             if isinstance(getattr(self.__class__, i[0]), ColumnField) and i[0][0].isalpha():
                 self._column_dict[i[0]] = i[1]
 
-        for i in kwargs['more_cols']:
+        for i in self._more_cols:
             self._column_dict[i[0]] = ColumnField(i[1])
             setattr(self, i[0], ColumnField(i[1]))
 
@@ -268,6 +302,22 @@ class LedgerTable:
         if name in self._column_dict:
             return self._column_dict[name]
         raise AttributeError(f'{name} not found in {self.colnames}')
+
+    def as_(self, alias: str):
+        self._alias = alias
+        self._column_dict = {}
+        for i in inspect.getmembers(self.__class__):
+            if isinstance(getattr(self.__class__, i[0]), ColumnField) and i[0][0].isalpha():
+                field = ColumnField(f'{self._alias}.{i[1]}')
+                setattr(self, i[0], field)
+                self._column_dict[i[0]] = field
+
+        for i in self._more_cols or []:
+            field = ColumnField(f'{self._alias}.{i[1]}')
+            self._column_dict[i[0]] = field
+            setattr(self, i[0], field)
+
+        return self
 
     @property
     def columns(self) -> List[str]:
@@ -299,6 +349,14 @@ class LedgerTable:
                     column,
                     list(column_set),
                     f"invalid column name '{column}' not found in {list(column_set)}")
+
+    @property
+    def alias(self):
+        return self._alias
+
+    @property
+    def table_key(self):
+        return self._table_key
 
     @property
     def bigint_cols(self):

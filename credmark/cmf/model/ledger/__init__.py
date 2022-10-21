@@ -125,6 +125,7 @@ class Ledger:
     def Transaction(self):
         return LedgerQueryTransaction(
             cwgo_query_table='ledger.transaction_data',
+            table_key='transactions',
             more_cols=[])
 
     @property
@@ -132,6 +133,7 @@ class Ledger:
     def Trace(self):
         return LedgerQueryTrace(
             cwgo_query_table='ledger.trace_data',
+            table_key='traces',
             more_cols=[])
 
     @property
@@ -139,6 +141,7 @@ class Ledger:
     def Block(self):
         return LedgerQueryBlock(
             cwgo_query_table='ledger.block_data',
+            table_key='blocks',
             more_cols=[])
 
     @property
@@ -146,6 +149,7 @@ class Ledger:
     def Contract(self):
         return LedgerQueryContract(
             cwgo_query_table='ledger.contract_data',
+            table_key='contracts',
             more_cols=[])
 
     @property
@@ -153,6 +157,7 @@ class Ledger:
     def Log(self):
         return LedgerQueryLog(
             cwgo_query_table='ledger.log_data',
+            table_key='logs',
             more_cols=[])
 
     @property
@@ -160,6 +165,7 @@ class Ledger:
     def Receipt(self):
         return LedgerQueryReceipt(
             cwgo_query_table='ledger.receipt_data',
+            table_key='receipts',
             more_cols=[])
 
     @property
@@ -167,6 +173,7 @@ class Ledger:
     def Token(self):
         return LedgerQueryToken(
             cwgo_query_table='ledger.erc20_token_data',
+            table_key='tokens',
             more_cols=[])
 
     @property
@@ -174,6 +181,7 @@ class Ledger:
     def TokenTransfer(self):
         return LedgerQueryTokenTransfer(
             cwgo_query_table='ledger.erc20_token_transfer_data',
+            table_key='token_transfers',
             more_cols=[])
 
     @property
@@ -181,4 +189,5 @@ class Ledger:
     def TokenBalance(self):
         return LedgerQueryTokenBalance(
             cwgo_query_table='ledger.token_balance',
+            table_key='token_double_entry_book',
             more_cols=[])
