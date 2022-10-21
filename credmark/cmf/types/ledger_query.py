@@ -3,7 +3,8 @@ from typing import List, Tuple, Union
 
 import credmark.cmf.model
 
-from .ledger import ColumnField, LedgerAggregate, LedgerModelOutput
+from .ledger import (ColumnField, JoinType, LedgerAggregate,
+                     LedgerJoin, LedgerModelOutput, LedgerTable)
 from .ledger_errors import InvalidQueryException
 
 
@@ -25,6 +26,8 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
     def _gen_model_input(self,  # pylint: disable=too-many-arguments
                          model_slug: str,
                          columns: Union[List[str], List[ColumnField], None] = None,
+                         joins: Union[List[Union[Tuple[LedgerTable, str],
+                                                 Tuple[JoinType, LedgerTable, str]]], None] = None,
                          where: Union[str, None] = None,
                          group_by: Union[List[str], List[ColumnField], None] = None,
                          order_by: Union[str, ColumnField, None] = None,
@@ -82,15 +85,22 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                             else [LedgerAggregate(expression=agg[0], asName=agg[1])
                                   for agg in aggregates_list])
 
-        model_input = {'columns': columns,
-                       'aggregates': aggregates_value,
-                       'where': where,
-                       'groupBy': ','.join(group_by) if group_by is not None else None,
-                       'having': having,
-                       'orderBy': order_by,
-                       'limit': str(limit) if limit is not None else None,
-                       'offset': str(offset) if offset is not None else None}
-        return model_input
+        joins_value = [LedgerJoin(tableKey=table.table_key,
+                                  alias=table.alias,
+                                  on=on,
+                                  type=(type_list[0] if type_list else None))
+                       for (*type_list, table, on) in joins] if joins is not None else None
+
+        return {'alias': getattr(self, 'alias', None),
+                'columns': columns,
+                'joins': joins_value,
+                'aggregates': aggregates_value,
+                'where': where,
+                'groupBy': ','.join(group_by) if group_by is not None else None,
+                'having': having,
+                'orderBy': order_by,
+                'limit': str(limit) if limit is not None else None,
+                'offset': str(offset) if offset is not None else None}
 
 
 class LedgerQuery(LedgerQueryBase):
@@ -101,6 +111,8 @@ class LedgerQuery(LedgerQueryBase):
 
     def select(self,  # pylint: disable=too-many-arguments
                columns: Union[List[str], List[ColumnField], None] = None,
+               joins: Union[List[Union[Tuple[LedgerTable, str],
+                                       Tuple[JoinType, LedgerTable, str]]], None] = None,
                where: Union[str, None] = None,
                group_by: Union[List[str], List[ColumnField], None] = None,
                order_by: Union[str, ColumnField, None] = None,
@@ -114,6 +126,7 @@ class LedgerQuery(LedgerQueryBase):
         """
         model_input = self._gen_model_input(model_slug=self._cwgo_query,
                                             columns=columns,
+                                            joins=joins,
                                             where=where,
                                             group_by=group_by,
                                             order_by=order_by,

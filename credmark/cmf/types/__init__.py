@@ -8,6 +8,7 @@ from .compose import (MapBlockResult, MapBlocksInput, MapBlocksOutput,
                       MapBlockTimeSeriesInput, MapBlockTimeSeriesOutput,
                       MapInputsInput, MapInputsOutput, MapInputsResult)
 from .contract import Contract, ContractInfo, Contracts
+from .ledger import JoinType
 from .ledger_contract import ContractLedger
 from .ledger_query import LedgerQuery
 from .ledger_series import (LedgerBlockNumberTimeSeries,
