@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.49 [2022-10-21]
+* feat: add as_ and join to ledger model query
+
 0.8.48 [2022-10-09]
 * fix: price model used in portfolio/position
 
