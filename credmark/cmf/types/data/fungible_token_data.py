@@ -1079,6 +1079,18 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
             "name": "NXM",
             "address": "0xd7c49CEE7E9188cCa6AD8FF264C1DA2e69D4Cf3B"
         },
+        "IDLE": {
+            "symbol": "IDLE",
+            "decimals": 18,
+            "name": "Idle",
+            "address": "0x875773784Af8135eA0ef43b5a374AaD105c5D39e"
+        },
+        "INDEX": {
+            "symbol": "INDEX",
+            "decimals": 18,
+            "name": "Index",
+            "address": "0x0954906da0Bf32d5479e25f46056d22f08464cab"
+        },
     }
 }
 
