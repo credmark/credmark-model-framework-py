@@ -3,6 +3,11 @@
 History
 -------
 
+0.8.50 [2022-10-21]
+* feat: fix contract ledger model
+* feat: create_cmf() with template
+* feat: add IDLE and INDEX tokens
+
 0.8.49 [2022-10-21]
 * feat: add as_ and join to ledger model query
 

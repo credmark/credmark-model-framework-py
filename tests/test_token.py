@@ -101,8 +101,8 @@ class TestToken(ModelTestCase):
                         self.assertTrue(token_meta['address'] == Address(
                             token_meta['address']).checksum)
                     except AssertionError:
-                        print(token_meta['address'], Address(
-                            token_meta['address']).checksum)
+                        print(('Diff', token_meta['address'], Address(
+                            token_meta['address']).checksum))
                         raise
 
                     try:

@@ -7,11 +7,12 @@ import os
 import sys
 from typing import List, Set, Type, Union
 
+from packaging import version
+from requests.structures import CaseInsensitiveDict
+
 from credmark.cmf.engine.errors import ModelManifestWriteError
 from credmark.cmf.model import Model, validate_model_slug
 from credmark.cmf.model.errors import ModelNotFoundError
-from packaging import version
-from requests.structures import CaseInsensitiveDict
 
 # "Dev models" are models that are implemented on the server
 # but we have a local version used for development (dev_mode).
@@ -245,13 +246,9 @@ class ModelLoader:
         if slug in self.__slug_to_versions_dict:
             self.__slug_to_versions_dict.pop(slug)
 
-        for m in self.__model_manifest_list:
-            if m['slug'] == slug:
-                del m
-
-        for m in self.__model_manifest_list_with_class:
-            if m['slug'] == slug:
-                del m
+        self.__model_manifest_list = [m for m in self.__model_manifest_list if m['slug'] != slug]
+        self.__model_manifest_list_with_class = \
+            [m for m in self.__model_manifest_list_with_class if m['slug'] != slug]
 
     def _add_model_class(self, model_class: Type[Model]):
         slug = model_class.slug

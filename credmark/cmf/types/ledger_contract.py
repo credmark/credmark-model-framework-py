@@ -306,6 +306,7 @@ class ContractEntityFactory:
                     address=self.address,
                     entity_type=self.entity_type,
                     name=_name,
+                    table_key='fn',
                     more_cols=more_cols)
 
         elif self.entity_type == ContractEntityType.EVENTS:
@@ -319,6 +320,7 @@ class ContractEntityFactory:
                     address=self.address,
                     entity_type=self.entity_type,
                     name=_name,
+                    table_key='evt',
                     more_cols=more_cols)
 
         raise AttributeError(_name)

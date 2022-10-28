@@ -1,6 +1,7 @@
 # pylint: disable=locally-disabled, unused-import, unused-variable, unused-wildcard-import, wildcard-import, line-too-long
 
 import importlib
+import importlib.util
 import os
 import sys
 from typing import Dict, List, NamedTuple, Optional
@@ -96,6 +97,48 @@ def create_cmf_context(cmf_init, local_ns):
         var_namespace['run_model_historical_blocks'] = context.historical.run_model_historical_blocks
 
     return context, model_loader
+
+
+def create_cmf(cmf_param):
+    """
+    create cmf
+    """
+
+    models_spec = importlib.util.find_spec("models")
+    if models_spec is not None and models_spec.submodule_search_locations is not None:
+        models_path = [models_spec.submodule_search_locations[0]]
+    else:
+        models_path = []
+
+    if 'chain_to_provider_url' not in cmf_param:
+        raise ValueError("chain_to_provider_url shall be provided as {'1': node_url}")
+
+    if 'api_url' not in cmf_param:
+        raise ValueError("api_url shall be provided as http://localhost:8545")
+
+    param = {
+        'chain_id': 1,
+        'block_number': None,
+        'model_loader_path': models_path,
+        'use_local_models': '*',
+        'register_utility_global': False
+    } | cmf_param
+
+    cmf_init = CmfInit(**param)
+
+    context, _model_loader = create_cmf_context(cmf_init, globals())
+
+    model_loaded = _model_loader.loaded_model_version_lists()
+    for _k, cache_value in model_loaded.items():
+        try:
+            assert len(cache_value) == 1
+        except AssertionError:
+            print(_k)
+            raise
+
+    model_loaded = {k: v[0] for k, v in model_loaded.items()}
+
+    return context, model_loaded
 
 
 @magics_class
