@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.51 [2022-10-29]
+* fix: native token initialization in token 
+
 0.8.50 [2022-10-21]
 * feat: fix contract ledger model
 * feat: create_cmf() with template

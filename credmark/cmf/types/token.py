@@ -108,7 +108,7 @@ class Token(Contract):
             is_native_token=True)
 
         if token_data is not None:
-            return NativeToken()
+            return NativeToken.__new__(cls)  # type: ignore
 
         return super().__new__(cls)
 
@@ -178,7 +178,7 @@ class Token(Contract):
             raise ModelDataError(
                 f'No {prop_name} function on token {self.address}, non ERC20 Compliant'
                 f' proxied by {self.proxy_for.address}' if self.proxy_for is not None else ''
-                ) from err
+            ) from err
         if prop_value is None:
             raise ModelDataError(f"Token.{prop_name} is None")
         return prop_value
