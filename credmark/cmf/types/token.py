@@ -90,9 +90,20 @@ class Token(Contract):
             return obj
         raise TypeError(f'{cls.__name__} must be deserialized with an str or dict')
 
-    def __new__(cls, *_args, **data):
+    def __new__(cls, *args, **data):
         if cls == NativeToken:
             return super().__new__(cls)
+
+        if len(args) > 0:
+            if isinstance(args[0], str):
+                if evm_address_regex.match(args[0]) is not None:
+                    if 'address' not in data:
+                        data['address'] = args[0]
+                else:
+                    if 'symbol' not in data:
+                        data['symbol'] = args[0]
+            elif isinstance(args[0], dict):
+                data = args[0] | data
 
         context = credmark.cmf.model.ModelContext.current_context()
         symbol = data.get('symbol', None)
@@ -108,7 +119,7 @@ class Token(Contract):
             is_native_token=True)
 
         if token_data is not None:
-            return NativeToken.__new__(cls)  # type: ignore
+            return super().__new__(NativeToken)
 
         return super().__new__(cls)
 
@@ -256,11 +267,22 @@ class NativeToken(Token):
     Native token for a chain, such as "ETH" or "MATIC".
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         context = credmark.cmf.model.ModelContext.current_context()
         token_data = NATIVE_TOKEN[str(context.chain_id)]
         if token_data is None:
             raise ModelRunError(f'No native token specified for chain id: {context.chain_id}')
+
+        if len(args) > 0:
+            if isinstance(args[0], str):
+                if evm_address_regex.match(args[0]) is not None:
+                    if 'address' not in kwargs:
+                        kwargs['address'] = args[0]
+                else:
+                    if 'symbol' not in kwargs:
+                        kwargs['symbol'] = args[0]
+            elif isinstance(args[0], dict):
+                kwargs = args[0] | kwargs
 
         symbol = kwargs.get('symbol', None)
         address = kwargs.get('address', None)
@@ -272,7 +294,7 @@ class NativeToken(Token):
             raise ModelRunError(
                 f'Wrong address {address} specified for {token_data["address"]} '
                 f'for chain id: {context.chain_id}')
-        super().__init__(address=token_data['address'])
+        super().__init__(**({'address': token_data['address']}))
         if context.chain_id == 1:
             self._meta.abi = ABI([])
             self._meta.symbol = token_data['symbol']

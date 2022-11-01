@@ -1,7 +1,7 @@
 import unittest
 
 from credmark.cmf.engine.model_unittest import ModelTestCase
-from credmark.cmf.model.errors import ModelBaseError
+from credmark.cmf.model.errors import ModelBaseError, ModelRunError
 from credmark.cmf.types import Account, Address, Contract, Token
 from credmark.cmf.types.data.fungible_token_data import (
     FUNGIBLE_TOKEN_DATA_BY_ADDRESS, FUNGIBLE_TOKEN_DATA_BY_SYMBOL)
@@ -22,6 +22,36 @@ class TCA(DTO):
 
 
 class TestToken(ModelTestCase):
+    def test_native(self):
+        nt = NativeToken()
+
+        self.assertTrue(nt == Token(address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeee'))
+        self.assertTrue(nt == Token(symbol='ETH'))
+        self.assertTrue(nt == Token('0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeee'))
+        self.assertTrue(nt == Token('ETH'))
+
+        self.assertTrue(nt == NativeToken(address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeee'))
+        self.assertTrue(nt == NativeToken(symbol='ETH'))
+        self.assertTrue(nt == NativeToken('0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeee'))
+        self.assertTrue(nt == NativeToken('ETH'))
+
+        with self.assertRaises(ModelRunError):
+            NativeToken(address=Token('AAVE').address)
+
+        with self.assertRaises(ModelRunError):
+            NativeToken(symbol='AAVE')
+
+        with self.assertRaises(ModelRunError):
+            NativeToken('AAVE')
+
+        with self.assertRaises(ModelRunError):
+            NativeToken(Token('AAVE').address)
+
+        self.assertTrue(nt != Token(address=Token('AAVE').address))
+        self.assertTrue(nt != Token(symbol='AAVE'))
+        self.assertTrue(nt != Token('AAVE'))
+        self.assertTrue(nt != Token(Token('AAVE').address))
+
     def test_creation(self):
         a1 = Account(address='0xad529dabbd6201545ce9aac300b868f2443382b9')
         a2 = Account('0xad529dabbd6201545ce9aac300b868f2443382b9')
