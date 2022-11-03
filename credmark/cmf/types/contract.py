@@ -29,7 +29,7 @@ def get_slot_proxy_address(context, contract_address,
                 cc = context.web3.eth.contract(address=Address(
                     contract_address).checksum, abi=contract_abi)
                 slot_proxy_address = cc.functions.comptrollerImplementation().call()
-        elif contract_name in ['YAMDelegator', 'CErc20Delegator']:
+        elif contract_name in ['YAMDelegator', 'CErc20Delegator', 'AppProxyUpgradeable']:
             # EIP-897
             cc = context.web3.eth.contract(address=Address(
                 contract_address).checksum, abi=contract_abi)
@@ -47,7 +47,9 @@ def get_slot_proxy_address(context, contract_address,
                 slot_proxy_address = context.web3.eth.get_storage_at(
                     contract_address, SLOT_TRUEUSD)
                 slot_proxy_address = Address(slot_proxy_address)
-        elif contract_name in ['FiatTokenProxy', 'AdminUpgradeabilityProxy']:
+        elif contract_name in ['FiatTokenProxy',
+                               'AdminUpgradeabilityProxy',
+                               'InitializeGovernedUpgradeabilityProxy']:
             slot_proxy_address = Address(context.web3.eth.get_storage_at(
                 contract_address, SLOT_EIP1967))
             if slot_proxy_address.is_null():
