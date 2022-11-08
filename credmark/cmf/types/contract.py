@@ -202,7 +202,7 @@ class Contract(Account):
                 context, self.address, self._meta.contract_name, self._meta.abi)
 
             if self._meta.contract_name in ['BeaconProxy'] and self._meta.is_transparent_proxy:
-                # TODO: May not up tp date
+                # TODO: Special case for BeaconProxy, proxy address may not up to date
                 proxy_address = res.get('implementation')
                 self._meta.proxy_implementation = Contract(address=proxy_address)
             else:
