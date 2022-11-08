@@ -24,6 +24,7 @@ SLOT_PROXYMANYTOONE = hex(int(Web3.keccak(text='IMPLEMENTATION_ADDRESS').hex(), 
 SLOT_ARA = hex(int(Web3.keccak(text='io.ara.proxy.implementation').hex(), 16))
 
 
+# pylint:disable=too-many-branches
 def get_slot_proxy_address(context, contract_address,
                            contract_name, contract_abi) -> Optional[Address]:
     slot_proxy_address = None
@@ -252,7 +253,9 @@ class Contract(Account):
         """
         if self.proxy_for is not None:
             context = credmark.cmf.model.ModelContext.current_context()
-            return context.web3.eth.contract(address=context.web3.toChecksumAddress(self.address), abi=self.proxy_for.abi).functions
+            return context.web3.eth.contract(
+                address=context.web3.toChecksumAddress(self.address),
+                abi=self.proxy_for.abi).functions
         else:
             return self.instance.functions
 
