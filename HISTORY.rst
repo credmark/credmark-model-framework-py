@@ -3,8 +3,11 @@
 History
 -------
 
+0.8.52 [2022-11-8]
+* fix: support more proxies and tokens
+
 0.8.51 [2022-10-29]
-* fix: native token initialization in token 
+* fix: native token initialization in token
 
 0.8.50 [2022-10-21]
 * feat: fix contract ledger model
