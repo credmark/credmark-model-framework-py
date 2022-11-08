@@ -198,9 +198,14 @@ class Token(Contract):
     def symbol(self) -> str:
         self._load()
         if self._meta.symbol is None:
-            symbol_tmp = self.try_erc20_property('symbol')
+            try:
+                symbol_tmp = self.try_erc20_property('symbol')
+            except ModelDataError:
+                symbol_tmp = self.try_erc20_property('SYMBOL')
             if isinstance(symbol_tmp, bytes):
                 symbol_tmp = symbol_tmp.decode('utf-8', errors='strict').replace('\x00', '')
+            elif isinstance(symbol_tmp, str):
+                symbol_tmp = symbol_tmp.replace('\x00', '')
             elif not isinstance(symbol_tmp, str):
                 raise ModelDataError(f'Unknown value for symbol {symbol_tmp}')
             self._meta.symbol = symbol_tmp
@@ -210,16 +215,25 @@ class Token(Contract):
     def decimals(self) -> int:
         self._load()
         if self._meta.decimals is None:
-            self._meta.decimals = self.try_erc20_property('decimals')
+            try:
+                self._meta.decimals = self.try_erc20_property('decimals')
+            except ModelDataError:
+                self._meta.decimals = self.try_erc20_property('DECIMALS')
+
         return self._meta.decimals
 
     @property
     def name(self) -> str:
         self._load()
         if self._meta.name is None:
-            name_tmp = self.try_erc20_property('name')
+            try:
+                name_tmp = self.try_erc20_property('name')
+            except ModelDataError:
+                name_tmp = self.try_erc20_property('NAME')
             if isinstance(name_tmp, bytes):
                 name_tmp = name_tmp.decode('utf-8', errors='strict').replace('\x00', '')
+            elif isinstance(name_tmp, str):
+                name_tmp = name_tmp.replace('\x00', '')
             elif not isinstance(name_tmp, str):
                 raise ModelDataError(f'Unknown value for name {name_tmp}')
             self._meta.name = name_tmp
