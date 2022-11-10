@@ -42,7 +42,8 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
             if columns is not None:
                 raise InvalidQueryException(
                     model_slug,
-                    f'{model_slug} call with group_by will need the columns to be empty [] or None.')
+                    (f'{model_slug} call with group_by will need the columns to be '
+                      'empty [] or None.'))
             # pylint:disable=no-member
             columns = [c for c in group_by
                        if c in self.columns]  # type: ignore
