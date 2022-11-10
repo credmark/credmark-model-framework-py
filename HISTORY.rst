@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.53 [2022-11-9]
+* fix: support more proxies and tokens
+
 0.8.52 [2022-11-8]
 * fix: support more proxies and tokens
 

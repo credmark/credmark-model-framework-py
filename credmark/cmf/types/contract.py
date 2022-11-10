@@ -33,7 +33,7 @@ def get_slot_proxy_address(context, contract_address,
             if contract_address == Address('0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B'):
                 cc = context.web3.eth.contract(address=Address(
                     contract_address).checksum, abi=contract_abi)
-                slot_proxy_address = cc.functions.comptrollerImplementation().call()
+                slot_proxy_address = Address(cc.functions.comptrollerImplementation().call())
         elif contract_name in ['DelegateCallProxyManyToOne']:
             slot_proxy_address = Address(context.web3.eth.get_storage_at(
                 contract_address, SLOT_PROXYMANYTOONE))
@@ -49,7 +49,7 @@ def get_slot_proxy_address(context, contract_address,
             cc = context.web3.eth.contract(address=Address(
                 contract_address).checksum, abi=contract_abi)
             if cc.abi is not None and 'implementation' in cc.abi.functions:
-                slot_proxy_address = cc.functions.implementation().call()
+                slot_proxy_address = Address(cc.functions.implementation().call())
         elif (contract_name == 'Delegator' and
                 contract_address == Address('0x1985365e9f78359a9B6AD760e32412f4a445E862')):
             cc = context.web3.eth.contract(address=Address(
@@ -59,9 +59,8 @@ def get_slot_proxy_address(context, contract_address,
             slot_proxy_address = Address(controller.functions.lookup(lookupName).call())
         elif contract_name in ['OwnedUpgradeabilityProxy']:
             if contract_address == Address('0x0000000000085d4780B73119b644AE5ecd22b376'):
-                slot_proxy_address = context.web3.eth.get_storage_at(
-                    contract_address, SLOT_TRUEUSD)
-                slot_proxy_address = Address(slot_proxy_address)
+                slot_proxy_address = Address(context.web3.eth.get_storage_at(
+                    contract_address, SLOT_TRUEUSD))
         elif contract_name in ['FiatTokenProxy',
                                'AdminUpgradeabilityProxy',
                                'InitializeGovernedUpgradeabilityProxy']:
@@ -86,14 +85,14 @@ def get_slot_proxy_address(context, contract_address,
             cc = context.web3.eth.contract(address=Address(
                 contract_address).checksum, abi=contract_abi)
             if cc.abi is not None and 'logic' in cc.abi.functions:
-                slot_proxy_address = cc.functions.logic().call()
+                slot_proxy_address = Address(cc.functions.logic().call())
         elif contract_name in ['PProxyPausable', 'PProxy']:
             slot_proxy_address = Address(context.web3.eth.get_storage_at(
                 contract_address, SLOT_PPROXY))
             cc = context.web3.eth.contract(address=Address(
                 contract_address).checksum, abi=contract_abi)
             if cc.abi is not None and 'getImplementation' in cc.abi.functions:
-                slot_proxy_address = cc.functions.getImplementation().call()
+                slot_proxy_address = Address(cc.functions.getImplementation().call())
         elif contract_name in ['RenERC20Proxy',
                                'RenBTC',
                                'TransparentUpgradeableProxy',
@@ -103,6 +102,7 @@ def get_slot_proxy_address(context, contract_address,
             # if eip-1967 compliant, https://eips.ethereum.org/EIPS/eip-1967
             slot_proxy_address = Address(context.web3.eth.get_storage_at(
                 contract_address, SLOT_EIP1967))
+
     return slot_proxy_address
 
 
@@ -198,15 +198,15 @@ class Contract(Account):
             self._meta.abi = ABI(res.get('abi'))
             self._meta.is_transparent_proxy = res.get('proxy', 0) == "1"
 
-            slot_proxy_address = get_slot_proxy_address(
-                context, self.address, self._meta.contract_name, self._meta.abi)
-
             if self._meta.contract_name in ['BeaconProxy'] and self._meta.is_transparent_proxy:
                 # TODO: Special case for BeaconProxy, proxy address may not up to date
                 proxy_address = res.get('implementation')
                 self._meta.proxy_implementation = Contract(address=proxy_address)
             else:
-                if slot_proxy_address is not None:
+                slot_proxy_address = get_slot_proxy_address(
+                    context, self.address, self._meta.contract_name, self._meta.abi)
+
+                if slot_proxy_address is not None and not slot_proxy_address.is_null():
                     # TODO: as we only store the latest implementation in DB but not for the history.
                     self._meta.proxy_implementation = Contract(address=slot_proxy_address)
                 elif self._meta.is_transparent_proxy:
