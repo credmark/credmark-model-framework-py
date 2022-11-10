@@ -37,10 +37,12 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                          having: Union[str, None] = None) -> dict:
 
         if group_by is not None:
+            if columns == []:
+                columns = None
             if columns is not None:
                 raise InvalidQueryException(
                     model_slug,
-                    f'{model_slug} call with group_by will need the columns to be empty.')
+                    f'{model_slug} call with group_by will need the columns to be empty [] or None.')
             # pylint:disable=no-member
             columns = [c for c in group_by
                        if c in self.columns]  # type: ignore
