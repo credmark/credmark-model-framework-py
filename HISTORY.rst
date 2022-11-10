@@ -4,7 +4,8 @@ History
 -------
 
 0.8.53 [2022-11-9]
-* fix: support more proxies and tokens
+* more fix: support more proxies and tokens
+* fix: columns can be [] or None in ledger query
 
 0.8.52 [2022-11-8]
 * fix: support more proxies and tokens
