@@ -111,7 +111,8 @@ def create_cmf(cmf_param):
         models_path = []
 
     if 'chain_to_provider_url' not in cmf_param:
-        raise ValueError("chain_to_provider_url shall be provided as {'1': 'http://localhost:8545'}")
+        raise ValueError(
+            "chain_to_provider_url shall be provided as {'1': 'http://localhost:8545'}")
 
     if 'api_url' not in cmf_param:
         raise ValueError("api_url shall be provided as http://localhost:8700")
