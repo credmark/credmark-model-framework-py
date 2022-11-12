@@ -44,7 +44,8 @@ def get_slot_proxy_address(context, contract_address,
                                'CErc20Delegator',
                                'AppProxyUpgradeable',
                                'ZoraProxy',
-                               'TokenProxy']:
+                               'TokenProxy',
+                               'MeterGovProxy']:
             # EIP-897
             cc = context.web3.eth.contract(address=Address(
                 contract_address).checksum, abi=contract_abi)
@@ -69,7 +70,7 @@ def get_slot_proxy_address(context, contract_address,
             if slot_proxy_address.is_null():
                 slot_proxy_address = Address(context.web3.eth.get_storage_at(
                     contract_address, SLOT_ZEPPELINOS))
-        elif contract_name in ['BeaconProxy', 'UpgradeBeaconProxy']:
+        elif contract_name in ['BeaconProxy', 'UpgradeBeaconProxy', ]:
             # TODO: BEACON has a special design. The actual contract could be two-levels down
             # From token -> beacon -> beacon's implementation
             # context.web3.eth.contract(address='0x5A235C0b4cB8d0e80a5c3bF4d2faD5c32E440884',
@@ -79,6 +80,9 @@ def get_slot_proxy_address(context, contract_address,
             #       address=Address('0xBE86f647b167567525cCAAfcd6f881F1Ee558216').checksum,
             #       abi=Contract('0x612447E8d0BDB922059cE048bb5a7CeF9e017812').abi)
             #           .functions.childImplementation().call()
+            # cc = Contract('0xd31a59c85ae9d8edefec411d448f90841571b89c');
+            # pd.DataFrame(cc.fetch_events(cc.instance.events.BeaconUpgraded,
+            # from_block=0, to_block=self.context.block_number))
             slot_proxy_address = Address(context.web3.eth.get_storage_at(
                 contract_address, SLOT_BEACON))
         elif contract_name in ['InitializedProxy']:
@@ -98,10 +102,16 @@ def get_slot_proxy_address(context, contract_address,
                                'TransparentUpgradeableProxy',
                                'InitializableAdminUpgradeabilityProxy',
                                'InitializableImmutableAdminUpgradeabilityProxy',
-                               'BridgeToken']:
+                               'BridgeToken', ]:
             # if eip-1967 compliant, https://eips.ethereum.org/EIPS/eip-1967
             slot_proxy_address = Address(context.web3.eth.get_storage_at(
                 contract_address, SLOT_EIP1967))
+        # else:
+        #    slot_proxy_address = Address(context.web3.eth.get_storage_at(
+        #        contract_address, SLOT_EIP1967))
+
+    if slot_proxy_address is None or slot_proxy_address.is_null():
+        return None
 
     return slot_proxy_address
 
@@ -198,7 +208,7 @@ class Contract(Account):
             self._meta.abi = ABI(res.get('abi'))
             self._meta.is_transparent_proxy = res.get('proxy', 0) == "1"
 
-            if self._meta.contract_name in ['BeaconProxy'] and self._meta.is_transparent_proxy:
+            if self._meta.contract_name in ['BeaconProxy', 'BridgeToken'] and self._meta.is_transparent_proxy:
                 # TODO: Special case for BeaconProxy, proxy address may not up to date
                 proxy_address = res.get('implementation')
                 self._meta.proxy_implementation = Contract(address=proxy_address)
@@ -329,6 +339,7 @@ class Contract(Account):
             try:
                 self._load()
             except ModelDataError as err:
+                # pylint: disable=unsupported-membership-test
                 if 'abi not available for addres' not in err.data.message:
                     raise
         self._meta.abi = ABI(abi)
