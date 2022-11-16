@@ -1,7 +1,7 @@
 import credmark.cmf.model
 from credmark.dto import DTO, DTOField, cross_examples
+from credmark.cmf.model.errors import ModelDataError
 
-from .price import Price
 from .token import NativeToken, Token
 
 
@@ -9,7 +9,7 @@ class Position(DTO):
     amount: float = DTOField(0.0, description='Quantity of token held')
     asset: Token
 
-    def get_value(self, price_model='price.quote') -> float:
+    def get_value(self, price_model='price.quote', block_number=None, quote=None) -> float:
         """
         Returns:
             The value of the position using the price_model.
@@ -18,8 +18,19 @@ class Position(DTO):
             ModelDataError: if no pools available for price data.
         """
         context = credmark.cmf.model.ModelContext.current_context()
-        token_price = context.run_model(
-            price_model, input={'base': self.asset}, return_type=Price).price
+        if block_number is None:
+            block_number = context.block_number
+        if quote is not None:
+            quote_dict = {'quote': quote}
+        else:
+            quote_dict = {}
+
+        try:
+            token_price = context.run_model(price_model,
+                                            input={'base': self.asset} | quote_dict,
+                                            block_number=block_number)['price']
+        except ModelDataError:
+            token_price = 0
         return token_price * self.amount
 
     class Config:
