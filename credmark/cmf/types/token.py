@@ -10,6 +10,7 @@ from .abi import ABI
 from .account import Account
 from .address import Address, evm_address_regex
 from .contract import Contract
+from .block_number import BlockNumberOutOfRangeError
 from .data.erc_standard_data import ERC20_BASE_ABI
 from .data.fiat_currency_data import (FIAT_CURRENCY_DATA_BY_ADDRESS,
                                       FIAT_CURRENCY_DATA_BY_SYMBOL)
@@ -172,6 +173,24 @@ class Token(Contract):
             self._meta.abi = ABI(ERC20_BASE_ABI)
 
         super()._load()
+
+    def as_erc20(self):
+        try:
+            _ = self.abi
+        except ModelDataError:
+            self._meta.abi = ABI(ERC20_BASE_ABI)
+
+        if self.proxy_for is not None:
+            try:
+                _ = self.proxy_for.abi
+            except BlockNumberOutOfRangeError as err:
+                raise BlockNumberOutOfRangeError(
+                    err.data.message + f' for contract {self.address}')
+            except ModelDataError:
+                self.proxy_for._loaded = True  # pylint:disable=protected-access
+                self.proxy_for.set_abi(ERC20_BASE_ABI)
+
+        return self
 
     @property
     def info(self):
