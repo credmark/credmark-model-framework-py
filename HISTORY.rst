@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.56 [2022-11-18]
+* feat: as_erc20 to Token
+
 0.8.55 [2022-11-16]
 * feat: portfolio/position DTO update
 
