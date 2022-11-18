@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.55 [2022-11-16]
+* feat: portfolio/position DTO update
+
 0.8.54 [2022-11-12]
 * more fix: support more proxies and tokens
 
