@@ -2,7 +2,7 @@ import credmark.cmf.model
 from credmark.dto import DTO, DTOField, cross_examples
 from credmark.cmf.model.errors import ModelDataError
 
-from .token import NativeToken, Token
+from .token_erc20 import NativeToken, Token
 
 
 class Position(DTO):
