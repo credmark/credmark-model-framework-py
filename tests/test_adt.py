@@ -6,7 +6,7 @@ from credmark.cmf.types import PriceWithQuote, Records, Some
 
 class TestModel(ModelTestCase):
     def test_records(self):
-        mm = Records(records=[(1, 2, 3), (1, 2, 3)], fields=['c1', 'c2', 'c3'])
+        mm = Records(records=[(1, 2, 3), (1, 2, 3)], fields=['c1', 'c2', 'c3'], n_rows=2)
         df = mm.to_dataframe()
         self.assertTrue(df.shape == (2, 3))
         self.assertTrue(df.loc[0].shape[0] == 3)

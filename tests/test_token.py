@@ -2,7 +2,7 @@ import unittest
 
 from credmark.cmf.engine.model_unittest import ModelTestCase
 from credmark.cmf.model.errors import ModelBaseError, ModelRunError
-from credmark.cmf.types import Account, Address, Contract, Token
+from credmark.cmf.types import Account, Address, Contract, Token, Position, Portfolio
 from credmark.cmf.types.data.fungible_token_data import (
     FUNGIBLE_TOKEN_DATA_BY_ADDRESS, FUNGIBLE_TOKEN_DATA_BY_SYMBOL)
 from credmark.cmf.types.token_erc20 import NativeToken
@@ -22,6 +22,19 @@ class TCA(DTO):
 
 
 class TestToken(ModelTestCase):
+    def test_portfolio(self):
+        p1 = Portfolio(positions=[Position(amount=1, asset=Token("AAVE"))])
+        p2 = Portfolio.merge(p1, p1)
+        self.assertTrue(p2.positions[0].amount == 2.0)
+        self.assertTrue(p1.positions[0].amount == 1.0)
+
+        p3 = Portfolio(positions=[Position(amount=2, asset=Token("CMK")),
+                       Position(amount=4, asset=Token("LINK"))])
+        p4 = Portfolio.merge(p3, p1)
+        self.assertTrue(p1.positions[0].amount == 1.0)
+        self.assertTrue(len(p4.positions) == 3)
+        self.assertTrue(sum([p.amount for p in p4.positions]) == 7)
+
     def test_native(self):
         nt = NativeToken()
 

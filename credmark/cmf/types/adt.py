@@ -72,6 +72,7 @@ class Some(GenericDTO, Generic[DTOCLS]):
 class Records(GenericDTO):
     records: List[Tuple] = DTOField([])
     fields: List[str] = DTOField([], description='List of fields')
+    n_rows: int
     _iterator: str = 'records'
 
     def __iter__(self) -> Iterator[Tuple]:
@@ -106,4 +107,5 @@ class Records(GenericDTO):
     @classmethod
     def from_dataframe(cls, _df):
         return cls(records=list(_df.itertuples(index=False, name=None)),
-                   fields=_df.columns.tolist())
+                   fields=_df.columns.tolist(),
+                   n_rows=_df.shape[0])
