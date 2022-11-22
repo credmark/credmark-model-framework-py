@@ -3,7 +3,7 @@ from typing import List, Union
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 
 from .address import Address
-from .token import Currency
+from .fiat_currency import Currency
 
 __all__ = ['Price', 'PriceList']
 

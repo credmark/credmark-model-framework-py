@@ -24,13 +24,13 @@ class Account(DTO):
     _models = PrivateAttr(None)
 
     @classmethod
-    def validate(cls, obj):
-        if isinstance(obj, str):
-            return cls(obj)
-        if isinstance(obj, dict):
-            return cls(**obj)
-        if isinstance(obj, cls):
-            return obj
+    def validate(cls, value):
+        if isinstance(value, str):
+            return cls(value)
+        if isinstance(value, dict):
+            return cls(**value)
+        if isinstance(value, cls):
+            return value
         raise TypeError(f'{cls.__name__} must be deserialized with an str or dict')
 
     def __init__(self, *args, **data):
@@ -58,8 +58,15 @@ class Account(DTO):
             self._models = Models(context, input=self)
         return self._models
 
+    def to_accounts(self):
+        return Accounts(accounts=[self.address])  # type: ignore
+
 
 class Accounts(IterableListGenericDTO[Account]):
     accounts: List[Account] = DTOField(
         default=[], description="A list of Accounts")
     _iterator: str = PrivateAttr('accounts')
+
+    def to_address(self) -> List[Address]:
+        #pylint: disable=not-an-iterable
+        return [acc.address for acc in self.accounts]

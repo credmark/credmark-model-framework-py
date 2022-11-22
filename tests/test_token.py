@@ -5,7 +5,7 @@ from credmark.cmf.model.errors import ModelBaseError, ModelRunError
 from credmark.cmf.types import Account, Address, Contract, Token
 from credmark.cmf.types.data.fungible_token_data import (
     FUNGIBLE_TOKEN_DATA_BY_ADDRESS, FUNGIBLE_TOKEN_DATA_BY_SYMBOL)
-from credmark.cmf.types.token import NativeToken
+from credmark.cmf.types.token_erc20 import NativeToken
 from credmark.dto import DTO
 from credmark.dto.transform import transform_data_for_dto
 

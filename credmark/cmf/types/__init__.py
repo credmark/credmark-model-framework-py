@@ -17,5 +17,6 @@ from .network import Network
 from .portfolio import Portfolio
 from .position import NativePosition, Position, TokenPosition
 from .price import Price, PriceList, PriceWithQuote
-from .token import Currency, FiatCurrency, NativeToken, Token, Tokens
+from .token_erc20 import NativeToken, Token, Tokens
+from .fiat_currency import Currency, FiatCurrency
 from .token_wei import TokenWei
