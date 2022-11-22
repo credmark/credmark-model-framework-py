@@ -26,3 +26,22 @@ class Portfolio(IterableListGenericDTO[Position]):
         schema_extra: dict = {
             'examples': [{'positions': [exp]} for exp in Position.Config.schema_extra['examples']]
         }
+
+    @classmethod
+    def merge(cls, port1: "Portfolio", port2: "Portfolio"):
+        positions = {}
+        for pos in port1:
+            pos_key = str(pos.asset.address)
+            if positions.get(pos_key, None) is None:
+                positions[pos_key] = pos.copy()
+            else:
+                positions[pos_key].amount += pos.amount
+
+        for pos in port2:
+            pos_key = str(pos.asset.address)
+            if positions.get(pos_key, None) is None:
+                positions[pos_key] = pos.copy()
+            else:
+                positions[pos_key].amount += pos.amount
+
+        return cls(positions=list(positions.values()))
