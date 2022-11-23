@@ -29,9 +29,13 @@ class PydanticJSONEncoder(json.JSONEncoder):
         if isinstance(o, np.integer):
             return int(o)
         if isinstance(o, np.floating):
+            if np.isnan(o):
+                return None  # Serialized as JSON null.
             return float(o)
         if isinstance(o, np.ndarray):
             return o.tolist()
+        if isinstance(o, np.bool_):
+            return bool(o)
         if isinstance(o, (datetime.date, datetime.datetime)):
             return o.isoformat()
         return json.JSONEncoder.default(self, o)
