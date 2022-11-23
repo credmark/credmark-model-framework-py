@@ -7,7 +7,10 @@ import requests
 from credmark.cmf.engine.errors import ModelRunRequestError
 from credmark.cmf.model.errors import (ModelBaseError,
                                        create_instance_from_error_dict)
+from credmark.dto.encoder import json_dumps
+
 from requests.adapters import HTTPAdapter, Retry
+
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
 
@@ -132,7 +135,10 @@ class ModelApi:
         resp_obj = None
         url = urljoin(self.__url, RUN_MODEL_PATH)
         try:
-            resp = self.__session.post(url, json=req, timeout=RUN_REQUEST_TIMEOUT)
+            resp = self.__session.post(url,
+                                       data=json_dumps(req),
+                                       headers={'Content-Type': 'application/json'},
+                                       timeout=RUN_REQUEST_TIMEOUT)
             resp.raise_for_status()
             resp_obj = resp.json()
 
