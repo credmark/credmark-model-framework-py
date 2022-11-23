@@ -86,7 +86,7 @@ class Records(GenericDTO):
 
     @classmethod
     def empty(cls):
-        return cls(records=[], fields=[])
+        return cls(records=[], fields=[], n_rows=0)
 
     def append(self, obj):
         return getattr(self, self._iterator).append(obj)

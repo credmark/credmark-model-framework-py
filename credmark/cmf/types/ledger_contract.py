@@ -83,7 +83,8 @@ class ContractEntityQuery(LedgerQueryBase):
     Access an instance with ``contract.ledger.functions.{NameOfFunction}``
     or ``contract.ledger.events.{NameOfEvent}``. The name of the function or event
     can be auto-completed by pressing TAB after the ``.``. Alternatively, you could
-    looked up from ``contract.abi.functions`` or `contract.abi.events`.
+    looked the name of the function/event up from ``contract.abi.functions`` or
+    `contract.abi.events`.
 
     See the :meth:`~credmark.cmf.types.ledger_contract.ContractEntityQuery.select`
     method below for the query parameters.
