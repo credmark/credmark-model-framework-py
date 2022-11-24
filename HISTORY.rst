@@ -3,6 +3,11 @@
 History
 -------
 
+0.8.57 [2022-11-18]
+* feat: add merge to Portfolio
+* feat: json encoder for numpy types
+* feat: use encoder for all model api request
+
 0.8.56 [2022-11-18]
 * feat: as_erc20 to Token
 
