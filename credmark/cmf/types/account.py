@@ -70,3 +70,13 @@ class Accounts(IterableListGenericDTO[Account]):
     def to_address(self) -> List[Address]:
         #pylint: disable=not-an-iterable
         return [acc.address for acc in self.accounts]
+
+    class Config:
+        schema_extra = {
+            'examples': [
+                {"accounts": ["0x388c818ca8b9251b393131c08a736a67ccb19297",
+                              "0xf9cbBA7BF1b10E045691dDECa48182dB213E8F8B"]},
+                {"accounts": [{"address": "0x388c818ca8b9251b393131c08a736a67ccb19297"},
+                              {"address": "0xf9cbBA7BF1b10E045691dDECa48182dB213E8F8B"}]},
+            ]
+        }
