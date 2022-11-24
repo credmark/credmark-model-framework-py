@@ -3,7 +3,10 @@
 History
 -------
 
-0.8.57 [2022-11-18]
+0.8.58 [2022-11-24]
+* feat: add examples to DTO
+
+0.8.57 [2022-11-24]
 * feat: add merge to Portfolio
 * feat: json encoder for numpy types
 * feat: use encoder for all model api request
