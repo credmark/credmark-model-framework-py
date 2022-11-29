@@ -1,7 +1,9 @@
-# from web3._utils.abi import get_constructor_abi, merge_args_and_kwargs
+# pylint:disable=too-many-locals
+
 from web3._utils.events import get_event_data
 from web3._utils.filters import construct_event_filter_params
 
+# from web3._utils.abi import get_constructor_abi, merge_args_and_kwargs
 # from web3._utils.contracts import encode_abi
 
 
@@ -11,7 +13,8 @@ def fetch_events(
         from_block=None,
         to_block=None,
         address=None,
-        topics=None):
+        topics=None,
+        contract_address=None):
     """Get events using eth_getLogs API.
 
     This is a stateless method, as opposite to createFilter and works with
@@ -39,7 +42,7 @@ def fetch_events(
     _data_filter_set, event_filter_params = construct_event_filter_params(
         abi,
         abi_codec,
-        contract_address=event.address,
+        contract_address=event.address if contract_address is None else contract_address,
         argument_filters=_filters,
         fromBlock=from_block,
         toBlock=to_block,

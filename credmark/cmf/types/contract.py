@@ -412,22 +412,51 @@ class Contract(Account):
                 raise ModelRunError('Unable to obtain abi for the contract')
         return self._ledger
 
-    def fetch_events(self, event, argument_filters=None,
+    def fetch_events(self,
+                     event,
+                     argument_filters=None,
                      from_block=None,
                      to_block=None,
                      address=None,
-                     topics=None):
+                     topics=None,
+                     contract_address=None):
+        """
+        contract_address is by default set to the event's address.
+
+        For proxy contract, the event could be from the proxy contract and
+        contract_address could be overrided with the contract's address.
+
+        For example,
+
+            tok = Token('AAVE')
+            list(tok.fetch_events(
+                    tok.proxy_for.events.Transfer,
+                    from_block=16_000_000,
+                    to_block=16_010_000,
+                    contract_address=tok.address))
+
+        For non-proxy contract, we may use as following
+
+            tok = Token('CRV')
+            df = pd.DataFrame(tok.fetch_events(
+                    tok.events.Transfer,
+                    from_block=16_000_000,
+                    to_block=16_010_000))
+            df.loc[:, ['blockNumber', '_from', '_to', '_value']]
+        """
         context = credmark.cmf.model.ModelContext.current_context()
         if to_block is None:
             to_block = context.block_number
         elif to_block > context.block_number:
             raise ModelRunError(
                 f'{to_block=} can not be later than current block {context.block_number}')
-        return fetch_events(event, argument_filters,
+        return fetch_events(event,
+                            argument_filters,
                             from_block,
                             to_block,
                             address=address,
-                            topics=topics)
+                            topics=topics,
+                            contract_address=contract_address)
 
 
 class ContractInfo(Contract):
