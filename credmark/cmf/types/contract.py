@@ -441,8 +441,10 @@ class Contract(Account):
             df = pd.DataFrame(tok.fetch_events(
                     tok.events.Transfer,
                     from_block=16_000_000,
-                    to_block=16_010_000))
+                    to_block=16_001_000,
+                    topics=['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef']))
             df.loc[:, ['blockNumber', '_from', '_to', '_value']]
+
         """
         context = credmark.cmf.model.ModelContext.current_context()
         if to_block is None:
