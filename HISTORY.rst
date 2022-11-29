@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.59 [2022-11-29]
+* feat: provide override to fetch events for proxy contracts
+
 0.8.58 [2022-11-24]
 * feat: add examples to DTO
 
