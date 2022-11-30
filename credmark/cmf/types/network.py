@@ -12,3 +12,4 @@ class Network(IntEnum):
     BSC = 56
     BSCTestnet = 97
     xDai = 100
+    Polygon = 137
