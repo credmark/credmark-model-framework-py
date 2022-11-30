@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.60 [2022-11-30]
+* feat: add polygon network
+
 0.8.59 [2022-11-29]
 * feat: provide override to fetch events for proxy contracts
 
