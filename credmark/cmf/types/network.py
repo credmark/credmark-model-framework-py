@@ -1,9 +1,8 @@
-# System
+#pylint: disable=invalid-name, non-ascii-name
 from enum import IntEnum
 
 
 class Network(IntEnum):
-    #pylint: disable=invalid-name, non-ascii-name
     Mainnet = 1
     Ropsten = 3
     Rinkeby = 4

@@ -2,13 +2,6 @@
 # All address in the field shall be checksum address
 
 NATIVE_TOKEN = {
-    "137": {
-        "symbol": "MATIC",
-        'address': '0x0000000000000000000000000000000000001010',
-        "decimals": 18,
-        "name": "polygon",
-        "is_native_token": True,
-    },
     "1": {
         "symbol": "ETH",
         "address": '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
@@ -16,7 +9,23 @@ NATIVE_TOKEN = {
         "name": "Ethereum",
         "is_native_token": True,
         "wrapped": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-    }
+    },
+    "56": {
+        "symbol": "BNB",
+        "address": '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+        "decimals": 18,
+        "name": "BSC",
+        "is_native_token": True,
+        "wrapped": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+    },
+    "137": {
+        "symbol": "MATIC",
+        'address': '0x0000000000000000000000000000000000001010',
+        "decimals": 18,
+        "name": "Matic Token",
+        "is_native_token": True,
+    },
+
 }
 
 FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {

@@ -700,30 +700,30 @@ class EngineModelContext(ModelContext):
                 if debug_log:
                     self.debug_logger.debug(
                         f'cached from local {model_class.slug, model_class.version, input_as_dict}')
-                output, _error, _dependencies=cached_output
+                output, _error, _dependencies = cached_output
             else:
-                ModelContext._current_context=context
-                context.is_active=True
+                ModelContext._current_context = context
+                context.is_active = True
 
                 # Errors in this section will add the callee
                 # model to the call stack
 
-                model=model_class(context)
+                model = model_class(context)
 
                 if debug_log:
                     self.debug_logger.debug(
                         f"> Run model '{slug}' input: {input} block_number: {block_number}")
 
-                output=model.run(input)
+                output = model.run(input)
 
                 try:
                     # transform to the defined outputDTO for validation of output
-                    output=transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
+                    output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
                     if self.dev_mode:
                         # In dev mode we do a deep transform to dicts (convert all DTOs)
                         # We do this to ensure dev is same as production.
                         # Production mode will serialize all input and output.
-                        output=json.loads(json_dumps(output))
+                        output = json.loads(json_dumps(output))
 
                 except DataTransformError as err:
                     raise ModelOutputError(str(err))
@@ -743,18 +743,18 @@ class EngineModelContext(ModelContext):
         except Exception as err:
             if isinstance(err, (DataTransformError, DTOValidationError)):
                 # Transform error is a coding error in model just run
-                err=ModelTypeError(str(err))
-                trace=traceback.format_exc(limit=30)
+                err = ModelTypeError(str(err))
+                trace = traceback.format_exc(limit=30)
                 if debug_log:
                     self.debug_logger.debug(
                         f"< Run model '{slug}' error: {err} block_number: {block_number}")
 
             elif isinstance(err, ModelBaseError):
-                _exc_type, _exc_value, exc_traceback=sys.exc_info()
+                _exc_type, _exc_value, exc_traceback = sys.exc_info()
                 if isinstance(err, (ModelNotFoundError, ModelRunRequestError)):
-                    trace=extract_most_recent_run_model_traceback(exc_traceback, 2)
+                    trace = extract_most_recent_run_model_traceback(exc_traceback, 2)
                 else:
-                    trace=extract_most_recent_run_model_traceback(exc_traceback)
+                    trace = extract_most_recent_run_model_traceback(exc_traceback)
 
                 # For errors that have specific detail classes, we
                 # ensure detail is a dict (as it will be over the wire)
@@ -765,9 +765,9 @@ class EngineModelContext(ModelContext):
                     self.debug_logger.debug(
                         f"< Run model '{slug}' error: {err}")
             else:
-                input_json=json_dumps(transform_data_for_dto(
+                input_json = json_dumps(transform_data_for_dto(
                     input, None, slug, 'input'))
-                err_msg=(f'Exception running model {slug}({input_json}) on '
+                err_msg = (f'Exception running model {slug}({input_json}) on '
                            f'chain {context.chain_id} '
                            f'block {context.block_number} ('
                            f'{context.block_number.timestamp_datetime:%Y-%m-%d %H:%M:%S}) '
@@ -777,8 +777,8 @@ class EngineModelContext(ModelContext):
                 elif debug_log:
                     self.debug_logger.debug(f"< Run model '{slug}' error: {err_msg}")
 
-                err=ModelRunError(err_msg)
-                trace=traceback.format_exc(limit=30)
+                err = ModelRunError(err_msg)
+                trace = traceback.format_exc(limit=30)
 
             # We add the model just run (or validated input for) to stack
             err.data.stack.insert(0,
@@ -794,19 +794,19 @@ class EngineModelContext(ModelContext):
             raise err
 
         finally:
-            context.is_active=False
-            ModelContext._current_context=self
+            context.is_active = False
+            ModelContext._current_context = self
 
             # If we ran with a different context, we add its deps
             if context != self:
                 self._add_dependencies(context.dependencies)
 
             # Now we add dependency for this run
-            version=model_class.version
+            version = model_class.version
             self._add_dependency(slug, version, 1)
 
         if in_cache is None and self.__model_cache is not None:
-            output_as_dict=transform_dto_to_dict(output)
+            output_as_dict = transform_dto_to_dict(output)
             self.__model_cache.put(context.chain_id,
                                    int(context.block_number),
                                    slug,
