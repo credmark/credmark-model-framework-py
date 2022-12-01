@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.61 [2022-12-01]
+* feat: support POA network in web3
+
 0.8.60 [2022-11-30]
 * feat: add polygon network
 

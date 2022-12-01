@@ -217,7 +217,7 @@ class TestToken(ModelTestCase):
             if not chain_has_native_token:
                 raise Exception('There is no native token on {chain_id}')
 
-        chain_tokens = FUNGIBLE_TOKEN_DATA_BY_SYMBOL['1']
+        chain_tokens = FUNGIBLE_TOKEN_DATA_BY_SYMBOL[1]
         for token_n, (token_symbol, token_meta) in enumerate(chain_tokens.items()):
             print(f'{token_n+1}/{len(chain_tokens)}: {token_symbol}')
             token = Token(symbol=token_symbol)

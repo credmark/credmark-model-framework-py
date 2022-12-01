@@ -17,7 +17,7 @@ from .data.fungible_token_data import (FUNGIBLE_TOKEN_DATA_BY_ADDRESS,
 
 
 def get_token_from_configuration(
-        chain_id: str,
+        chain_id: int,
         symbol: Union[str, None] = None,
         address: Union[Address, None] = None,
         is_native_token: bool = False) -> Union[dict, None]:
@@ -111,7 +111,7 @@ class Token(Contract):
             return super().__new__(cls)
 
         token_data = get_token_from_configuration(
-            chain_id=str(context.chain_id),
+            chain_id=context.chain_id,
             symbol=symbol,
             address=address,
             is_native_token=True)
@@ -140,7 +140,7 @@ class Token(Contract):
             context = credmark.cmf.model.ModelContext.current_context()
 
             token_data = get_token_from_configuration(
-                chain_id=str(context.chain_id), symbol=data['symbol'])
+                chain_id=context.chain_id, symbol=data['symbol'])
 
             if token_data is None:
                 raise ModelDataError(f'Unsupported symbol: {data["symbol"]}')
@@ -299,7 +299,7 @@ class NativeToken(Token):
 
     def __init__(self, *args, **kwargs) -> None:
         context = credmark.cmf.model.ModelContext.current_context()
-        token_data = NATIVE_TOKEN[str(context.chain_id)]
+        token_data = NATIVE_TOKEN[context.chain_id]
         if token_data is None:
             raise ModelRunError(f'No native token specified for chain id: {context.chain_id}')
 

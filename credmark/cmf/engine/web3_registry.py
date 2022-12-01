@@ -4,6 +4,9 @@ import os
 from typing import Union
 
 from web3 import HTTPProvider, Web3, WebsocketProvider
+from web3.middleware.geth_poa import geth_poa_middleware
+
+from credmark.cmf.types.network import Network
 
 
 class Web3Registry:
@@ -14,7 +17,7 @@ class Web3Registry:
     _url_to_web3_provider: dict[str, Union[HTTPProvider, WebsocketProvider]] = {}
 
     @classmethod
-    def web3_for_provider_url(cls, provider_url: str):
+    def web3_for_provider_url(cls, provider_url: str, chain_id: int):
         provider = cls._url_to_web3_provider.get(provider_url)
         if provider is None:
             if provider_url.startswith('http'):
@@ -24,8 +27,14 @@ class Web3Registry:
             else:
                 raise Exception(f'Unknown prefix for Web3 provider {provider_url}')
             cls._url_to_web3_provider[provider_url] = provider
-        # create a new web3 instance with cached provider
-        return Web3(provider)
+
+        if chain_id in [Network.Rinkeby, Network.BSC, Network.Polygon]:
+            w3 = Web3(provider)
+            w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            return w3
+        else:
+            # create a new web3 instance with cached provider
+            return Web3(provider)
 
     @staticmethod
     def load_providers_from_env():
@@ -54,4 +63,4 @@ class Web3Registry:
         url = self.__chain_to_provider_url.get(str(chain_id))
         if url is None:
             raise Exception(f'No web3 provider url for chain id {chain_id}')
-        return self.web3_for_provider_url(url)
+        return self.web3_for_provider_url(url, chain_id)
