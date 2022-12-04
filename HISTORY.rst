@@ -3,6 +3,11 @@
 History
 -------
 
+0.8.62 [2022-12-05]
+* fix: add list of non-deterministic models to cache
+* feat: get latest block for non-mainnet chains
+* feat: records can add fix_int_columns to convert to int from string
+
 0.8.61 [2022-12-01]
 * feat: support POA network in web3
 

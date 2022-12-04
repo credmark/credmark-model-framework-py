@@ -70,7 +70,13 @@ def my_decode(obj):
 
 
 class SqliteDB:
-    exclude_slugs = ['rpc.get-latest-blocknumber']
+    # non-deterministic model results
+    exclude_slugs = [
+        'rpc.get-latest-blocknumber',
+        'chain.get-latest-block',
+        'dex.pool-volume-historical',
+        'dex.pool-volume',
+        ]
 
     _trace = False
     _stats = {'total': 0, 'hit': 0, 'miss': 0, 'exclude': 0, 'new': 0}

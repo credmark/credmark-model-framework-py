@@ -25,6 +25,7 @@ from credmark.dto.transform import (DataTransformError, transform_data_for_dto,
                                     transform_dto_to_dict)
 
 RPC_GET_LATEST_BLOCK_NUMBER_SLUG = 'rpc.get-latest-blocknumber'
+ALT_RPC_GET_LATEST_BLOCK_NUMBER_SLUG = 'chain.get-latest-block'
 
 
 def extract_most_recent_run_model_traceback(exc_traceback, skip=1):
@@ -297,8 +298,11 @@ class EngineModelContext(ModelContext):
 
     @classmethod
     def get_latest_block_number(cls, api: ModelApi, chain_id: int):
-        _s, _v, output, _e, _d = api.run_model(RPC_GET_LATEST_BLOCK_NUMBER_SLUG,
-                                               None, chain_id, 0, {}, raise_error_results=True)
+        _s, _v, output, _e, _d = api.run_model(
+            RPC_GET_LATEST_BLOCK_NUMBER_SLUG
+            if chain_id == 1
+            else ALT_RPC_GET_LATEST_BLOCK_NUMBER_SLUG,
+            None, chain_id, 0, {}, raise_error_results=True)
         if output is None:
             raise Exception('Error response getting latest block number')
 
@@ -781,7 +785,7 @@ class EngineModelContext(ModelContext):
                 trace = traceback.format_exc(limit=30)
 
             # We add the model just run (or validated input for) to stack
-            err.data.stack.insert(0,
+            err.data.stack.insert(0,  # pylint:disable=no-member
                                   ModelCallStackEntry(
                                       slug=slug,
                                       version=model_class.version,
