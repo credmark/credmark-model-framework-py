@@ -1,3 +1,5 @@
+# pylint:disable=no-member, not-an-iterable, unsubscriptable-object
+
 # algebra data types
 
 from typing import Callable, Generic, Iterator, List, Optional, Tuple, TypeVar
@@ -73,6 +75,8 @@ class Records(GenericDTO):
     records: List[Tuple] = DTOField([])
     fields: List[str] = DTOField([], description='List of fields')
     n_rows: int
+    fix_int_columns: List[str] = DTOField(
+        [], description='List of int fields to be restored from string')
     _iterator: str = 'records'
 
     def __iter__(self) -> Iterator[Tuple]:
@@ -86,7 +90,7 @@ class Records(GenericDTO):
 
     @classmethod
     def empty(cls):
-        return cls(records=[], fields=[], n_rows=0)
+        return cls(records=[], fields=[], n_rows=0, fix_int_columns=[])
 
     def append(self, obj):
         return getattr(self, self._iterator).append(obj)
@@ -102,10 +106,15 @@ class Records(GenericDTO):
             return pd.DataFrame(columns=self.fields, data=[])
 
         data_dict = [dict(zip(self.fields, r)) for r in self.records]
-        return pd.DataFrame(data_dict)
+        df_in = pd.DataFrame(data_dict)
+        if len(self.fix_int_columns) > 0:
+            for field in self.fix_int_columns:
+                df_in = df_in.assign(value=lambda x, field=field: x[field].apply(int))
+        return df_in
 
     @classmethod
-    def from_dataframe(cls, _df):
+    def from_dataframe(cls, _df, fix_int_columns=[]):  # pylint:disable=dangerous-default-value
         return cls(records=list(_df.itertuples(index=False, name=None)),
                    fields=_df.columns.tolist(),
-                   n_rows=_df.shape[0])
+                   n_rows=_df.shape[0],
+                   fix_int_columns=fix_int_columns)
