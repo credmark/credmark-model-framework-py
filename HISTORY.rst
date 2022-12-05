@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.63 [2022-12-05]
+* feat: add dto PositionWithPrice and PortfolioWithPrice
+
 0.8.62 [2022-12-05]
 * fix: add list of non-deterministic models to cache
 * feat: get latest block for non-mainnet chains

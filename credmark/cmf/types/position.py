@@ -3,6 +3,7 @@ from credmark.dto import DTO, DTOField, cross_examples
 from credmark.cmf.model.errors import ModelDataError
 
 from .token_erc20 import NativeToken, Token
+from .price import PriceWithQuote
 
 
 class Position(DTO):
@@ -48,3 +49,14 @@ class TokenPosition(Position):
 
 class NativePosition(Position):
     asset: NativeToken
+
+
+class PositionWithPrice(Position):
+    fiat_quote: PriceWithQuote
+
+    class Config:
+        schema_extra = {
+            'examples': cross_examples(Position.Config.schema_extra['examples'],
+                                       PriceWithQuote.Config.schema_extra['examples'],
+                                       limit=10)
+        }
