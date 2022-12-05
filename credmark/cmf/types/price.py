@@ -1,11 +1,11 @@
 from typing import List, Union
 
-from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
+from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr, cross_examples
 
 from .address import Address
 from .fiat_currency import Currency
 
-__all__ = ['Price', 'PriceList']
+__all__ = ['Price', 'PriceList', 'PriceWithQuote']
 
 
 class Price(DTO):
@@ -46,6 +46,13 @@ class PriceWithQuote(Price):
 
     def to_price(self):
         return Price(price=self.price, src=self.src)
+
+    class Config:
+        schema_extra: dict = {
+            'examples': cross_examples(Price.Config.schema_extra['examples'],
+                                       [{'quoteAddress': Currency('USD').address}],
+                                       limit=10)
+        }
 
 
 class PriceList(IterableListGenericDTO[float]):

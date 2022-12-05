@@ -14,8 +14,8 @@ from .ledger_query import LedgerQuery
 from .ledger_series import (LedgerBlockNumberTimeSeries,
                             LedgerBlockTimeSeriesInput)
 from .network import Network
-from .portfolio import Portfolio
-from .position import NativePosition, Position, TokenPosition
+from .portfolio import Portfolio, PortfolioWithPrice
+from .position import NativePosition, Position, TokenPosition, PositionWithPrice
 from .price import Price, PriceList, PriceWithQuote
 from .token_erc20 import NativeToken, Token, Tokens
 from .fiat_currency import Currency, FiatCurrency
