@@ -121,7 +121,7 @@ def create_cmf(cmf_param):
         'chain_id': 1,
         'block_number': None,
         'model_loader_path': models_path,
-        'use_local_models': '*',
+        'use_local_models': None,
         'register_utility_global': False
     } | cmf_param
 
