@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.64 [2022-12-05]
+* fix: set use_local_model by default in ipython
+
 0.8.63 [2022-12-05]
 * feat: add dto PositionWithPrice and PortfolioWithPrice
 
