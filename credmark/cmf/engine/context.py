@@ -129,7 +129,9 @@ class EngineModelContext(ModelContext):
                        depth: int = 0,
                        client: Union[str, None] = None,
                        console: bool = False,
-                       use_local_models: Union[str, None] = None):
+                       use_local_models: Union[str, None] = None,
+                       model_cache: Union[ModelRunCache,
+                                          None] = None):
         """
         Parameters:
             block_number: if None, latest block is used
@@ -175,7 +177,8 @@ class EngineModelContext(ModelContext):
             block_number = cls.get_latest_block_number(api, chain_id)
             cls.logger.info(f'Using latest block number {block_number}')
 
-        model_cache = ModelRunCache()
+        if model_cache is None:
+            model_cache = ModelRunCache()
 
         context = EngineModelContext(
             chain_id, block_number, web3_registry,
@@ -202,7 +205,9 @@ class EngineModelContext(ModelContext):
                                      run_id: Union[str, None] = None,
                                      depth: int = 0,
                                      client: Union[str, None] = None,
-                                     use_local_models: Union[str, None] = None):
+                                     use_local_models: Union[str, None] = None,
+                                     model_cache: Union[ModelRunCache,
+                                                        None] = None):
         """
         Parameters:
             block_number: if None, latest block is used
@@ -222,7 +227,8 @@ class EngineModelContext(ModelContext):
                                          depth,
                                          client,
                                          console=False,
-                                         use_local_models=use_local_models)
+                                         use_local_models=use_local_models,
+                                         model_cache=model_cache)
 
             if input is None:
                 input = {}
