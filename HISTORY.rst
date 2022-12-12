@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.65 [2022-12-12]
+* feat: improve ipython setup
+
 0.8.64 [2022-12-05]
 * fix: set use_local_model by default in ipython
 
