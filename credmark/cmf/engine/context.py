@@ -131,7 +131,7 @@ class EngineModelContext(ModelContext):
                        console: bool = False,
                        use_local_models: Union[str, None] = None,
                        model_cache: Union[ModelRunCache,
-                                          None] = None):
+                                          bool] = True):
         """
         Parameters:
             block_number: if None, latest block is used
@@ -177,12 +177,16 @@ class EngineModelContext(ModelContext):
             block_number = cls.get_latest_block_number(api, chain_id)
             cls.logger.info(f'Using latest block number {block_number}')
 
-        if model_cache is None:
-            model_cache = ModelRunCache()
+        if model_cache is True:
+            _model_cache = ModelRunCache()
+        elif model_cache is False:
+            _model_cache = None
+        else:
+            _model_cache = model_cache
 
         context = EngineModelContext(
             chain_id, block_number, web3_registry,
-            run_id, depth, model_loader, model_cache, api, client,
+            run_id, depth, model_loader, _model_cache, api, client,
             is_top_level=not console)
 
         if console:
@@ -207,7 +211,7 @@ class EngineModelContext(ModelContext):
                                      client: Union[str, None] = None,
                                      use_local_models: Union[str, None] = None,
                                      model_cache: Union[ModelRunCache,
-                                                        None] = None):
+                                                        bool] = True):
         """
         Parameters:
             block_number: if None, latest block is used
