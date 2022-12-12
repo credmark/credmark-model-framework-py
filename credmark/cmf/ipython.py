@@ -1,10 +1,12 @@
-# pylint: disable=locally-disabled, unused-import, unused-variable, unused-wildcard-import, wildcard-import, line-too-long
+# pylint: disable=locally-disabled, unused-import, unused-variable, unused-wildcard-import, wildcard-import, line-too-long, protected-access
 
 import importlib
 import importlib.util
 import os
 import sys
+import json
 from typing import Dict, List, NamedTuple, Optional
+from web3 import HTTPProvider, Web3
 
 import requests
 from credmark.cmf.engine.context import EngineModelContext
@@ -12,6 +14,8 @@ from credmark.cmf.engine.model_loader import ModelLoader
 from IPython.core.magic import (Magics, cell_magic, line_cell_magic,
                                 line_magic, magics_class, needs_local_scope)
 from IPython.lib.pretty import pprint, pretty
+
+from dotenv import dotenv_values
 
 
 class CmfInit(NamedTuple):
@@ -110,24 +114,39 @@ def create_cmf(cmf_param):
     else:
         models_path = []
 
-    if 'chain_to_provider_url' not in cmf_param:
-        raise ValueError(
-            "chain_to_provider_url shall be provided as {'1': 'http://localhost:8545'}")
+    dotenv_param = {}
+    for pth in models_path:
+        dotenv_file = os.path.realpath(os.path.join(pth, '..', '.env'))
+        if os.path.isfile(dotenv_file):
+            dotenv_param = dotenv_values(dotenv_file)
+            break
 
-    if 'api_url' not in cmf_param:
-        raise ValueError("api_url shall be provided as http://localhost:8700")
+    if 'chain_to_provider_url' not in cmf_param:
+        if isinstance(dotenv_param, dict) and 'CREDMARK_WEB3_PROVIDERS' in dotenv_param:
+            cmf_param |= \
+                {'chain_to_provider_url':
+                 json.loads(dotenv_param['CREDMARK_WEB3_PROVIDERS'])}  # type: ignore
+        else:
+            raise ValueError(
+                "chain_to_provider_url shall be provided as {'1': 'http://localhost:8545'}")
 
     param = {
         'chain_id': 1,
         'block_number': None,
         'model_loader_path': models_path,
         'use_local_models': None,
-        'register_utility_global': False
+        'register_utility_global': False,
+        'api_url': 'https://gateway.credmark.com',
     } | cmf_param
 
     cmf_init = CmfInit(**param)
 
     context, _model_loader = create_cmf_context(cmf_init, globals())
+
+    if param['chain_to_provider_url'][str(param['chain_id'])].startswith('http'):
+        context._web3 = Web3(HTTPProvider(context.web3.provider.endpoint_uri,  # type: ignore
+                             request_kwargs={'timeout': 3600 * 10}))
+        context._web3.eth.default_block = int(context.block_number)
 
     model_loaded = _model_loader.loaded_model_version_lists()
     for _k, cache_value in model_loaded.items():
@@ -142,13 +161,13 @@ def create_cmf(cmf_param):
     return context, model_loaded
 
 
-@magics_class
+@ magics_class
 class CredmarkMagic(Magics):
 
-    @needs_local_scope
-    @line_magic
+    @ needs_local_scope
+    @ line_magic
     def cmf(self, line, local_ns):
-        #pylint: disable=too-many-branches, too-many-statements, too-many-locals
+        # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         if line == 'help':
             print('Example:')
             param = CmfInit()._asdict()
