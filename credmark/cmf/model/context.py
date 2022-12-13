@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from contextvars import ContextVar, Token
 from typing import Any, Type, TypeVar, Union, overload
 
 import credmark.cmf.types
@@ -11,20 +12,53 @@ from .models import Models
 from .utils.historical_util import HistoricalUtil
 
 DTOT = TypeVar('DTOT')
+MaybeModelContext = Union['ModelContext', None]
 
 
 class ModelContext:
     """
-    Model context class. It holds the current context (chain id
+    Model contexts class. It holds the current context (chain id
     and block number) as well as helpers for getting ledger data,
     running other models both individually and historically over a
     series of blocks, looking up contracts, and accessing a web3
     node.
 
+    Current context uses contextvars to ensure setting and getting
+    context is safe when using concurrent code. It can be used with
+    either threads or asyncio.
+
     You can access an instance of this class from a model
     as ``self.context``.
     """
-    _current_context: Union['ModelContext', None] = None
+
+    __current_context: ContextVar[MaybeModelContext] = ContextVar('context', default=None)
+
+    @classmethod
+    def get_current_context(cls) -> MaybeModelContext:
+        """
+        Get the current context, which could be None.
+        Normally you should use current_context() instead.
+        """
+        return cls.__current_context.get()
+
+    @classmethod
+    def set_current_context(cls, context: MaybeModelContext) -> Token[MaybeModelContext]:
+        """
+        Set the current context, which could be None.
+        Normally you should not use this method.
+        """
+        return cls.__current_context.set(context)
+
+    @classmethod
+    def reset_current_context(cls, token: Token[MaybeModelContext]):
+        """
+        Reset the context to the value it had before
+        `ModelContext.set_current_context` was called.
+
+        Pass the token returned by `ModelContext.set_current_context`
+        method
+        """
+        cls.__current_context.reset(token)
 
     @classmethod
     def current_context(cls) -> 'ModelContext':
@@ -32,26 +66,10 @@ class ModelContext:
         Get the current context and raise a ModelNoContextError
         exception if there is no current context.
         """
-        context = cls._current_context
+        context = cls.get_current_context()
         if context is None:
             raise ModelNoContextError("No current ModelContext")
         return context
-
-    @classmethod
-    def get_current_context(cls) -> Union['ModelContext', None]:
-        """
-        Get the current context, which could be None.
-        Normally you should use current_context() instead.
-        """
-        return cls._current_context
-
-    @classmethod
-    def set_current_context(cls, context: Union['ModelContext', None]):
-        """
-        Set the current context, which could be None.
-        Normally you should not use this method.
-        """
-        cls._current_context = context
 
     def __init__(self, chain_id: int, block_number: int,
                  web3_registry):
