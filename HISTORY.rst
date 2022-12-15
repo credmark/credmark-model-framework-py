@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.66 [2022-12-15]
+* fix: fetch error from cache
+
 0.8.65 [2022-12-12]
 * feat: improve ipython setup
 

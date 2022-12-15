@@ -36,6 +36,7 @@ class BlockSeriesErrorRow(DTO):
     error: ModelErrorDTO = DTOField(..., description='Error DTO of the model run for this block')
 
 
+# pylint: disable=not-an-iterable
 class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS]):
     """
     A DTO for the output of "series.*" models which run another

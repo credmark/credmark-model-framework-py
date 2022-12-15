@@ -76,7 +76,7 @@ class SqliteDB:
         'chain.get-latest-block',
         'dex.pool-volume-historical',
         'dex.pool-volume',
-        ]
+    ]
 
     _trace = False
     _stats = {'total': 0, 'hit': 0, 'miss': 0, 'exclude': 0, 'new': 0}
@@ -284,8 +284,8 @@ class ModelRunCache(SqliteDB):
         assert needle['input'] == input
 
         return key, (needle['output'],
-                     needle['error'] if 'error' in needle else None,
-                     needle['dependencies'] if 'dependencies' in needle else {})
+                     needle.get('errors', None),
+                     needle.get('dependencies', {}))
 
     def put(self, chain_id, block_number, slug, version, input, output, dependencies, errors=None):
         if not self._enabled or slug in self.exclude_slugs:
