@@ -745,6 +745,10 @@ class EngineModelContext(ModelContext):
                     f"< Run model '{slug}' output: {output} block_number: {block_number}")
 
         except Exception as err:
+            if slug == 'console':
+                print(err, file=sys.stderr)
+                raise err
+
             if isinstance(err, (DataTransformError, DTOValidationError)):
                 # Transform error is a coding error in model just run
                 err = ModelTypeError(str(err))

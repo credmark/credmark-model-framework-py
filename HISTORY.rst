@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.67 [2022-12-19]
+* fix: refine console startup error message
+
 0.8.66 [2022-12-15]
 * fix: fetch error from cache
 

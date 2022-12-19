@@ -127,8 +127,14 @@ def create_cmf(cmf_param):
                 {'chain_to_provider_url':
                  json.loads(dotenv_param['CREDMARK_WEB3_PROVIDERS'])}  # type: ignore
         else:
-            raise ValueError(
-                "chain_to_provider_url shall be provided as {'1': 'http://localhost:8545'}")
+            providers_json = os.environ.get('CREDMARK_WEB3_PROVIDERS', None)
+            if providers_json is not None:
+                cmf_param |= \
+                    {'chain_to_provider_url': json.loads(providers_json)}
+            else:
+                raise ValueError(
+                    "Not found CREDMARK_WEB3_PROVIDERS in .env or environmnent. "
+                    "Key 'chain_to_provider_url' shall be in cmf_param as {'1': 'http://localhost:8545'}")
 
     param = {
         'chain_id': 1,
