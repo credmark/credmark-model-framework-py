@@ -65,5 +65,5 @@ class Web3Registry:
         if url is None:
             raise Exception(
                 f'No web3 provider url for chain id {chain_id}. '
-                f'In environment or .env file, set CREDMARK_WEB3_PROVIDERS or CREDMARK_WEB3_PROVIDER_CHAIN_ID_{chain_id}')
+                f'In .env file or environment, set CREDMARK_WEB3_PROVIDERS.')
         return self.web3_for_provider_url(url, chain_id)
