@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.68 [2022-12-20]
+* fix: add missing columns in ledger tables
+
 0.8.67 [2022-12-19]
 * fix: refine console startup error message
 

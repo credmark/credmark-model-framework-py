@@ -414,7 +414,11 @@ class TraceTable(LedgerTable):
     Column names
     """
 
+    BLOCK_HASH = ColumnField('block_hash')
+    """"""
     BLOCK_NUMBER = ColumnField('block_number')
+    """"""
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
     """"""
     TRANSACTION_HASH = ColumnField('transaction_hash')
     """"""
@@ -499,8 +503,6 @@ class BlockTable(LedgerTable):
     """"""
     TIMESTAMP = ColumnField('timestamp')
     """"""
-    TS = ColumnField('ts')
-    """"""
     TRANSACTION_COUNT = ColumnField('transaction_count')
     """"""
     BASE_FEE_PER_GAS = ColumnField('base_fee_per_gas')
@@ -530,7 +532,13 @@ class ContractTable(LedgerTable):
     """"""
     IS_ERC721 = ColumnField('is_erc721 ')
     """"""
+    TRANSACTION_HASH = ColumnField('transaction_hash')
+    """"""
+    BLOCK_HASH = ColumnField('block_hash')
+    """"""
     BLOCK_NUMBER = ColumnField('block_number')
+    """"""
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
     """"""
 
     def __init__(self, **kwargs):
@@ -552,6 +560,8 @@ class LogTable(LedgerTable):
     BLOCK_HASH = ColumnField('block_hash')
     """"""
     BLOCK_NUMBER = ColumnField('block_number')
+    """"""
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
     """"""
     ADDRESS = ColumnField('address')
     """"""
@@ -577,6 +587,8 @@ class ReceiptTable(LedgerTable):
     BLOCK_HASH = ColumnField('block_hash')
     """"""
     BLOCK_NUMBER = ColumnField('block_number')
+    """"""
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
     """"""
     CUMULATIVE_GAS_USED = ColumnField('cumulative_gas_used')
     """"""
@@ -613,9 +625,11 @@ class TokenTable(LedgerTable):
     """"""
     DECIMALS = ColumnField('decimals')
     """"""
-    TOTAL_SUPPLY = ColumnField('total_supply')
+    BLOCK_HASH = ColumnField('block_hash')
     """"""
     BLOCK_NUMBER = ColumnField('block_number')
+    """"""
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
     """"""
 
     def __init__(self, **kwargs):
@@ -644,7 +658,11 @@ class TokenTransferTable(LedgerTable):
     """"""
     LOG_INDEX = ColumnField('log_index')
     """"""
+    BLOCK_HASH = ColumnField('block_hash')
+    """"""
     BLOCK_NUMBER = ColumnField('block_number')
+    """"""
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
     """"""
 
     def __init__(self, **kwargs):
