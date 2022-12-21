@@ -4,7 +4,7 @@ History
 -------
 
 0.8.68 [2022-12-21]
-* feat: json encode add support to set
+* feat: add set to json encode
 
 0.8.67 [2022-12-19]
 * fix: refine console startup error message
