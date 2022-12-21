@@ -39,6 +39,8 @@ class PydanticJSONEncoder(json.JSONEncoder):
             return bool(o)
         if isinstance(o, (datetime.date, datetime.datetime)):
             return o.isoformat()
+        if isinstance(o, set):
+            return list(o)
         return json.JSONEncoder.default(self, o)
 
 
