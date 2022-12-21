@@ -3,8 +3,11 @@
 History
 -------
 
-0.8.68 [2022-12-21]
+0.8.69 [2022-12-21]
 * feat: add set to json encode
+
+0.8.68 [2022-12-20]
+* fix: add missing columns in ledger tables
 
 0.8.67 [2022-12-19]
 * fix: refine console startup error message
