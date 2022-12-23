@@ -3,6 +3,11 @@
 History
 -------
 
+0.8.70 [2022-12-23]
+* refactor: column field helper methods in ledger
+* feat: disable/override cache in context
+* fix: context safe to use in concurrent code
+
 0.8.69 [2022-12-21]
 * feat: add set to json encode
 
