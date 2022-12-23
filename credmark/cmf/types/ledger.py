@@ -101,109 +101,81 @@ class ColumnField(str):
     def asc(self):
         return ColumnField(self + ' asc')
 
-    def _compare(self, value, str_lower, op):
-        # Don't quote when comparing with another column
+    def _maybe_quote_and_lower(self, value, case_sensitive=False):
+        """
+        case_sensitive: If the value is not case sensitive, it will be converted to lower case.
+        This takes care of addresses which are stored in lower case all across the database.
+
+        By default values are considered case insensitive
+        """
+        # Don't add quotes when the value is a column
         if isinstance(value, ColumnField):
-            if str_lower:
-                return ColumnField(f'{self} {op} {ColumnField(value)}')
-            else:
-                return ColumnField(f'{self} {op} {ColumnField(value).lower()}')
+            return ColumnField(value if case_sensitive else value.lower())
 
         if isinstance(value, str):
-            if str_lower:
-                return ColumnField(f'{self} {op} {ColumnField(value).squote()}')
-            else:
-                return ColumnField(f'{self} {op} {ColumnField(value).squote_and_lower()}')
+            col_field = ColumnField(value)
+            return ColumnField(col_field.squote()
+                               if case_sensitive
+                               else col_field.squote_and_lower())
 
-        return ColumnField(f'{self} {op} {value}')
+        return value
 
-    def eq(self, value, str_lower=False):
-        """
-        str_lower: True for string to be lower case
-        """
-        return self._compare(value, str_lower, '=')
+    def _compare(self, value, case_sensitive, op):
+        return ColumnField(f'{self} {op} {self._maybe_quote_and_lower(value, case_sensitive)}')
 
-    def ne(self, value, str_lower=False):
-        return self._compare(value, str_lower, '!=')
+    def eq(self, value, case_sensitive=False):
+        return self._compare(value, case_sensitive, '=')
 
-    def gt(self, value, str_lower=False):
-        return self._compare(value, str_lower, '>')
+    def ne(self, value, case_sensitive=False):
+        return self._compare(value, case_sensitive, '!=')
 
-    def ge(self, value, str_lower=False):
-        return self._compare(value, str_lower, '>=')
+    def gt(self, value, case_sensitive=False):
+        return self._compare(value, case_sensitive, '>')
 
-    def lt(self, value, str_lower=False):
-        return self._compare(value, str_lower, '<')
+    def ge(self, value, case_sensitive=False):
+        return self._compare(value, case_sensitive, '>=')
 
-    def le(self, value, str_lower=False):
-        return self._compare(value, str_lower, '<=')
+    def lt(self, value, case_sensitive=False):
+        return self._compare(value, case_sensitive, '<')
 
-    def _list_of_fields(self, values, str_lower):
-        """
-        str_lower: True for string to be lower case
-        """
+    def le(self, value, case_sensitive=False):
+        return self._compare(value, case_sensitive, '<=')
+
+    def _list_of_fields(self, values, case_sensitive):
         if len(values) == 0:
             raise ModelRunError(f'column {self} is not in empty set {values}')
 
-        if isinstance(values[0], str):
-            if str_lower:
-                list_of_fields = ",".join([ColumnField(v).squote() for v in values])
-            else:
-                list_of_fields = ",".join([ColumnField(v).squote_and_lower() for v in values])
-        else:
-            list_of_fields = ",".join([str(v) for v in values])
-        return list_of_fields
+        return ",".join([str(self._maybe_quote_and_lower(v, case_sensitive)) for v in values])
 
-    def in_(self, values, str_lower=False):
-        """
-        str_lower: True for string to be lower case
-        """
-        list_of_fields = self._list_of_fields(values, str_lower)
+    def in_(self, values, case_sensitive=False):
+        list_of_fields = self._list_of_fields(values, case_sensitive)
         return ColumnField(f'{self} in ({list_of_fields})')
 
-    def not_in_(self, values, str_lower=False):
-        """
-        str_lower: True for string to be lower case
-        """
-        list_of_fields = self._list_of_fields(values, str_lower)
+    def not_in_(self, values, case_sensitive=False):
+        list_of_fields = self._list_of_fields(values, case_sensitive)
         return ColumnField(f'{self} not in ({list_of_fields})')
 
-    def _two_fields(self, value1, value2, str_lower):
-        """
-        str_lower: True for string to be lower case
-        """
-        if not isinstance(value1, type(value2)) and not isinstance(value2, type(value1)):
-            raise ModelRunError(
-                f'{value1} and {value2} shall be of the same type for [not] between')
-
-        if isinstance(value1, str):
-            if str_lower:
-                return (ColumnField(value1).squote(),
-                        ColumnField(value2).squote())
-            else:
-                return (ColumnField(value1).squote_and_lower(),
-                        ColumnField(value2).squote_and_lower())
-        return value1, value2
-
-    def between_(self, value1, value2, str_lower=False):
-        f1, f2 = self._two_fields(value1, value2, str_lower)
+    def between_(self, value1, value2, case_sensitive=False):
+        f1 = self._maybe_quote_and_lower(value1, case_sensitive)
+        f2 = self._maybe_quote_and_lower(value2, case_sensitive)
         return ColumnField(f'{self} between {f1} and {f2}')
 
-    def not_between_(self, value1, value2, str_lower=False):
-        f1, f2 = self._two_fields(value1, value2, str_lower)
+    def not_between_(self, value1, value2, case_sensitive=False):
+        f1 = self._maybe_quote_and_lower(value1, case_sensitive)
+        f2 = self._maybe_quote_and_lower(value2, case_sensitive)
         return ColumnField(f'{self} not between {f1} and {f2}')
 
     def and_(self, value):
-        return ColumnField(self + ' and ' + value)
+        return ColumnField(f'{self} and {value}')
 
     def or_(self, value):
-        return ColumnField(self + ' or ' + value)
+        return ColumnField(f'{self} or {value}')
 
     def parentheses_(self):
-        return ColumnField('(' + self + ')')
+        return ColumnField(f'({self})')
 
     def comma_(self, value):
-        return ColumnField(self + ', ' + value)
+        return ColumnField(f'{self}, {value}')
 
     def func_(self, func_name):
         return ColumnField(f'{func_name}({self})')
@@ -233,19 +205,19 @@ class ColumnField(str):
         return '-' + self
 
     def op_(self, col, op):
-        return ColumnField(self + op + col).parentheses_()
+        return ColumnField(f'{self} {op} {col}').parentheses_()
 
     def plus_(self, col):
-        return self.op_(col, ' + ')
+        return self.op_(col, '+')
 
     def minus_(self, col):
-        return self.op_(col, ' - ')
+        return self.op_(col, '-')
 
     def mul_(self, col):
-        return self.op_(col, ' * ')
+        return self.op_(col, '*')
 
     def div_(self, col):
-        return self.op_(col, ' / ')
+        return self.op_(col, '/')
 
     def to_char(self):
         return self.func_('to_char')
@@ -254,10 +226,10 @@ class ColumnField(str):
         return self.func_('as_integer')
 
     def is_null(self):
-        return ColumnField(self + ' is null')
+        return ColumnField(f'{self} is null')
 
     def is_not_null(self):
-        return ColumnField(self + ' is not null')
+        return ColumnField(f'{self} is not null')
 
 
 class LedgerTable:
