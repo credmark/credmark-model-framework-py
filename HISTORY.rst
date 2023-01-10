@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.71 [2023-01-10]
+* enable event argument_filters
+
 0.8.70 [2022-12-23]
 * refactor: column field helper methods in ledger
 * feat: disable/override cache in context
