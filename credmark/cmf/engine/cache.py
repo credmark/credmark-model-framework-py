@@ -76,6 +76,7 @@ class SqliteDB:
         'chain.get-latest-block',
         'dex.pool-volume-historical',
         'dex.pool-volume',
+        'console',
     ]
 
     _trace = False

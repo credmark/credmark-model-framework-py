@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.72 [2023-01-24]
+* fix console goto_block issue
+
 0.8.71 [2023-01-10]
 * enable event argument_filters
 

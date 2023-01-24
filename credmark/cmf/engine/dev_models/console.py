@@ -199,7 +199,11 @@ class ConsoleModel(Model):
         """
         Change context to a new block number.
         """
+        back_block = self.context.block_number
         self.context.run_model(self.slug, block_number=to_block)
+        self.context.block_number = back_block
+        self.context.web3.eth.default_block = back_block
+        self.load_locals()
 
     def _model_manifests(self):
         return self.context._model_manifests()  # pylint: disable=protected-access
