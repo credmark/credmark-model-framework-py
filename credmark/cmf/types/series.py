@@ -22,7 +22,7 @@ class BlockSeriesRow(GenericDTO, Generic[DTOCLS]):
     """
     blockNumber: int = DTOField(..., description='Block number in the series')
     blockTimestamp: int = DTOField(..., description='The Timestamp of the Block')
-    sampleTimestamp: int = DTOField(..., description='The Sample Blocktime')
+    sampleTimestamp: int = DTOField(..., description='The Sample Block time')
     output: DTOCLS = DTOField(..., description='Output of the model run for this block')
 
 
@@ -32,7 +32,7 @@ class BlockSeriesErrorRow(DTO):
     """
     blockNumber: int = DTOField(..., description='Block number in the series')
     blockTimestamp: int = DTOField(..., description='The Timestamp of the Block')
-    sampleTimestamp: int = DTOField(..., description='The Sample Blocktime')
+    sampleTimestamp: int = DTOField(..., description='The Sample Block time')
     error: ModelErrorDTO = DTOField(..., description='Error DTO of the model run for this block')
 
 
@@ -50,7 +50,7 @@ class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS
 
     If a permanent error occurs during a model run, the block and error
     will be added to the errors array.
-    If a non-permament error occurs during a model run, the entire series
+    If a non-permanent error occurs during a model run, the entire series
     will generate an error.
     """
     series: List[BlockSeriesRow[DTOCLS]] = DTOField(

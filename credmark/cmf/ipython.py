@@ -20,7 +20,7 @@ from dotenv import dotenv_values
 
 class CmfInit(NamedTuple):
     """
-    Cmf Initilization Parameters
+    Cmf Initialization Parameters
 
     :param chain_id: Chain id, default to 1
     :param block_number: (Optional) None or int
@@ -133,7 +133,7 @@ def create_cmf(cmf_param):
                     {'chain_to_provider_url': json.loads(providers_json)}
             else:
                 raise ValueError(
-                    "Not found CREDMARK_WEB3_PROVIDERS in .env or environmnent. "
+                    "Not found CREDMARK_WEB3_PROVIDERS in .env or environment. "
                     "Key 'chain_to_provider_url' shall be in cmf_param as {'1': 'http://localhost:8545'}")
 
     param = {
@@ -185,12 +185,12 @@ class CredmarkMagic(Magics):
 context, model_loader = _""")
             print("""Other commands:
 - %cmf param -v: verbose
-- %cmf default_param: returns default paramters
+- %cmf default_param: returns default parameters
 Example: param = %cmf default_param
 - %cmf default: setup with default parameters
 Example: context, model_loader = %cmf default
 - %cmf help: get help
-- %cmf help_param: get help for paramters
+- %cmf help_param: get help for parameters
 """)
             return None
 

@@ -9,7 +9,7 @@ from credmark.cmf.model.errors import ModelInputError
 
 
 class RunModelMethod:
-    # This class is used interally by the context.
+    # This class is used internally by the context.
 
     # A run model method is callable (where the prefix is the actual
     # model name) or called with a method name (where prefix is the
@@ -103,9 +103,9 @@ class RunModelMethod:
                     # mclass = self.__context._class_for_model(self.__prefix.replace('_', '-'))
                     mclass = model_manifests[self.__prefix.replace('_', '-')]['mclass']
                     if mclass is not None:
-                        mclassdict = vars(mclass)
-                        if __name in mclassdict:
-                            return mclassdict[__name]
+                        mclass_dict = vars(mclass)
+                        if __name in mclass_dict:
+                            return mclass_dict[__name]
 
         return RunModelMethod(
             self.__context,

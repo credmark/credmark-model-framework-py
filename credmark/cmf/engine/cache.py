@@ -244,7 +244,7 @@ class ModelRunCache(SqliteDB):
         return self.slugs(is_v=lambda v, slugs=slugs, block_numbers=block_numbers:
                           v['slug'] in slugs and v['block_number'] in block_numbers)
 
-    def encode_runkey(self, chain_id, block_number, slug, version, input):
+    def encode_run_key(self, chain_id, block_number, slug, version, input):
         return super().encode(repr((slug, version, chain_id, block_number, input)))
 
     def get(self, chain_id, block_number,
@@ -256,7 +256,7 @@ class ModelRunCache(SqliteDB):
             self.cache_exclude()
             return None, ({}, None, {})
 
-        key = self.encode_runkey(chain_id, block_number, slug, version, input)
+        key = self.encode_run_key(chain_id, block_number, slug, version, input)
         needle = self._db.get(key, None)
         if needle is None:
             if self._db_base is not None:
@@ -292,7 +292,7 @@ class ModelRunCache(SqliteDB):
         if not self._enabled or slug in self.exclude_slugs:
             return
 
-        key = self.encode_runkey(chain_id, block_number, slug, version, input)
+        key = self.encode_run_key(chain_id, block_number, slug, version, input)
         if key in self._db:
             if self._trace:
                 self._logger.info('No case for overwriting cache: '

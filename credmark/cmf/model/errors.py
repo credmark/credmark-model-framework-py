@@ -55,7 +55,7 @@ class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
     """
     """
     detail: Union[DetailDTOClass, None] = DTOField(
-        None, description='Arbitrary data object srelated to the error.')
+        None, description='Arbitrary data object related to the error.')
     """
     """
     permanent: bool = DTOField(
@@ -90,7 +90,7 @@ class ModelBaseError(Exception):
 
      - ``ModelInputError``: An error that occurs when the input data for a
        model is being validated. Usually it is caused by missing fields,
-       fields of the wrong type, or conficting data. In the returned error
+       fields of the wrong type, or conflicting data. In the returned error
        the last stack entry is the model whose input triggered the error.
 
      - ``ModelRunError``: An error that occurs during the running of a model.
@@ -154,7 +154,7 @@ class ModelBaseError(Exception):
     def schema_for_dto_class(cls, dto_class: Type[DTO]):
         s = dto_class.schema()
         # Remove DTO from the titles
-        # so they match the error types/classnames
+        # so they match the error type/classname
         title: str = s['title']
         if title.endswith('DTO'):
             s = s.copy()

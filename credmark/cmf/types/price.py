@@ -34,14 +34,16 @@ class PriceWithQuote(Price):
 
     @classmethod
     def usd(cls, **data):
-        if 'quoteAddres' in data:
-            raise ValueError(f'quoteAddres is default to USD but specified {data["quoteAddres"]=}')
+        if 'quoteAddress' in data:
+            raise ValueError(
+                f'quoteAddress is default to USD but specified {data["quoteAddress"]=}')
         return cls(**data, quoteAddress=Currency('USD').address)
 
     @classmethod
     def eth(cls, **data):
-        if 'quoteAddres' in data:
-            raise ValueError(f'quoteAddres is default to ETH but specified {data["quoteAddres"]=}')
+        if 'quoteAddress' in data:
+            raise ValueError(
+                f'quoteAddress is default to ETH but specified {data["quoteAddress"]=}')
         return cls(**data, quoteAddress=Currency('ETH').address)
 
     def to_price(self):

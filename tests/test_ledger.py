@@ -98,7 +98,7 @@ class TestLedger(ModelTestCase):
                 aggregates=[(oo.GAS_PRICE.sum_(), 'sum_gas_price')],
                 where=oo.HASH.eq(
                     '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261dE',
-                    str_lower=True),
+                    case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] == 0)
 
@@ -107,7 +107,7 @@ class TestLedger(ModelTestCase):
                 aggregates=[(oo.GAS_PRICE.sum_(), 'sum_gas_price')],
                 where=oo.HASH.eq(
                     '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de',
-                    str_lower=True),
+                    case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] == 1)
 
@@ -116,7 +116,7 @@ class TestLedger(ModelTestCase):
             df = oo.select(
                 where=oo.HASH.in_(
                     ['0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261dE'],
-                    str_lower=True),
+                    case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] == 0)
 
@@ -125,13 +125,13 @@ class TestLedger(ModelTestCase):
             df = oo.select(
                 where=oo.HASH.in_(
                     ['0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de'],
-                    str_lower=True),
+                    case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
 
             # in with number with str_lower True/False
             df = oo.select(
-                where=oo.BLOCK_NUMBER.in_([6949017, 13949017], str_lower=True),
+                where=oo.BLOCK_NUMBER.in_([6949017, 13949017], case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
             self.assertTrue(6949017 in df.block_number.unique())
@@ -160,7 +160,7 @@ class TestLedger(ModelTestCase):
 
             # between with number with str_lower True/False: ineffective
             df = oo.select(
-                where=oo.BLOCK_NUMBER.between_(6949017, 6949018, str_lower=True),
+                where=oo.BLOCK_NUMBER.between_(6949017, 6949018, case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
             self.assertTrue(df.block_number.min() >= 6949017)
@@ -324,7 +324,7 @@ class TestLedger(ModelTestCase):
             self.assertTrue(df.shape[0] == 5)
 
         with context.ledger.Token as oo:
-            df = oo.select(columns=oo.columns, limit=5, order_by=oo.TOTAL_SUPPLY,
+            df = oo.select(columns=oo.columns, limit=5, order_by=oo.BLOCK_HASH,
                            where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
