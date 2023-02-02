@@ -119,7 +119,7 @@ def get_slot_proxy_address(context, contract_address,
 class Contract(Account):
     """
     Contract object to make web3 call smart contract functions.
-    You could create a contrat with the following
+    You could create a contract with the following
 
         c = Contract(address='0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
 
@@ -340,7 +340,7 @@ class Contract(Account):
                 self._load()
             except ModelDataError as err:
                 # pylint: disable=unsupported-membership-test
-                if 'abi not available for addres' not in err.data.message:
+                if 'abi not available for address' not in err.data.message:
                     raise
         self._meta.abi = ABI(abi)
 
@@ -424,7 +424,7 @@ class Contract(Account):
         contract_address is by default set to the event's address.
 
         For proxy contract, the event could be from the proxy contract and
-        contract_address could be overrided with the contract's address.
+        contract_address could be overridden with the contract's address.
 
         For example,
 

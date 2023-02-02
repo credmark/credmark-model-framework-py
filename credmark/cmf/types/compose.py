@@ -53,7 +53,7 @@ class MapInputsOutput(IterableListGenericDTO[MapInputsResult[INPUTDTOCLS, DTOCLS
 
     If a permanent error occurs during a model run, the block with error
     will be added to the series array.
-    If a non-permament error occurs during a model run, the entire series
+    If a non-permanent error occurs during a model run, the entire series
     will generate an error.
 
     The output can be converted to list (to_list) or Panda's DataFrame (to_dataframe())
@@ -135,7 +135,7 @@ class MapBlocksOutput(IterableListGenericDTO[MapBlockResult[DTOCLS]], Generic[DT
 
     If a permanent error occurs during a model run, the block with error
     will be added to the series array.
-    If a non-permament error occurs during a model run, the entire series
+    If a non-permanent error occurs during a model run, the entire series
     will generate an error.
 
     The output can be converted to list (to_list) or Panda's DataFrame (to_dataframe())

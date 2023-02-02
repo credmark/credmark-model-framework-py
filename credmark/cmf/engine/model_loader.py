@@ -281,10 +281,10 @@ class ModelLoader:
 
         self.__slug_version_to_class_dict[slug_ver] = model_class
 
-        verlist = self.__slug_to_versions_dict.get(slug)
-        if verlist is not None:
-            verlist.append(ver)
-            verlist.sort()
+        ver_list = self.__slug_to_versions_dict.get(slug)
+        if ver_list is not None:
+            ver_list.append(ver)
+            ver_list.sort()
         else:
             self.__slug_to_versions_dict[slug] = [ver]
 
@@ -311,9 +311,9 @@ class ModelLoader:
 
         if not ver:
             # Get the latest version
-            verlist = self.__slug_to_versions_dict.get(slug)
-            if verlist is not None:
-                ver = verlist[-1].public
+            ver_list = self.__slug_to_versions_dict.get(slug)
+            if ver_list is not None:
+                ver = ver_list[-1].public
 
         if ver:
             model_class = self.__slug_version_to_class_dict.get(

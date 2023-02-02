@@ -231,7 +231,7 @@ class ModelContext:
         In order for models to be consistently deterministic, the **ONLY** type
         of error a model should catch and handle from a call to ``run_model()``
         is a ``ModelDataError``, which is considered a permanent error for the
-        given conext. All other errors are considered transient, coding errors,
+        given context. All other errors are considered transient, coding errors,
         or conditions that may change in the future.
 
         Parameters:
@@ -242,7 +242,7 @@ class ModelContext:
                   If None, the block_number of the current context will be used.
             version (str | None): optional version of the model.
                   If version is None, the latest version of
-                  the model is used. Use of this paramater is NOT recommended.
+                  the model is used. Use of this parameter is NOT recommended.
             return_type (DTO Type | None): optional class to use for the
                   returned output data. If not specified, returned value is a dict.
                   If a DTO specified, the returned value will be an instance
@@ -254,7 +254,7 @@ class ModelContext:
             or a DTO instance if return_type is specified.
 
         Raises:
-            ModelDataError: A catchable permanent error.
+            ModelDataError: A catch-able permanent error.
             ModelRunError: A non-permanent run error. Should not be caught.
             ModelNotFoundError: Requested model was not found. Should not be caught.
             ModelBaseError: other subclasses of ``ModelBaseError`` that should not be caught.

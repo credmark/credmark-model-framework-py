@@ -546,12 +546,12 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
             mock_gen.write(generate_mocks, model_slug)
 
         if 'error' in result:
-            etype = result.get('error', {}).get('type')
-            if etype == 'ModelInputError':
+            err_type = result.get('error', {}).get('type')
+            if err_type == 'ModelInputError':
                 exit_code = 2
-            elif etype == 'ModelNotFoundError':
+            elif err_type == 'ModelNotFoundError':
                 exit_code = 126
-            elif etype == 'ModelDataError':
+            elif err_type == 'ModelDataError':
                 exit_code = 3
             else:
                 exit_code = 1

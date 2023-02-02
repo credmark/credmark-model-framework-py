@@ -14,7 +14,7 @@ from pydantic import (
     Extra as DTOExtra,
     PrivateAttr,
 )
-# A GenericDTO is a kind of DTO: isintance(g, DTO) == True
+# A GenericDTO is a kind of DTO: isinstance(g, DTO) == True
 from pydantic.generics import GenericModel as GenericDTO
 
 

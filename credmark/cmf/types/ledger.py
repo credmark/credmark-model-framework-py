@@ -609,7 +609,7 @@ class TokenTable(LedgerTable):
 
     @property
     def bigint_cols(self):
-        return [self.TOTAL_SUPPLY]
+        return []
 
 
 class TokenTransferTable(LedgerTable):
