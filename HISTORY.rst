@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.73 [2023-02-03]
+* fix ledger model setup
+* fix typos in code and doc
+
 0.8.72 [2023-01-24]
 * fix console goto_block issue
 
@@ -142,7 +146,7 @@ History
 * Cache is changed to an instance variable for EngineModelContext (#155)
 
 0.8.33 [2022-08-14]
-* Improve local cache with Sqllitedict (#152), allow multiple readonly base cache (#153) and type annotation (#154)
+* Improve local cache with Sqlitedict (#152), allow multiple readonly base cache (#153) and type annotation (#154)
 * Create function for ipython extension (#152)
 
 
@@ -178,7 +182,7 @@ History
 0.8.29 [2022-07-18]
 * Add ipython extension (#141)
 * Add network identifier, re-organized DTO imports, enrich Maybe (#142)
-* Creation of Token/Contract/Accoint DTO with string (#143)
+* Creation of Token/Contract/Account DTO with string (#143)
 
 0.8.28 [2022-07-12]
 * Ledger utility update (#92)
@@ -222,9 +226,9 @@ History
 * Contract ledger event txn hash field name fix
 
 0.8.21 [2022-05-23]
-* Serialize datetimes and numpy and pandas datastructures to json
+* Serialize datetime and numpy and pandas data structures to json
 * Pandas types conversion helpers
-* Improve types and typehints
+* Improve types and type hints
 * Fix to load token ERC20 properties in Token.info() method
 
 0.8.20 [2022-05-14]
