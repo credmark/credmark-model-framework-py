@@ -460,13 +460,13 @@ def test():  # pylint: disable=too-many-branches,too-many-statements
 
     try:
         output = mock.output_for_model('contrib.c', token_foo)
-        assert 'Repeat limit reached' == 'expected to raise'
+        assert 'Repeat limit reached' == 'expected to raise'  # pylint: disable=comparison-of-constants
     except ModelMockException:
         print('No output as expected.')
 
     try:
         output = mock.output_for_model('contrib.c', {"address": "0xffffffff", "symbol": "foo"})
-        assert 'Input mismatch' == 'expected to raise'
+        assert 'Input mismatch' == 'expected to raise'  # pylint: disable=comparison-of-constants
     except ModelMockException:
         print('No input match as expected.')
 
@@ -500,7 +500,7 @@ def test():  # pylint: disable=too-many-branches,too-many-statements
 
     try:
         output = mock.output_for_model('contrib.h', {})
-        assert "contrib.h" == "should raise an error"
+        assert "contrib.h" == "should raise an error"  # pylint: disable=comparison-of-constants
     except ModelBaseError as err:
         print(err, 'as expected')
 
@@ -516,7 +516,7 @@ def test():  # pylint: disable=too-many-branches,too-many-statements
 
     try:
         output = mock.output_for_model('contrib.i', {"x": 99})
-        assert "contrib.i x=99" == "should raise an error"
+        assert "contrib.i x=99" == "should raise an error"  # pylint: disable=comparison-of-constants
     except ModelMockException as err:
         print(err, 'as expected')
 

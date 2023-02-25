@@ -127,7 +127,7 @@ def create_cmf(cmf_param):
                 {'chain_to_provider_url':
                  json.loads(dotenv_param['CREDMARK_WEB3_PROVIDERS'])}  # type: ignore
         else:
-            providers_json = os.environ.get('CREDMARK_WEB3_PROVIDERS', None)
+            providers_json = os.environ.get('CREDMARK_WEB3_PROVIDERS')
             if providers_json is not None:
                 cmf_param |= \
                     {'chain_to_provider_url': json.loads(providers_json)}

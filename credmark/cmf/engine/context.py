@@ -588,7 +588,7 @@ class EngineModelContext(ModelContext):
                 input_as_dict = transform_dto_to_dict(input)
 
                 in_cache, cached_output = (
-                    (None, {}) if self.__model_cache is None
+                    (None, ({}, None, {})) if self.__model_cache is None
                     else self.__model_cache.get(self.chain_id, int(run_block_number),
                                                 slug, version_requested, input_as_dict))
 
@@ -704,7 +704,7 @@ class EngineModelContext(ModelContext):
             input_as_dict = transform_dto_to_dict(input)
 
             in_cache, cached_output = (
-                (None, {}) if self.__model_cache is None
+                (None, ({}, None, {})) if self.__model_cache is None
                 else self.__model_cache.get(context.chain_id,
                                             int(context.block_number),
                                             model_class.slug,

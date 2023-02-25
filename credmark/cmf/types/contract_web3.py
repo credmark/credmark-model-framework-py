@@ -33,11 +33,11 @@ def fetch_events(
         raise TypeError("Missing mandatory keyword argument to getLogs: from_Block")
 
     abi = event._get_event_abi()  # pylint:disable=protected-access
-    abi_codec = event.web3.codec
+    abi_codec = event.w3.codec
 
     # Set up any indexed event filters if needed
     argument_filters = {} if argument_filters is None else argument_filters
-    _filters = dict(**argument_filters)
+    _filters = {**argument_filters}
 
     _data_filter_set, event_filter_params = construct_event_filter_params(
         abi,
@@ -51,7 +51,7 @@ def fetch_events(
     )
 
     # Call node over JSON-RPC API
-    logs = event.web3.eth.getLogs(event_filter_params)
+    logs = event.w3.eth.get_logs(event_filter_params)
 
     # Convert raw binary event data to easily manipulable Python objects
     for entry in logs:

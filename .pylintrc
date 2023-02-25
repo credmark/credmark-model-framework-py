@@ -98,7 +98,6 @@ disable=raw-checker-failed,
         too-few-public-methods, # for pydantic objects
         consider-using-ternary,  # consider-using-ternary gives incorrect suggestions!
         no-else-return,
-        no-self-use,
         similarities,
         fixme # TODO in comment
 
@@ -580,4 +579,4 @@ min-public-methods=2
 
 # Exceptions that will emit a warning when being caught. Defaults to
 # "BaseException, Exception".
-overgeneral-exceptions=BaseException
+overgeneral-exceptions=builtins.BaseException
