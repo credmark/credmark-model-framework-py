@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.74 [2023-02-26]
+* make as_erc20() quicker with force=True. Direct injection of ERC20 ABI.
+
 0.8.73 [2023-02-03]
 * fix ledger model setup
 * fix typos in code and doc
