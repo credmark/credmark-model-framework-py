@@ -171,7 +171,12 @@ class Token(Contract):
 
         super()._load()
 
-    def as_erc20(self):
+    def as_erc20(self, force=False):
+        if force:
+            self._loaded = True
+            self.set_abi(ABI(ERC20_BASE_ABI))
+            return self
+
         try:
             _ = self.abi
         except ModelDataError:
