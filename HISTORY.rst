@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.76 [2023-03-01]
+* add network for Optimism, Arbitrum One
+
 0.8.75 [2023-02-27]
 * add staging gateway address
 
