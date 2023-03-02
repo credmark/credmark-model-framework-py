@@ -154,7 +154,7 @@ class Token(Contract):
             data['meta']['wrapped'] = (Address(token_data['wrapped'])
                                        if 'wrapped' in token_data else None)
 
-            if token_data.get('set_loaded_true', False):  # Special case for BTC
+            if token_data.get('set_loaded', False):  # Special case for BTC
                 self._loaded = True
 
         if data['address'] == Address.null():

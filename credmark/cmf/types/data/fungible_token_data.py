@@ -52,7 +52,7 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
             "decimals": 0,
             "name": "Bitcoin",
             "address": "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
-            "set_loaded_true": True,
+            "set_loaded": True,
         },
         "WETH": {
             "symbol": "WETH",
