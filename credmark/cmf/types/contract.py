@@ -331,17 +331,20 @@ class Contract(Account):
             self._load()
         return self._meta.deployed_block_number
 
-    def set_abi(self, abi: Union[List, str]):
+    def set_abi(self, abi: Union[List, str], set_loaded=False):
         """
         Set the ABI for the contract
         """
-        if not self._loaded:
-            try:
-                self._load()
-            except ModelDataError as err:
-                # pylint: disable=unsupported-membership-test
-                if 'abi not available for address' not in err.data.message:
-                    raise
+        if set_loaded:
+            self._loaded = True
+        else:
+            if not self._loaded:
+                try:
+                    self._load()
+                except ModelDataError as err:
+                    # pylint: disable=unsupported-membership-test
+                    if 'abi not available for address' not in err.data.message:
+                        raise
         self._meta.abi = ABI(abi)
 
     @ property
