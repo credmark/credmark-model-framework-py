@@ -27,6 +27,22 @@ NATIVE_TOKEN = {
         "name": "Matic Token",
         "is_native_token": True,
     },
+    int(Network.ArbitrumOne): {
+        "symbol": "ETH",
+        "address": '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        "decimals": 18,
+        "name": "Ethereum",
+        "is_native_token": True,
+        "wrapped": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    },
+    int(Network.Optimism): {
+        "symbol": "ETH",
+        "address": '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        "decimals": 18,
+        "name": "Ethereum",
+        "is_native_token": True,
+        "wrapped": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    },
 }
 
 FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {

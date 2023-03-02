@@ -28,7 +28,7 @@ class Web3Registry:
                 raise Exception(f'Unknown prefix for Web3 provider {provider_url}')
             cls._url_to_web3_provider[provider_url] = provider
 
-        if chain_id in [Network.Rinkeby, Network.BSC, Network.Polygon]:
+        if chain_id in [Network.Rinkeby, Network.BSC, Network.Polygon, Network.Optimism]:
             w3 = Web3(provider)
             w3.middleware_onion.inject(geth_poa_middleware, layer=0)
             return w3
