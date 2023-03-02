@@ -154,7 +154,7 @@ class Token(Contract):
             data['meta']['wrapped'] = (Address(token_data['wrapped'])
                                        if 'wrapped' in token_data else None)
 
-            if token_data.get('set_loaded_true', False):  # Special case for BTC
+            if token_data.get('set_loaded', False):  # Special case for BTC
                 self._loaded = True
 
         if data['address'] == Address.null():
@@ -171,10 +171,9 @@ class Token(Contract):
 
         super()._load()
 
-    def as_erc20(self, force=False):
-        if force:
-            self._loaded = True
-            self.set_abi(ABI(ERC20_BASE_ABI))
+    def as_erc20(self, set_loaded=False):
+        if set_loaded:
+            self.set_abi(ABI(ERC20_BASE_ABI), set_loaded=True)
             return self
 
         try:
@@ -189,8 +188,7 @@ class Token(Contract):
                 raise BlockNumberOutOfRangeError(
                     err.data.message + f' for contract {self.address}')
             except ModelDataError:
-                self.proxy_for._loaded = True  # pylint:disable=protected-access
-                self.proxy_for.set_abi(ERC20_BASE_ABI)
+                self.proxy_for.set_abi(ERC20_BASE_ABI, set_loaded=True)
 
         return self
 
