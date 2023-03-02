@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.77 [2023-03-02]
+* change `force` to `set_loaded` for `set_abi()` and `as_erc20()`
+
 0.8.76 [2023-03-01]
 * add network for Optimism, Arbitrum One
 
