@@ -222,6 +222,9 @@ class ColumnField(str):
     def to_char(self):
         return self.func_('to_char')
 
+    def as_text(self):
+        return ColumnField(f'{self}::TEXT')
+
     def as_integer(self):
         return self.func_('as_integer')
 
