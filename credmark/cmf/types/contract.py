@@ -102,7 +102,8 @@ def get_slot_proxy_address(context, contract_address,
                                'TransparentUpgradeableProxy',
                                'InitializableAdminUpgradeabilityProxy',
                                'InitializableImmutableAdminUpgradeabilityProxy',
-                               'BridgeToken', ]:
+                               'BridgeToken',
+                               'ERC1967Proxy']:
             # if eip-1967 compliant, https://eips.ethereum.org/EIPS/eip-1967
             slot_proxy_address = Address(context.web3.eth.get_storage_at(
                 contract_address, SLOT_EIP1967))
