@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.78 [2023-03-12]
+* support ERC1967Proxy
+
 0.8.77 [2023-03-02]
 * change `force` to `set_loaded` for `set_abi()` and `as_erc20()`
 * support arbitrum one and optimism
