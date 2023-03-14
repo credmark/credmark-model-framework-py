@@ -243,3 +243,20 @@ from .encoder import (
     json_dump,
     json_dumps
 )
+
+
+class MetadataDto():
+    _meta: Union[dict, DTO] = PrivateAttr(
+        default_factory=lambda: {})  # pylint: disable=unnecessary-lambda
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        meta = data.get('meta', None)
+        if meta is not None:
+            if isinstance(meta, dict):
+                self._meta = type(self._meta)(**meta)
+            if isinstance(meta, type(self._meta)):
+                self._meta = meta
+
+        for key, value in data.items():
+            self._meta.__setattr__(key, value)
