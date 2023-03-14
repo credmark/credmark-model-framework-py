@@ -26,6 +26,7 @@ NATIVE_TOKEN = {
         "decimals": 18,
         "name": "Matic Token",
         "is_native_token": True,
+        "wrapped": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
     },
     int(Network.ArbitrumOne): {
         "symbol": "ETH",
