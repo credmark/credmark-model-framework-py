@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.80 [2023-03-14]
+* fix web3 for avalanche
+
 0.8.79 [2023-03-14]
 * add arbitrum one token data
 * add optimism token data
