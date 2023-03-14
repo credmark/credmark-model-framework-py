@@ -14,7 +14,7 @@ NATIVE_TOKEN = {
     },
     int(Network.BSC): {
         "symbol": "BNB",
-        "address": '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+        "address": '0x0000000000000000010000100100111001000010',
         "decimals": 18,
         "name": "BSC",
         "is_native_token": True,
