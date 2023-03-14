@@ -3,6 +3,13 @@
 History
 -------
 
+0.8.79 [2023-03-14]
+* add arbitrum one token data
+* add optimism token data
+* add avalanche token data
+* add fantom token data
+* fix polygon and bsc native token data 
+
 0.8.78 [2023-03-12]
 * support ERC1967Proxy
 
