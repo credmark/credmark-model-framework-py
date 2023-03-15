@@ -9,7 +9,7 @@ from credmark.cmf.model.errors import (ModelBaseError,
                                        create_instance_from_error_dict)
 from credmark.dto.encoder import json_dumps
 
-from requests.adapters import HTTPAdapter, Retry
+# from requests.adapters import HTTPAdapter, Retry
 
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
@@ -48,15 +48,16 @@ class ModelApi:
     def __init__(self, url: str, api_key=None, internal_api=False):
         self.__url = url
         self.__internal_api = internal_api
-        self.__session = requests.Session()
-        self.__session.headers.update({'User-Agent': 'credmark-model-framework'})
-        if api_key is not None:
-            self.__session.headers.update({'Authorization': 'Bearer ' + api_key})
+        self.__api_key = api_key
+        # self.__session = requests.Session()
+        # self.__session.headers.update({'User-Agent': 'credmark-model-framework'})
+        # if api_key is not None:
+        #     self.__session.headers.update({'Authorization': 'Bearer ' + api_key})
 
-        retries = Retry(total=5, backoff_factor=1, allowed_methods=False,
-                        status_forcelist=[429, 502], respect_retry_after_header=True)
-        self.__session.mount('http://', HTTPAdapter(max_retries=retries))
-        self.__session.mount('https://', HTTPAdapter(max_retries=retries))
+        # retries = Retry(total=5, backoff_factor=1, allowed_methods=False,
+        #                 status_forcelist=[429, 502], respect_retry_after_header=True)
+        # self.__session.mount('http://', HTTPAdapter(max_retries=retries))
+        # self.__session.mount('https://', HTTPAdapter(max_retries=retries))
 
     def _get(self, url):
         """
@@ -64,9 +65,12 @@ class ModelApi:
         Other errors raise
         """
         resp = None
+        headers = {'User-Agent': 'credmark-model-framework'}
+        if self.__api_key is not None:
+            headers.update({'Authorization': 'Bearer ' + self.__api_key})
 
         try:
-            resp = self.__session.get(url)
+            resp = requests.get(url, headers=headers)
             resp.raise_for_status()
             return resp.json()
         except requests.exceptions.ConnectionError as err:
@@ -139,12 +143,15 @@ class ModelApi:
         resp = None
         resp_obj = None
         url = urljoin(self.__url, RUN_MODEL_PATH)
+        headers = {'User-Agent': 'credmark-model-framework', 'Content-Type': 'application/json'}
+        if self.__api_key is not None:
+            headers.update({'Authorization': 'Bearer ' + self.__api_key})
 
         try:
-            resp = self.__session.post(url,
-                                       data=json_dumps(req),
-                                       headers={'Content-Type': 'application/json'},
-                                       timeout=RUN_REQUEST_TIMEOUT)
+            resp = requests.post(url,
+                                 data=json_dumps(req),
+                                 headers=headers,
+                                 timeout=RUN_REQUEST_TIMEOUT)
             resp.raise_for_status()
             resp_obj = resp.json()
 
