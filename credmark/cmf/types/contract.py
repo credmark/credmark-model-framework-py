@@ -2,7 +2,7 @@ import json
 from typing import List, Optional, Union
 
 import credmark.cmf.model
-from credmark.cmf.engine.cache import ContractMetaCache
+# from credmark.cmf.engine.cache import ContractMetaCache
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 from web3 import Web3
@@ -177,18 +177,21 @@ class Contract(Account):
             return
         context = credmark.cmf.model.ModelContext.current_context()
 
-        in_cache, cached_meta = ContractMetaCache().get(context.chain_id, self.address)
+        # in_cache, cached_meta = ContractMetaCache().get(context.chain_id, self.address)
 
-        if in_cache:
-            contract_q_results = cached_meta
-        else:
-            # fix block number when looking up contract
-            contract_q_results = context.run_model('contract.metadata',
-                                                   {'contractAddress': self.address},
-                                                   block_number=0)
-            ContractMetaCache().put(context.chain_id,
-                                    self.address,
-                                    contract_q_results)
+        # if in_cache:
+        #     contract_q_results = cached_meta
+        # else:
+        #     # fix block number when looking up contract
+        #     contract_q_results = context.run_model('contract.metadata',
+        #                                            {'contractAddress': self.address},
+        #                                            block_number=0)
+        #     ContractMetaCache().put(context.chain_id,
+        #                             self.address,
+        #                             contract_q_results)
+        contract_q_results = context.run_model('contract.metadata',
+                                               {'contractAddress': self.address},
+                                               block_number=0)
 
         if len(contract_q_results['contracts']) > 0:
             res = contract_q_results['contracts'][0]
