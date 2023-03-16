@@ -9,7 +9,7 @@ certifi>=2021.10.8
 charset-normalizer==2.0.11
 click==8.0.3
 cytoolz==0.11.2
-eth-abi==2.1.1
+eth-abi==2.2.0
 eth-account==0.5.9
 eth-hash==0.3.2
 eth-keyfile==0.5.1
@@ -56,6 +56,6 @@ toolz==0.11.2
 typing_extensions>=4.1
 urllib3==1.26.8
 varint==1.0.2
-web3 @ git+https://github.com/credmark/web3.py.git@e886bbd74f0974cb1895846550ef71ce3af167fc
+web3 @ git+https://github.com/credmark/web3.py.git@3a811d6b6c2f6892e2878eb9af074c6f480d0fab
 websockets==9.1
 yarl==1.7.2
