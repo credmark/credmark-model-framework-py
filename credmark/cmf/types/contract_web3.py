@@ -1,5 +1,10 @@
 # pylint:disable=too-many-locals
 
+from typing import (
+    Optional, Sequence
+)
+from web3._utils.abi import get_abi_input_names
+
 from web3._utils.events import get_event_data
 from web3._utils.filters import construct_event_filter_params
 
@@ -14,7 +19,8 @@ def fetch_events(
         to_block=None,
         address=None,
         topics=None,
-        contract_address=None):
+        contract_address=None,
+        argument_names: Optional[Sequence[str]] = None):
     """Get events using eth_getLogs API.
 
     This is a stateless method, as opposite to createFilter and works with
@@ -32,15 +38,28 @@ def fetch_events(
     if from_block is None:
         raise TypeError("Missing mandatory keyword argument to getLogs: from_Block")
 
-    abi = event._get_event_abi()  # pylint:disable=protected-access
-    abi_codec = event.w3.codec
+    # TODO: existing code reports error with multiple events with same name, different input
+    # abi = event._get_event_abi()  # pylint:disable=protected-access
+
+    # TODO: Use manual filtering now: below code is adapted from web3
+    # from web3._utils.contracts import find_matching_event_abi
+    event_abis = [abi for abi in event.contract_abi
+                  if 'name' in abi and
+                  abi['name'] == event.event_name and
+                  (argument_names is None or
+                   set(get_abi_input_names(abi)) == set(argument_names))]
+    if len(event_abis) > 1:
+        raise ValueError('Multiple events found with same name and argument names')
+    event_abi = event_abis[0]
+
+    abi_codec = event.web3.codec
 
     # Set up any indexed event filters if needed
     argument_filters = {} if argument_filters is None else argument_filters
     _filters = {**argument_filters}
 
     _data_filter_set, event_filter_params = construct_event_filter_params(
-        abi,
+        event_abi,
         abi_codec,
         contract_address=event.address if contract_address is None else contract_address,
         argument_filters=_filters,
@@ -55,6 +74,6 @@ def fetch_events(
 
     # Convert raw binary event data to easily manipulable Python objects
     for entry in logs:
-        data = {**get_event_data(abi_codec, abi, entry)}
+        data = {**get_event_data(abi_codec, event_abi, entry)}
         args = data['args']
         yield {**data, **args}  # type: ignore

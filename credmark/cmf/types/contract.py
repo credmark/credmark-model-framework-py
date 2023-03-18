@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Sequence
 
 import credmark.cmf.model
 from credmark.cmf.engine.cache import ContractMetaCache
@@ -104,7 +104,8 @@ def get_slot_proxy_address(context, contract_address,
                                'TransparentUpgradeableProxy',
                                'InitializableAdminUpgradeabilityProxy',
                                'InitializableImmutableAdminUpgradeabilityProxy',
-                               'BridgeToken', ]:
+                               'BridgeToken',
+                               'ERC1967Proxy']:
             # if eip-1967 compliant, https://eips.ethereum.org/EIPS/eip-1967
             slot_proxy_address = Address(context.web3.eth.get_storage_at(
                 contract_address, SLOT_EIP1967))
@@ -333,17 +334,20 @@ class Contract(Account):
             self._load()
         return self._meta.deployed_block_number
 
-    def set_abi(self, abi: Union[List, str]):
+    def set_abi(self, abi: Union[List, str], set_loaded=False):
         """
         Set the ABI for the contract
         """
-        if not self._loaded:
-            try:
-                self._load()
-            except ModelDataError as err:
-                # pylint: disable=unsupported-membership-test
-                if 'abi not available for address' not in err.data.message:
-                    raise
+        if set_loaded:
+            self._loaded = True
+        else:
+            if not self._loaded:
+                try:
+                    self._load()
+                except ModelDataError as err:
+                    # pylint: disable=unsupported-membership-test
+                    if 'abi not available for address' not in err.data.message:
+                        raise
         self._meta.abi = ABI(abi)
 
     @ property
@@ -414,6 +418,7 @@ class Contract(Account):
                 raise ModelRunError('Unable to obtain abi for the contract')
         return self._ledger
 
+    #pylint: disable=too-many-arguments
     def fetch_events(self,
                      event,
                      argument_filters=None,
@@ -421,7 +426,8 @@ class Contract(Account):
                      to_block=None,
                      address=None,
                      topics=None,
-                     contract_address=None):
+                     contract_address=None,
+                     argument_names: Optional[Sequence[str]] = None):
         """
         contract_address is by default set to the event's address.
 
@@ -460,7 +466,8 @@ class Contract(Account):
                             to_block,
                             address=address,
                             topics=topics,
-                            contract_address=contract_address)
+                            contract_address=contract_address,
+                            argument_names=argument_names)
 
 
 class ContractInfo(Contract):
