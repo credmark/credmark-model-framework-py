@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Sequence
 
 import credmark.cmf.model
 from credmark.cmf.engine.cache import ContractMetaCache
@@ -423,7 +423,8 @@ class Contract(Account):
                      to_block=None,
                      address=None,
                      topics=None,
-                     contract_address=None):
+                     contract_address=None,
+                     argument_names: Optional[Sequence[str]] = None):
         """
         contract_address is by default set to the event's address.
 
@@ -462,7 +463,8 @@ class Contract(Account):
                             to_block,
                             address=address,
                             topics=topics,
-                            contract_address=contract_address)
+                            contract_address=contract_address,
+                            argument_names=argument_names)
 
 
 class ContractInfo(Contract):
