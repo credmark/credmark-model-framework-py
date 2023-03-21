@@ -6,7 +6,7 @@ import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 from web3 import Web3
-from web3.contract import Contract as Web3Contract
+from web3.contract.contract import Contract as Web3Contract
 
 from .abi import ABI
 from .account import Account
@@ -242,7 +242,7 @@ class Contract(Account):
             if self.abi is not None:
                 context = credmark.cmf.model.ModelContext.current_context()
                 self._instance = context.web3.eth.contract(
-                    address=context.web3.toChecksumAddress(self.address),
+                    address=context.web3.to_checksum_address(self.address),
                     abi=self.abi
                 )
                 return self._instance
@@ -268,7 +268,7 @@ class Contract(Account):
         if self.proxy_for is not None:
             context = credmark.cmf.model.ModelContext.current_context()
             return context.web3.eth.contract(
-                address=context.web3.toChecksumAddress(self.address),
+                address=context.web3.to_checksum_address(self.address),
                 abi=self.proxy_for.abi).functions
         else:
             return self.instance.functions

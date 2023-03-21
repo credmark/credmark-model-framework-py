@@ -349,7 +349,7 @@ class NativeToken(Token):
         context = credmark.cmf.model.ModelContext.current_context()
         if context.chain_id == 1:
             balance = self.balance_of(address)
-            return float(context.web3.fromWei(balance, 'ether'))
+            return float(context.web3.from_wei(balance, 'ether'))
         else:
             raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
 
