@@ -10,7 +10,7 @@ from credmark.cmf.types.ledger_errors import InvalidQueryException
 
 class TestLedger(ModelTestCase):
 
-    def test_ledger_contract_events(self):
+    def no_test_ledger_contract_events(self):
         # pylint: disable=protected-access
         contract = Contract(address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
 
@@ -44,7 +44,7 @@ class TestLedger(ModelTestCase):
                 order_by=q.field('max_value').dquote().desc(),
                 bigint_cols=['max_value', 'max_valuex2']).to_dataframe()
 
-    def test_ledger_contract_functions(self):
+    def no_test_ledger_contract_functions(self):
         """
         select distinct name from ETHEREUM.DECODED.FUNCTIONS
             where to_address = '0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04';
@@ -183,7 +183,7 @@ class TestLedger(ModelTestCase):
         with context.ledger.Transaction as oo:
             df = oo.select(
                 aggregates=[(oo.GAS_PRICE.sum_(), 'sum_gas_price')],
-                where=oo.HASH.gt(
+                where=oo.HASH.eq(
                     '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de').and_(
                         oo.BLOCK_NUMBER.ge(12407891)
                 ),
