@@ -3,6 +3,22 @@
 History
 -------
 
+0.8.81 [2023-03-18]
+* fix: fetch_event for multiple events with same name
+
+0.8.80 [2023-03-14]
+* fix web3 for avalanche
+
+0.8.79 [2023-03-14]
+* add arbitrum one token data
+* add optimism token data
+* add avalanche token data
+* add fantom token data
+* fix polygon and bsc native token data
+
+0.8.78 [2023-03-12]
+* support ERC1967Proxy
+
 0.8.77 [2023-03-02]
 * change `force` to `set_loaded` for `set_abi()` and `as_erc20()`
 * support arbitrum one and optimism
