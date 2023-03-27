@@ -138,7 +138,7 @@ class ModelBaseError(Exception):
         cls.class_map[cls.__name__] = cls
         cls.dto_set.add(cls.dto_class)
 
-    @ classmethod
+    @classmethod
     def class_for_name(cls, name: str):
         """
         Return a specific error class for a name.
@@ -146,7 +146,7 @@ class ModelBaseError(Exception):
         """
         return cls.class_map.get(name)
 
-    @ classmethod
+    @classmethod
     def base_error_schema(cls):
         return cls.schema_for_dto_class(cls.dto_class)
 
@@ -162,7 +162,7 @@ class ModelBaseError(Exception):
             s['title'] = title
         return s
 
-    @ classmethod
+    @classmethod
     def error_schemas(cls):
         schemas = []
         for dto in cls.dto_set:
