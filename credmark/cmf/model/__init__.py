@@ -342,7 +342,7 @@ class Model:
         any model instance initiation.
         """
 
-    @ abstractmethod
+    @abstractmethod
     def run(self, input: Union[dict, DTOType]) -> Union[dict, DTOType]:
         """
         Subclasses **must** override this method to perform the work
