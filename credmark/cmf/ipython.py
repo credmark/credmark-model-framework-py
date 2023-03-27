@@ -1,4 +1,4 @@
-# pylint: disable=locally-disabled, unused-import, unused-variable, unused-wildcard-import, wildcard-import, line-too-long, protected-access
+# pylint: disable=locally-disabled, unused-import, unused-variable, unused-wildcard-import, wildcard-import, line-too-long, protected-access, too-many-branches
 
 import importlib
 import importlib.util
