@@ -1,4 +1,4 @@
-# pylint: disable=locally-disabled, unused-import, unused-variable, unused-wildcard-import, wildcard-import, line-too-long, protected-access
+# pylint: disable=locally-disabled, unused-import, unused-variable, unused-wildcard-import, wildcard-import, line-too-long, protected-access, too-many-branches
 
 import importlib
 import importlib.util
@@ -6,11 +6,13 @@ import os
 import sys
 import json
 from typing import Dict, List, NamedTuple, Optional
+from web3.middleware.geth_poa import geth_poa_middleware
 from web3 import HTTPProvider, Web3
 
 import requests
 from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_loader import ModelLoader
+from credmark.cmf.types import Network
 from IPython.core.magic import (Magics, cell_magic, line_cell_magic,
                                 line_magic, magics_class, needs_local_scope)
 from IPython.lib.pretty import pprint, pretty
@@ -152,6 +154,14 @@ def create_cmf(cmf_param):
     if param['chain_to_provider_url'][str(param['chain_id'])].startswith('http'):
         context._web3 = Web3(HTTPProvider(context.web3.provider.endpoint_uri,  # type: ignore
                              request_kwargs={'timeout': 3600 * 10}))
+
+        if param['chain_id'] in [Network.Rinkeby,
+                                 Network.BSC,
+                                 Network.Polygon,
+                                 Network.Optimism,
+                                 Network.Avalanche]:
+            context._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
         context._web3.eth.default_block = int(context.block_number)
 
     model_loaded = _model_loader.loaded_model_version_lists()
@@ -167,11 +177,11 @@ def create_cmf(cmf_param):
     return context, model_loaded
 
 
-@ magics_class
+@magics_class
 class CredmarkMagic(Magics):
 
-    @ needs_local_scope
-    @ line_magic
+    @needs_local_scope
+    @line_magic
     def cmf(self, line, local_ns):
         # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         if line == 'help':

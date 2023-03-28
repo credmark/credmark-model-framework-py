@@ -1,7 +1,7 @@
 
 import json
 import os
-from typing import Union
+from typing import Optional, Union
 
 from web3 import HTTPProvider, Web3, WebsocketProvider
 from web3.middleware.geth_poa import geth_poa_middleware
@@ -58,7 +58,7 @@ class Web3Registry:
 
         return chain_to_provider_url
 
-    def __init__(self, chain_to_provider_url: Union[dict[str, str], None]):
+    def __init__(self, chain_to_provider_url: Optional[dict[str, str]]):
         super().__init__()
         self.__chain_to_provider_url = chain_to_provider_url if \
             chain_to_provider_url is not None else {}

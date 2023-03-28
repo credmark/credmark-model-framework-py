@@ -60,7 +60,7 @@ class ContractEventsTable(LedgerTable):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    @ property
+    @property
     def bigint_cols(self):
         return [v for k, v in self._column_dict.items() if k.startswith('EVT_')]
 
@@ -249,12 +249,12 @@ class ContractLedger:
         self._address = address
         self._abi = abi
 
-    @ property
+    @property
     def functions(self):
         return ContractEntityFactory(
             ContractEntityType.FUNCTIONS, self._address, self._abi)
 
-    @ property
+    @property
     def events(self):
         return ContractEntityFactory(
             ContractEntityType.EVENTS, self._address, self._abi)

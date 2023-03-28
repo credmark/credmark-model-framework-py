@@ -3,9 +3,12 @@
 History
 -------
 
-0.8.82 [2023-03-XX]
+0.8.83 [2023-03-XX]
 * chore: split token list to separate file per chainId
 * chore: support new DB
+
+0.8.82 [2023-03-27]
+* fix: fix ipython under non-Ethereum networks
 
 0.8.81 [2023-03-18]
 * fix: fetch_event for multiple events with same name

@@ -2,6 +2,7 @@
 # All address in the field shall be checksum address
 
 from credmark.cmf.types.network import Network
+from credmark.cmf.types.data.fungible_token_data_polygon import POLYGON_TOKENS
 from credmark.cmf.types.data.fungible_token_data_avalenche import AVALANCHE_TOKENS
 from credmark.cmf.types.data.fungible_token_data_mainnet import MAINNET_TOKENS
 from credmark.cmf.types.data.fungible_token_data_arbitrum_one import ARBITRUM_ONE_TOKENS
@@ -69,15 +70,7 @@ NATIVE_TOKEN = {
 }
 
 FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
-    int(Network.Polygon): {
-        "MATIC": {
-            "symbol": "MATIC",
-            "decimals": 18,
-            "name": "polygon",
-            'address': '0x0000000000000000000000000000000000001010',
-            "is_native_token": True,
-        },
-    },
+    int(Network.Polygon): POLYGON_TOKENS,
     int(Network.Mainnet): MAINNET_TOKENS,
     int(Network.ArbitrumOne): ARBITRUM_ONE_TOKENS,
     int(Network.Optimism): OPTIMISM_TOKENS,
