@@ -234,6 +234,12 @@ class ColumnField(str):
     def is_not_null(self):
         return ColumnField(f'{self} is not null')
 
+    def extract_epoch(self):
+        return ColumnField(f'extract(epoch from {self})')
+
+    def to_timestamp(self):
+        return ColumnField(f'to_timestamp({self})')
+
 
 class LedgerTable:
     """
@@ -419,7 +425,7 @@ class TraceTable(LedgerTable):
     """"""
     GAS_USED = ColumnField('gas_used')
     """"""
-    SUB_TRACES = ColumnField('sub_traces')
+    SUB_TRACES = ColumnField('subtraces')
     """"""
     TRACE_ADDRESS = ColumnField('trace_address')
     """"""
@@ -507,7 +513,7 @@ class ContractTable(LedgerTable):
     """"""
     IS_ERC721 = ColumnField('is_erc721 ')
     """"""
-    TRANSACTION_HASH = ColumnField('transaction_hash')
+    # TRANSACTION_HASH = ColumnField('transaction_hash')
     """"""
     BLOCK_HASH = ColumnField('block_hash')
     """"""
@@ -542,7 +548,13 @@ class LogTable(LedgerTable):
     """"""
     DATA = ColumnField('data')
     """"""
-    TOPICS = ColumnField('topics')
+    TOPIC0 = ColumnField('topic0')
+    """"""
+    TOPIC1 = ColumnField('topic1')
+    """"""
+    TOPIC2 = ColumnField('topic2')
+    """"""
+    TOPIC3 = ColumnField('topic3')
     """"""
 
     def __init__(self, **kwargs):

@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 import unittest
 
 import credmark.cmf.model
@@ -81,11 +83,15 @@ class TestLedger(ModelTestCase):
 
         with context.ledger.Transaction as oo:
             df = oo.select(
-                aggregates=[(oo.MAX_FEE_PER_GAS.sum_(), 'sum_gas')],
+                aggregates=[
+                    (oo.MAX_FEE_PER_GAS.sum_(), 'sum_gas')],
                 limit=5,
-                where=oo.BLOCK_TIMESTAMP.gt(get_dt(2022, 3, 1).timestamp()),
-                order_by=oo.BLOCK_TIMESTAMP,).to_dataframe()
-            self.assertTrue(df.shape[0] == 1)
+                where=oo.BLOCK_TIMESTAMP.gt(
+                    oo.field(int(get_dt(2022, 3, 1).timestamp())).to_timestamp()),
+                group_by=[oo.BLOCK_TIMESTAMP],
+                order_by=oo.BLOCK_TIMESTAMP).to_dataframe()
+            print(df)
+            self.assertTrue(df.shape[0] == 5)
 
     def test_op(self):
         context = credmark.cmf.model.ModelContext.current_context()
@@ -109,6 +115,7 @@ class TestLedger(ModelTestCase):
                     '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de',
                     case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
+            print(df)
             self.assertTrue(df.shape[0] == 1)
 
             # in with str_lower
@@ -127,6 +134,7 @@ class TestLedger(ModelTestCase):
                     ['0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de'],
                     case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
+            print(df)
             self.assertTrue(df.shape[0] > 0)
 
             # in with number with str_lower True/False
@@ -181,11 +189,12 @@ class TestLedger(ModelTestCase):
         context = credmark.cmf.model.ModelContext.current_context()
 
         with context.ledger.Transaction as oo:
+            # tx on block 6949017
             df = oo.select(
                 aggregates=[(oo.GAS_PRICE.sum_(), 'sum_gas_price')],
                 where=oo.HASH.eq(
                     '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de').and_(
-                        oo.BLOCK_NUMBER.ge(12407891)
+                        oo.BLOCK_NUMBER.lt(12407891)
                 ),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
@@ -218,9 +227,10 @@ class TestLedger(ModelTestCase):
     def test_ledger_txn(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
+        # oo.NONCE
         with self.assertRaises(InvalidQueryException):
             with context.ledger.Transaction as oo:
-                _ = oo.select(columns=oo.columns, limit=-5, order_by=oo.NONCE,
+                _ = oo.select(columns=oo.columns, limit=-5, order_by=oo.TRANSACTION_INDEX,
                               where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
 
         with context.ledger.Transaction as oo:
@@ -230,7 +240,7 @@ class TestLedger(ModelTestCase):
                     '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de').and_(
                         oo.BLOCK_NUMBER.gt(13000000)
                 ),
-                order_by=oo.NONCE.desc().comma_(oo.TO_ADDRESS.asc())).to_dataframe()
+                order_by=oo.TRANSACTION_INDEX.desc().comma_(oo.TO_ADDRESS.asc())).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
 
             df = oo.select(
@@ -284,8 +294,18 @@ class TestLedger(ModelTestCase):
 
         block_20220101 = get_block(get_dt(2022, 1, 1))
 
+        with context.ledger.Contract as oo:
+            df = oo.select(columns=oo.columns, limit=5, order_by=oo.ADDRESS,
+                           where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
+            self.assertTrue(df.shape[0] == 5)
+
+        with context.ledger.TokenBalance as oo:
+            df = oo.select(columns=oo.columns, limit=5, order_by=oo.TOKEN_ADDRESS,
+                           where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
+            self.assertTrue(df.shape[0] == 5)
+
         with context.ledger.Transaction as oo:
-            df = oo.select(columns=oo.columns, limit=5, order_by=oo.NONCE,
+            df = oo.select(columns=oo.columns, limit=5, order_by=oo.TRANSACTION_INDEX,
                            where=oo.BLOCK_NUMBER.ge(block_20220101)).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
@@ -298,13 +318,16 @@ class TestLedger(ModelTestCase):
             self.assertTrue(df.hash[0].startswith('0x0000'))
 
         with context.ledger.Trace as oo:
-            df = oo.select(columns=oo.columns, limit=5, order_by=oo.GAS_USED,
+            df = oo.select(columns=oo.columns, limit=5, order_by=oo.TRANSACTION_HASH,
                            where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
         with context.ledger.Block as oo:
-            df = oo.select(columns=oo.columns, limit=5, order_by=oo.MINER,
-                           where=oo.TIMESTAMP.gt(block_20220101)).to_dataframe()
+            df = oo.select(
+                columns=oo.columns,
+                limit=5,
+                order_by=oo.MINER,
+                where=oo.TIMESTAMP.gt(oo.field(block_20220101.timestamp).to_timestamp())).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
         with context.ledger.Log as oo:
@@ -327,16 +350,6 @@ class TestLedger(ModelTestCase):
             df = oo.select(columns=oo.columns, limit=5, order_by=oo.BLOCK_HASH,
                            where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
-
-        with context.ledger.Contract as oo:
-            df = oo.select(columns=oo.columns, limit=5, order_by=oo.BYTECODE,
-                           where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
-            self.assertTrue(df.shape[0] == 5)
-
-        # with context.ledger.TokenBalance as oo:
-        #     df = oo.select(columns=oo.columns, limit=5, order_by=oo.TOKEN_ADDRESS,
-        #                     where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
-        #     self.assertTrue(df.shape[0] == 5)
 
 
 if __name__ == '__main__':
