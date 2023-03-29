@@ -140,28 +140,32 @@ class TestLedger(ModelTestCase):
             # in with number with str_lower True/False
             df = oo.select(
                 where=oo.BLOCK_NUMBER.in_([6949017, 13949017], case_sensitive=True),
-                group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
+                group_by=[oo.HASH, oo.BLOCK_NUMBER],
+                bigint_cols=[oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
             self.assertTrue(6949017 in df.block_number.unique())
             self.assertTrue(13949017 in df.block_number.unique())
 
             df = oo.select(
                 where=oo.BLOCK_NUMBER.in_([6949017, 13949017]),
-                group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
+                group_by=[oo.HASH, oo.BLOCK_NUMBER],
+                bigint_cols=[oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
             self.assertTrue(6949017 in df.block_number.unique())
             self.assertTrue(13949017 in df.block_number.unique())
 
             df = oo.select(
                 where=oo.BLOCK_NUMBER.not_in_([6949017, 13949017]),
-                group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
+                group_by=[oo.HASH, oo.BLOCK_NUMBER],
+                bigint_cols=[oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
             self.assertTrue(6949017 not in df.block_number.unique())
             self.assertTrue(13949017 not in df.block_number.unique())
 
             df = oo.select(
                 where=oo.BLOCK_NUMBER.between_(6949017, 13949017),
-                group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
+                group_by=[oo.HASH, oo.BLOCK_NUMBER],
+                bigint_cols=[oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
             self.assertTrue(df.block_number.min() >= 6949017)
             self.assertTrue(df.block_number.max() <= 13949017)
@@ -169,7 +173,8 @@ class TestLedger(ModelTestCase):
             # between with number with str_lower True/False: ineffective
             df = oo.select(
                 where=oo.BLOCK_NUMBER.between_(6949017, 6949018, case_sensitive=True),
-                group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
+                group_by=[oo.HASH, oo.BLOCK_NUMBER],
+                bigint_cols=[oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
             self.assertTrue(df.block_number.min() >= 6949017)
             self.assertTrue(df.block_number.max() <= 13949017)
@@ -178,7 +183,8 @@ class TestLedger(ModelTestCase):
                 aggregates=[(oo.BLOCK_NUMBER.max_(), 'max_block_number'),
                             (oo.BLOCK_NUMBER.min_(), 'min_block_number')],
                 where=oo.BLOCK_NUMBER.not_between_(6949017, 13949017),
-                group_by=[oo.HASH, oo.BLOCK_NUMBER]
+                group_by=[oo.HASH, oo.BLOCK_NUMBER],
+                bigint_cols=[oo.BLOCK_NUMBER]
             ).to_dataframe()  # , oo.BLOCK_NUMBER
 
             self.assertTrue(df.shape[0] > 0)
