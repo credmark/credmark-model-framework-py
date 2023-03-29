@@ -184,7 +184,7 @@ class TestLedger(ModelTestCase):
                             (oo.BLOCK_NUMBER.min_(), 'min_block_number')],
                 where=oo.BLOCK_NUMBER.not_between_(6949017, 13949017),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER],
-                bigint_cols=[oo.BLOCK_NUMBER]
+                bigint_cols=['max_block_number', 'min_block_number']
             ).to_dataframe()  # , oo.BLOCK_NUMBER
 
             self.assertTrue(df.shape[0] > 0)
