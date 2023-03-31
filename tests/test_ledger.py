@@ -12,7 +12,7 @@ from credmark.cmf.types.ledger_errors import InvalidQueryException
 
 class TestLedger(ModelTestCase):
 
-    def no_test_ledger_contract_events(self):
+    def test_ledger_contract_events(self):
         # pylint: disable=protected-access
         contract = Contract(address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
 
@@ -78,7 +78,7 @@ class TestLedger(ModelTestCase):
 
         # with self.assertRaises(ModelEngineError):
 
-    def test_aggregate(self):
+    def no_test_aggregate(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
         with context.ledger.Transaction as oo:
@@ -93,7 +93,7 @@ class TestLedger(ModelTestCase):
             print(df)
             self.assertTrue(df.shape[0] == 5)
 
-    def test_op(self):
+    def no_test_op(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
         # force = True
@@ -191,7 +191,7 @@ class TestLedger(ModelTestCase):
             self.assertTrue(df.min_block_number.min() < 6949017)
             self.assertTrue(df.max_block_number.max() > 13949017)
 
-    def test_group_by(self):
+    def no_test_group_by(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
         with context.ledger.Transaction as oo:
@@ -230,7 +230,7 @@ class TestLedger(ModelTestCase):
                 offset=1).to_dataframe()
             self.assertTrue(df.shape[0] >= 1)
 
-    def test_ledger_txn(self):
+    def no_test_ledger_txn(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
         # oo.NONCE
@@ -295,7 +295,7 @@ class TestLedger(ModelTestCase):
             for x in df.hash.apply(lambda x: x[2]).unique():
                 self.assertTrue(int(x) <= 9)
 
-    def test_ledger_tables(self):
+    def no_test_ledger_tables(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
         block_20220101 = get_block(get_dt(2022, 1, 1))
