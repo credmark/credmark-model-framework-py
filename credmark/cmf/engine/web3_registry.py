@@ -6,7 +6,7 @@ from typing import Optional, Union
 from web3 import HTTPProvider, Web3, WebsocketProvider
 from web3.middleware.geth_poa import geth_poa_middleware
 
-from credmark.cmf.types.network import Network
+from credmark.cmf.types.network import Network, CREDMARK_PUBLIC_PROVIDERS
 
 
 class Web3Registry:
@@ -60,8 +60,9 @@ class Web3Registry:
 
     def __init__(self, chain_to_provider_url: Optional[dict[str, str]]):
         super().__init__()
-        self.__chain_to_provider_url = chain_to_provider_url if \
-            chain_to_provider_url is not None else {}
+        self.__chain_to_provider_url = CREDMARK_PUBLIC_PROVIDERS
+        if chain_to_provider_url:
+            self.__chain_to_provider_url.update(chain_to_provider_url)
 
     # pylint:disable=line-too-long
     def web3_for_chain_id(self, chain_id: int):
