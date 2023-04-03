@@ -39,9 +39,9 @@ class TestLedger(ModelTestCase):
         with contract.ledger.events.BalanceTransfer as q:
             df = q.select(
                 aggregates=[
-                    (q.EVT__VALUE.max_().to_char(), 'max_value'),
-                    (q.EVT__VALUE.as_integer().max_().plus_(
-                        q.EVT__VALUE.as_integer().max_()).to_char(), 'max_valuex2'),
+                    (q.EVT__VALUE.max_().as_text(), 'max_value'),
+                    (q.EVT__VALUE.as_numeric().max_().plus_(
+                        q.EVT__VALUE.as_numeric().max_()).as_text(), 'max_valuex2'),
                     (q.EVT__VALUE.max_(), 'max_value2')],
                 order_by=q.field('max_value').dquote().desc(),
                 bigint_cols=['max_value', 'max_valuex2']).to_dataframe()
@@ -78,7 +78,7 @@ class TestLedger(ModelTestCase):
 
         # with self.assertRaises(ModelEngineError):
 
-    def no_test_aggregate(self):
+    def test_aggregate(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
         with context.ledger.Transaction as oo:
@@ -93,7 +93,7 @@ class TestLedger(ModelTestCase):
             print(df)
             self.assertTrue(df.shape[0] == 5)
 
-    def no_test_op(self):
+    def test_op(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
         # force = True
@@ -191,7 +191,7 @@ class TestLedger(ModelTestCase):
             self.assertTrue(df.min_block_number.min() < 6949017)
             self.assertTrue(df.max_block_number.max() > 13949017)
 
-    def no_test_group_by(self):
+    def test_group_by(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
         with context.ledger.Transaction as oo:
@@ -230,7 +230,7 @@ class TestLedger(ModelTestCase):
                 offset=1).to_dataframe()
             self.assertTrue(df.shape[0] >= 1)
 
-    def no_test_ledger_txn(self):
+    def test_ledger_txn(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
         # oo.NONCE
@@ -295,7 +295,7 @@ class TestLedger(ModelTestCase):
             for x in df.hash.apply(lambda x: x[2]).unique():
                 self.assertTrue(int(x) <= 9)
 
-    def no_test_ledger_tables(self):
+    def test_ledger_tables(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
         block_20220101 = get_block(get_dt(2022, 1, 1))

@@ -219,14 +219,14 @@ class ColumnField(str):
     def div_(self, col):
         return self.op_(col, '/')
 
-    def to_char(self):
-        return self.func_('to_char')
-
     def as_text(self):
         return ColumnField(f'{self}::TEXT')
 
-    def as_integer(self):
-        return self.func_('as_integer')
+    def as_bigint(self):
+        return ColumnField(f'{self}::BIGINT')
+
+    def as_numeric(self):
+        return ColumnField(f'{self}::NUMERIC')
 
     def is_null(self):
         return ColumnField(f'{self} is null')
