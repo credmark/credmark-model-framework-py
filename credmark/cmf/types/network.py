@@ -16,3 +16,17 @@ class Network(IntEnum):
     Fantom = 250
     ArbitrumOne = 42161
     Avalanche = 43114
+
+    def __str__(self):
+        return str(self.value)
+
+
+CREDMARK_PUBLIC_PROVIDERS = {
+    str(Network.Mainnet): "https://nodes.credmark.com/1",
+    str(Network.Optimism): "https://nodes.credmark.com/10",
+    str(Network.BSC): "https://nodes.credmark.com/56",
+    str(Network.Polygon): "https://nodes.credmark.com/137",
+    str(Network.Fantom): "https://nodes.credmark.com/250",
+    str(Network.ArbitrumOne): "https://nodes.credmark.com/42161",
+    str(Network.Avalanche): "https://nodes.credmark.com/43114",
+}
