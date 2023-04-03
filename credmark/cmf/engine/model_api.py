@@ -14,6 +14,7 @@ from requests.adapters import HTTPAdapter, Retry
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
 STAGING_GATEWAY_API_URL = 'https://gateway.staging.credmark.com'
+CREDMARK_API_KEY = 'caprod_oOYBsqWiapsxNdScXRtt0VMHteLxRqC6jfB-FZ5AXMoLQtz0zjGrrsjf8xbDNNlc'
 
 RUN_MODEL_PATH = '/v1/model/run'
 GET_MODELS_PATH = '/v1/models'
@@ -40,6 +41,8 @@ class ModelApi:
         api: ModelApi = cls._url_to_api.get(url)  # type: ignore
         if api is None:
             api_key = os.environ.get('CREDMARK_API_KEY')
+            if not api_key and url == GATEWAY_API_URL:
+                api_key = CREDMARK_API_KEY
             internal_api = url not in [GATEWAY_API_URL, STAGING_GATEWAY_API_URL]
             api = ModelApi(url, api_key, internal_api)
             cls._url_to_api[url] = api
