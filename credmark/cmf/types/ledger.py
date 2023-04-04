@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 import inspect
 from typing import Dict, List, Tuple, Union
@@ -65,11 +66,14 @@ class LedgerModelOutput(IterableListGenericDTO[dict]):
                         pass
                     elif col_type == 'O':
                         try:
-                            df = df.astype({c: "Int64"})
-                        except ValueError:
-                            pass
-                        except OverflowError:
-                            df = df.assign(**{c: (lambda x, c=c: x[c].apply(int))})
+                            df = df.astype({c: int})
+                        except:  # pylint:disable=bare-except
+                            try:
+                                df = df.astype({c: "Int64"})
+                            except ValueError:
+                                pass
+                            except OverflowError:
+                                df = df.assign(**{c: (lambda x, c=c: x[c].apply(int))})
                     else:
                         raise TypeError(f'column {c} has unsupported column type {col_type}')
         return df
@@ -240,6 +244,12 @@ class ColumnField(str):
     def to_timestamp(self):
         return ColumnField(f'to_timestamp({self})')
 
+    @staticmethod
+    def from_iso8601_str(timestamp):
+        if timestamp.endswith('Z'):
+            timestamp = timestamp[:-1] + '+00:00'
+        return int(datetime.fromisoformat(timestamp).timestamp())
+
 
 class LedgerTable:
     """
@@ -386,7 +396,8 @@ class TransactionTable(LedgerTable):
 
     @property
     def bigint_cols(self):
-        return [self.VALUE, self.GAS_PRICE, self.MAX_FEE_PER_GAS, self.MAX_PRIORITY_FEE_PER_GAS]
+        return [self.VALUE, self.GAS_PRICE,
+                self.MAX_FEE_PER_GAS, self.MAX_PRIORITY_FEE_PER_GAS]
 
 
 class TraceTable(LedgerTable):
@@ -422,10 +433,6 @@ class TraceTable(LedgerTable):
     REWARD_TYPE = ColumnField('reward_type')
     """"""
     GAS = ColumnField('gas')
-    """"""
-    GAS_USED = ColumnField('gas_used')
-    """"""
-    SUB_TRACES = ColumnField('subtraces')
     """"""
     TRACE_ADDRESS = ColumnField('trace_address')
     """"""
@@ -513,8 +520,6 @@ class ContractTable(LedgerTable):
     """"""
     IS_ERC721 = ColumnField('is_erc721 ')
     """"""
-    # TRANSACTION_HASH = ColumnField('transaction_hash')
-    """"""
     BLOCK_HASH = ColumnField('block_hash')
     """"""
     BLOCK_NUMBER = ColumnField('block_number')
@@ -524,6 +529,10 @@ class ContractTable(LedgerTable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self):
+        return []
 
 
 class LogTable(LedgerTable):
@@ -560,6 +569,10 @@ class LogTable(LedgerTable):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    @property
+    def bigint_cols(self):
+        return []
+
 
 class ReceiptTable(LedgerTable):
     """
@@ -595,7 +608,8 @@ class ReceiptTable(LedgerTable):
 
     @property
     def bigint_cols(self):
-        return [self.CUMULATIVE_GAS_USED, self.GAS_USED, self.EFFECTIVE_GAS_PRICE]
+        return [self.CUMULATIVE_GAS_USED, self.GAS_USED,
+                self.EFFECTIVE_GAS_PRICE]
 
 
 class TokenTable(LedgerTable):
