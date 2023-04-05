@@ -3,9 +3,13 @@
 History
 -------
 
-0.8.83 [2023-03-XX]
+0.8.8X [2023-04-08]
 * chore: split token list to separate file per chainId
 * chore: support new DB
+
+0.8.83 [2023-04-04]
+* feat: added public nodes
+* feat: added public api key
 
 0.8.82 [2023-03-27]
 * fix: fix ipython under non-Ethereum networks
