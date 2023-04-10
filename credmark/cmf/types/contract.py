@@ -426,7 +426,8 @@ class Contract(Account):
                      address=None,
                      topics=None,
                      contract_address=None,
-                     argument_names: Optional[Sequence[str]] = None):
+                     argument_names: Optional[Sequence[str]] = None,
+                     by_range: Optional[int] = None):
         """
         contract_address is by default set to the event's address.
 
@@ -466,7 +467,8 @@ class Contract(Account):
                             address=address,
                             topics=topics,
                             contract_address=contract_address,
-                            argument_names=argument_names)
+                            argument_names=argument_names,
+                            by_range=by_range)
 
 
 class ContractInfo(Contract):

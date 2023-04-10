@@ -46,7 +46,7 @@ class TestLedger(ModelTestCase):
                 order_by=q.field('max_value').dquote().desc(),
                 bigint_cols=['max_value', 'max_valuex2']).to_dataframe()
 
-    def no_test_ledger_contract_functions(self):
+    def test_ledger_contract_functions(self):
         """
         select distinct name from ETHEREUM.DECODED.FUNCTIONS
             where to_address = '0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04';
