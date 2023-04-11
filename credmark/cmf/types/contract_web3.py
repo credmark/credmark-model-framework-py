@@ -1,4 +1,4 @@
-# pylint:disable=too-many-locals
+# pylint:disable=too-many-locals, too-many-arguments
 
 import math
 
@@ -40,6 +40,9 @@ def fetch_events(
 
     if from_block is None:
         raise TypeError("Missing mandatory keyword argument to getLogs: from_Block")
+
+    if to_block is None:
+        to_block = event.web3.eth.block_number
 
     # TODO: existing code reports error with multiple events with same name, different input
     # abi = event._get_event_abi()  # pylint:disable=protected-access
@@ -84,8 +87,8 @@ def fetch_events(
     else:
         n_range_upper = math.ceil((to_block - from_block) // by_range)
         for n_range in range(n_range_upper):
-            _from_block = from_block+n_range*by_range
-            _to_block = min(to_block, _from_block+by_range)
+            _from_block = from_block + n_range * by_range
+            _to_block = min(to_block, _from_block + by_range)
             _data_filter_set, event_filter_params = construct_event_filter_params(
                 event_abi,
                 abi_codec,
