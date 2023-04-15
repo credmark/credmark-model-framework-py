@@ -51,7 +51,12 @@ def load_module_items(namespace, module_name, selection: Optional[List[str]] = N
 
 
 def create_cmf_context(cmf_init, local_ns):
-    for p in cmf_init.model_loader_path:
+    default_models_path = os.path.abspath(importlib.import_module('models').__path__[0])
+    model_loader_path = [os.path.abspath(p) for p in cmf_init.model_loader_path]
+    if default_models_path not in model_loader_path:
+        model_loader_path.append(default_models_path)
+
+    for p in model_loader_path:
         if not os.path.isdir(p):
             raise ValueError(f'{p} specified for model_loader_path is not a valid path')
 
@@ -77,7 +82,7 @@ def create_cmf_context(cmf_init, local_ns):
                 raise ValueError(
                     f'Provider URL {provider_url} for {cmf_init.chain_id} does not respond.')
 
-    model_loader = ModelLoader(cmf_init.model_loader_path, None, True)
+    model_loader = ModelLoader(model_loader_path, None, True)
     context = EngineModelContext.create_context(chain_id=cmf_init.chain_id, block_number=cmf_init.block_number, model_loader=model_loader,
                                                 chain_to_provider_url=cmf_init.chain_to_provider_url,
                                                 api_url=cmf_init.api_url, run_id=None, console=True, use_local_models=cmf_init.use_local_models)
