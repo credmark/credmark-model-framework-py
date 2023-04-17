@@ -3,9 +3,11 @@
 History
 -------
 
-0.8.8X [2023-04-08]
+0.8.84 [2023-04-17]
 * chore: split token list to separate file per chainId
 * chore: support new DB
+* chore: new create_context
+* feat: fetch_events with by_range
 
 0.8.83 [2023-04-04]
 * feat: added public nodes
