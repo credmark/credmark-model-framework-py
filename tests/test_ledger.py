@@ -352,6 +352,11 @@ class TestLedger(ModelTestCase):
                            where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
+        with context.ledger.TokenTransfer as q:
+            df_txn = q.select(columns=q.columns,
+                              where=q.TRANSACTION_HASH.eq('0x4b37d2f343608457ca3322accdab2811c707acf3eb07a40dd8d9567093ea5b82')).to_dataframe()
+            self.assertTrue(df_txn.shape[0] == 1)
+
         with context.ledger.Token as oo:
             df = oo.select(columns=oo.columns, limit=5, order_by=oo.BLOCK_HASH,
                            where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
