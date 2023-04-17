@@ -85,10 +85,13 @@ def fetch_events(
             args = data['args']
             yield {**data, **args}  # type: ignore
     else:
-        n_range_upper = math.ceil((to_block - from_block) // by_range)
+        n_range_upper = int(math.ceil((to_block - from_block + 1) / by_range))
         for n_range in range(n_range_upper):
             _from_block = from_block + n_range * by_range
-            _to_block = min(to_block, _from_block + by_range)
+            if n_range == n_range_upper - 1:
+                _to_block = to_block
+            else:
+                _to_block = _from_block + by_range - 1
             _data_filter_set, event_filter_params = construct_event_filter_params(
                 event_abi,
                 abi_codec,
