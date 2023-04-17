@@ -72,6 +72,7 @@ def create_cmf(cmf_param):
     return context, model_loaded
 
 
+#pylint: disable=too-many-locals, too-many-statements
 def create_cmf_context(cmf_param):
     models_spec = importlib.util.find_spec("models")
     if models_spec is not None and models_spec.submodule_search_locations is not None:
