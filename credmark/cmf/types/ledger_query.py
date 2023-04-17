@@ -43,7 +43,7 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                 raise InvalidQueryException(
                     model_slug,
                     (f'{model_slug} call with group_by will need the columns to be '
-                      'empty [] or None.'))
+                     'empty [] or None.'))
             # pylint:disable=no-member
             columns = [c for c in group_by
                        if c in self.columns]  # type: ignore
@@ -79,7 +79,7 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
         # Customized columns needs to be converted to string to avoid losing precision.
         # https://github.com/credmark/credmark-model-runner-api/issues/50
         # pylint:disable=no-member
-        cols_customized = [(f'to_char({c})', c)
+        cols_customized = [(f'{c}::TEXT', c)
                            for c in columns if c in self.bigint_cols]  # type: ignore
         columns = [c for c in columns if c not in self.bigint_cols]  # type: ignore
 

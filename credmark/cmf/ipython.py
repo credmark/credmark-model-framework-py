@@ -12,7 +12,10 @@ from web3 import HTTPProvider, Web3
 import requests
 from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_loader import ModelLoader
+from credmark.cmf.engine.model_api import GATEWAY_API_URL
 from credmark.cmf.types import Network
+from credmark.cmf.types.network import CREDMARK_PUBLIC_PROVIDERS
+
 from IPython.core.magic import (Magics, cell_magic, line_cell_magic,
                                 line_magic, magics_class, needs_local_scope)
 from IPython.lib.pretty import pprint, pretty
@@ -50,66 +53,27 @@ def load_module_items(namespace, module_name, selection: Optional[List[str]] = N
                 namespace[a] = getattr(imp, a)
 
 
-def create_cmf_context(cmf_init, local_ns):
-    for p in cmf_init.model_loader_path:
-        if not os.path.isdir(p):
-            raise ValueError(f'{p} specified for model_loader_path is not a valid path')
-
-    provider_url = cmf_init.chain_to_provider_url.get(str(cmf_init.chain_id), None)
-    if provider_url is None:
-        print(f'Warning: missing provider for chain_id={cmf_init.chain_id}')
-    else:
-        # Test provider
-        if cmf_init.chain_id == 1:
-            headers = {'Content-Type': 'application/json'}
-            response = requests.post(
-                provider_url, data=f'{{"jsonrpc":"2.0","method": "eth_blockNumber","params": [], "id":{cmf_init.chain_id}}}',
-                headers=headers,
-                timeout=60)
-            if response.status_code in [200, 201]:
-                res = response.json()
-                if 'result' in res and int(res['result'], base=16) > 0:
-                    pass
-                else:
-                    raise ValueError(
-                        f'Provider URL {provider_url} does not respond properly for querying block number: {res}')
-            else:
-                raise ValueError(
-                    f'Provider URL {provider_url} for {cmf_init.chain_id} does not respond.')
-
-    model_loader = ModelLoader(cmf_init.model_loader_path, None, True)
-    context = EngineModelContext.create_context(chain_id=cmf_init.chain_id, block_number=cmf_init.block_number, model_loader=model_loader,
-                                                chain_to_provider_url=cmf_init.chain_to_provider_url,
-                                                api_url=cmf_init.api_url, run_id=None, console=True, use_local_models=cmf_init.use_local_models)
-
-    var_namespace = local_ns
-    load_module_items(var_namespace, 'credmark.cmf.model', ['Model'])
-    load_module_items(var_namespace, 'credmark.cmf.model.errors',
-                      ['ModelDataError', 'ModelRunError'])
-    load_module_items(var_namespace, 'credmark.cmf.types')
-    load_module_items(var_namespace, 'credmark.dto')
-    load_module_items(var_namespace, 'credmark.cmf.engine.dev_models.console',
-                      ['get_dt', 'get_block', 'log_output'])
-
-    if cmf_init.register_utility_global:
-        var_namespace['ledger'] = context.ledger
-        var_namespace['run_model'] = context.run_model
-        var_namespace['models'] = context.models
-        var_namespace['block_number'] = context.block_number
-        var_namespace['chain_id'] = context.chain_id
-        if provider_url is not None:
-            var_namespace['web3'] = context.web3
-        var_namespace['run_model_historical'] = context.historical.run_model_historical
-        var_namespace['run_model_historical_blocks'] = context.historical.run_model_historical_blocks
-
-    return context, model_loader
-
-
 def create_cmf(cmf_param):
     """
     create cmf
     """
+    context, _model_loader = create_cmf_context(cmf_param)
 
+    model_loaded = _model_loader.loaded_model_version_lists()
+    for _k, cache_value in model_loaded.items():
+        try:
+            assert len(cache_value) == 1
+        except AssertionError:
+            print(_k)
+            raise
+
+    model_loaded = {k: v[0] for k, v in model_loaded.items()}
+
+    return context, model_loaded
+
+
+#pylint: disable=too-many-locals, too-many-statements
+def create_cmf_context(cmf_param):
     models_spec = importlib.util.find_spec("models")
     if models_spec is not None and models_spec.submodule_search_locations is not None:
         models_path = [models_spec.submodule_search_locations[0]]
@@ -123,20 +87,25 @@ def create_cmf(cmf_param):
             dotenv_param = dotenv_values(dotenv_file)
             break
 
-    if 'chain_to_provider_url' not in cmf_param:
-        if isinstance(dotenv_param, dict) and 'CREDMARK_WEB3_PROVIDERS' in dotenv_param:
-            cmf_param |= \
-                {'chain_to_provider_url':
-                 json.loads(dotenv_param['CREDMARK_WEB3_PROVIDERS'])}  # type: ignore
-        else:
-            providers_json = os.environ.get('CREDMARK_WEB3_PROVIDERS', None)
-            if providers_json is not None:
-                cmf_param |= \
-                    {'chain_to_provider_url': json.loads(providers_json)}
-            else:
-                raise ValueError(
-                    "Not found CREDMARK_WEB3_PROVIDERS in .env or environment. "
-                    "Key 'chain_to_provider_url' shall be in cmf_param as {'1': 'http://localhost:8545'}")
+    if isinstance(dotenv_param, dict) and 'CREDMARK_WEB3_PROVIDERS' in dotenv_param:
+        provider_from_dotenv = json.loads(dotenv_param['CREDMARK_WEB3_PROVIDERS'])  # type: ignore
+    else:
+        provider_from_dotenv = {}
+
+    providers_json = os.environ.get('CREDMARK_WEB3_PROVIDERS', None)
+    if providers_json is not None:
+        provider_from_environment = json.loads(providers_json)
+    else:
+        provider_from_environment = {}
+
+    cmf_param['chain_to_provider_url'] = \
+        provider_from_dotenv \
+        | provider_from_environment \
+        | cmf_param.get('chain_to_provider_url', {})
+
+    for k, v in CREDMARK_PUBLIC_PROVIDERS.items():
+        if k not in cmf_param['chain_to_provider_url']:
+            cmf_param['chain_to_provider_url'][k] = v
 
     param = {
         'chain_id': 1,
@@ -144,12 +113,45 @@ def create_cmf(cmf_param):
         'model_loader_path': models_path,
         'use_local_models': None,
         'register_utility_global': False,
-        'api_url': 'https://gateway.credmark.com',
+        'api_url': GATEWAY_API_URL,
     } | cmf_param
 
     cmf_init = CmfInit(**param)
 
-    context, _model_loader = create_cmf_context(cmf_init, globals())
+    default_models_path = os.path.abspath(importlib.import_module('models').__path__[0])
+    model_loader_path = [os.path.abspath(p) for p in cmf_init.model_loader_path]
+    if default_models_path not in model_loader_path:
+        model_loader_path.append(default_models_path)
+
+    for p in model_loader_path:
+        if not os.path.isdir(p):
+            raise ValueError(f'{p} specified for model_loader_path is not a valid path')
+
+    provider_url = cmf_init.chain_to_provider_url.get(str(cmf_init.chain_id), None)
+    if provider_url is None:
+        print(f'Warning: missing provider for chain_id={cmf_init.chain_id}')
+    else:
+        # Test provider
+        headers = {'Content-Type': 'application/json'}
+        response = requests.post(
+            provider_url, data=f'{{"jsonrpc":"2.0","method": "eth_blockNumber","params": [], "id":{cmf_init.chain_id}}}',
+            headers=headers,
+            timeout=60)
+        if response.status_code in [200, 201]:
+            res = response.json()
+            if 'result' in res and int(res['result'], base=16) > 0:
+                pass
+            else:
+                raise ValueError(
+                    f'Provider URL {provider_url} does not respond properly for querying block number: {res}')
+        else:
+            raise ValueError(
+                f'Provider URL {provider_url} for {cmf_init.chain_id} does not respond.')
+
+    model_loader = ModelLoader(model_loader_path, None, True)
+    context = EngineModelContext.create_context(chain_id=cmf_init.chain_id, block_number=cmf_init.block_number, model_loader=model_loader,
+                                                chain_to_provider_url=cmf_init.chain_to_provider_url,
+                                                api_url=cmf_init.api_url, run_id=None, console=True, use_local_models=cmf_init.use_local_models)
 
     if param['chain_to_provider_url'][str(param['chain_id'])].startswith('http'):
         context._web3 = Web3(HTTPProvider(context.web3.provider.endpoint_uri,  # type: ignore
@@ -164,17 +166,7 @@ def create_cmf(cmf_param):
 
         context._web3.eth.default_block = int(context.block_number)
 
-    model_loaded = _model_loader.loaded_model_version_lists()
-    for _k, cache_value in model_loaded.items():
-        try:
-            assert len(cache_value) == 1
-        except AssertionError:
-            print(_k)
-            raise
-
-    model_loaded = {k: v[0] for k, v in model_loaded.items()}
-
-    return context, model_loaded
+    return context, model_loader
 
 
 @magics_class
@@ -216,27 +208,46 @@ Example: context, model_loader = %cmf default
             return CmfInit()._asdict()
 
         if line == 'default':
-            cmf_init = CmfInit()
+            cmf_param = CmfInit()._asdict()
             print('Using default to initialize Cmf')
-            pprint(cmf_init._asdict())
+            pprint(cmf_param)
         else:
             params = line.split(' ')
-            param_ext = local_ns.get(params[0], None)
+            cmf_param = local_ns.get(params[0], None)
             verbose = False
             if len(params) == 2 and params[1] == '-v':
                 verbose = True
-            if param_ext is None:
+            if cmf_param is None:
                 raise ValueError(
                     f'Undefined variable {line} for cmf initialization. Get help from %cmf help')
-            if not isinstance(param_ext, dict):
+            if not isinstance(cmf_param, dict):
                 raise ValueError(
                     f'Variable {line} needs to be a dictionary. Get help from %cmf help')
             if verbose:
                 print('Cmf to be initialized with:')
-                pprint(param_ext)
-            cmf_init = CmfInit(**param_ext)
+                pprint(cmf_param)
 
-        return create_cmf_context(cmf_init, local_ns)
+        context, model_loader = create_cmf_context(cmf_param)
+        var_namespace = local_ns
+        load_module_items(var_namespace, 'credmark.cmf.model', ['Model'])
+        load_module_items(var_namespace, 'credmark.cmf.model.errors',
+                          ['ModelDataError', 'ModelRunError'])
+        load_module_items(var_namespace, 'credmark.cmf.types')
+        load_module_items(var_namespace, 'credmark.dto')
+        load_module_items(var_namespace, 'credmark.cmf.engine.dev_models.console',
+                          ['get_dt', 'get_block', 'log_output'])
+
+        if cmf_param.get('register_utility_global', True):
+            var_namespace['ledger'] = context.ledger
+            var_namespace['run_model'] = context.run_model
+            var_namespace['models'] = context.models
+            var_namespace['block_number'] = context.block_number
+            var_namespace['chain_id'] = context.chain_id
+            var_namespace['web3'] = context.web3
+            var_namespace['run_model_historical'] = context.historical.run_model_historical
+            var_namespace['run_model_historical_blocks'] = context.historical.run_model_historical_blocks
+
+        return context, model_loader
 
 
 def load_ipython_extension(ipy_module):
