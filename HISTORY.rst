@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.85 [2023-04-18]
+* chore: make ipython loader robust to environment variables
+
 0.8.84 [2023-04-17]
 * chore: split token list to separate file per chainId
 * chore: support new DB
