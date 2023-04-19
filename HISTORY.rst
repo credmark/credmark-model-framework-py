@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.86 [2023-04-19]
+* refactor: redundant block sampling
+
 0.8.85 [2023-04-18]
 * chore: make ipython loader robust to environment variables
 
