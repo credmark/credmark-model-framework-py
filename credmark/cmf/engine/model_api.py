@@ -7,6 +7,7 @@ import requests
 from credmark.cmf.engine.errors import ModelRunRequestError
 from credmark.cmf.model.errors import (ModelBaseError,
                                        create_instance_from_error_dict)
+from credmark.cmf.types import BlockNumber
 from credmark.dto.encoder import json_dumps
 
 from requests.adapters import HTTPAdapter, Retry
@@ -126,12 +127,14 @@ class ModelApi:
         req = {
             'slug': slug,
             'chainId': chain_id,
-            'blockNumber': block_number,
+            'blockNumber': int(block_number),
             'input': input_jsonify,
         }
         if version is not None:
             req['version'] = version
         if self.__internal_api:
+            if isinstance(block_number, BlockNumber) and block_number.is_timestamp_loaded:
+                req['blockNumber'] = block_number.dict()
             if run_id is not None:
                 req['runId'] = run_id
             if depth is not None:
