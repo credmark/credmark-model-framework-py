@@ -19,13 +19,14 @@ from credmark.cmf.model.errors import (MaxModelRunDepthError, ModelBaseError,
                                        ModelRunError, ModelTypeError,
                                        create_instance_from_error_dict)
 from credmark.cmf.model.models import RunModelMethod
+from credmark.cmf.types import BlockNumber
 from credmark.dto import DTOType, DTOValidationError, EmptyInput
 from credmark.dto.encoder import json_dumps
 from credmark.dto.transform import (DataTransformError, transform_data_for_dto,
                                     transform_dto_to_dict)
 
-RPC_GET_LATEST_BLOCK_NUMBER_SLUG = 'rpc.get-latest-blocknumber'
-ALT_RPC_GET_LATEST_BLOCK_NUMBER_SLUG = 'chain.get-latest-block'
+LEDGER_GET_LATEST_BLOCK_NUMBER_SLUG = 'ledger.block-number'
+CHAIN_GET_LATEST_BLOCK_NUMBER_SLUG = 'chain.get-latest-block'
 
 
 def extract_most_recent_run_model_traceback(exc_traceback, skip=1):
@@ -118,9 +119,9 @@ class EngineModelContext(ModelContext):
         cls._model_mock_runner = model_mock_runner
 
     @classmethod
-    def create_context(cls,  # pylint: disable=too-many-arguments,too-many-locals
+    def create_context(cls,  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
                        chain_id: int,
-                       block_number: Union[int, None],
+                       block_number: Union[dict, int, None],
                        model_loader: Union[ModelLoader,
                                            None] = None,
                        chain_to_provider_url: Union[dict[str, str], None] = None,
@@ -176,6 +177,10 @@ class EngineModelContext(ModelContext):
             # Lookup latest block number if none specified
             block_number = cls.get_latest_block_number(api, chain_id)
             cls.logger.info(f'Using latest block number {block_number}')
+        elif isinstance(block_number, dict):
+            block_number = BlockNumber.from_dict(block_number)
+        else:
+            block_number = BlockNumber(block_number)
 
         if model_cache is True:
             _model_cache = ModelRunCache()
@@ -198,7 +203,7 @@ class EngineModelContext(ModelContext):
     @classmethod
     def create_context_and_run_model(cls,  # pylint: disable=too-many-arguments,too-many-locals
                                      chain_id: int,
-                                     block_number: Union[int, None],
+                                     block_number: Union[dict, int, None],
                                      model_slug: str,
                                      model_version: Union[str, None] = None,
                                      input: Union[dict, None] = None,
@@ -263,6 +268,8 @@ class EngineModelContext(ModelContext):
                                transform_output_to_dict=True):
         chain_id = context.chain_id
         block_number = int(context.block_number)
+        block_timestamp = context.block_number.timestamp \
+            if context.block_number.is_timestamp_loaded else None
 
         try:
             ModelContext.set_current_context(context)
@@ -281,6 +288,7 @@ class EngineModelContext(ModelContext):
                 'version': result_tuple[1],
                 'chainId': chain_id,
                 'blockNumber': block_number,
+                'blockTimestamp': block_timestamp,
                 'output': output,
                 'dependencies': context.dependencies}
 
@@ -290,6 +298,7 @@ class EngineModelContext(ModelContext):
                 'version': model_version,
                 'chainId': chain_id,
                 'blockNumber': block_number,
+                'blockTimestamp': block_timestamp,
                 'error': err.dict(),
                 'dependencies': context.dependencies if context else {}}
         except Exception as e:
@@ -299,6 +308,7 @@ class EngineModelContext(ModelContext):
                 'version': model_version,
                 'chainId': chain_id,
                 'blockNumber': block_number,
+                'blockTimestamp': block_timestamp,
                 'error': err.dict(),
                 'dependencies': context.dependencies if context else {}}
         finally:
@@ -308,20 +318,23 @@ class EngineModelContext(ModelContext):
 
     @classmethod
     def get_latest_block_number(cls, api: ModelApi, chain_id: int):
-        _s, _v, output, _e, _d = api.run_model(
-            RPC_GET_LATEST_BLOCK_NUMBER_SLUG
-            if chain_id == 1
-            else ALT_RPC_GET_LATEST_BLOCK_NUMBER_SLUG,
-            None, chain_id, 0, {}, raise_error_results=True)
-        if output is None:
-            raise Exception('Error response getting latest block number')
-
-        block_number: int = output['blockNumber']
-        return block_number
+        if chain_id == 1:
+            _s, _v, output, _e, _d = api.run_model(LEDGER_GET_LATEST_BLOCK_NUMBER_SLUG,
+                                                   None, chain_id, 0, {}, raise_error_results=True)
+            if output is None:
+                raise Exception('Error response getting latest block number')
+            number, timestamp = output['number'], output['timestamp']
+        else:
+            _s, _v, output, _e, _d = api.run_model(CHAIN_GET_LATEST_BLOCK_NUMBER_SLUG,
+                                                   None, chain_id, 0, {}, raise_error_results=True)
+            if output is None:
+                raise Exception('Error response getting latest block number')
+            number, timestamp = output['blockNumber'], output['timestamp']
+        return BlockNumber(number, timestamp)
 
     def __init__(self,  # pylint: disable=too-many-arguments
                  chain_id: int,
-                 block_number: int,
+                 block_number: Union[BlockNumber, int],
                  web3_registry: Web3Registry,
                  run_id: Union[str, None],
                  depth: int,
@@ -330,6 +343,9 @@ class EngineModelContext(ModelContext):
                  api: Union[ModelApi, None],
                  client: Union[str, None] = None,
                  is_top_level: bool = False):
+        if isinstance(block_number, int):
+            block_number = BlockNumber(block_number)
+
         super().__init__(chain_id, block_number, web3_registry)
         self.run_id = run_id
         self.__client = client
@@ -406,7 +422,7 @@ class EngineModelContext(ModelContext):
                   slug,
                   input=EmptyInput(),
                   return_type=None,
-                  block_number=None,
+                  block_number: Union[BlockNumber, int, None] = None,
                   version=None,
                   local: bool = False,
                   ):
@@ -441,6 +457,9 @@ class EngineModelContext(ModelContext):
                 f'Attempt to run model {slug} at context block {self.block_number} '
                 f'with future block {block_number}')
 
+        if isinstance(block_number, int):
+            block_number = BlockNumber(block_number)
+
         res_tuple = self._run_model(slug, input, block_number, version, local)
 
         # The last item of the tuple is the output.
@@ -466,7 +485,7 @@ class EngineModelContext(ModelContext):
     def _run_model(self,
                    slug: str,
                    input: Union[dict, DTOType],
-                   block_number: Union[int, None],
+                   block_number: Union[BlockNumber, None],
                    version: Union[str, None],
                    local: bool = False
                    ):
@@ -557,7 +576,7 @@ class EngineModelContext(ModelContext):
     def _run_model_with_class(self,  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches
                               slug: str,
                               input: Union[dict, DTOType],
-                              block_number: Union[int, None],
+                              block_number: Union[BlockNumber, None],
                               version: Union[str, None],
                               model_class: Union[Type[Model], None],
                               use_local: bool,
@@ -669,7 +688,7 @@ class EngineModelContext(ModelContext):
     def _run_local_model_with_class(self,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
                                     slug: str,
                                     input: Union[dict, DTOType],
-                                    block_number: Union[int, None],
+                                    block_number: Union[BlockNumber, None],
                                     version: Union[str, None],
                                     model_class: Type[Model]):
 
