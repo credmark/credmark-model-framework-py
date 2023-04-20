@@ -1,3 +1,5 @@
+# pylint:disable=no-member
+
 import contextlib
 from enum import Enum
 from typing import List, Tuple, Union
@@ -56,7 +58,6 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                     model_slug,
                     (f'{model_slug} call with group_by will need the columns to be '
                      'empty [] or None.'))
-            # pylint:disable=no-member
             columns = [c for c in group_by
                        if c in self.columns]  # type: ignore
 
@@ -70,7 +71,7 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
             raise InvalidQueryException(
                 model_slug, f'{columns=} needs to be a list of string.')
         else:
-            self._validate_columns(  # type: ignore # pylint:disable=no-member
+            self._validate_columns(  # type: ignore
                 model_slug, columns)
 
         if where is None and limit is None and not aggregates:
@@ -91,7 +92,6 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
         # Fix for contract ledger
         # Customized columns needs to be converted to string to avoid losing precision.
         # https://github.com/credmark/credmark-model-runner-api/issues/50
-        # pylint:disable=no-member
         cols_customized = [(f'{c}::TEXT', c)
                            for c in columns if c in self.bigint_cols]  # type: ignore
 
@@ -157,7 +157,7 @@ class LedgerQuery(LedgerQueryBase):
         ledger_out = context.run_model(slug=self._cwgo_query,
                                        input=model_input,
                                        return_type=LedgerModelOutput)
-        # pylint:disable=no-member, protected-access
+        # pylint: disable=protected-access
         ledger_out.set_bigint_cols(
             self.bigint_cols +  # type: ignore
             ([] if bigint_cols is None else bigint_cols))
