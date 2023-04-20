@@ -10,6 +10,15 @@ from .ledger_errors import InvalidQueryException
 
 
 class LedgerQueryBase(contextlib.AbstractContextManager):
+    # Duplicated from credmark/cmf/types/ledger.py for easy access from context
+    class JoinType(str, Enum):
+        INNER = 'inner'
+        LEFT_OUTER = 'leftOuter'
+        RIGHT_OUTER = 'rightOuter'
+        FULL_OUTER = 'fullOuter'
+        CROSS = 'cross'
+        NATURAL = 'natural'
+
     def __enter__(self):
         return self
 
@@ -61,8 +70,8 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
             raise InvalidQueryException(
                 model_slug, f'{columns=} needs to be a list of string.')
         else:
-            # type: ignore # pylint:disable=no-member
-            self._validate_columns(model_slug, columns)
+            self._validate_columns(  # type: ignore # pylint:disable=no-member
+                model_slug, columns)
 
         if where is None and limit is None and not aggregates:
             raise InvalidQueryException(
@@ -114,15 +123,6 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
 
 
 class LedgerQuery(LedgerQueryBase):
-    # Duplicated from credmark/cmf/types/ledger.py for easy access from context
-    class JoinType(str, Enum):
-        INNER = 'inner'
-        LEFT_OUTER = 'leftOuter'
-        RIGHT_OUTER = 'rightOuter'
-        FULL_OUTER = 'fullOuter'
-        CROSS = 'cross'
-        NATURAL = 'natural'
-
     def __init__(self, **kwargs):
         super().__init__()
         self._cwgo_query = kwargs['cwgo_query_table']
