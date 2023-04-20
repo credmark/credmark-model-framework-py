@@ -124,7 +124,8 @@ class EngineModelContext(ModelContext):
                        block_number: Union[dict, int, None],
                        model_loader: Union[ModelLoader,
                                            None] = None,
-                       chain_to_provider_url: Union[dict[str, str], None] = None,
+                       chain_to_provider_url: Union[dict[str,
+                                                         str], None] = None,
                        api_url: Union[str, None] = None,
                        run_id: Union[str, None] = None,
                        depth: int = 0,
@@ -209,7 +210,8 @@ class EngineModelContext(ModelContext):
                                      input: Union[dict, None] = None,
                                      model_loader: Union[ModelLoader,
                                                          None] = None,
-                                     chain_to_provider_url: Union[dict[str, str], None] = None,
+                                     chain_to_provider_url: Union[dict[str,
+                                                                       str], None] = None,
                                      api_url: Union[str, None] = None,
                                      run_id: Union[str, None] = None,
                                      depth: int = 0,
@@ -281,7 +283,8 @@ class EngineModelContext(ModelContext):
 
             output = result_tuple[2]
             if transform_output_to_dict:
-                output = transform_data_for_dto(output, None, model_slug, 'output')
+                output = transform_data_for_dto(
+                    output, None, model_slug, 'output')
 
             response = {
                 'slug': result_tuple[0],
@@ -381,7 +384,8 @@ class EngineModelContext(ModelContext):
                             m['slug'], m['version'])}
                         slug = m['slug']
                         self._model_manifest_map[slug] = m
-                        self._model_underscore_manifest_map[slug.replace('-', '_')] = m
+                        self._model_underscore_manifest_map[slug.replace(
+                            '-', '_')] = m
                 except Exception:
                     # Error will have been logged but we continue so things work offline
                     pass
@@ -519,7 +523,8 @@ class EngineModelContext(ModelContext):
                 f'{block_number=}')
 
         try:
-            model_class = self.__model_loader.get_model_class(slug, version, force_local)
+            model_class = self.__model_loader.get_model_class(
+                slug, version, force_local)
         except Exception:
             self.logger.error(
                 f'Requested local model not found locally: slug {slug} '
@@ -530,7 +535,8 @@ class EngineModelContext(ModelContext):
 
         try:
             if self.__depth >= self.max_run_depth:
-                raise MaxModelRunDepthError(f'Max model run depth hit {self.__depth}')
+                raise MaxModelRunDepthError(
+                    f'Max model run depth hit {self.__depth}')
 
             return self._run_model_with_class(
                 slug,
@@ -657,7 +663,8 @@ class EngineModelContext(ModelContext):
             except ModelNotFoundError as err:
                 # We always fallback to local if model not found on server.
                 if model_class is not None and not self._use_no_local_model():
-                    self.logger.debug(f'Model {slug} not on server. Using local instead')
+                    self.logger.debug(
+                        f'Model {slug} not on server. Using local instead')
                     slug, version, output = self._run_local_model_with_class(
                         slug,
                         input,
@@ -712,9 +719,12 @@ class EngineModelContext(ModelContext):
                                          self.__api,
                                          self.__client)
 
+        original_input = input
+
         try:
             try:
-                input = transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
+                input = transform_data_for_dto(
+                    input, model_class.inputDTO, slug, 'input')
             except DataTransformError as err:
                 # We convert to an input error here to distinguish
                 # from output transform errors below
@@ -741,6 +751,7 @@ class EngineModelContext(ModelContext):
                 # Errors in this section will add the callee
                 # model to the call stack
 
+                context.__dict__['original_input'] = original_input
                 model = model_class(context)
 
                 if debug_log:
@@ -751,7 +762,8 @@ class EngineModelContext(ModelContext):
 
                 try:
                     # transform to the defined outputDTO for validation of output
-                    output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
+                    output = transform_data_for_dto(
+                        output, model_class.outputDTO, slug, 'output')
                     if self.dev_mode:
                         # In dev mode we do a deep transform to dicts (convert all DTOs)
                         # We do this to ensure dev is same as production.
@@ -789,9 +801,11 @@ class EngineModelContext(ModelContext):
             elif isinstance(err, ModelBaseError):
                 _exc_type, _exc_value, exc_traceback = sys.exc_info()
                 if isinstance(err, (ModelNotFoundError, ModelRunRequestError)):
-                    trace = extract_most_recent_run_model_traceback(exc_traceback, 2)
+                    trace = extract_most_recent_run_model_traceback(
+                        exc_traceback, 2)
                 else:
-                    trace = extract_most_recent_run_model_traceback(exc_traceback)
+                    trace = extract_most_recent_run_model_traceback(
+                        exc_traceback)
 
                 # For errors that have specific detail classes, we
                 # ensure detail is a dict (as it will be over the wire)
@@ -812,7 +826,8 @@ class EngineModelContext(ModelContext):
                 if self.dev_mode:
                     self.logger.exception(err_msg)
                 elif debug_log:
-                    self.debug_logger.debug(f"< Run model '{slug}' error: {err_msg}")
+                    self.debug_logger.debug(
+                        f"< Run model '{slug}' error: {err_msg}")
 
                 err = ModelRunError(err_msg)
                 trace = traceback.format_exc(limit=30)

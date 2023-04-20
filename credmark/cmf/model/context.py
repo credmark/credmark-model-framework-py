@@ -32,7 +32,8 @@ class ModelContext:
     as ``self.context``.
     """
 
-    __current_context: ContextVar[MaybeModelContext] = ContextVar('context', default=None)
+    __current_context: ContextVar[MaybeModelContext] = ContextVar(
+        'context', default=None)
 
     @classmethod
     def get_current_context(cls) -> MaybeModelContext:
