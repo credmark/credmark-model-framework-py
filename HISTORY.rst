@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.89 [2023-04-21]
+* feat: expose original_input in context
+
 0.8.88 [2023-04-20]
 * fix: by range event fetching
 
