@@ -51,9 +51,11 @@ QUERY_METHOD_DOC_STRING = """
 
 def ledger_table_doc(func):
     def wrapper(self, *args, **kwargs):
-        func.__doc__ = QUERY_METHOD_DOC_STRING.replace('{TABLE}', func.__name__)
+        func.__doc__ = QUERY_METHOD_DOC_STRING.replace(
+            '{TABLE}', func.__name__)
         result = func(self, *args, **kwargs)
-        result.__doc__ = QUERY_METHOD_DOC_STRING.replace('{TABLE}', func.__name__)
+        result.__doc__ = QUERY_METHOD_DOC_STRING.replace(
+            '{TABLE}', func.__name__)
         return result
     return wrapper
 

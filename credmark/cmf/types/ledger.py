@@ -24,7 +24,8 @@ class LedgerAggregate(DTO):
     It is defined by an expression and the name to use as the
     column name in the returned data.
     """
-    expression: str = DTOField(..., description='Aggregate expression, for example "MAX(GAS_USED)"')
+    expression: str = DTOField(...,
+                               description='Aggregate expression, for example "MAX(GAS_USED)"')
     asName: str = DTOField(..., description='Returned as data column name')
 
 
@@ -34,10 +35,12 @@ class LedgerJoin(DTO):
     It is defined by table key, table alias and
     expression to join on.
     """
-    type: Union[JoinType, None] = DTOField(description='Type of join. Defaults to inner join.')
+    type: Union[JoinType, None] = DTOField(
+        description='Type of join. Defaults to inner join.')
     tableKey: str = DTOField(..., description='Key of the table to be joined')
     alias: Union[str, None] = DTOField(description='Alias for the table')
-    on: str = DTOField(..., description='Join expression, for example "a.address = b.address"')
+    on: str = DTOField(...,
+                       description='Join expression, for example "a.address = b.address"')
 
 
 class LedgerModelOutput(IterableListGenericDTO[dict]):
@@ -61,7 +64,8 @@ class LedgerModelOutput(IterableListGenericDTO[dict]):
                 if c in df.columns:
                     col_type = df[c].dtype
                     if col_type == 'float64':
-                        df = df.assign(**{c: (lambda x, c=c: x[c].apply(round))})
+                        df = df.assign(
+                            **{c: (lambda x, c=c: x[c].apply(round))})
                     elif col_type in ['int64', 'uint64']:
                         pass
                     elif col_type == 'O':
@@ -73,9 +77,11 @@ class LedgerModelOutput(IterableListGenericDTO[dict]):
                             except ValueError:
                                 pass
                             except OverflowError:
-                                df = df.assign(**{c: (lambda x, c=c: x[c].apply(int))})
+                                df = df.assign(
+                                    **{c: (lambda x, c=c: x[c].apply(int))})
                     else:
-                        raise TypeError(f'column {c} has unsupported column type {col_type}')
+                        raise TypeError(
+                            f'column {c} has unsupported column type {col_type}')
         return df
 
     def bigint_cols(self):
