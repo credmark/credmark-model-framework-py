@@ -1,4 +1,7 @@
+# pylint:disable=no-member, line-too-long
+
 import contextlib
+from enum import Enum
 from typing import List, Tuple, Union
 
 import credmark.cmf.model
@@ -8,14 +11,23 @@ from .ledger import (ColumnField, JoinType, LedgerAggregate,
 from .ledger_errors import InvalidQueryException
 
 
+# pylint: disable=locally-disabled,invalid-name, too-many-arguments
 class LedgerQueryBase(contextlib.AbstractContextManager):
+    # Duplicated from credmark/cmf/types/ledger.py for easy access from context
+    class JoinType(str, Enum):
+        INNER = 'inner'
+        LEFT_OUTER = 'leftOuter'
+        RIGHT_OUTER = 'rightOuter'
+        FULL_OUTER = 'fullOuter'
+        CROSS = 'cross'
+        NATURAL = 'natural'
+
     def __enter__(self):
         return self
 
     def __exit__(self, *_exc):
         return None
 
-    # pylint: disable=locally-disabled,invalid-name
     def __init__(self):
         pass
 
@@ -23,13 +35,15 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
     def field(cls, value):
         return ColumnField(value)
 
-    def _gen_model_input(self,  # pylint: disable=too-many-arguments
+    def _gen_model_input(self,
                          model_slug: str,
-                         columns: Union[List[str], List[ColumnField], None] = None,
+                         columns: Union[List[str],
+                                        List[ColumnField], None] = None,
                          joins: Union[List[Union[Tuple[LedgerTable, str],
                                                  Tuple[JoinType, LedgerTable, str]]], None] = None,
                          where: Union[str, None] = None,
-                         group_by: Union[List[str], List[ColumnField], None] = None,
+                         group_by: Union[List[str],
+                                         List[ColumnField], None] = None,
                          order_by: Union[str, ColumnField, None] = None,
                          limit: Union[int, None] = None,
                          offset: Union[int, None] = None,
@@ -44,7 +58,6 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                     model_slug,
                     (f'{model_slug} call with group_by will need the columns to be '
                      'empty [] or None.'))
-            # pylint:disable=no-member
             columns = [c for c in group_by
                        if c in self.columns]  # type: ignore
 
@@ -58,7 +71,8 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
             raise InvalidQueryException(
                 model_slug, f'{columns=} needs to be a list of string.')
         else:
-            self._validate_columns(model_slug, columns)  # type: ignore # pylint:disable=no-member
+            self._validate_columns(  # type: ignore
+                model_slug, columns)
 
         if where is None and limit is None and not aggregates:
             raise InvalidQueryException(
@@ -78,12 +92,14 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
         # Fix for contract ledger
         # Customized columns needs to be converted to string to avoid losing precision.
         # https://github.com/credmark/credmark-model-runner-api/issues/50
-        # pylint:disable=no-member
         cols_customized = [(f'{c}::TEXT', c)
                            for c in columns if c in self.bigint_cols]  # type: ignore
-        columns = [c for c in columns if c not in self.bigint_cols]  # type: ignore
 
-        aggregates_list = ([] if aggregates is None else aggregates) + cols_customized
+        columns = [c for c in columns
+                   if c not in self.bigint_cols]  # type: ignore
+
+        aggregates_list = (
+            [] if aggregates is None else aggregates) + cols_customized
         aggregates_value = (None if len(aggregates_list) == 0
                             else [LedgerAggregate(expression=agg[0], asName=agg[1])
                                   for agg in aggregates_list])
@@ -91,7 +107,7 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
         joins_value = [LedgerJoin(tableKey=table.table_key,
                                   alias=table.alias,
                                   on=on,
-                                  type=(type_list[0] if type_list else None))
+                                  type=(type_list[0] if type_list is not None else None))  # type: ignore
                        for (*type_list, table, on) in joins] if joins is not None else None
 
         return {'alias': getattr(self, 'alias', None),
@@ -106,13 +122,13 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                 'offset': str(offset) if offset is not None else None}
 
 
+# pylint: disable=too-many-arguments, protected-access
 class LedgerQuery(LedgerQueryBase):
-
     def __init__(self, **kwargs):
         super().__init__()
         self._cwgo_query = kwargs['cwgo_query_table']
 
-    def select(self,  # pylint: disable=too-many-arguments
+    def select(self,
                columns: Union[List[str], List[ColumnField], None] = None,
                joins: Union[List[Union[Tuple[LedgerTable, str],
                                        Tuple[JoinType, LedgerTable, str]]], None] = None,
@@ -142,7 +158,6 @@ class LedgerQuery(LedgerQueryBase):
         ledger_out = context.run_model(slug=self._cwgo_query,
                                        input=model_input,
                                        return_type=LedgerModelOutput)
-        # pylint:disable=no-member, protected-access
         ledger_out.set_bigint_cols(
             self.bigint_cols +  # type: ignore
             ([] if bigint_cols is None else bigint_cols))
