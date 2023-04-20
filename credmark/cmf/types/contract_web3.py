@@ -39,7 +39,8 @@ def fetch_events(
     """
 
     if from_block is None:
-        raise TypeError("Missing mandatory keyword argument to getLogs: from_Block")
+        raise TypeError(
+            "Missing mandatory keyword argument to getLogs: from_Block")
 
     if to_block is None:
         to_block = event.web3.eth.block_number
@@ -55,7 +56,8 @@ def fetch_events(
                   (argument_names is None or
                    set(get_abi_input_names(abi)) == set(argument_names))]
     if len(event_abis) > 1:
-        raise ValueError('Multiple events found with same name and argument names')
+        raise ValueError(
+            'Multiple events found with same name and argument names')
     event_abi = event_abis[0]
 
     abi_codec = event.web3.codec
@@ -85,7 +87,8 @@ def fetch_events(
             args = data['args']
             yield {**data, **args}  # type: ignore
     else:
-        n_range_upper = int(math.ceil((to_block - from_block + 1) / by_range))
+        n_range_upper = int(
+            math.ceil((int(to_block) - int(from_block) + 1) / by_range))
         for n_range in range(n_range_upper):
             _from_block = from_block + n_range * by_range
             if n_range == n_range_upper - 1:

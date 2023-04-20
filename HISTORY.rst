@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.88 [2023-04-20]
+* fix: by range event fetching
+
 0.8.87 [2023-04-20]
 * lint: clean up for ledger
 
