@@ -1,4 +1,4 @@
-# pylint:disable=no-member
+# pylint:disable=no-member, line-too-long
 
 import contextlib
 from enum import Enum
@@ -11,6 +11,7 @@ from .ledger import (ColumnField, JoinType, LedgerAggregate,
 from .ledger_errors import InvalidQueryException
 
 
+# pylint: disable=locally-disabled,invalid-name, too-many-arguments
 class LedgerQueryBase(contextlib.AbstractContextManager):
     # Duplicated from credmark/cmf/types/ledger.py for easy access from context
     class JoinType(str, Enum):
@@ -27,7 +28,6 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
     def __exit__(self, *_exc):
         return None
 
-    # pylint: disable=locally-disabled,invalid-name
     def __init__(self):
         pass
 
@@ -35,7 +35,7 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
     def field(cls, value):
         return ColumnField(value)
 
-    def _gen_model_input(self,  # pylint: disable=too-many-arguments
+    def _gen_model_input(self,
                          model_slug: str,
                          columns: Union[List[str],
                                         List[ColumnField], None] = None,
@@ -107,7 +107,7 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
         joins_value = [LedgerJoin(tableKey=table.table_key,
                                   alias=table.alias,
                                   on=on,
-                                  type=(type_list[0] if type_list else None))
+                                  type=(type_list[0] if type_list is not None else None))  # type: ignore
                        for (*type_list, table, on) in joins] if joins is not None else None
 
         return {'alias': getattr(self, 'alias', None),
@@ -122,12 +122,13 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                 'offset': str(offset) if offset is not None else None}
 
 
+# pylint: disable=too-many-arguments, protected-access
 class LedgerQuery(LedgerQueryBase):
     def __init__(self, **kwargs):
         super().__init__()
         self._cwgo_query = kwargs['cwgo_query_table']
 
-    def select(self,  # pylint: disable=too-many-arguments
+    def select(self,
                columns: Union[List[str], List[ColumnField], None] = None,
                joins: Union[List[Union[Tuple[LedgerTable, str],
                                        Tuple[JoinType, LedgerTable, str]]], None] = None,
@@ -157,7 +158,6 @@ class LedgerQuery(LedgerQueryBase):
         ledger_out = context.run_model(slug=self._cwgo_query,
                                        input=model_input,
                                        return_type=LedgerModelOutput)
-        # pylint: disable=protected-access
         ledger_out.set_bigint_cols(
             self.bigint_cols +  # type: ignore
             ([] if bigint_cols is None else bigint_cols))
