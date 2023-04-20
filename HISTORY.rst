@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.87 [2023-04-20]
+* lint: clean up for ledger
+
 0.8.86 [2023-04-19]
 * refactor: redundant block sampling
 
