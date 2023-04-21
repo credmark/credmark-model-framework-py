@@ -4,7 +4,6 @@ import unittest
 
 import credmark.cmf.model
 from credmark.cmf.engine.dev_models.console import get_block, get_dt
-from credmark.cmf.engine.errors import ModelEngineError  # pylint:disable=unused-import
 from credmark.cmf.engine.model_unittest import ModelTestCase
 from credmark.cmf.types import Contract
 from credmark.cmf.types.ledger_errors import InvalidQueryException
@@ -14,7 +13,8 @@ class TestLedger(ModelTestCase):
 
     def test_ledger_contract_events(self):
         # pylint: disable=protected-access
-        contract = Contract(address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
+        contract = Contract(
+            address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
 
         with contract.ledger.events.BalanceTransfer as q:
             df = q.select(
@@ -52,7 +52,8 @@ class TestLedger(ModelTestCase):
             where to_address = '0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04';
         """
 
-        contract = Contract(address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
+        contract = Contract(
+            address='0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04')
 
         with contract.ledger.functions.transfer as q:
             df = q.select(
@@ -139,7 +140,8 @@ class TestLedger(ModelTestCase):
 
             # in with number with str_lower True/False
             df = oo.select(
-                where=oo.BLOCK_NUMBER.in_([6949017, 13949017], case_sensitive=True),
+                where=oo.BLOCK_NUMBER.in_(
+                    [6949017, 13949017], case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER],
                 bigint_cols=[oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
@@ -172,7 +174,8 @@ class TestLedger(ModelTestCase):
 
             # between with number with str_lower True/False: ineffective
             df = oo.select(
-                where=oo.BLOCK_NUMBER.between_(6949017, 6949018, case_sensitive=True),
+                where=oo.BLOCK_NUMBER.between_(
+                    6949017, 6949018, case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER],
                 bigint_cols=[oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
@@ -214,7 +217,8 @@ class TestLedger(ModelTestCase):
                 group_by=[oo.HASH, oo.BLOCK_NUMBER],
                 having=(
                     oo.HASH.eq('0xb42b73e2b4dd8ce98604b1cd89ce3547642b6dd6ad85de4cf70ca164c195e636').or_(
-                        oo.HASH.eq('0xd220614b63795c5e43868010c70359dca12ad1e918efa687d143d21b90c0a72a')
+                        oo.HASH.eq(
+                            '0xd220614b63795c5e43868010c70359dca12ad1e918efa687d143d21b90c0a72a')
                     ))).to_dataframe()
             self.assertTrue(df.shape[0] >= 2)
 
@@ -275,13 +279,15 @@ class TestLedger(ModelTestCase):
                 '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de')
             ).to_dataframe()
             for x in df.hash.apply(lambda x: x[2]).unique():
-                self.assertTrue(x in ['a', 'b', 'c', 'd', 'e', 'f'] or int(x) >= 9)
+                self.assertTrue(
+                    x in ['a', 'b', 'c', 'd', 'e', 'f'] or int(x) >= 9)
 
             df = oo.select(columns=oo.columns, where=oo.HASH.gt(
                 '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de')
             ).to_dataframe()
             for x in df.hash.apply(lambda x: x[2]).unique():
-                self.assertTrue(x in ['a', 'b', 'c', 'd', 'e', 'f'] or int(x) >= 9)
+                self.assertTrue(
+                    x in ['a', 'b', 'c', 'd', 'e', 'f'] or int(x) >= 9)
 
             df = oo.select(columns=oo.columns, where=oo.HASH.le(
                 '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de')

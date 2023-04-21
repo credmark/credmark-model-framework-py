@@ -48,6 +48,7 @@ class BlockNumber(IntDTO):
     When used as a top-level DTO it is serialized as a dict, otherwise
     it is serialized as a number.
     """
+
     @classmethod
     def list_with_interval(cls,
                            end_block_number: int,
@@ -89,7 +90,8 @@ class BlockNumber(IntDTO):
 
     def __new__(cls,
                 number: int,
-                timestamp: Union[Timestamp, None] = None,  # pylint: disable=unused-argument
+                timestamp: Union[Timestamp,
+                                 None] = None,  # pylint: disable=unused-argument
                 sampleTimestamp: Union[Timestamp, None] = None,
                 **_kwargs):  # pylint: disable=unused-argument
 
@@ -104,7 +106,8 @@ class BlockNumber(IntDTO):
         # Block number is initialized during the creation of the first context,
         # skip the check for such case.
         if context is not None and number > context.block_number:
-            raise BlockNumberOutOfRangeError.create(number, context.block_number)
+            raise BlockNumberOutOfRangeError.create(
+                number, context.block_number)
 
         if number < 0:
             raise BlockNumberOutOfRangeError(
@@ -196,13 +199,15 @@ class BlockNumber(IntDTO):
             timestamp = int(timestamp)
         elif isinstance(timestamp, datetime):
             if not timestamp.tzinfo:
-                raise ModelInputError(f'Input datetime {timestamp} has no tzinfo.')
+                raise ModelInputError(
+                    f'Input datetime {timestamp} has no tzinfo.')
             timestamp = int(timestamp.timestamp())
         else:
             raise ModelInputError(
                 f'Invalid input for date/datetime/timestamp to query block_number {timestamp}')
 
-        get_blocknumber_result = context.models.rpc.get_blocknumber(timestamp=timestamp)
+        get_blocknumber_result = context.models.rpc.get_blocknumber(
+            timestamp=timestamp)
 
         return BlockNumber(number=get_blocknumber_result['blockNumber'],
                            timestamp=get_blocknumber_result['blockTimestamp'],

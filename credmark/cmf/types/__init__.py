@@ -3,7 +3,7 @@
 from .account import Account, Accounts
 from .address import NULL_ADDRESS, Address
 from .adt import Maybe, Records, Some
-from .block_number import BlockNumber
+from .block_number import BlockNumber, BlockNumberOutOfRangeError, BlockNumberOutOfRangeDetailDTO
 from .compose import (MapBlockResult, MapBlocksInput, MapBlocksOutput,
                       MapBlockTimeSeriesInput, MapBlockTimeSeriesOutput,
                       MapInputsInput, MapInputsOutput, MapInputsResult)
