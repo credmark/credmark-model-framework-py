@@ -3,7 +3,7 @@ from typing import List, Optional, Union, Sequence
 
 import credmark.cmf.model
 from credmark.cmf.engine.cache import ContractMetaCache
-from credmark.cmf.model.errors import ModelDataError, ModelRunError
+from credmark.cmf.model.errors import ModelDataError, ModelEngineError, ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 from web3 import Web3
 from web3.contract import Contract as Web3Contract
@@ -182,13 +182,16 @@ class Contract(Account):
         if in_cache:
             contract_q_results = cached_meta
         else:
-            # fix block number when looking up contract
-            contract_q_results = context.run_model('contract.metadata',
-                                                   {'contractAddress': self.address},
-                                                   block_number=0)
-            ContractMetaCache().put(context.chain_id,
-                                    self.address,
-                                    contract_q_results)
+            try:
+                # fix block number when looking up contract
+                contract_q_results = context.run_model('contract.metadata',
+                                                       {'contractAddress': self.address},
+                                                       block_number=0)
+                ContractMetaCache().put(context.chain_id,
+                                        self.address,
+                                        contract_q_results)
+            except ModelEngineError:
+                contract_q_results = {"contracts": []}
 
         if len(contract_q_results['contracts']) > 0:
             res = contract_q_results['contracts'][0]

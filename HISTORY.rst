@@ -2,6 +2,8 @@
 
 History
 -------
+0.8.90 [2023-04-21]
+* fix: contract lookup error handling
 
 0.8.89 [2023-04-21]
 * feat: expose original_input in context
