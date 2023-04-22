@@ -108,13 +108,13 @@ class TestToken(ModelTestCase):
              'account2': {'address': '0xad529dabbd6201545ce9aac300b868f2443382b9'}
              }, TCA, '', '')
 
-        self.assertTrue(tca.token1.address ==
+        self.assertTrue(tca.token1.address ==  # type: ignore
                         tca.token2.address)  # type: ignore
-        self.assertTrue(tca.token3.address ==
+        self.assertTrue(tca.token3.address ==  # type: ignore
                         tca.token4.address)  # type: ignore
-        self.assertTrue(tca.contract1.address ==
+        self.assertTrue(tca.contract1.address ==  # type: ignore
                         tca.contract2.address)  # type: ignore
-        self.assertTrue(tca.account1.address ==
+        self.assertTrue(tca.account1.address ==  # type: ignore
                         tca.account2.address)  # type: ignore
 
     def test_scan_token_for_all_chains(self):

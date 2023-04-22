@@ -5,7 +5,7 @@ import unittest
 import credmark.cmf.model
 from credmark.cmf.engine.dev_models.console import get_block, get_dt
 from credmark.cmf.engine.model_unittest import ModelTestCase
-from credmark.cmf.types import Contract
+from credmark.cmf.types import Contract, Token
 from credmark.cmf.types.ledger_errors import InvalidQueryException
 
 
@@ -311,11 +311,6 @@ class TestLedger(ModelTestCase):
                            where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
-        with context.ledger.TokenBalance as oo:
-            df = oo.select(columns=oo.columns, limit=5, order_by=oo.TOKEN_ADDRESS,
-                           where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
-            self.assertTrue(df.shape[0] == 5)
-
         with context.ledger.Transaction as oo:
             df = oo.select(columns=oo.columns, limit=5, order_by=oo.TRANSACTION_INDEX,
                            where=oo.BLOCK_NUMBER.ge(block_20220101)).to_dataframe()
@@ -353,20 +348,25 @@ class TestLedger(ModelTestCase):
                            where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
-        with context.ledger.TokenTransfer as oo:
-            df = oo.select(columns=oo.columns, limit=5, order_by=oo.VALUE,
+        with context.ledger.Token as oo:
+            df = oo.select(columns=oo.columns, limit=5, order_by=oo.BLOCK_HASH,
                            where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
+            self.assertTrue(df.shape[0] == 5)
+
+        with context.ledger.TokenBalance as q:
+            df = q.select(q.columns, where=q.TOKEN_ADDRESS.eq(
+                Token("AAVE").address), order_by=q.TOKEN_ADDRESS.desc(), limit=5).to_dataframe()
+            self.assertTrue(df.shape[0] == 5)
+
+        with context.ledger.TokenTransfer as q:
+            df = q.select(q.columns, where=q.TOKEN_ADDRESS.eq(
+                Token("AAVE").address), order_by=q.TOKEN_ADDRESS.desc(), limit=5).to_dataframe()
             self.assertTrue(df.shape[0] == 5)
 
         with context.ledger.TokenTransfer as q:
             df_txn = q.select(columns=q.columns,
                               where=q.TRANSACTION_HASH.eq('0x4b37d2f343608457ca3322accdab2811c707acf3eb07a40dd8d9567093ea5b82')).to_dataframe()
             self.assertTrue(df_txn.shape[0] == 1)
-
-        with context.ledger.Token as oo:
-            df = oo.select(columns=oo.columns, limit=5, order_by=oo.BLOCK_HASH,
-                           where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()
-            self.assertTrue(df.shape[0] == 5)
 
 
 if __name__ == '__main__':
