@@ -1,3 +1,4 @@
+from typing import List
 from credmark.cmf.types.ledger import (BlockTable, ContractTable, LogTable,
                                        ReceiptTable, TokenBalanceTable,
                                        TokenTable, TokenTransferTable,
@@ -121,6 +122,19 @@ class Ledger:
 
     def __init__(self):
         pass
+
+    def tables(self) -> List[str]:
+        """
+        Returns a list of tables in the ledger database.
+        """
+        return [prop for prop in dir(self) if
+                isinstance(getattr(self, prop), LedgerQuery)]
+
+    def table(self, table_name: str) -> List[str]:
+        """
+        Returns a query handle for the given table name.
+        """
+        return getattr(self, table_name)
 
     @property
     @ledger_table_doc
