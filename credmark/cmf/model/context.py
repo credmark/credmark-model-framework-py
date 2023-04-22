@@ -150,7 +150,6 @@ class ModelContext:
 
     def __exit__(self, *_exc):
         ModelContext.set_current_context(self.parent_context)
-        return None
 
     @property
     def chain_id(self) -> int:
