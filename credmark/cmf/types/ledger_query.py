@@ -107,7 +107,7 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
         joins_value = [LedgerJoin(tableKey=table.table_key,
                                   alias=table.alias,
                                   on=on,
-                                  type=(type_list[0] if type_list is not None else None))  # type: ignore
+                                  type=(type_list[0] if type_list else None))  # type: ignore
                        for (*type_list, table, on) in joins] if joins is not None else None
 
         return {'alias': getattr(self, 'alias', None),

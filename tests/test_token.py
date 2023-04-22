@@ -40,14 +40,18 @@ class TestToken(ModelTestCase):
     def test_native(self):
         nt = NativeToken()
 
-        self.assertTrue(nt == Token(address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeee'))
+        self.assertTrue(nt == Token(
+            address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeee'))
         self.assertTrue(nt == Token(symbol='ETH'))
-        self.assertTrue(nt == Token('0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeee'))
+        self.assertTrue(nt == Token(
+            '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeee'))
         self.assertTrue(nt == Token('ETH'))
 
-        self.assertTrue(nt == NativeToken(address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeee'))
+        self.assertTrue(nt == NativeToken(
+            address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeee'))
         self.assertTrue(nt == NativeToken(symbol='ETH'))
-        self.assertTrue(nt == NativeToken('0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeee'))
+        self.assertTrue(nt == NativeToken(
+            '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeee'))
         self.assertTrue(nt == NativeToken('ETH'))
 
         with self.assertRaises(ModelRunError):
@@ -76,7 +80,8 @@ class TestToken(ModelTestCase):
 
         c1 = Contract(address='0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
         c2 = Contract('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
-        c3 = Contract({'address': '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'})
+        c3 = Contract(
+            {'address': '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'})
         self.assertTrue(c1.address == c2.address)
         self.assertTrue(c1.address == c3.address)
 
@@ -103,10 +108,14 @@ class TestToken(ModelTestCase):
              'account2': {'address': '0xad529dabbd6201545ce9aac300b868f2443382b9'}
              }, TCA, '', '')
 
-        self.assertTrue(tca.token1.address == tca.token2.address)  # type: ignore
-        self.assertTrue(tca.token3.address == tca.token4.address)  # type: ignore
-        self.assertTrue(tca.contract1.address == tca.contract2.address)  # type: ignore
-        self.assertTrue(tca.account1.address == tca.account2.address)  # type: ignore
+        self.assertTrue(tca.token1.address ==
+                        tca.token2.address)  # type: ignore
+        self.assertTrue(tca.token3.address ==
+                        tca.token4.address)  # type: ignore
+        self.assertTrue(tca.contract1.address ==
+                        tca.contract2.address)  # type: ignore
+        self.assertTrue(tca.account1.address ==
+                        tca.account2.address)  # type: ignore
 
     def test_scan_token_for_all_chains(self):
         with self.assertRaises(ModelBaseError):
@@ -124,7 +133,8 @@ class TestToken(ModelTestCase):
             for token_symbol, token_meta in chain_tokens.items():
                 if 'is_native_token' in token_meta and token_meta['is_native_token']:
                     if chain_has_native_token:
-                        raise Exception(f'There are >1 native token on {chain_id=}')
+                        raise Exception(
+                            f'There are >1 native token on {chain_id=}')
 
                     chain_has_native_token = True
                 try:
@@ -150,18 +160,22 @@ class TestToken(ModelTestCase):
                         self.assertTrue(token_meta['address'] == Address(
                             token_meta['address']))
                     except AssertionError:
-                        print(('Diff', token_meta['address'], Address(token_meta['address'])))
+                        print(('Diff', token_meta['address'], Address(
+                            token_meta['address'])))
                         raise
 
                     try:
-                        self.assertTrue(token_meta['symbol'] not in symbols_set)
+                        self.assertTrue(
+                            token_meta['symbol'] not in symbols_set)
                     except AssertionError:
                         passed = False
                         if chain_id == 1:
-                            passed = token_meta['symbol'] in ['UST', 'GMT', 'LUNA']
+                            passed = token_meta['symbol'] in [
+                                'UST', 'GMT', 'LUNA']
 
                         if not passed:
-                            print(token_meta['symbol'], symbols_set, f'{chain_id=}')
+                            print(token_meta['symbol'],
+                                  symbols_set, f'{chain_id=}')
                             raise
 
                     try:
@@ -177,7 +191,8 @@ class TestToken(ModelTestCase):
                                 '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab']
 
                         if not passed:
-                            print(f'{chain_id=}', token_meta['name'], names_set)
+                            print(f'{chain_id=}',
+                                  token_meta['name'], names_set)
                             raise
 
                     self.assertTrue(token_meta['address'] not in addresses_set)
@@ -199,7 +214,8 @@ class TestToken(ModelTestCase):
             for token_address, token_meta in chain_tokens.items():
                 if 'is_native_token' in token_meta and token_meta['is_native_token']:
                     if chain_has_native_token:
-                        raise Exception(f'There are >1 native token on {chain_id=}')
+                        raise Exception(
+                            f'There are >1 native token on {chain_id=}')
 
                     chain_has_native_token = True
                 try:
@@ -208,14 +224,17 @@ class TestToken(ModelTestCase):
                     self.assertTrue('decimals' in token_meta)
                     self.assertTrue('name' in token_meta)
                     self.assertTrue('address' in token_meta)
-                    self.assertTrue(token_meta['address'] == Address(token_meta['address']))
+                    self.assertTrue(token_meta['address'] == Address(
+                        token_meta['address']))
 
                     try:
-                        self.assertTrue(token_meta['symbol'] not in symbols_set)
+                        self.assertTrue(
+                            token_meta['symbol'] not in symbols_set)
                     except AssertionError:
                         passed = False
                         if chain_id == 1:
-                            passed = token_meta['symbol'] in ['GMT', 'UST', 'LUNA']
+                            passed = token_meta['symbol'] in [
+                                'GMT', 'UST', 'LUNA']
 
                         if not passed:
                             print(token_meta['symbol'], symbols_set)
@@ -260,15 +279,18 @@ class TestToken(ModelTestCase):
 
         token = Token(symbol="CMK")
         self.assertEqual(token.symbol, "CMK")
-        self.assertEqual(token.address, "0x68CFb82Eacb9f198d508B514d898a403c449533E")
+        self.assertEqual(
+            token.address, "0x68CFb82Eacb9f198d508B514d898a403c449533E")
         self.assertEqual(token.decimals, 18)
         self.assertEqual(token.total_supply, 100_000_000 * 10**18)
 
         for native_token in (
             NativeToken(),
             NativeToken(symbol='ETH'),
-            NativeToken(symbol='ETH', address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
-            NativeToken(symbol='ETH', address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeee'),
+            NativeToken(
+                symbol='ETH', address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
+            NativeToken(
+                symbol='ETH', address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeee'),
             NativeToken(address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeEeeee'),
             NativeToken(address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
             Token(symbol="ETH", address='0xeeeeeeeeeeeeeeeeeeeeeeeeeeEeeeeeeeeeeeee'),

@@ -74,14 +74,20 @@ class ModelContext:
         return context
 
     def __init__(self, chain_id: int, block_number: BlockNumber,
-                 web3_registry: Web3Registry):
+                 web3_registry: Web3Registry,
+                 parent_context: MaybeModelContext):
         self._chain_id = chain_id
         self._block_number = block_number
-        self._web3 = None
         self._web3_registry = web3_registry
+        self._parent_context = parent_context
+        self._web3 = None
         self._ledger = None
         self._historical_util = None
         self._models = None
+
+    @property
+    def parent_context(self):
+        return self._parent_context
 
     @property
     def models(self):
@@ -134,6 +140,16 @@ class ModelContext:
         # the model class for a slug. If the model is not available locally
         # it will return None.
         ...
+
+    @abstractmethod
+    def enter(self, block_number: Union[int, BlockNumber]) -> 'ModelContext':
+        ...
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_exc):
+        ModelContext.set_current_context(self.parent_context)
 
     @property
     def chain_id(self) -> int:

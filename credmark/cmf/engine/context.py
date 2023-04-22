@@ -19,7 +19,10 @@ from credmark.cmf.model.errors import (MaxModelRunDepthError, ModelBaseError,
                                        ModelRunError, ModelTypeError,
                                        create_instance_from_error_dict)
 from credmark.cmf.model.models import RunModelMethod
-from credmark.cmf.types import BlockNumber
+from credmark.cmf.types import (
+    BlockNumber,
+    BlockNumberOutOfRangeError,
+    BlockNumberOutOfRangeDetailDTO)
 from credmark.dto import DTOType, DTOValidationError, EmptyInput
 from credmark.dto.encoder import json_dumps
 from credmark.dto.transform import (DataTransformError, transform_data_for_dto,
@@ -193,7 +196,8 @@ class EngineModelContext(ModelContext):
         context = EngineModelContext(
             chain_id, block_number, web3_registry,
             run_id, depth, model_loader, _model_cache, api, client,
-            is_top_level=not console)
+            is_top_level=not console,
+            parent_context=None)
 
         if console:
             context.is_active = True
@@ -345,11 +349,12 @@ class EngineModelContext(ModelContext):
                  model_cache: Optional[ModelRunCache],
                  api: Union[ModelApi, None],
                  client: Union[str, None] = None,
-                 is_top_level: bool = False):
+                 is_top_level: bool = False,
+                 parent_context: Union[ModelContext, None] = None):
         if isinstance(block_number, int):
             block_number = BlockNumber(block_number)
 
-        super().__init__(chain_id, block_number, web3_registry)
+        super().__init__(chain_id, block_number, web3_registry, parent_context)
         self.run_id = run_id
         self.__client = client
         self.__depth = depth
@@ -692,6 +697,29 @@ class EngineModelContext(ModelContext):
 
         return slug, version, output
 
+    def enter(self, block_number):
+        if self._block_number <= block_number:
+            raise BlockNumberOutOfRangeError(
+                message=(f'You can not enter a context with a larger or equal block number '
+                         f'({block_number}) than the current context ({self._block_number}).'),
+                detail=BlockNumberOutOfRangeDetailDTO(
+                    blockNumber=block_number,
+                    maxBlockNumber=self._block_number))
+
+        context = EngineModelContext(self.chain_id,
+                                     block_number,
+                                     self._web3_registry,
+                                     self.run_id,
+                                     self.__depth,
+                                     self.__model_loader,
+                                     self.__model_cache,
+                                     self.__api,
+                                     self.__client,
+                                     parent_context=self)
+
+        ModelContext.set_current_context(context)
+        return context
+
     def _run_local_model_with_class(self,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
                                     slug: str,
                                     input: Union[dict, DTOType],
@@ -717,7 +745,8 @@ class EngineModelContext(ModelContext):
                                          self.__model_loader,
                                          self.__model_cache,
                                          self.__api,
-                                         self.__client)
+                                         self.__client,
+                                         parent_context=self)
 
         original_input = input
 

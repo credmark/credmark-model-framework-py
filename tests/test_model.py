@@ -1,6 +1,7 @@
 import logging
 import unittest
 
+import credmark.cmf.model
 from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_unittest import ModelTestCase, model_context
 from credmark.cmf.model import Model
@@ -61,6 +62,36 @@ class TestModel(ModelTestCase):
         output = result['output']
         self.assertEqual(car.brand, output['brand'])
         self.assertEqual(car.color, output['color'])
+
+    def test_context(self):
+        context = credmark.cmf.model.ModelContext.current_context()
+
+        current_block = context.block_number
+
+        with context.enter(context.block_number - 10) as cc:
+            self.assertEqual(credmark.cmf.model.ModelContext.current_context(),
+                             cc)
+            self.assertEqual(cc.block_number, context.block_number-10)
+
+        self.assertEqual(
+            credmark.cmf.model.ModelContext.current_context(), context)
+
+        with context.enter(context.block_number - 10) as cc1:
+            with cc1.enter(cc1.block_number - 10) as cc2:
+                with cc2.enter(cc2.block_number - 10) as cc3:
+                    self.assertEqual(credmark.cmf.model.ModelContext.current_context(),
+                                     cc3)
+                    self.assertEqual(cc3.block_number, context.block_number-30)
+                    self.assertEqual(
+                        cc3.web3.eth.default_block, cc3.block_number)
+
+        self.assertEqual(
+            credmark.cmf.model.ModelContext.current_context(), context)
+
+        self.assertEqual(
+            context.web3.eth.default_block, context.block_number)
+
+        self.assertEqual(current_block, context.block_number)
 
 
 if __name__ == '__main__':
