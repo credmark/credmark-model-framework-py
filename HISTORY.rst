@@ -2,7 +2,10 @@
 
 History
 -------
-0.8.90 [2023-04-22]
+0.8.92 [2023-04-22]
+* feat: add context.ledger.tables() and context.ledger.table()
+
+0.8.91 [2023-04-22]
 * fix: table join
 
 0.8.90 [2023-04-21]
