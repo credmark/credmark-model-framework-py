@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.93 [2023-04-22]
+* feat: add context.ledger.describe()
+
 0.8.92 [2023-04-22]
 * feat: add context.ledger.tables() and context.ledger.table()
 
