@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.90 [2023-04-22]
+* fix: table join
+
 0.8.89 [2023-04-21]
 * feat: expose original_input in context
 
