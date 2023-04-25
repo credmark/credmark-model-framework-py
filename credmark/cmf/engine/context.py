@@ -781,6 +781,7 @@ class EngineModelContext(ModelContext):
                 # model to the call stack
 
                 context.__dict__['original_input'] = original_input
+                context.__dict__['slug'] = slug
                 model = model_class(context)
 
                 if debug_log:
@@ -788,6 +789,9 @@ class EngineModelContext(ModelContext):
                         f"> Run model '{slug}' input: {input} block_number: {block_number}")
 
                 output = model.run(input)
+
+                del context.__dict__['original_input']
+                del context.__dict__['slug']
 
                 try:
                     # transform to the defined outputDTO for validation of output
