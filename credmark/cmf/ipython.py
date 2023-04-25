@@ -190,6 +190,9 @@ def create_cmf_context(cmf_param, display_params=False):
               f'- use_local_models={cmf_init.use_local_models}\n'
               )
 
+    context.__dict__['original_input'] = None
+    context.__dict__['slug'] = 'ipython'
+
     return context, model_loader
 
 
