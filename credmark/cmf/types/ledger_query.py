@@ -37,6 +37,7 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
 
     def _gen_model_input(self,
                          model_slug: str,
+                         originator: str,
                          columns: Union[List[str],
                                         List[ColumnField], None] = None,
                          joins: Union[List[Union[Tuple[LedgerTable, str],
@@ -119,7 +120,9 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                 'having': having,
                 'orderBy': order_by,
                 'limit': str(limit) if limit is not None else None,
-                'offset': str(offset) if offset is not None else None}
+                'offset': str(offset) if offset is not None else None,
+                'originator': originator
+                }
 
 
 # pylint: disable=too-many-arguments, protected-access
@@ -143,18 +146,20 @@ class LedgerQuery(LedgerQueryBase):
         """
         Query data from the table.
         """
-        model_input = self._gen_model_input(model_slug=self._cwgo_query,
-                                            columns=columns,
-                                            joins=joins,
-                                            where=where,
-                                            group_by=group_by,
-                                            order_by=order_by,
-                                            limit=limit,
-                                            offset=offset,
-                                            aggregates=aggregates,
-                                            having=having)
-
         context = credmark.cmf.model.ModelContext.current_context()
+        model_input = self._gen_model_input(
+            model_slug=self._cwgo_query,
+            originator=context.__dict__['slug'],
+            columns=columns,
+            joins=joins,
+            where=where,
+            group_by=group_by,
+            order_by=order_by,
+            limit=limit,
+            offset=offset,
+            aggregates=aggregates,
+            having=having)
+
         ledger_out = context.run_model(slug=self._cwgo_query,
                                        input=model_input,
                                        return_type=LedgerModelOutput)

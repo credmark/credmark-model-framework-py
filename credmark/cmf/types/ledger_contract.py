@@ -178,17 +178,22 @@ class ContractEntityQuery(LedgerQueryBase):
         elif self._entity_type == ContractEntityType.EVENTS:
             model_slug = 'contract.event_data'
         else:
-            raise ValueError(f'Invalid ContractLedger entity type {self._entity_type}')
+            raise ValueError(
+                f'Invalid ContractLedger entity type {self._entity_type}')
 
-        model_input = self._gen_model_input(model_slug=model_slug,
-                                            columns=columns,
-                                            where=where,
-                                            group_by=group_by,
-                                            order_by=order_by,
-                                            limit=limit,
-                                            offset=offset,
-                                            aggregates=aggregates,
-                                            having=having)
+        context = credmark.cmf.model.ModelContext.current_context()
+
+        model_input = self._gen_model_input(
+            model_slug=model_slug,
+            originator=context.__dict__['slug'],
+            columns=columns,
+            where=where,
+            group_by=group_by,
+            order_by=order_by,
+            limit=limit,
+            offset=offset,
+            aggregates=aggregates,
+            having=having)
 
         if self._entity_type == ContractEntityType.FUNCTIONS:
             model_input['functionName'] = self._name
@@ -200,7 +205,6 @@ class ContractEntityQuery(LedgerQueryBase):
         # pylint:disable=no-member, protected-access
         model_input['l2_columns'] = self.bigint_cols  # type: ignore
 
-        context = credmark.cmf.model.ModelContext.current_context()
         ledger_out = context.run_model(slug=model_slug,
                                        input=model_input,
                                        return_type=LedgerModelOutput)
@@ -287,7 +291,8 @@ class ContractEntityFactory:
             return self.abi.functions.names()
         elif self.entity_type == ContractEntityType.EVENTS:
             return self.abi.events.names()
-        raise ModelRunError(f'All types of {self.entity_type=} should be covered')
+        raise ModelRunError(
+            f'All types of {self.entity_type=} should be covered')
 
     def __repr__(self):
         return self.__class__.__name__ + ' ' + str(dir(self))
@@ -301,7 +306,8 @@ class ContractEntityFactory:
                 raise ModelInputError(f'ABI for {self.address} is not loaded')
 
             if _name in self.abi.functions:
-                more_cols = self.decoded_cols(('FN', 'fn'), self.abi.functions[_name]['inputs'])
+                more_cols = self.decoded_cols(
+                    ('FN', 'fn'), self.abi.functions[_name]['inputs'])
 
                 return LedgerQueryContractFunctions(
                     address=self.address,
@@ -315,7 +321,8 @@ class ContractEntityFactory:
                 raise ModelInputError(f'ABI for {self.address} is not loaded')
 
             if _name in self.abi.events:
-                more_cols = self.decoded_cols(('EVT', 'evt'), self.abi.events[_name]['inputs'])
+                more_cols = self.decoded_cols(
+                    ('EVT', 'evt'), self.abi.events[_name]['inputs'])
 
                 return LedgerQueryContractEvents(
                     address=self.address,

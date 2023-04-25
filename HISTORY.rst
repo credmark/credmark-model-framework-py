@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.94 [2023-04-25]
+* feat: add originator to ledger model input
+
 0.8.93 [2023-04-22]
 * feat: add context.ledger.describe()
 
