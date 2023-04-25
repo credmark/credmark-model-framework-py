@@ -13,7 +13,7 @@ from .ledger_contract import ContractLedger
 from .ledger_query import LedgerQuery
 from .ledger_series import (LedgerBlockNumberTimeSeries,
                             LedgerBlockTimeSeriesInput)
-from .network import Network
+from .network import Network, NetworkDict
 from .portfolio import Portfolio, PortfolioWithPrice
 from .position import NativePosition, Position, TokenPosition, PositionWithPrice
 from .price import Price, PriceList, PriceWithQuote
