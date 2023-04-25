@@ -35,6 +35,7 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
     def field(cls, value):
         return ColumnField(value)
 
+    # pylint: disable=too-many-locals
     def _gen_model_input(self,
                          model_slug: str,
                          originator: str,
