@@ -2,7 +2,13 @@
 
 History
 -------
+0.8.96 [2023-04-25]
+* fix: ipython context
+
 0.8.95 [2023-04-25]
+* feat: add network dict
+
+.8.95 [2023-04-25]
 * feat: add network dict
 
 0.8.94 [2023-04-25]
