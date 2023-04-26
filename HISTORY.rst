@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.97 [2023-04-25]
+* fix: network to str
+
 0.8.96 [2023-04-25]
 * fix: ipython context
 

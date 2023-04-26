@@ -19,6 +19,9 @@ class Network(IntEnum):
     ArbitrumOne = 42161
     Avalanche = 43114
 
+    def __str__(self):
+        return str(self.value)
+
     @classmethod
     def parse_network(cls, n: Any) -> "Network":
         if isinstance(n, str):
