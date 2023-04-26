@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.98 [2023-04-26]
+* feat: add input to call stack
+
 0.8.97 [2023-04-25]
 * fix: network to str
 
