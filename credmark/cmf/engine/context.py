@@ -872,6 +872,7 @@ class EngineModelContext(ModelContext):
                                       version=model_class.version,
                                       chainId=context.chain_id,
                                       blockNumber=context.block_number,
+                                      input=json_dumps(original_input),
                                       trace=trace if trace is not None else None))
 
             EngineModelContext.notify_model_run(slug, model_class.version, context.chain_id,

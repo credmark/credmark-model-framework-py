@@ -1,5 +1,5 @@
 import logging
-from typing import Generic, List, Type, TypeVar, Union
+from typing import Any, Generic, List, Type, TypeVar, Union, Optional
 
 from credmark.dto import DTO, DTOField, GenericDTO
 from credmark.dto.transform import transform_data_for_dto
@@ -17,13 +17,18 @@ class ModelCallStackEntry(DTO):
     version: str = DTOField(..., description='Model version')
     """
     """
-    chainId: Union[int, None] = DTOField(None, description='Context chain id')
+    chainId: Optional[int] = DTOField(None, description='Context chain id')
     """
     """
-    blockNumber: Union[int, None] = DTOField(None, description='Context block number')
+    blockNumber: Optional[int] = DTOField(
+        None, description='Context block number')
     """
     """
-    trace: Union[str, None] = DTOField(None, description='Trace of code that generated the error')
+    input: Optional[Any] = DTOField(None, description='Context input')
+    """
+    """
+    trace: Optional[str] = DTOField(
+        None, description='Trace of code that generated the error')
     """
     """
 
@@ -51,7 +56,8 @@ class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
         [], description='Model call stack. Last element is the model that raised the error.')
     """
     """
-    code: str = DTOField('generic', description='Short identifier for the type of error')
+    code: str = DTOField(
+        'generic', description='Short identifier for the type of error')
     """
     """
     detail: Union[DetailDTOClass, None] = DTOField(
