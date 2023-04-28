@@ -2,26 +2,24 @@
 
 import importlib
 import importlib.util
+import json
 import os
 import sys
-import json
+from json import JSONDecodeError
 from typing import Dict, List, NamedTuple, Optional
-from web3.middleware.geth_poa import geth_poa_middleware
-from web3 import HTTPProvider, Web3
 
 import requests
+from dotenv import dotenv_values
+from IPython.core.magic import Magics, line_magic, magics_class, needs_local_scope
+from IPython.lib.pretty import pprint, pretty
+from web3 import HTTPProvider, Web3
+from web3.middleware.geth_poa import geth_poa_middleware
+
 from credmark.cmf.engine.context import EngineModelContext
-from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.engine.model_api import GATEWAY_API_URL
+from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.types import Network
 from credmark.cmf.types.network import CREDMARK_PUBLIC_PROVIDERS
-
-from IPython.core.magic import (Magics, cell_magic, line_cell_magic,
-                                line_magic, magics_class, needs_local_scope)
-from IPython.lib.pretty import pprint, pretty
-
-from dotenv import dotenv_values
-from json import JSONDecodeError
 
 
 class CmfInit(NamedTuple):

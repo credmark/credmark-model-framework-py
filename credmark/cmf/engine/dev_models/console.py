@@ -1,4 +1,5 @@
 # pylint: disable=locally-disabled, unused-import, unused-variable
+
 import importlib
 import inspect
 import sys
@@ -42,9 +43,8 @@ from credmark.dto import (DTO, DTOField, DTOPretty, EmptyInput, FloatDTO,
 from credmark.dto.encoder import json_dump, json_dumps
 from web3.exceptions import ABIFunctionNotFound
 
+
 # pylint: disable= too-many-arguments
-
-
 def get_dt(year: int, month: int, day: int, hour=0, minute=0, second=0, microsecond=0):
     """Get a datetime for date and time values"""
     return datetime(year, month, day, hour, minute, second, microsecond, tzinfo=timezone.utc)
@@ -77,7 +77,8 @@ def log_output(log_file=None,
         fh.setLevel(log_level)
         fh.setFormatter(logging.Formatter(fmt=formatter))
         EngineModelContext.logger.addHandler(fh)
-        EngineModelContext.logger.info(f'Enabled log with level={logging.getLevelName(log_level)}')
+        EngineModelContext.logger.info(
+            f'Enabled log with level={logging.getLevelName(log_level)}')
 
 
 @Model.describe(slug='console',
@@ -114,7 +115,8 @@ class ConsoleModel(Model):
                 for mod_def in module_imports:
                     try:
                         name = mod_def['name']
-                        self._import_module(name, mod_def.get('as', name), var_namespace)
+                        self._import_module(name, mod_def.get(
+                            'as', name), var_namespace)
                     except KeyError:
                         self.logger.error(
                             f'Error importing module {mod_def} from console config: Missing name')
@@ -129,7 +131,8 @@ class ConsoleModel(Model):
         try:
             var_namespace[name] = importlib.import_module(module_name)
         except Exception as exc:
-            self.logger.error(f'Error importing {module_name} from console config: {exc}')
+            self.logger.error(
+                f'Error importing {module_name} from console config: {exc}')
 
     def _import_module_global(self, path, var_namespace):
         try:
@@ -138,7 +141,8 @@ class ConsoleModel(Model):
             module = importlib.import_module('.'.join(parts[:-1]))
             var_namespace[name] = vars(module)[name]
         except Exception as exc:
-            self.logger.error(f'Error importing {path} from console config: {exc}')
+            self.logger.error(
+                f'Error importing {path} from console config: {exc}')
 
     def help(self):
         print('# Credmark model utility shortcuts')
@@ -157,7 +161,8 @@ class ConsoleModel(Model):
         print('# Console functions')
         print('help(): print this quick help')
         print('where(): where you are in the chain of blocks')
-        print('save("output_filename"): save console history to {output_filename}.py')
+        print(
+            'save("output_filename"): save console history to {output_filename}.py')
         print('save_shortcuts("output_filename"): '
               'save shortcut variables code to {output_filename}.py')
         print('load("input_filename"): load and run {input_filename}.py')

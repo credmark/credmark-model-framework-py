@@ -1,12 +1,9 @@
 # pylint:disable=too-many-locals, too-many-arguments
 
 import math
+from typing import Optional, Sequence
 
-from typing import (
-    Optional, Sequence
-)
 from web3._utils.abi import get_abi_input_names
-
 from web3._utils.events import get_event_data
 from web3._utils.filters import construct_event_filter_params
 

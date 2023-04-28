@@ -101,7 +101,8 @@ class RunModelMethod:
                     return model_manifests[self.__prefix][__name]
                 else:
                     # mclass = self.__context._class_for_model(self.__prefix.replace('_', '-'))
-                    mclass = model_manifests[self.__prefix.replace('_', '-')]['mclass']
+                    mclass = model_manifests[self.__prefix.replace(
+                        '_', '-')]['mclass']
                     if mclass is not None:
                         mclass_dict = vars(mclass)
                         if __name in mclass_dict:
@@ -121,7 +122,8 @@ class RunModelMethod:
 
             if self.__prefix in model_manifests:
                 # mclass = self.__context._class_for_model(self.__prefix.replace('_', '-'))
-                mclass = model_manifests[self.__prefix.replace('_', '-')]['mclass']
+                mclass = model_manifests[self.__prefix.replace(
+                    '_', '-')]['mclass']
                 fields = list(model_manifests[self.__prefix].keys())
                 if mclass is not None:
                     # allow autocomplete for some model class properties

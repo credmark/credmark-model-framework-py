@@ -59,12 +59,14 @@ class Some(GenericDTO, Generic[DTOCLS]):
             if fields is None:
                 data_dict = [x.dict() for x in self.some]  # type: ignore
             else:
-                data_dict = [{n: f(x) for n, f in fields} for x in self.some]  # type: ignore
+                data_dict = [{n: f(x) for n, f in fields}
+                             for x in self.some]  # type: ignore
         elif isinstance(first_elem, dict):
             if fields is None:
                 data_dict = self.some
             else:
-                data_dict = [{n: f(x) for n, f in fields} for x in self.some]  # type: ignore
+                data_dict = [{n: f(x) for n, f in fields}
+                             for x in self.some]  # type: ignore
         else:
             data_dict = [{0: x} for x in self.some]
 
@@ -109,7 +111,8 @@ class Records(GenericDTO):
         df_in = pd.DataFrame(data_dict)
         if len(self.fix_int_columns) > 0:
             for field in self.fix_int_columns:
-                df_in = df_in.assign(value=lambda x, field=field: x[field].apply(int))
+                df_in = df_in.assign(
+                    value=lambda x, field=field: x[field].apply(int))
         return df_in
 
     @classmethod

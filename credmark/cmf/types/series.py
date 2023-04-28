@@ -21,9 +21,11 @@ class BlockSeriesRow(GenericDTO, Generic[DTOCLS]):
     where ``row.output`` will be an instance of ``MyOutputClass``
     """
     blockNumber: int = DTOField(..., description='Block number in the series')
-    blockTimestamp: int = DTOField(..., description='The Timestamp of the Block')
+    blockTimestamp: int = DTOField(...,
+                                   description='The Timestamp of the Block')
     sampleTimestamp: int = DTOField(..., description='The Sample Block time')
-    output: DTOCLS = DTOField(..., description='Output of the model run for this block')
+    output: DTOCLS = DTOField(...,
+                              description='Output of the model run for this block')
 
 
 class BlockSeriesErrorRow(DTO):
@@ -31,9 +33,11 @@ class BlockSeriesErrorRow(DTO):
     An error row in a block series.
     """
     blockNumber: int = DTOField(..., description='Block number in the series')
-    blockTimestamp: int = DTOField(..., description='The Timestamp of the Block')
+    blockTimestamp: int = DTOField(...,
+                                   description='The Timestamp of the Block')
     sampleTimestamp: int = DTOField(..., description='The Sample Block time')
-    error: ModelErrorDTO = DTOField(..., description='Error DTO of the model run for this block')
+    error: ModelErrorDTO = DTOField(...,
+                                    description='Error DTO of the model run for this block')
 
 
 # pylint: disable=not-an-iterable
@@ -101,12 +105,14 @@ class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS
         Extract tuples from series data
 
         """
-        series_in_list = self.to_list(fields=None if fields is None else [f for (_, f) in fields])
+        series_in_list = self.to_list(fields=None if fields is None else [
+                                      f for (_, f) in fields])
         if fields is None:
-            return pd.DataFrame(series_in_list, columns=['blockNumber', 'blockTime', 'output'])
+            return pd.DataFrame(data=series_in_list, columns=['blockNumber', 'blockTime', 'output'])
         else:
-            return pd.DataFrame(series_in_list,
-                                columns=['blockNumber', 'blockTime'] + [c for c, _ in fields])
+            return pd.DataFrame(
+                data=series_in_list,
+                columns=['blockNumber', 'blockTime'] + [c for c, _ in fields])
 
 
 class SeriesModelStartEndIntervalInput(DTO):

@@ -31,7 +31,8 @@ class Account(DTO):
             return cls(**value)
         if isinstance(value, cls):
             return value
-        raise TypeError(f'{cls.__name__} must be deserialized with an str or dict')
+        raise TypeError(
+            f'{cls.__name__} must be deserialized with an str or dict')
 
     def __init__(self, *args, **data):
         if len(args) > 0:

@@ -27,9 +27,10 @@ class Position(DTO):
             quote_dict = {}
 
         try:
-            token_price = context.run_model(price_model,
-                                            input={'base': self.asset} | quote_dict,
-                                            block_number=block_number)['price']
+            token_price = context.run_model(
+                price_model,
+                input={'base': self.asset} | quote_dict,
+                block_number=block_number)['price']
         except ModelDataError:
             token_price = 0
         return token_price * self.amount

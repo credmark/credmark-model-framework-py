@@ -44,7 +44,8 @@ class FiatCurrency(Account):
                         f'Mismatch {symbol}/{address} for '
                         f'{fiat_meta["symbol"]}/{fiat_meta["address"]}')
             elif address is None:
-                raise ModelDataError(f'{symbol} is not added for fiat currency.')
+                raise ModelDataError(
+                    f'{symbol} is not added for fiat currency.')
 
         if address is not None:
             fiat_meta = FIAT_CURRENCY_DATA_BY_ADDRESS.get(address, None)
@@ -58,9 +59,11 @@ class FiatCurrency(Account):
                         f'Mismatch {symbol}/{address} for '
                         f'{fiat_meta["symbol"]}/{fiat_meta["address"]}')
             elif symbol is None:
-                raise ModelDataError(f'{address} is not added for fiat currency.')
+                raise ModelDataError(
+                    f'{address} is not added for fiat currency.')
             else:
-                raise ModelDataError(f'{symbol}/{address} is not added for fiat currency.')
+                raise ModelDataError(
+                    f'{symbol}/{address} is not added for fiat currency.')
 
     @property
     def symbol(self):
@@ -119,7 +122,8 @@ class Currency(Account):
             return value
         if isinstance(value, FiatCurrency):
             return value
-        raise TypeError(f'{cls.__name__} must be deserialized with an str or dict')
+        raise TypeError(
+            f'{cls.__name__} must be deserialized with an str or dict')
 
     def __new__(cls, *args, **data) -> Union[NativeToken, Token, FiatCurrency]:
         if len(args) > 0:

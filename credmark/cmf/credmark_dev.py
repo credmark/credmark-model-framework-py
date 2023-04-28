@@ -98,7 +98,8 @@ def main():  # pylint: disable=too-many-statements
         help='The name of the new model file. Ex. "model.py"')
     parser_create.set_defaults(func=create_model)
 
-    parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
+    parser_run = subparsers.add_parser(
+        'run', help='Run a model', aliases=['run-model'])
     parser_run.add_argument('-b', '--block_number', type=int, required=False, default=None,
                             help='Block number used for the context of the model run.'
                             ' If not specified, it is set to the latest block of the chain.')
@@ -133,14 +134,17 @@ def main():  # pylint: disable=too-many-statements
                             help='JSON object of chain id to Web3 provider HTTP URL. '
                             'Overrides settings in env var or .env file.')
     add_api_url_arg(parser_run)
-    parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
-    parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
+    parser_run.add_argument(
+        '--run_id', help=argparse.SUPPRESS, required=False, default=None)
+    parser_run.add_argument('--depth', help=argparse.SUPPRESS,
+                            type=int, required=False, default=0)
     parser_run.add_argument(
         'model-slug', default='(missing model-slug arg)',
         help='Slug for the model to run or "console" for the interactive console.')
     parser_run.set_defaults(func=run_model, depth=0)
 
-    parser_test = subparsers.add_parser('test', help='Run model tests', aliases=['run-tests'])
+    parser_test = subparsers.add_parser(
+        'test', help='Run model tests', aliases=['run-tests'])
     parser_test.add_argument('-p', '--pattern', required=False, default='test*.py',
                              help='Pattern to match test files (test*.py default).')
     add_api_url_arg(parser_test)
@@ -346,7 +350,8 @@ def list_deployed_models(args):  # pylint: disable=too-many-branches
         if model_slug:
             sys.stdout.write('\n')
             if len(manifests) == 0:
-                sys.stdout.write(f'Model slug {model_slug} not found on server.\n\n')
+                sys.stdout.write(
+                    f'Model slug {model_slug} not found on server.\n\n')
         else:
             sys.stdout.write('\nDeployed Models:\n\n')
 
@@ -399,7 +404,8 @@ def create_model(args):
         with open(file_path, 'w') as file:
             file.write(inspect.getsource(credmark.cmf.model.template))
     except Exception as exc:
-        logger.error(f'Error writing model template to path {file_path}: {exc}')
+        logger.error(
+            f'Error writing model template to path {file_path}: {exc}')
 
     sys.exit(0)
 
@@ -465,7 +471,8 @@ def run_tests(args):
     chain_to_provider_url = create_chain_to_provider_url(providers_json)
     model_loader = load_models(args, load_dev_models=True)
 
-    factory = ModelTestContextFactory(model_loader, chain_to_provider_url, api_url)
+    factory = ModelTestContextFactory(
+        model_loader, chain_to_provider_url, api_url)
     ModelTestContextFactory.use_factory(factory)
 
     pattern = args['pattern']
@@ -558,7 +565,8 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
 
         if model_slug != 'console':
             if format_json:
-                print(json_dumps(result, indent=4).replace('\\n', '\n').replace('\\"', '\''))
+                print(json_dumps(result, indent=4).replace(
+                    '\\n', '\n').replace('\\"', '\''))
             elif args['output']:
                 logger.info(f"Saving model results to {args['output']}")
                 with open(args['output'], 'w') as fp:

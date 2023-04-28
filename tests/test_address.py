@@ -29,22 +29,28 @@ class TestAddress(ModelTestCase):
 
     def test_run(self):
         expect_exception(
-            functools.partial(PoolAddress, {'poolAddress': '0xD905e2eaeBe188fc92179b6350'})
+            functools.partial(
+                PoolAddress, {'poolAddress': '0xD905e2eaeBe188fc92179b6350'})
         )
 
         addr1 = '0xd905e2eaebe188fc92179b6350807d8bd91db0d8'
         self.assertEqual(Address(0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8),  # type: ignore
                          addr1.lower())
-        self.assertEqual(Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'), addr1.lower())
-        self.assertEqual(Address(addr1).checksum, '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8')
-        self.assertNotEqual(Address(addr1).checksum, '0xA905e2eaeBe188fc92179b6350807D8bd91Db0D8')
-        self.assertEqual(Address('0x' + (bytes.fromhex(addr1[2:])).hex()), addr1.lower())
+        self.assertEqual(
+            Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'), addr1.lower())
+        self.assertEqual(Address(addr1).checksum,
+                         '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8')
+        self.assertNotEqual(Address(addr1).checksum,
+                            '0xA905e2eaeBe188fc92179b6350807D8bd91Db0D8')
+        self.assertEqual(
+            Address('0x' + (bytes.fromhex(addr1[2:])).hex()), addr1.lower())
         self.assertEqual(Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'),
                          Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'))
         self.assertNotEqual(Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D9'),
                             Address('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'))
 
-        self.assertTrue(Address.valid('0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'))
+        self.assertTrue(Address.valid(
+            '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8'))
         self.assertFalse(Address.valid('0xD905e2eaeBe'))
 
         self.assertEqual(functools.partial(Address, 123)(),
