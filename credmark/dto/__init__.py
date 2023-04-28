@@ -1,5 +1,16 @@
 # pylint: disable=locally-disabled, unused-import
+# ruff: noqa: F401
 
+from .encoder import (
+    json_dump,
+    json_dumps
+)
+from .dto_schema import (
+    cross_examples,
+    dto_schema_viz,
+    print_tree,
+    print_example,
+)
 import re
 from typing import Any, Dict, Generic, Iterator, List, TypeVar, Union
 from pydantic import (
@@ -127,7 +138,8 @@ class IntDTO(int):
             return cls(i)
         if isinstance(i, dict):
             return cls(**i)
-        raise TypeError(f'{cls.__name__} must be deserialized with an int or dict')
+        raise TypeError(
+            f'{cls.__name__} must be deserialized with an int or dict')
 
     def __new__(cls, value: int, **_kwargs):
         return super().__new__(cls, value)
@@ -170,7 +182,8 @@ class FloatDTO(float):
             return cls(i)
         if isinstance(i, dict):
             return cls(**i)
-        raise TypeError(f'{cls.__name__} must be deserialized with an float or dict')
+        raise TypeError(
+            f'{cls.__name__} must be deserialized with an float or dict')
 
     def __new__(cls, value: float, **_kwargs):
         return super().__new__(cls, value)
@@ -213,7 +226,8 @@ class StrDTO(str):
             return cls(i)
         if isinstance(i, dict):
             return cls(**i)
-        raise TypeError(f'{cls.__name__} must be deserialized with a str or dict')
+        raise TypeError(
+            f'{cls.__name__} must be deserialized with a str or dict')
 
     def __new__(cls, value: str, **_kwargs):
         return super().__new__(cls, value)
@@ -230,16 +244,3 @@ A tuple containing the DTO types superclasses.
 This can be used when checking if an instance is a DTOType
 subclass: ```isinstance(obj, DTOTypesTuple)```
 """
-
-
-from .dto_schema import (
-    cross_examples,
-    dto_schema_viz,
-    print_tree,
-    print_example,
-)
-
-from .encoder import (
-    json_dump,
-    json_dumps
-)

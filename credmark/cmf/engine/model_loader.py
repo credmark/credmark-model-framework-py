@@ -346,6 +346,7 @@ class ModelLoader:
                     json.dump({'credmarkModelManifest': '1.0',
                               'models': manifests}, fp)
                     self.logger.info(f'Saved manifest to {manifest_file}')
+                # ruff: noqa: E722
                 except:
                     err = ModelManifestWriteError(manifest_file)
                     self.logger.error(err)

@@ -68,7 +68,8 @@ class HistoricalUtil:
         run_return_type = BlockSeries[model_return_type]
 
         if isinstance(window, list):
-            parsed_window = [self.range_timestamp(*self.parse_timerangestr(w)) for w in window]
+            parsed_window = [self.range_timestamp(
+                *self.parse_timerangestr(w)) for w in window]
             min_w = window[parsed_window.index(min(parsed_window))]
             (w_k, _) = self.parse_timerangestr(min_w)
             window_timestamp = sum(parsed_window)
@@ -131,7 +132,8 @@ class HistoricalUtil:
                                     model_slug: str,
                                     window: int,
                                     interval: int,
-                                    model_input: Union[dict, DTOType, None] = None,
+                                    model_input: Union[dict,
+                                                       DTOType, None] = None,
                                     end_block: Union[int, None] = None,
                                     snap_block: Union[int, None] = None,
                                     model_return_type: Type[DTOCLS] = dict,
@@ -201,7 +203,7 @@ class HistoricalUtil:
         except Exception as _err:
             raise ModelRunError(
                 f"Invalid historical time string '{time_str}': "
-                f"unknown number format")
+                f"unknown number format. {_err}")
         return (key, num)
 
     def range_timestamp(self, key: str, num: int):

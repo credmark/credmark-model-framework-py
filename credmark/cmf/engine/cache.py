@@ -160,7 +160,7 @@ class ModelRunCache(SqliteDB):
             for d in self._db_base:
                 try:
                     return d.__getitem__(key)
-                except Exception as _err2:
+                except Exception:
                     pass
             raise _err
 

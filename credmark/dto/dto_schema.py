@@ -186,8 +186,8 @@ def print_tree(tree, prefix, print_func):
 
 def print_example(examples, prefix, print_func):
     if len(examples) > 0:
-        for n, l in enumerate(examples):
-            l_with_double_quote = str(l).replace("'", '"')
-            print_func(f'{prefix}#{n+1:02d}: {l_with_double_quote}\n')
+        for n, line in enumerate(examples):
+            line_with_double_quote = str(line).replace("'", '"')
+            print_func(f'{prefix}#{n+1:02d}: {line_with_double_quote}\n')
     else:
         print_func(f'{prefix}{{}}\n')

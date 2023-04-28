@@ -1,4 +1,5 @@
 # pylint: disable=locally-disabled, unused-import
+# ruff: noqa: F401
 
 from .account import Account, Accounts
 from .address import NULL_ADDRESS, Address

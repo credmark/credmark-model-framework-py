@@ -1,3 +1,5 @@
+# ruff: noqa: E722
+
 from datetime import datetime
 from enum import Enum
 import inspect

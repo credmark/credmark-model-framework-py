@@ -320,7 +320,7 @@ def merge_manifests(manifests: List[dict], extra_manifests: List[dict]):
     merged = manifests.copy()
     slugs = {m['slug'] for m in merged}
     for m in extra_manifests:
-        if not m['slug'] in slugs:
+        if m['slug'] not in slugs:
             merged.append(m)
     merged.sort(key=lambda m: m['slug'])
     return merged
