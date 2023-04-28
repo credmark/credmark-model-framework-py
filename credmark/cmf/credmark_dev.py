@@ -10,7 +10,7 @@ from typing import List, Union
 
 from credmark.cmf.engine.model_unittest import ModelTestContextFactory
 from credmark.cmf.model.print import print_manifest, print_manifest_description
-from credmark.dto import json_dump, json_dumps
+from credmark.dto.encoder import json_dump, json_dumps
 from dotenv import find_dotenv, load_dotenv
 
 from .engine.context import EngineModelContext
@@ -523,7 +523,7 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
 
         if debug_log:
             dbg_logger = logging.getLogger('credmark.cmf.engine.context.debug')
-            handler = logging.StreamHandler(sys.stderr)
+            handler = logging.StreamHandler()
             handler.setFormatter(logging.Formatter('%(message)s\n'))
             dbg_logger.propagate = False
             dbg_logger.addHandler(handler)

@@ -1,16 +1,13 @@
 # pylint: disable=locally-disabled, unused-import
 # ruff: noqa: F401
 
-from .encoder import (
-    json_dump,
-    json_dumps
-)
 from .dto_schema import (
     cross_examples,
     dto_schema_viz,
     print_tree,
     print_example,
 )
+
 import re
 from typing import Any, Dict, Generic, Iterator, List, TypeVar, Union
 from pydantic import (

@@ -73,7 +73,7 @@ def log_output(log_file=None,
         EngineModelContext.logger.info(
             f'Enabled log to {log_file} with level={logging.getLevelName(log_level)}')
     else:
-        fh = logging.StreamHandler(sys.stderr)
+        fh = logging.StreamHandler()
         fh.set_name(handler_name)
         fh.setLevel(log_level)
         fh.setFormatter(logging.Formatter(fmt=formatter))
