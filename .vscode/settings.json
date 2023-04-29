@@ -3,11 +3,9 @@
   "python.languageServer": "Pylance",
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.diagnosticMode": "workspace",
-  "python.formatting.autopep8Args": [
-    "--ignore",
-    "E402", // Module level import not at top of file
+  "autopep8.args": [
     "--max-line-length",
-    "120"
+    "120",
   ],
   "ruff.args": [
     "--ignore",

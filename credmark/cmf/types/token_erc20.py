@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 from typing import List, Union
 
 from eth_typing.evm import ChecksumAddress
