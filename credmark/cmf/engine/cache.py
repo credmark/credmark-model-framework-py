@@ -1,18 +1,17 @@
 # pylint:disable=too-many-arguments
 import hashlib
+import json
 import logging
+import sqlite3
+import zlib
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
 from sqlitedict import SqliteDict
 from sqlitedict import logger as sqlitedict_logger
 
-sqlitedict_logger.setLevel(logging.ERROR)
-
-import json
-import sqlite3
-import zlib
-
 from credmark.dto.encoder import json_dumps
+
+sqlitedict_logger.setLevel(logging.ERROR)
 
 
 class Singleton:
@@ -40,7 +39,8 @@ class ContractMetaCache(Cache):
         needle = self._cache[chain_id].get(address, None)
         if needle is None:
             if self._trace:
-                self._logger.info(f'[Cache] Not found meta: {chain_id=}/{address}')
+                self._logger.info(
+                    f'[Cache] Not found meta: {chain_id=}/{address}')
             return False, {}
 
         if self._trace:
@@ -161,7 +161,7 @@ class ModelRunCache(SqliteDB):
             for d in self._db_base:
                 try:
                     return d.__getitem__(key)
-                except Exception as _err2:
+                except Exception:
                     pass
             raise _err
 

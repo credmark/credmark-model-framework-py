@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.99 [2023-04-28]
+* chore: lint with ruff
+
 0.8.98 [2023-04-26]
 * feat: add input to call stack
 

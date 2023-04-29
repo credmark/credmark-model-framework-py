@@ -4,14 +4,12 @@ from typing import Any, ClassVar, Union
 from urllib.parse import quote, urljoin
 
 import requests
-from credmark.cmf.engine.errors import ModelRunRequestError
-from credmark.cmf.model.errors import (ModelBaseError,
-                                       create_instance_from_error_dict)
-from credmark.cmf.types import BlockNumber
-from credmark.dto.encoder import json_dumps
-
 from requests.adapters import HTTPAdapter, Retry
 
+from credmark.cmf.engine.errors import ModelRunRequestError
+from credmark.cmf.model.errors import ModelBaseError, create_instance_from_error_dict
+from credmark.cmf.types import BlockNumber
+from credmark.dto.encoder import json_dumps
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
 STAGING_GATEWAY_API_URL = 'https://gateway.staging.credmark.com'
@@ -44,7 +42,8 @@ class ModelApi:
             api_key = os.environ.get('CREDMARK_API_KEY')
             if not api_key and url == GATEWAY_API_URL:
                 api_key = CREDMARK_API_KEY
-            internal_api = url not in [GATEWAY_API_URL, STAGING_GATEWAY_API_URL]
+            internal_api = url not in [
+                GATEWAY_API_URL, STAGING_GATEWAY_API_URL]
             api = ModelApi(url, api_key, internal_api)
             cls._url_to_api[url] = api
         return api
@@ -53,9 +52,11 @@ class ModelApi:
         self.__url = url
         self.__internal_api = internal_api
         self.__session = requests.Session()
-        self.__session.headers.update({'User-Agent': 'credmark-model-framework'})
+        self.__session.headers.update(
+            {'User-Agent': 'credmark-model-framework'})
         if api_key is not None:
-            self.__session.headers.update({'Authorization': 'Bearer ' + api_key})
+            self.__session.headers.update(
+                {'Authorization': 'Bearer ' + api_key})
 
         retries = Retry(total=5, backoff_factor=1, allowed_methods=False,
                         status_forcelist=[429, 502], respect_retry_after_header=True)
@@ -147,10 +148,11 @@ class ModelApi:
         url = urljoin(self.__url, RUN_MODEL_PATH)
 
         try:
-            resp = self.__session.post(url,
-                                       data=json_dumps(req),
-                                       headers={'Content-Type': 'application/json'},
-                                       timeout=RUN_REQUEST_TIMEOUT)
+            resp = self.__session.post(
+                url,
+                data=json_dumps(req),
+                headers={'Content-Type': 'application/json'},
+                timeout=RUN_REQUEST_TIMEOUT)
             resp.raise_for_status()
             resp_obj = resp.json()
 

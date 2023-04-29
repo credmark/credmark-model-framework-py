@@ -1,11 +1,10 @@
 import io
-from typing import Type, Union, overload, Optional
+from typing import Optional, Type, Union, overload
 
+from credmark.cmf.model.errors import ModelInputError
 from credmark.dto import DTO, DTOType, DTOTypesTuple, EmptyInput
 
 from .print import print_manifest_description
-
-from credmark.cmf.model.errors import ModelInputError
 
 
 class RunModelMethod:
@@ -101,7 +100,8 @@ class RunModelMethod:
                     return model_manifests[self.__prefix][__name]
                 else:
                     # mclass = self.__context._class_for_model(self.__prefix.replace('_', '-'))
-                    mclass = model_manifests[self.__prefix.replace('_', '-')]['mclass']
+                    mclass = model_manifests[self.__prefix.replace(
+                        '_', '-')]['mclass']
                     if mclass is not None:
                         mclass_dict = vars(mclass)
                         if __name in mclass_dict:
@@ -121,7 +121,8 @@ class RunModelMethod:
 
             if self.__prefix in model_manifests:
                 # mclass = self.__context._class_for_model(self.__prefix.replace('_', '-'))
-                mclass = model_manifests[self.__prefix.replace('_', '-')]['mclass']
+                mclass = model_manifests[self.__prefix.replace(
+                    '_', '-')]['mclass']
                 fields = list(model_manifests[self.__prefix].keys())
                 if mclass is not None:
                     # allow autocomplete for some model class properties

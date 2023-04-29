@@ -173,14 +173,17 @@ class MockGenerator:
 
             for i, slug in enumerate(slugs):
                 mocks = self.model_map[slug]
-                file.write(f'        \'{slug}\': {mocks}{"," if i < count - 1 else ""}\n')
+                file.write(
+                    f'        \'{slug}\': {mocks}{"," if i < count - 1 else ""}\n')
 
             self._write_footer(file)
 
     def _write_header(self, file):
         if len(self.error_classes) > 0:
-            file.write(f'from credmark.cmf.model.errors import {", ".join(self.error_classes)}\n')
-        file.write('from credmark.cmf.engine.mocks import ModelMock, ModelMockConfig\n\n\n')
+            file.write(
+                f'from credmark.cmf.model.errors import {", ".join(self.error_classes)}\n')
+        file.write(
+            'from credmark.cmf.engine.mocks import ModelMock, ModelMockConfig\n\n\n')
         file.write('mocks = ModelMockConfig(\n')
         file.write('    run_unmocked=False,\n')
         file.write('    models={\n')
@@ -203,7 +206,8 @@ class MockGenerator:
         if error is not None:
             self.error_classes.add(error.__class__.__name__)
 
-        self.model_map[slug].append(ModelMock(output if output is not None else error, repeat=1))
+        self.model_map[slug].append(
+            ModelMock(output if output is not None else error, repeat=1))
 
 
 class MockEntryCursor:
@@ -240,7 +244,8 @@ class MockEntryCursor:
                 while cursor.index < count:
                     output = outputs[cursor.index]
                     if isinstance(output, ModelMock):
-                        output = self.next_output(output, model_input, depth + 1)
+                        output = self.next_output(
+                            output, model_input, depth + 1)
                         if output is None:
                             # Mock output is exhausted
                             self.cursor_stack.pop(depth + 1)
@@ -285,7 +290,8 @@ class ModelMockRunner:
         self._slug_entry_cursor_map: dict[str, MockEntryCursor] = {}
 
         self._slug_match_list_map: dict[str, List[ModelMock]] = {}
-        self._slug_match_entry_cursor_list_map: dict[str, List[MockEntryCursor]] = {}
+        self._slug_match_entry_cursor_list_map: dict[str, List[MockEntryCursor]] = {
+        }
 
         self.run_unmocked = False
 
@@ -317,7 +323,8 @@ class ModelMockRunner:
                 config = self._load_module_symbol(modulename, varname[1:])
                 self.add_mock_configuration(config)
         except Exception as exc:
-            raise Exception(f'Error loading mocks mock module {config_module_name}: {exc}')
+            raise Exception(
+                f'Error loading mocks mock module {config_module_name}: {exc}')
 
     def _split_output_match_list(self, slug: str, mocks: List[ModelMock]):
         output_list = []
@@ -343,7 +350,8 @@ class ModelMockRunner:
             if isinstance(values, ModelMock):
                 self._slug_entry_list_map[slug] = [values]
             elif isinstance(values, list):
-                output_list, match_list = self._split_output_match_list(slug, values)
+                output_list, match_list = self._split_output_match_list(
+                    slug, values)
                 if len(output_list) > 0:
                     self._slug_entry_list_map[slug] = output_list
                 if len(match_list) > 0:
@@ -386,7 +394,8 @@ class ModelMockRunner:
 
         if self.run_unmocked:
             return slug
-        raise ModelMockException(f'No model mock for slug "{slug}" with input {input}')
+        raise ModelMockException(
+            f'No model mock for slug "{slug}" with input {input}')
 
 
 def test():  # pylint: disable=too-many-branches,too-many-statements
@@ -465,7 +474,8 @@ def test():  # pylint: disable=too-many-branches,too-many-statements
         print('No output as expected.')
 
     try:
-        output = mock.output_for_model('contrib.c', {"address": "0xffffffff", "symbol": "foo"})
+        output = mock.output_for_model(
+            'contrib.c', {"address": "0xffffffff", "symbol": "foo"})
         assert 'Input mismatch' == 'expected to raise'
     except ModelMockException:
         print('No input match as expected.')
@@ -478,11 +488,13 @@ def test():  # pylint: disable=too-many-branches,too-many-statements
 
     output = mock.output_for_model('contrib.e', token_foo)
     assert output == {"e": 42}
-    output = mock.output_for_model('contrib.e', {"address": "0xffffffff", "symbol": "foo"})
+    output = mock.output_for_model(
+        'contrib.e', {"address": "0xffffffff", "symbol": "foo"})
     assert output == {"e": 1}
     output = mock.output_for_model('contrib.f', token_foo)
     assert output == {"f": 42}
-    output = mock.output_for_model('contrib.f', {"address": "0xffffffff", "symbol": "foo"})
+    output = mock.output_for_model(
+        'contrib.f', {"address": "0xffffffff", "symbol": "foo"})
     assert output == 'contrib.f'
 
     for i in range(0, 13):

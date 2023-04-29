@@ -1,19 +1,20 @@
+# pylint: disable=line-too-long
+
 from typing import List, Union
+
+from eth_typing.evm import ChecksumAddress
+from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
 
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.dto import DTOField, IterableListGenericDTO, PrivateAttr
-from eth_typing.evm import ChecksumAddress
-from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
 
 from .abi import ABI
 from .address import Address, evm_address_regex
-from .contract import Contract
 from .block_number import BlockNumberOutOfRangeError
+from .contract import Contract
 from .data.erc_standard_data import ERC20_BASE_ABI
-from .data.fungible_token_data import (FUNGIBLE_TOKEN_DATA_BY_ADDRESS,
-                                       FUNGIBLE_TOKEN_DATA_BY_SYMBOL,
-                                       NATIVE_TOKEN)
+from .data.fungible_token_data import FUNGIBLE_TOKEN_DATA_BY_ADDRESS, FUNGIBLE_TOKEN_DATA_BY_SYMBOL, NATIVE_TOKEN
 
 
 def get_token_from_configuration(
@@ -86,7 +87,8 @@ class Token(Contract):
             return value
         if isinstance(value, Token):
             return value
-        raise TypeError(f'{cls.__name__} must be deserialized with an str or dict')
+        raise TypeError(
+            f'{cls.__name__} must be deserialized with an str or dict')
 
     def __new__(cls, *args, **data):
         if cls == NativeToken:
@@ -158,7 +160,8 @@ class Token(Contract):
                 self._loaded = True
 
         if data['address'] == Address.null():
-            raise ModelDataError(f'NULL address ({Address.null()}) is not a valid Token Address')
+            raise ModelDataError(
+                f'NULL address ({Address.null()}) is not a valid Token Address')
 
         super().__init__(**data)
 
@@ -222,7 +225,8 @@ class Token(Contract):
             except ModelDataError:
                 symbol_tmp = self.try_erc20_property('SYMBOL')
             if isinstance(symbol_tmp, bytes):
-                symbol_tmp = symbol_tmp.decode('utf-8', errors='strict').replace('\x00', '')
+                symbol_tmp = symbol_tmp.decode(
+                    'utf-8', errors='strict').replace('\x00', '')
             elif isinstance(symbol_tmp, str):
                 symbol_tmp = symbol_tmp.replace('\x00', '')
             elif not isinstance(symbol_tmp, str):
@@ -250,7 +254,8 @@ class Token(Contract):
             except ModelDataError:
                 name_tmp = self.try_erc20_property('NAME')
             if isinstance(name_tmp, bytes):
-                name_tmp = name_tmp.decode('utf-8', errors='strict').replace('\x00', '')
+                name_tmp = name_tmp.decode(
+                    'utf-8', errors='strict').replace('\x00', '')
             elif isinstance(name_tmp, str):
                 name_tmp = name_tmp.replace('\x00', '')
             elif not isinstance(name_tmp, str):
@@ -304,7 +309,8 @@ class NativeToken(Token):
         context = credmark.cmf.model.ModelContext.current_context()
         token_data = NATIVE_TOKEN[context.chain_id]
         if token_data is None:
-            raise ModelRunError(f'No native token specified for chain id: {context.chain_id}')
+            raise ModelRunError(
+                f'No native token specified for chain id: {context.chain_id}')
 
         if len(args) > 0:
             if isinstance(args[0], str):
@@ -343,7 +349,8 @@ class NativeToken(Token):
             balance = context.web3.eth.get_balance(address)
             return balance
         else:
-            raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
+            raise ModelRunError(
+                f'Not supported for chain id: {context.chain_id}')
 
     def balance_of_scaled(self, address: ChecksumAddress) -> float:
         context = credmark.cmf.model.ModelContext.current_context()
@@ -351,7 +358,8 @@ class NativeToken(Token):
             balance = self.balance_of(address)
             return float(context.web3.fromWei(balance, 'ether'))
         else:
-            raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
+            raise ModelRunError(
+                f'Not supported for chain id: {context.chain_id}')
 
     @property
     def ledger(self) -> None:

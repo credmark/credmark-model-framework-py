@@ -1,8 +1,16 @@
 from typing import List
-from credmark.cmf.types.ledger import (BlockTable, ContractTable, LogTable,
-                                       ReceiptTable, TokenBalanceTable,
-                                       TokenTable, TokenTransferTable,
-                                       TraceTable, TransactionTable)
+
+from credmark.cmf.types.ledger import (
+    BlockTable,
+    ContractTable,
+    LogTable,
+    ReceiptTable,
+    TokenBalanceTable,
+    TokenTable,
+    TokenTransferTable,
+    TraceTable,
+    TransactionTable,
+)
 from credmark.cmf.types.ledger_query import LedgerQuery
 
 QUERY_METHOD_DOC_STRING = """

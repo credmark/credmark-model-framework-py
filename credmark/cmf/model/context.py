@@ -2,10 +2,11 @@ from abc import abstractmethod
 from contextvars import ContextVar, Token
 from typing import Any, Type, TypeVar, Union, overload
 
+from web3 import Web3
+
 from credmark.cmf.engine.web3_registry import Web3Registry
 from credmark.cmf.types import BlockNumber, Network
 from credmark.dto import DTOType, EmptyInput
-from web3 import Web3
 
 from .errors import ModelNoContextError
 from .ledger import Ledger

@@ -12,21 +12,32 @@ from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.engine.web3_registry import Web3Registry
 from credmark.cmf.model import Model
 from credmark.cmf.model.context import ModelContext
-from credmark.cmf.model.errors import (MaxModelRunDepthError, ModelBaseError,
-                                       ModelCallStackEntry, ModelEngineError,
-                                       ModelInputError, ModelInvalidStateError,
-                                       ModelNotFoundError, ModelOutputError,
-                                       ModelRunError, ModelTypeError,
-                                       create_instance_from_error_dict)
+from credmark.cmf.model.errors import (
+    MaxModelRunDepthError,
+    ModelBaseError,
+    ModelCallStackEntry,
+    ModelEngineError,
+    ModelInputError,
+    ModelInvalidStateError,
+    ModelNotFoundError,
+    ModelOutputError,
+    ModelRunError,
+    ModelTypeError,
+    create_instance_from_error_dict,
+)
 from credmark.cmf.model.models import RunModelMethod
 from credmark.cmf.types import (
     BlockNumber,
+    BlockNumberOutOfRangeDetailDTO,
     BlockNumberOutOfRangeError,
-    BlockNumberOutOfRangeDetailDTO)
+)
 from credmark.dto import DTOType, DTOValidationError, EmptyInput
 from credmark.dto.encoder import json_dumps
-from credmark.dto.transform import (DataTransformError, transform_data_for_dto,
-                                    transform_dto_to_dict)
+from credmark.dto.transform import (
+    DataTransformError,
+    transform_data_for_dto,
+    transform_dto_to_dict,
+)
 
 LEDGER_GET_LATEST_BLOCK_NUMBER_SLUG = 'ledger.block-number'
 CHAIN_GET_LATEST_BLOCK_NUMBER_SLUG = 'chain.get-latest-block'

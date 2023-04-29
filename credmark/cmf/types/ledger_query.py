@@ -6,8 +6,7 @@ from typing import List, Tuple, Union
 
 import credmark.cmf.model
 
-from .ledger import (ColumnField, JoinType, LedgerAggregate,
-                     LedgerJoin, LedgerModelOutput, LedgerTable)
+from .ledger import ColumnField, JoinType, LedgerAggregate, LedgerJoin, LedgerModelOutput, LedgerTable
 from .ledger_errors import InvalidQueryException
 
 

@@ -67,7 +67,8 @@ class ModelLoader:
                 self._process_model_manifest(manifest, None, None)
         else:
             if model_paths is not None:
-                self.logger.debug(f'Loading manifest from model_paths: {model_paths}')
+                self.logger.debug(
+                    f'Loading manifest from model_paths: {model_paths}')
                 self._search_paths_for_model_files(model_paths)
 
         if load_dev_models:  # pylint: disable=too-many-nested-blocks
@@ -78,10 +79,12 @@ class ModelLoader:
                 if cmf_paths is not None:
                     for dev_models_path in DEV_MODELS_PATHS:
                         for cmf_path in cmf_paths:
-                            dev_model_fpath = os.path.join(cmf_path, dev_models_path)
+                            dev_model_fpath = os.path.join(
+                                cmf_path, dev_models_path)
                             if os.path.isfile(dev_model_fpath):
                                 self.__loading_dev_models = True
-                                self._try_model_module(cmf_path, dev_model_fpath)
+                                self._try_model_module(
+                                    cmf_path, dev_model_fpath)
                                 self.__loading_dev_models = False
                                 break
 
@@ -89,7 +92,8 @@ class ModelLoader:
         self.__model_manifest_list_with_class.sort(key=lambda m: m['slug'])
 
     def reload(self):
-        self.__class__(self._model_paths, self.manifest_file, self._load_dev_models)
+        self.__class__(self._model_paths, self.manifest_file,
+                       self._load_dev_models)
 
     def clear(self):
         self.errors.clear()
@@ -151,7 +155,8 @@ class ModelLoader:
             add_path = True
             sys.path.insert(0, parent_path)
         # fpath always ends with '.py'
-        module_name = fpath[:-3].replace(parent_path + os.path.sep, '').replace('/', '.')
+        module_name = fpath[:-3].replace(parent_path +
+                                         os.path.sep, '').replace('/', '.')
         spec = importlib.util.spec_from_file_location(module_name, fpath)
         if spec is None or spec.loader is None:
             raise Exception(f'Unable to load module from {fpath}')
@@ -226,7 +231,8 @@ class ModelLoader:
         if mclass is not None:
             self._add_model_class(mclass)
             self.__model_manifest_list.append(model_manifest)
-            self.__model_manifest_list_with_class.append(model_manifest | {'mclass': mclass})
+            self.__model_manifest_list_with_class.append(
+                model_manifest | {'mclass': mclass})
 
     def add_model(self, model_class, replace=True):
         model_manifest = model_class.__dict__['__manifest']
@@ -235,7 +241,8 @@ class ModelLoader:
 
         if replace:
             self.remove_model_by_slug(model_manifest['model']['slug'])
-        self._process_model_manifest_entry(model_manifest['model'], model_class)
+        self._process_model_manifest_entry(
+            model_manifest['model'], model_class)
 
     def remove_model_by_slug(self, slug):
         keys_to_remove = [key for key in self.__slug_version_to_class_dict.keys()
@@ -246,7 +253,8 @@ class ModelLoader:
         if slug in self.__slug_to_versions_dict:
             self.__slug_to_versions_dict.pop(slug)
 
-        self.__model_manifest_list = [m for m in self.__model_manifest_list if m['slug'] != slug]
+        self.__model_manifest_list = [
+            m for m in self.__model_manifest_list if m['slug'] != slug]
         self.__model_manifest_list_with_class = \
             [m for m in self.__model_manifest_list_with_class if m['slug'] != slug]
 
@@ -335,8 +343,10 @@ class ModelLoader:
             manifests = self.loaded_model_manifests()
             with open(manifest_file, 'w') as fp:
                 try:
-                    json.dump({'credmarkModelManifest': '1.0', 'models': manifests}, fp)
+                    json.dump({'credmarkModelManifest': '1.0',
+                              'models': manifests}, fp)
                     self.logger.info(f'Saved manifest to {manifest_file}')
+                # ruff: noqa: E722
                 except:
                     err = ModelManifestWriteError(manifest_file)
                     self.logger.error(err)

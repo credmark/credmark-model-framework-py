@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
-from typing import Any, Union, Dict
+from typing import Any, Dict, Union
+
+from web3.types import BlockData, Timestamp
 
 import credmark.cmf.model
-from credmark.cmf.model.errors import (ModelErrorDTO, ModelInputError,
-                                       ModelInvalidStateError)
+from credmark.cmf.model.errors import ModelErrorDTO, ModelInputError, ModelInvalidStateError
 from credmark.dto import DTO, IntDTO
-from web3.types import BlockData, Timestamp
 
 
 class BlockNumberOutOfRangeDetailDTO(DTO):

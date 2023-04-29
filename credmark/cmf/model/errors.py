@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Generic, List, Type, TypeVar, Union, Optional
+from typing import Any, Generic, List, Optional, Type, TypeVar, Union
 
 from credmark.dto import DTO, DTOField, GenericDTO
 from credmark.dto.transform import transform_data_for_dto

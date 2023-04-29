@@ -2,10 +2,8 @@ import unittest
 
 from credmark.cmf.engine.model_unittest import ModelTestCase
 from credmark.cmf.model.errors import ModelDataError
-from credmark.cmf.types import (Address, Currency, FiatCurrency, NativeToken,
-                                Token)
-from credmark.cmf.types.data.fiat_currency_data import (
-    FIAT_CURRENCY_DATA_BY_ADDRESS, FIAT_CURRENCY_DATA_BY_SYMBOL)
+from credmark.cmf.types import Address, Currency, FiatCurrency, NativeToken, Token
+from credmark.cmf.types.data.fiat_currency_data import FIAT_CURRENCY_DATA_BY_ADDRESS, FIAT_CURRENCY_DATA_BY_SYMBOL
 
 
 class TestCurrency(ModelTestCase):
@@ -65,7 +63,8 @@ class TestCurrency(ModelTestCase):
                 self.assertTrue(fc.fiat)
 
         with self.assertRaises(ModelDataError):
-            FiatCurrency(address=Address('0x0000000000000000000000000000000000000349'))
+            FiatCurrency(address=Address(
+                '0x0000000000000000000000000000000000000349'))
 
         with self.assertRaises(ModelDataError):
             FiatCurrency(symbol='USE', address=Address(
@@ -78,7 +77,8 @@ class TestCurrency(ModelTestCase):
         self.assertTrue(isinstance(token, Token))
         self.assertFalse(isinstance(token, NativeToken))
         self.assertEqual(token.symbol, "CMK")
-        self.assertEqual(token.address, "0x68CFb82Eacb9f198d508B514d898a403c449533E")
+        self.assertEqual(
+            token.address, "0x68CFb82Eacb9f198d508B514d898a403c449533E")
         self.assertEqual(token.name, 'Credmark')
         self.assertFalse(token.fiat)
 
@@ -86,7 +86,8 @@ class TestCurrency(ModelTestCase):
         self.assertTrue(isinstance(btc_token, Token))
         self.assertFalse(isinstance(btc_token, NativeToken))
         self.assertEqual(btc_token.symbol, "BTC")
-        self.assertEqual(btc_token.address, Address("0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"))
+        self.assertEqual(btc_token.address, Address(
+            "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"))
         self.assertEqual(btc_token.name, "Bitcoin")
         self.assertFalse(btc_token.fiat)
 
