@@ -1,29 +1,41 @@
 # pylint: disable=locally-disabled, unused-import
 # ruff: noqa: F401
 
+import re
+from typing import Any, Dict, Generic, Iterator, List, TypeVar, Union
+
+from pydantic import (
+    BaseModel as DTO,
+)
+from pydantic import (
+    Extra as DTOExtra,
+)
+from pydantic import (
+    Field as DTOField,
+)
+from pydantic import (
+    Json as DTOJson,
+)
+from pydantic import (
+    PrivateAttr,
+    confloat,
+    conint,
+    constr,
+    validator,
+)
+from pydantic import (
+    ValidationError as DTOValidationError,
+)
+
+# A GenericDTO is a kind of DTO: isinstance(g, DTO) == True
+from pydantic.generics import GenericModel as GenericDTO
+
 from .dto_schema import (
     cross_examples,
     dto_schema_viz,
-    print_tree,
     print_example,
+    print_tree,
 )
-
-import re
-from typing import Any, Dict, Generic, Iterator, List, TypeVar, Union
-from pydantic import (
-    BaseModel as DTO,
-    Field as DTOField,
-    ValidationError as DTOValidationError,
-    constr,
-    confloat,
-    conint,
-    validator,
-    Json as DTOJson,
-    Extra as DTOExtra,
-    PrivateAttr,
-)
-# A GenericDTO is a kind of DTO: isinstance(g, DTO) == True
-from pydantic.generics import GenericModel as GenericDTO
 
 
 class DTOPretty:

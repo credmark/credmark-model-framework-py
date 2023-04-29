@@ -2,10 +2,8 @@ import unittest
 
 from credmark.cmf.engine.model_unittest import ModelTestCase
 from credmark.cmf.model.errors import ModelDataError
-from credmark.cmf.types import (Address, Currency, FiatCurrency, NativeToken,
-                                Token)
-from credmark.cmf.types.data.fiat_currency_data import (
-    FIAT_CURRENCY_DATA_BY_ADDRESS, FIAT_CURRENCY_DATA_BY_SYMBOL)
+from credmark.cmf.types import Address, Currency, FiatCurrency, NativeToken, Token
+from credmark.cmf.types.data.fiat_currency_data import FIAT_CURRENCY_DATA_BY_ADDRESS, FIAT_CURRENCY_DATA_BY_SYMBOL
 
 
 class TestCurrency(ModelTestCase):

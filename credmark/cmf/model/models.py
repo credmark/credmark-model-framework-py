@@ -1,11 +1,10 @@
 import io
-from typing import Type, Union, overload, Optional
+from typing import Optional, Type, Union, overload
 
+from credmark.cmf.model.errors import ModelInputError
 from credmark.dto import DTO, DTOType, DTOTypesTuple, EmptyInput
 
 from .print import print_manifest_description
-
-from credmark.cmf.model.errors import ModelInputError
 
 
 class RunModelMethod:

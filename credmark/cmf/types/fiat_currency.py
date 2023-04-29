@@ -4,12 +4,10 @@ from typing import Union
 from credmark.cmf.model.errors import ModelDataError
 from credmark.dto import PrivateAttr
 
-from .address import Address, evm_address_regex
 from .account import Account
-from .data.fiat_currency_data import (FIAT_CURRENCY_DATA_BY_ADDRESS,
-                                      FIAT_CURRENCY_DATA_BY_SYMBOL)
-
-from .token_erc20 import Token, NativeToken
+from .address import Address, evm_address_regex
+from .data.fiat_currency_data import FIAT_CURRENCY_DATA_BY_ADDRESS, FIAT_CURRENCY_DATA_BY_SYMBOL
+from .token_erc20 import NativeToken, Token
 
 
 # pylint:disable=no-member, assigning-non-slot

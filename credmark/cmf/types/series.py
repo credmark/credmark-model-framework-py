@@ -2,9 +2,9 @@ from datetime import datetime
 from typing import Callable, Generic, List, Optional, Tuple, TypeVar, Union
 
 import pandas as pd
+
 from credmark.cmf.model.errors import ModelErrorDTO
-from credmark.dto import (DTO, DTOField, DTOType, GenericDTO,
-                          IterableListGenericDTO, PrivateAttr)
+from credmark.dto import DTO, DTOField, DTOType, GenericDTO, IterableListGenericDTO, PrivateAttr
 
 DTOCLS = TypeVar('DTOCLS')
 

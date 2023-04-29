@@ -1,11 +1,11 @@
 import re
 from typing import Any, Dict, Union
 
-from credmark.cmf.model.errors import ModelTypeError
 from eth_typing.evm import ChecksumAddress
 from web3 import Web3
-from web3._utils.validation import \
-    validate_address as eth_utils_validate_address
+from web3._utils.validation import validate_address as eth_utils_validate_address
+
+from credmark.cmf.model.errors import ModelTypeError
 
 
 def validate_address(addr: str) -> ChecksumAddress:

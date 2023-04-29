@@ -6,7 +6,7 @@ from typing import Optional, Union
 from web3 import HTTPProvider, Web3, WebsocketProvider
 from web3.middleware.geth_poa import geth_poa_middleware
 
-from credmark.cmf.types.network import Network, CREDMARK_PUBLIC_PROVIDERS
+from credmark.cmf.types.network import CREDMARK_PUBLIC_PROVIDERS, Network
 
 
 class Web3Registry:

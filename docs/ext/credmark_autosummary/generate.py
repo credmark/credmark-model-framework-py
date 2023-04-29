@@ -23,8 +23,7 @@ import sys
 import warnings
 from gettext import NullTranslations
 from os import path
-from typing import (Any, Dict, List, NamedTuple, Optional, Sequence, Set,
-                    Tuple, Type, Union)
+from typing import Any, Dict, List, NamedTuple, Optional, Sequence, Set, Tuple, Type, Union
 
 import sphinx.ext.autodoc.importer
 import sphinx.locale
@@ -47,8 +46,7 @@ from sphinx.util.osutil import ensuredir
 from sphinx.util.template import SphinxTemplateLoader
 
 # credmark_autosummary change:
-from . import (ImportExceptionGroup, get_documenter, import_by_name,
-               import_ivar_by_name)
+from . import ImportExceptionGroup, get_documenter, import_by_name, import_ivar_by_name
 
 logger = logging.getLogger(__name__)
 
@@ -83,12 +81,19 @@ class AutosummaryEntry(NamedTuple):
 
 
 def setup_documenters(app: Any) -> None:
-    from sphinx.ext.autodoc import (AttributeDocumenter, ClassDocumenter,
-                                    DataDocumenter, DecoratorDocumenter,
-                                    ExceptionDocumenter, FunctionDocumenter,
-                                    MethodDocumenter, ModuleDocumenter,
-                                    NewTypeAttributeDocumenter,
-                                    NewTypeDataDocumenter, PropertyDocumenter)
+    from sphinx.ext.autodoc import (
+        AttributeDocumenter,
+        ClassDocumenter,
+        DataDocumenter,
+        DecoratorDocumenter,
+        ExceptionDocumenter,
+        FunctionDocumenter,
+        MethodDocumenter,
+        ModuleDocumenter,
+        NewTypeAttributeDocumenter,
+        NewTypeDataDocumenter,
+        PropertyDocumenter,
+    )
     documenters: List[Type[Documenter]] = [
         ModuleDocumenter, ClassDocumenter, ExceptionDocumenter, DataDocumenter,
         FunctionDocumenter, MethodDocumenter, NewTypeAttributeDocumenter,

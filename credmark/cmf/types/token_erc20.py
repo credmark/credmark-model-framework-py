@@ -1,19 +1,18 @@
 from typing import List, Union
 
-import credmark.cmf.model
-from credmark.cmf.model.errors import ModelDataError, ModelRunError
-from credmark.dto import DTOField, IterableListGenericDTO, PrivateAttr
 from eth_typing.evm import ChecksumAddress
 from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
 
+import credmark.cmf.model
+from credmark.cmf.model.errors import ModelDataError, ModelRunError
+from credmark.dto import DTOField, IterableListGenericDTO, PrivateAttr
+
 from .abi import ABI
 from .address import Address, evm_address_regex
-from .contract import Contract
 from .block_number import BlockNumberOutOfRangeError
+from .contract import Contract
 from .data.erc_standard_data import ERC20_BASE_ABI
-from .data.fungible_token_data import (FUNGIBLE_TOKEN_DATA_BY_ADDRESS,
-                                       FUNGIBLE_TOKEN_DATA_BY_SYMBOL,
-                                       NATIVE_TOKEN)
+from .data.fungible_token_data import FUNGIBLE_TOKEN_DATA_BY_ADDRESS, FUNGIBLE_TOKEN_DATA_BY_SYMBOL, NATIVE_TOKEN
 
 
 def get_token_from_configuration(

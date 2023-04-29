@@ -1,9 +1,10 @@
 from typing import (
+    List,
     Type,
     TypeVar,
     Union,
-    List,
 )
+
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelRunError
 from credmark.cmf.types.series import (

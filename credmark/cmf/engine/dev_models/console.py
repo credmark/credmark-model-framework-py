@@ -15,6 +15,8 @@ import logging
 import os
 
 import yaml
+from web3.exceptions import ABIFunctionNotFound
+
 from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
@@ -22,27 +24,65 @@ from credmark.cmf.model import Model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.cmf.model.models import RunModelMethod
 from credmark.cmf.model.print import print_manifest_description
-from credmark.cmf.types import (Account, Accounts, Address, BlockNumber,
-                                Contract, ContractLedger, Contracts, Currency,
-                                FiatCurrency, Maybe, NativePosition,
-                                NativeToken, Network, Portfolio, Position,
-                                PortfolioWithPrice, PositionWithPrice,
-                                Price, PriceWithQuote, PriceList, Records, Some, Token,
-                                TokenPosition, Tokens)
-from credmark.cmf.types.compose import (MapBlockResult, MapBlocksInput,
-                                        MapBlocksOutput,
-                                        MapBlockTimeSeriesInput,
-                                        MapBlockTimeSeriesOutput,
-                                        MapInputsInput, MapInputsOutput,
-                                        MapInputsResult)
-from credmark.cmf.types.ledger import (BlockTable, ContractTable, LogTable,
-                                       ReceiptTable, TokenTable,
-                                       TokenTransferTable, TraceTable,
-                                       TransactionTable)
-from credmark.dto import (DTO, DTOField, DTOPretty, EmptyInput, FloatDTO,
-                          IntDTO, IterableListGenericDTO, PrivateAttr, StrDTO)
+from credmark.cmf.types import (
+    Account,
+    Accounts,
+    Address,
+    BlockNumber,
+    Contract,
+    ContractLedger,
+    Contracts,
+    Currency,
+    FiatCurrency,
+    Maybe,
+    NativePosition,
+    NativeToken,
+    Network,
+    Portfolio,
+    PortfolioWithPrice,
+    Position,
+    PositionWithPrice,
+    Price,
+    PriceList,
+    PriceWithQuote,
+    Records,
+    Some,
+    Token,
+    TokenPosition,
+    Tokens,
+)
+from credmark.cmf.types.compose import (
+    MapBlockResult,
+    MapBlocksInput,
+    MapBlocksOutput,
+    MapBlockTimeSeriesInput,
+    MapBlockTimeSeriesOutput,
+    MapInputsInput,
+    MapInputsOutput,
+    MapInputsResult,
+)
+from credmark.cmf.types.ledger import (
+    BlockTable,
+    ContractTable,
+    LogTable,
+    ReceiptTable,
+    TokenTable,
+    TokenTransferTable,
+    TraceTable,
+    TransactionTable,
+)
+from credmark.dto import (
+    DTO,
+    DTOField,
+    DTOPretty,
+    EmptyInput,
+    FloatDTO,
+    IntDTO,
+    IterableListGenericDTO,
+    PrivateAttr,
+    StrDTO,
+)
 from credmark.dto.encoder import json_dump, json_dumps
-from web3.exceptions import ABIFunctionNotFound
 
 
 # pylint: disable= too-many-arguments

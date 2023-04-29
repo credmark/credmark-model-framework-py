@@ -1,14 +1,15 @@
 # pylint:disable=too-many-arguments
-from credmark.dto.encoder import json_dumps
-import zlib
-import sqlite3
-import json
 import hashlib
+import json
 import logging
+import sqlite3
+import zlib
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
 from sqlitedict import SqliteDict
 from sqlitedict import logger as sqlitedict_logger
+
+from credmark.dto.encoder import json_dumps
 
 sqlitedict_logger.setLevel(logging.ERROR)
 

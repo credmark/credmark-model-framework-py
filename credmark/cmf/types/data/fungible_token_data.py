@@ -1,14 +1,13 @@
 # pylint:disable=too-many-lines
 # All address in the field shall be checksum address
 
-from credmark.cmf.types.network import Network
-from credmark.cmf.types.data.fungible_token_data_polygon import POLYGON_TOKENS
-from credmark.cmf.types.data.fungible_token_data_avalenche import AVALANCHE_TOKENS
-from credmark.cmf.types.data.fungible_token_data_mainnet import MAINNET_TOKENS
 from credmark.cmf.types.data.fungible_token_data_arbitrum_one import ARBITRUM_ONE_TOKENS
-from credmark.cmf.types.data.fungible_token_data_optimism import OPTIMISM_TOKENS
+from credmark.cmf.types.data.fungible_token_data_avalenche import AVALANCHE_TOKENS
 from credmark.cmf.types.data.fungible_token_data_fantom import FANTOM_TOKENS
-
+from credmark.cmf.types.data.fungible_token_data_mainnet import MAINNET_TOKENS
+from credmark.cmf.types.data.fungible_token_data_optimism import OPTIMISM_TOKENS
+from credmark.cmf.types.data.fungible_token_data_polygon import POLYGON_TOKENS
+from credmark.cmf.types.network import Network
 
 NATIVE_TOKEN = {
     int(Network.Mainnet): {

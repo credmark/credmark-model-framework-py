@@ -1,9 +1,9 @@
 import credmark.cmf.model
-from credmark.dto import DTO, DTOField, cross_examples
 from credmark.cmf.model.errors import ModelDataError
+from credmark.dto import DTO, DTOField, cross_examples
 
-from .token_erc20 import NativeToken, Token
 from .price import PriceWithQuote
+from .token_erc20 import NativeToken, Token
 
 
 class Position(DTO):

@@ -5,6 +5,7 @@
 from typing import Callable, Generic, Iterator, List, Optional, Tuple, TypeVar
 
 import pandas as pd
+
 from credmark.dto import DTOField, DTOTypesTuple, GenericDTO
 
 DTOCLS = TypeVar('DTOCLS')

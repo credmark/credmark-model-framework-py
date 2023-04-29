@@ -10,7 +10,8 @@
     "120"
   ],
   "ruff.args": [
-    "--ignore E501",
+    "--ignore",
+    "E501",
   ],
   "python.linting.pylintEnabled": true,
   "python.linting.lintOnSave": true,

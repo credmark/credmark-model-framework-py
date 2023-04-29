@@ -8,10 +8,11 @@ import sys
 import unittest
 from typing import List, Union
 
+from dotenv import find_dotenv, load_dotenv
+
 from credmark.cmf.engine.model_unittest import ModelTestContextFactory
 from credmark.cmf.model.print import print_manifest, print_manifest_description
 from credmark.dto.encoder import json_dump, json_dumps
-from dotenv import find_dotenv, load_dotenv
 
 from .engine.context import EngineModelContext
 from .engine.github import get_latest_cmf_version_tag

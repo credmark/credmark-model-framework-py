@@ -1,10 +1,10 @@
-import unittest
-import logging
-from credmark.cmf.engine.model_unittest import ModelTestCase
-
-from credmark.dto import DTO, DTOField
-from credmark.cmf.types import Address
 import functools
+import logging
+import unittest
+
+from credmark.cmf.engine.model_unittest import ModelTestCase
+from credmark.cmf.types import Address
+from credmark.dto import DTO, DTOField
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

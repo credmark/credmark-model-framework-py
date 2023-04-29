@@ -4,14 +4,12 @@ from typing import Any, ClassVar, Union
 from urllib.parse import quote, urljoin
 
 import requests
-from credmark.cmf.engine.errors import ModelRunRequestError
-from credmark.cmf.model.errors import (ModelBaseError,
-                                       create_instance_from_error_dict)
-from credmark.cmf.types import BlockNumber
-from credmark.dto.encoder import json_dumps
-
 from requests.adapters import HTTPAdapter, Retry
 
+from credmark.cmf.engine.errors import ModelRunRequestError
+from credmark.cmf.model.errors import ModelBaseError, create_instance_from_error_dict
+from credmark.cmf.types import BlockNumber
+from credmark.dto.encoder import json_dumps
 
 GATEWAY_API_URL = 'https://gateway.credmark.com'
 STAGING_GATEWAY_API_URL = 'https://gateway.staging.credmark.com'

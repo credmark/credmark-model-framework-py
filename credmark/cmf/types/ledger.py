@@ -1,13 +1,15 @@
 # ruff: noqa: E722
 
+import inspect
 from datetime import datetime
 from enum import Enum
-import inspect
 from typing import Dict, List, Tuple, Union
 
 import pandas as pd
+
 from credmark.cmf.model.errors import ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
+
 from .ledger_errors import InvalidColumnException
 
 
