@@ -1,3 +1,4 @@
+# pylint: disable= line-too-long
 import unittest
 
 from credmark.cmf.engine.model_unittest import ModelTestCase
