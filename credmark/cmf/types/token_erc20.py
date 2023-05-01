@@ -349,8 +349,7 @@ class NativeToken(Token):
             balance = context.web3.eth.get_balance(address)
             return balance
         else:
-            raise ModelRunError(
-                f'Not supported for chain id: {context.chain_id}')
+            raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
 
     def balance_of_scaled(self, address: ChecksumAddress) -> float:
         context = credmark.cmf.model.ModelContext.current_context()
@@ -358,8 +357,7 @@ class NativeToken(Token):
             balance = self.balance_of(address)
             return float(context.web3.fromWei(balance, 'ether'))
         else:
-            raise ModelRunError(
-                f'Not supported for chain id: {context.chain_id}')
+            raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
 
     @property
     def ledger(self) -> None:

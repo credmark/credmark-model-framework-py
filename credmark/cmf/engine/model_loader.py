@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 import importlib
 import importlib.util
 import inspect
@@ -255,8 +257,7 @@ class ModelLoader:
 
         self.__model_manifest_list = [
             m for m in self.__model_manifest_list if m['slug'] != slug]
-        self.__model_manifest_list_with_class = \
-            [m for m in self.__model_manifest_list_with_class if m['slug'] != slug]
+        self.__model_manifest_list_with_class = [m for m in self.__model_manifest_list_with_class if m['slug'] != slug]
 
     def _add_model_class(self, model_class: Type[Model]):
         slug = model_class.slug

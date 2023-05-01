@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 import json
 import logging
 import sys
@@ -285,8 +287,7 @@ class EngineModelContext(ModelContext):
                                transform_output_to_dict=True):
         chain_id = context.chain_id
         block_number = int(context.block_number)
-        block_timestamp = context.block_number.timestamp \
-            if context.block_number.is_timestamp_loaded else None
+        block_timestamp = context.block_number.timestamp if context.block_number.is_timestamp_loaded else None
 
         try:
             ModelContext.set_current_context(context)
@@ -432,8 +433,7 @@ class EngineModelContext(ModelContext):
         return slug in self.use_local_models_slugs
 
     def _favor_local_model_for_slug(self, slug: str):
-        return '*' in self.use_local_models_slugs or \
-            slug in self.use_local_models_slugs
+        return '*' in self.use_local_models_slugs or slug in self.use_local_models_slugs
 
     def _use_no_local_model(self):
         return '-' in self.use_local_models_slugs

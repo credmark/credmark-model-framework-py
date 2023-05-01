@@ -105,10 +105,8 @@ def create_cmf_context(cmf_param, display_params=False):
     except JSONDecodeError:
         provider_from_environment = {}
 
-    cmf_param['chain_to_provider_url'] = \
-        provider_from_dotenv \
-        | provider_from_environment \
-        | cmf_param.get('chain_to_provider_url', {})
+    cmf_param['chain_to_provider_url'] = provider_from_dotenv | provider_from_environment | cmf_param.get(
+        'chain_to_provider_url', {})
 
     for k, v in CREDMARK_PUBLIC_PROVIDERS.items():
         if k not in cmf_param['chain_to_provider_url']:

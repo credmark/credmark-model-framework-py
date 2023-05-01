@@ -331,9 +331,9 @@ class ConsoleModel(Model):
 
         if len(self.blocks) == 1:
             banner1 = f'Entering Credmark Model Console at block {self.context.block_number}.'
-            banner2 = 'Help: help(), Quit: quit()\n' \
-                'Available vars: context, models, ledger, web3, etc.\n' \
-                'Available types: BlockNumber, Address, Contract, Token...\n'
+            banner2 = ('Help: help(), Quit: quit()\n'
+                       'Available vars: context, models, ledger, web3, etc.\n'
+                       'Available types: BlockNumber, Address, Contract, Token...\n')
             exit_msg = f'\nExiting Credmark Model Console at block {self.context.block_number}. '
         else:
             banner1 = f'\nSwitching context to block {self.context.block_number}.'

@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 from abc import abstractmethod
 from contextvars import ContextVar, Token
 from typing import Any, Type, TypeVar, Union, overload
@@ -188,8 +190,7 @@ class ModelContext:
         """
         if self._web3 is None:
             self._web3 = self._web3_registry.web3_for_chain_id(self.chain_id)
-            self._web3.eth.default_block = self.block_number if \
-                self.block_number is not None else 'latest'
+            self._web3.eth.default_block = self.block_number if self.block_number is not None else 'latest'
         return self._web3
 
     @property

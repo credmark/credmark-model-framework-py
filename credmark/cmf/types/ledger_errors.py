@@ -15,8 +15,8 @@ class InvalidColumnException(ModelRunError):
         super().__init__(message)
 
     def __str__(self):
-        return f'Column {self.name} not a valid column for {self.model_slug}. ' \
-            f' It must be in: {self.column_list}'
+        return (f'Column {self.name} not a valid column for {self.model_slug}. '
+                f' It must be in: {self.column_list}')
 
 
 class InvalidQueryException(ModelRunError):
