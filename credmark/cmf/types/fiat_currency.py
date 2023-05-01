@@ -38,12 +38,10 @@ class FiatCurrency(Account):
                     self._meta.symbol = fiat_meta["symbol"]
                     self._meta.name = fiat_meta["name"]
                 else:
-                    raise ModelDataError(
-                        f'Mismatch {symbol}/{address} for '
-                        f'{fiat_meta["symbol"]}/{fiat_meta["address"]}')
+                    raise ModelDataError(f'Mismatch {symbol}/{address} for '
+                                         f'{fiat_meta["symbol"]}/{fiat_meta["address"]}')
             elif address is None:
-                raise ModelDataError(
-                    f'{symbol} is not added for fiat currency.')
+                raise ModelDataError(f'{symbol} is not added for fiat currency.')
 
         if address is not None:
             fiat_meta = FIAT_CURRENCY_DATA_BY_ADDRESS.get(address, None)
@@ -53,15 +51,12 @@ class FiatCurrency(Account):
                     self._meta.symbol = fiat_meta["symbol"]
                     self._meta.name = fiat_meta["name"]
                 else:
-                    raise ModelDataError(
-                        f'Mismatch {symbol}/{address} for '
-                        f'{fiat_meta["symbol"]}/{fiat_meta["address"]}')
+                    raise ModelDataError(f'Mismatch {symbol}/{address} for '
+                                         f'{fiat_meta["symbol"]}/{fiat_meta["address"]}')
             elif symbol is None:
-                raise ModelDataError(
-                    f'{address} is not added for fiat currency.')
+                raise ModelDataError(f'{address} is not added for fiat currency.')
             else:
-                raise ModelDataError(
-                    f'{symbol}/{address} is not added for fiat currency.')
+                raise ModelDataError(f'{symbol}/{address} is not added for fiat currency.')
 
     @property
     def symbol(self):

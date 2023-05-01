@@ -42,8 +42,8 @@ def main():  # pylint: disable=too-many-statements
     parser.add_argument('--log_file', default=None, required=False,
                         help='log file to write')
     parser.add_argument('--model_path', default="models", required=False,
-                        help='Semicolon separated paths to the model folders \
-                            (or parent) or model python file. Defaults to models folder.')
+                        help=('Semicolon separated paths to the model folders'
+                              '(or parent) or model python file. Defaults to models folder.'))
     parser.add_argument('--manifest_file', type=str, default='models.json',
                         help='Name of the built manifest file. Defaults to models.json. '
                         '[Not required during development]')

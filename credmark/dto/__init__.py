@@ -147,8 +147,7 @@ class IntDTO(int):
             return cls(i)
         if isinstance(i, dict):
             return cls(**i)
-        raise TypeError(
-            f'{cls.__name__} must be deserialized with an int or dict')
+        raise TypeError(f'{cls.__name__} must be deserialized with an int or dict')
 
     def __new__(cls, value: int, **_kwargs):
         return super().__new__(cls, value)
@@ -191,8 +190,7 @@ class FloatDTO(float):
             return cls(i)
         if isinstance(i, dict):
             return cls(**i)
-        raise TypeError(
-            f'{cls.__name__} must be deserialized with an float or dict')
+        raise TypeError(f'{cls.__name__} must be deserialized with an float or dict')
 
     def __new__(cls, value: float, **_kwargs):
         return super().__new__(cls, value)
@@ -235,8 +233,7 @@ class StrDTO(str):
             return cls(i)
         if isinstance(i, dict):
             return cls(**i)
-        raise TypeError(
-            f'{cls.__name__} must be deserialized with a str or dict')
+        raise TypeError(f'{cls.__name__} must be deserialized with a str or dict')
 
     def __new__(cls, value: str, **_kwargs):
         return super().__new__(cls, value)

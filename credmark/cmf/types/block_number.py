@@ -123,10 +123,8 @@ class BlockNumber(IntDTO):
                  timestamp: Union[Timestamp, None] = None,
                  sampleTimestamp: Union[Timestamp, None] = None) -> None:
         if isinstance(number, BlockNumber):
-            self._timestamp = number._timestamp if timestamp is None \
-                else timestamp
-            self._sample_timestamp = number._sample_timestamp if sampleTimestamp is None \
-                else sampleTimestamp
+            self._timestamp = number._timestamp if timestamp is None else timestamp
+            self._sample_timestamp = number._sample_timestamp if sampleTimestamp is None else sampleTimestamp
         else:
             self._timestamp = timestamp
             self._sample_timestamp = sampleTimestamp

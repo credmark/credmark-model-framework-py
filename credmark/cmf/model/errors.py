@@ -20,15 +20,13 @@ class ModelCallStackEntry(DTO):
     chainId: Optional[int] = DTOField(None, description='Context chain id')
     """
     """
-    blockNumber: Optional[int] = DTOField(
-        None, description='Context block number')
+    blockNumber: Optional[int] = DTOField(None, description='Context block number')
     """
     """
     input: Optional[Any] = DTOField(None, description='Context input')
     """
     """
-    trace: Optional[str] = DTOField(
-        None, description='Trace of code that generated the error')
+    trace: Optional[str] = DTOField(None, description='Trace of code that generated the error')
     """
     """
 
@@ -56,8 +54,7 @@ class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
         [], description='Model call stack. Last element is the model that raised the error.')
     """
     """
-    code: str = DTOField(
-        'generic', description='Short identifier for the type of error')
+    code: str = DTOField('generic', description='Short identifier for the type of error')
     """
     """
     detail: Union[DetailDTOClass, None] = DTOField(
@@ -65,8 +62,7 @@ class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
     """
     """
     permanent: bool = DTOField(
-        False,
-        description='If true, the error will always give the same result for the same context.')
+        False, description='If true, the error will always give the same result for the same context.')
     """
     """
 
@@ -363,8 +359,8 @@ class ModelNotFoundError(ModelEngineError):
 
     @classmethod
     def create(cls, slug: str, version: Union[str, None], message: Union[str, None] = None):
-        message = f'Missing model "{slug}" version {version if version is not None else "any"}' \
-            + ('. ' + message if message is not None else '')
+        message = (f'Missing model "{slug}" version {version if version is not None else "any"}.'
+                   f'{(" " + message) if message is not None else ""}')
         return ModelNotFoundError(message=message,
                                   detail=SlugAndVersionDTO(slug=slug, version=version))
 

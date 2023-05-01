@@ -117,8 +117,7 @@ class ModelApi:
                   run_id: Union[str, None] = None,
                   depth: Union[int, None] = None,
                   client: Union[str, None] = None,
-                  raise_error_results=False) -> \
-        tuple[
+                  raise_error_results=False) -> tuple[
             str, str,
             Union[dict[str, Any], None],
             Union[dict[str, Any], None],
@@ -165,12 +164,7 @@ class ModelApi:
                 raise ModelRunRequestError(
                     f'Model {slug} run request response missing both output and error', str(201))
 
-            return \
-                resp_obj['slug'],\
-                resp_obj['version'],\
-                resp_obj.get('output'),\
-                resp_obj.get('error'),\
-                resp_obj['dependencies']
+            return resp_obj['slug'], resp_obj['version'], resp_obj.get('output'), resp_obj.get('error'), resp_obj['dependencies']
 
         except requests.exceptions.ConnectionError as err:
             logger.error(
