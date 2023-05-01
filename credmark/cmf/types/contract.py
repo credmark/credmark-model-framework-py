@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 import json
 from typing import List, Optional, Sequence, Union
 

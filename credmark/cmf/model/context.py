@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 from abc import abstractmethod
 from contextvars import ContextVar, Token
 from typing import Any, Type, TypeVar, Union, overload

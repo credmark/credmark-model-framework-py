@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 import logging
 from typing import Any, Generic, List, Optional, Type, TypeVar, Union
 

@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 import logging
 import os
 from typing import Any, ClassVar, Union

@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 from datetime import datetime, timezone
 from typing import Any, Dict, Union
 
