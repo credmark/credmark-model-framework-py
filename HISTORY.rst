@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.100 [2023-05-01]
+* fix: exclude group by columns if already in aggregates
+
 0.8.99 [2023-04-28]
 * chore: lint with ruff
 
