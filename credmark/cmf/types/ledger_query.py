@@ -51,6 +51,8 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                          aggregates: Union[List[Tuple[str, str]], None] = None,
                          having: Union[str, None] = None) -> dict:
 
+        aggregates_names = [agg[0] for agg in aggregates] if aggregates else []
+
         if group_by is not None:
             if columns == []:
                 columns = None
@@ -60,7 +62,7 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                     (f'{model_slug} call with group_by will need the columns to be '
                      'empty [] or None.'))
             columns = [c for c in group_by
-                       if c in self.columns]  # type: ignore
+                       if c in self.columns and c not in aggregates_names]  # type: ignore
 
         if not columns and not aggregates:
             raise InvalidQueryException(
