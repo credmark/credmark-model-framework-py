@@ -236,14 +236,14 @@ class ModelRunCache(SqliteDB):
                 self._logger.info('No case for overwriting cache: '
                                   f'{chain_id}/{block_number}/{(slug, version)}/{input}/')
 
-        result = dict(chain_id=chain_id,
-                      block_number=block_number,
-                      slug=slug,
-                      version=version,
-                      input=input.copy(),
-                      output=output.copy() if output is not None else None,
-                      dependencies=dependencies.copy(),
-                      errors=errors.copy() if errors is not None else None)
+        result = {'chain_id': chain_id,
+                  'block_number': block_number,
+                  'slug': slug,
+                  'version': version,
+                  'input': input.copy(),
+                  'output': output.copy() if output is not None else None,
+                  'dependencies': dependencies.copy(),
+                  'errors': errors.copy() if errors is not None else None}
 
         if slug != 'contract.metadata':
             if self._trace:
