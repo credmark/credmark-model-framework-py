@@ -1,4 +1,5 @@
 # pylint:disable=too-many-arguments
+
 import hashlib
 import json
 import logging
@@ -6,12 +7,7 @@ import sqlite3
 import zlib
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
-from sqlitedict import SqliteDict
-from sqlitedict import logger as sqlitedict_logger
-
 from credmark.dto.encoder import json_dumps
-
-sqlitedict_logger.setLevel(logging.ERROR)
 
 
 class Singleton:
@@ -83,32 +79,9 @@ class SqliteDB:
     _stats = {'total': 0, 'hit': 0, 'miss': 0, 'exclude': 0, 'new': 0}
     _enabled = True
 
-    def __init__(self, db_uri, tablename, flag='c',
-                 db_base_uris: Optional[List[str]] = None, outer_stack=True):
-        self._db = SqliteDict(db_uri, outer_stack=outer_stack, flag=flag,
-                              autocommit=True, tablename=tablename,
-                              encode=my_encode, decode=my_decode)
-
-        if db_base_uris is not None:
-            self._db_base = [SqliteDict(db_base_uri, outer_stack=outer_stack, flag='r',
-                                        tablename=tablename,
-                                        encode=my_encode, decode=my_decode)
-                             for db_base_uri in db_base_uris]
-        else:
-            self._db_base = None
-
+    def __init__(self):
+        self._db = {}
         self._logger = logging.getLogger(self.__class__.__name__)
-
-    def close(self):
-        self._db.commit(blocking=False)
-        self._db.close()
-
-    def commit(self):
-        self._db.commit(blocking=False)
-
-    def __del__(self):
-        if self._db.filename != ':memory:':
-            self.commit()
 
     def encode(self, key):
         return hashlib.sha256(key.encode('utf-8')).hexdigest()
@@ -141,10 +114,8 @@ class SqliteDB:
 
 
 class ModelRunCache(SqliteDB):
-    def __init__(self, db_uri=':memory:', flag='c',
-                 db_base_uris: Optional[List[str]] = None, enabled=True):
-        super().__init__(db_uri=db_uri, tablename='model_run_cache',
-                         flag=flag, db_base_uris=db_base_uris)
+    def __init__(self, enabled=True):
+        super().__init__()
         self._enabled = enabled
 
     @property
@@ -152,18 +123,7 @@ class ModelRunCache(SqliteDB):
         return self._stats
 
     def __getitem__(self, key):
-        try:
-            return self._db.__getitem__(key)
-        except Exception as _err:
-            if self._db_base is None:
-                raise _err
-
-            for d in self._db_base:
-                try:
-                    return d.__getitem__(key)
-                except Exception:
-                    pass
-            raise _err
+        return self._db.__getitem__(key)
 
     def __setitem__(self, key, value):
         return self._db.__setitem__(key, value)
@@ -185,32 +145,18 @@ class ModelRunCache(SqliteDB):
 
     def keys(self):
         yield from self._db.keys()
-        if self._db_base is not None:
-            for d in self._db_base:
-                yield from d.keys()
 
     def items(self):
         yield from self._db.items()
-        if self._db_base is not None:
-            for d in self._db_base:
-                yield from d.items()
 
     def __iter__(self):
-        yield from self._db.iterkeys()
-        if self._db_base is not None:
-            for d in self._db_base:
-                yield from d.iterkeys()
+        yield from self._db.__iter__()
 
     def values(self):
         yield from self._db.values()
-        if self._db_base is not None:
-            for d in self._db_base:
-                yield from d.values()
 
     def __len__(self):
-        return (self._db.__len__() +
-                (0 if self._db_base is None
-                else sum(len(d) for d in self._db_base)))
+        return self._db.__len__()
 
     def slugs(self,
               is_v: Callable[[Any], bool] = (lambda _: True)
@@ -218,12 +164,6 @@ class ModelRunCache(SqliteDB):
         for k, v in self._db.items():
             if is_v(v):
                 yield (v['slug'], v['version'], v['block_number'], k)
-
-        if self._db_base is not None:
-            for d in self._db_base:
-                for k, v in d.items():
-                    if is_v(v):
-                        yield (v['slug'], v['version'], v['block_number'], k)
 
     def block_numbers(self):
         block_numbers = set()
@@ -248,7 +188,8 @@ class ModelRunCache(SqliteDB):
         return super().encode(repr((slug, version, chain_id, block_number, input)))
 
     def get(self, chain_id, block_number,
-            slug, version, input) -> Tuple[Optional[str], Tuple[Dict, Any, Dict]]:
+            slug, version, input) -> \
+            Tuple[Optional[str], Tuple[Optional[Dict], Optional[Dict], Dict]]:
         if not self._enabled:
             return None, ({}, None, {})
 
@@ -259,12 +200,6 @@ class ModelRunCache(SqliteDB):
         key = self.encode_run_key(chain_id, block_number, slug, version, input)
         needle = self._db.get(key, None)
         if needle is None:
-            if self._db_base is not None:
-                for d in self._db_base:
-                    needle = d.get(key, None)
-                    if needle is not None:
-                        break
-
             if needle is None:
                 if self._trace:
                     self._logger.info(f'[{self.__class__.__name__}] Not found: '
@@ -284,9 +219,12 @@ class ModelRunCache(SqliteDB):
         assert needle['version'] == version
         assert needle['input'] == input
 
-        return key, (needle['output'],
-                     needle.get('errors', None),
-                     needle.get('dependencies', {}))
+        output = needle['output']
+        errors = needle.get('errors')
+        depends = needle.get('dependencies', {})
+        return key, (output.copy() if output is not None else None,
+                     errors.copy() if errors is not None else None,
+                     depends.copy())
 
     def put(self, chain_id, block_number, slug, version, input, output, dependencies, errors=None):
         if not self._enabled or slug in self.exclude_slugs:
@@ -296,20 +234,16 @@ class ModelRunCache(SqliteDB):
         if key in self._db:
             if self._trace:
                 self._logger.info('No case for overwriting cache: '
-                                  f'{chain_id}/{block_number}/{(slug, version)}/{input}/'
-                                  f'{self._db.filename=}')
+                                  f'{chain_id}/{block_number}/{(slug, version)}/{input}/')
 
-        if self._db_base is not None:
-            for d in self._db_base:
-                if key in d:
-                    if self._trace:
-                        self._logger.info('No case for overwriting cache: '
-                                          f'{chain_id}/{block_number}/{(slug, version)}/{input}/'
-                                          f'{self._db.filename=}')
-
-        result = dict(chain_id=chain_id, block_number=block_number,
-                      slug=slug, version=version, input=input, output=output,
-                      dependencies=dependencies, errors=errors)
+        result = dict(chain_id=chain_id,
+                      block_number=block_number,
+                      slug=slug,
+                      version=version,
+                      input=input.copy(),
+                      output=output.copy() if output is not None else None,
+                      dependencies=dependencies.copy(),
+                      errors=errors.copy() if errors is not None else None)
 
         if slug != 'contract.metadata':
             if self._trace:

@@ -51,7 +51,6 @@ requests==2.27.1
 rlp==2.0.1
 rsa==4.8
 six==1.16.0
-sqlitedict>=2.0.0
 toolz==0.11.2
 typing_extensions>=4.1
 urllib3==1.26.8
