@@ -4,6 +4,7 @@ History
 -------
 0.8.100 [2023-05-01]
 * fix: exclude group by columns if already in aggregates
+* opt: remove sqlitedict (added from 0.8.33)
 
 0.8.99 [2023-04-28]
 * chore: lint with ruff
@@ -240,7 +241,6 @@ History
 0.8.33 [2022-08-14]
 * Improve local cache with Sqlitedict (#152), allow multiple readonly base cache (#153) and type annotation (#154)
 * Create function for ipython extension (#152)
-
 
 0.8.32 [2022-08-10]
 * Make models call available to Account/Contract/Token (#150)

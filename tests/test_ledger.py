@@ -82,10 +82,10 @@ class TestLedger(ModelTestCase):
     def test_aggregate(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
+        print('test_aggregate: Transactions')
         with context.ledger.Transaction as oo:
             df = oo.select(
-                aggregates=[
-                    (oo.MAX_FEE_PER_GAS.sum_(), 'sum_gas')],
+                aggregates=[(oo.MAX_FEE_PER_GAS.sum_(), 'sum_gas')],
                 limit=5,
                 where=oo.BLOCK_TIMESTAMP.gt(
                     oo.field(int(get_dt(2022, 3, 1).timestamp())).to_timestamp()),
@@ -97,24 +97,22 @@ class TestLedger(ModelTestCase):
     def test_op(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
+        print('test_op: Transactions')
         # force = True
         with context.ledger.Transaction as oo:
-
             # change the last e => E with force shall return 0 rows
             df = oo.select(
                 aggregates=[(oo.GAS_PRICE.sum_(), 'sum_gas_price')],
-                where=oo.HASH.eq(
-                    '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261dE',
-                    case_sensitive=True),
+                where=oo.HASH.eq('0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261dE',
+                                 case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] == 0)
 
             # restore the last E => e with force to return 1 row
             df = oo.select(
                 aggregates=[(oo.GAS_PRICE.sum_(), 'sum_gas_price')],
-                where=oo.HASH.eq(
-                    '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de',
-                    case_sensitive=True),
+                where=oo.HASH.eq('0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de',
+                                 case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             print(df)
             self.assertTrue(df.shape[0] == 1)
@@ -122,27 +120,23 @@ class TestLedger(ModelTestCase):
             # in with str_lower
             # Change the last e => E with force shall return 0 rows
             df = oo.select(
-                where=oo.HASH.in_(
-                    ['0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261dE'],
-                    case_sensitive=True),
+                where=oo.HASH.in_(['0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261dE'],
+                                  case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] == 0)
 
             # in with str_lower
             # restore the last E => e with force to return 1 row
             df = oo.select(
-                where=oo.HASH.in_(
-                    ['0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de'],
-                    case_sensitive=True),
+                where=oo.HASH.in_(['0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de'],
+                                  case_sensitive=True),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             print(df)
             self.assertTrue(df.shape[0] > 0)
 
             # in with number with str_lower True/False
             df = oo.select(
-                where=oo.BLOCK_NUMBER.in_(
-                    [6949017, 13949017], case_sensitive=True),
-                group_by=[oo.HASH, oo.BLOCK_NUMBER],
+                where=oo.BLOCK_NUMBER.in_([6949017, 13949017], case_sensitive=True), group_by=[oo.HASH, oo.BLOCK_NUMBER],
                 bigint_cols=[oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
             self.assertTrue(6949017 in df.block_number.unique())
@@ -197,13 +191,13 @@ class TestLedger(ModelTestCase):
     def test_group_by(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
+        print('test_group_by')
         with context.ledger.Transaction as oo:
             # tx on block 6949017
             df = oo.select(
                 aggregates=[(oo.GAS_PRICE.sum_(), 'sum_gas_price')],
-                where=oo.HASH.eq(
-                    '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de').and_(
-                        oo.BLOCK_NUMBER.lt(12407891)
+                where=oo.HASH.eq('0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de').and_(
+                    oo.BLOCK_NUMBER.lt(12407891)
                 ),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER]).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
@@ -211,14 +205,12 @@ class TestLedger(ModelTestCase):
             # pylint:disable=line-too-long
             df = oo.select(
                 aggregates=[(oo.GAS_PRICE.sum_(), 'sum_gas_price')],
-                where=oo.HASH.gt(
-                    '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de').and_(
-                        oo.BLOCK_NUMBER.ge(5407891)),
+                where=oo.HASH.gt('0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de').and_(
+                    oo.BLOCK_NUMBER.ge(5407891)),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER],
                 having=(
                     oo.HASH.eq('0xb42b73e2b4dd8ce98604b1cd89ce3547642b6dd6ad85de4cf70ca164c195e636').or_(
-                        oo.HASH.eq(
-                            '0xd220614b63795c5e43868010c70359dca12ad1e918efa687d143d21b90c0a72a')
+                        oo.HASH.eq('0xd220614b63795c5e43868010c70359dca12ad1e918efa687d143d21b90c0a72a')
                     ))).to_dataframe()
             self.assertTrue(df.shape[0] >= 2)
 
@@ -237,6 +229,7 @@ class TestLedger(ModelTestCase):
     def test_ledger_txn(self):
         context = credmark.cmf.model.ModelContext.current_context()
 
+        print('test_ledger_txn')
         # oo.NONCE
         with self.assertRaises(InvalidQueryException):
             with context.ledger.Transaction as oo:
@@ -246,9 +239,8 @@ class TestLedger(ModelTestCase):
         with context.ledger.Transaction as oo:
             df = oo.select(
                 columns=oo.columns,
-                where=oo.HASH.gt(
-                    '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de').and_(
-                        oo.BLOCK_NUMBER.gt(13000000)
+                where=oo.HASH.gt('0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de').and_(
+                    oo.BLOCK_NUMBER.gt(13000000)
                 ),
                 order_by=oo.TRANSACTION_INDEX.desc().comma_(oo.TO_ADDRESS.asc())).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
@@ -256,9 +248,8 @@ class TestLedger(ModelTestCase):
             df = oo.select(
                 columns=oo.columns,
                 where=(
-                    oo.HASH.gt(
-                        '0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de').and_(
-                            oo.BLOCK_NUMBER.gt(11586809)))).to_dataframe()
+                    oo.HASH.gt('0x972a0eb7442f2d9393b0fa165eed419e3b9d142fab2d6803b8bcf45719d261de').and_(
+                        oo.BLOCK_NUMBER.gt(11586809)))).to_dataframe()
             self.assertTrue(df.shape[0] > 0)
 
             df = oo.select(
@@ -306,6 +297,7 @@ class TestLedger(ModelTestCase):
 
         block_20220101 = get_block(get_dt(2022, 1, 1))
 
+        print('test_ledger_tables')
         with context.ledger.Contract as oo:
             df = oo.select(columns=oo.columns, limit=5, order_by=oo.ADDRESS,
                            where=oo.BLOCK_NUMBER.gt(13000000)).to_dataframe()

@@ -87,11 +87,8 @@ class EngineModelContext(ModelContext):
     _model_manifest_map: dict[str, dict] = {}
     _model_underscore_manifest_map: dict[str, dict] = {}
 
-    def reset_cache(self, db_uri: str = ':memory:',
-                    flag: str = 'c',
-                    db_base_uris: Optional[List[str]] = None):
-        self.__model_cache = ModelRunCache(
-            db_uri=db_uri, flag=flag, db_base_uris=db_base_uris)
+    def reset_cache(self):
+        self.__model_cache = ModelRunCache()
 
     @property
     def model_cache(self):
@@ -177,8 +174,7 @@ class EngineModelContext(ModelContext):
                 cls.logger.debug(f'Using local models {local_model_slugs}')
             else:
                 if len(local_model_slugs) > 1:
-                    cls.logger.warning(
-                        f'Using no local models (conflicting args: {use_local_models})')
+                    cls.logger.warning(f'Using no local models (conflicting args: {use_local_models})')
                 else:
                     cls.logger.debug('Using no local models')
             cls.use_local_models_slugs.update(local_model_slugs)
@@ -186,9 +182,8 @@ class EngineModelContext(ModelContext):
         if cls.dev_mode and '-' not in cls.use_local_models_slugs:
             cls.use_local_models_slugs.update(
                 model_loader.loaded_dev_model_slugs())
-            cls.logger.debug(
-                'Using local models (requested + dev models): '
-                f'{cls.use_local_models_slugs}')
+            cls.logger.debug('Using local models (requested + dev models): '
+                             f'{cls.use_local_models_slugs}')
 
         if block_number is None:
             # Lookup latest block number if none specified
@@ -397,8 +392,7 @@ class EngineModelContext(ModelContext):
                 try:
                     deployed_manifests = self.__api.get_models()
                     for m in deployed_manifests:
-                        m |= {'mclass': self.__model_loader.get_model_class(
-                            m['slug'], m['version'])}
+                        m |= {'mclass': self.__model_loader.get_model_class(m['slug'], m['version'])}
                         slug = m['slug']
                         self._model_manifest_map[slug] = m
                         self._model_underscore_manifest_map[slug.replace(
@@ -551,8 +545,7 @@ class EngineModelContext(ModelContext):
 
         try:
             if self.__depth >= self.max_run_depth:
-                raise MaxModelRunDepthError(
-                    f'Max model run depth hit {self.__depth}')
+                raise MaxModelRunDepthError(f'Max model run depth hit {self.__depth}')
 
             return self._run_model_with_class(
                 slug,
@@ -763,8 +756,7 @@ class EngineModelContext(ModelContext):
 
         try:
             try:
-                input = transform_data_for_dto(
-                    input, model_class.inputDTO, slug, 'input')
+                input = transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
             except DataTransformError as err:
                 # We convert to an input error here to distinguish
                 # from output transform errors below

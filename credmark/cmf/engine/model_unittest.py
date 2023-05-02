@@ -69,6 +69,9 @@ class ModelTestContextFactory:
             'test', 0, self.model_loader, model_cache,
             self.api, is_top_level=True)
 
+        context.__dict__['original_input'] = {}
+        context.__dict__['slug'] = 'test'
+
         ModelContext.set_current_context(context)
 
         return context
@@ -150,7 +153,7 @@ class ModelTestCase(unittest.TestCase):
 
     def create_model_context(self,
                              chain_id: int = 1,
-                             block_number: int = 15260851,
+                             block_number: int = 15_260_851,
                              mocks: Union[ModelMockConfig, None] = None):
         """
         Create a new model context and set it as the current context.
