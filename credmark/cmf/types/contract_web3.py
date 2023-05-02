@@ -61,7 +61,7 @@ def fetch_events(
 
     # Set up any indexed event filters if needed
     argument_filters = {} if argument_filters is None else argument_filters
-    _filters = dict(**argument_filters)
+    _filters = {**argument_filters}
 
     if by_range is None:
         _data_filter_set, event_filter_params = construct_event_filter_params(
