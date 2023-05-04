@@ -334,30 +334,24 @@ class NativeToken(Token):
                 f'Wrong address {address} specified for {token_data["address"]} '
                 f'for chain id: {context.chain_id}')
         super().__init__(**({'address': token_data['address']}))
-        if context.chain_id == 1:
-            self._meta.abi = ABI([])
-            self._meta.symbol = token_data['symbol']
-            self._meta.name = token_data['name']
-            self._meta.decimals = token_data['decimals']
-            self._meta.wrapped = Address(token_data['wrapped'])
-            self._meta.total_supply = 0
-            self._loaded = True
+
+        self._meta.abi = ABI([])
+        self._meta.symbol = token_data['symbol']
+        self._meta.name = token_data['name']
+        self._meta.decimals = token_data['decimals']
+        self._meta.wrapped = Address(token_data['wrapped'])
+        self._meta.total_supply = 0
+        self._loaded = True
 
     def balance_of(self, address: ChecksumAddress) -> int:
         context = credmark.cmf.model.ModelContext.current_context()
-        if context.chain_id == 1:
-            balance = context.web3.eth.get_balance(address)
-            return balance
-        else:
-            raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
+        balance = context.web3.eth.get_balance(address)
+        return balance
 
     def balance_of_scaled(self, address: ChecksumAddress) -> float:
         context = credmark.cmf.model.ModelContext.current_context()
-        if context.chain_id == 1:
-            balance = self.balance_of(address)
-            return float(context.web3.fromWei(balance, 'ether'))
-        else:
-            raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
+        balance = self.balance_of(address)
+        return float(context.web3.fromWei(balance, 'ether'))
 
     @property
     def ledger(self) -> None:
