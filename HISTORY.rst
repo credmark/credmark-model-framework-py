@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.101 [2023-05-04]
+* feat: enable multi chain in token
+
 0.8.100 [2023-05-01]
 * fix: exclude group by columns if already in aggregates
 * opt: remove sqlitedict (added from 0.8.33)
