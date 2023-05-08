@@ -213,9 +213,9 @@ class Models:
              'input': json_dumps(model_input),
              'lookupType': lookup_type.value})
 
-        if ('blockNumber' in prev_run and prev_run['blockNumber'] is not None and
-                int(prev_run['blockNumber']) <= self.__context.block_number and
-                prev_run['result'] is not None):
+        if ('blockNumber' in prev_run and
+            prev_run['blockNumber'] is not None and
+            prev_run['result'] is not None):
             try:
                 return prev_run
             except ModelDataError:
