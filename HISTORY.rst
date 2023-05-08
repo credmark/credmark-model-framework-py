@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.102 [2023-05-08]
+* feat: enrich context.models object with list() and get_result()
+
 0.8.101 [2023-05-04]
 * feat: enable multi chain in token
 
