@@ -83,15 +83,6 @@ class TestCurrency(ModelTestCase):
         self.assertEqual(token.name, 'Credmark')
         self.assertFalse(token.fiat)
 
-        btc_token = Currency(symbol='BTC')
-        self.assertTrue(isinstance(btc_token, Token))
-        self.assertFalse(isinstance(btc_token, NativeToken))
-        self.assertEqual(btc_token.symbol, "BTC")
-        self.assertEqual(btc_token.address, Address(
-            "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"))
-        self.assertEqual(btc_token.name, "Bitcoin")
-        self.assertFalse(btc_token.fiat)
-
         native_token = Currency(symbol='ETH')
         self.assertTrue(isinstance(native_token, NativeToken))
         self.assertEqual(native_token.symbol, "ETH")
@@ -124,6 +115,15 @@ class TestCurrency(ModelTestCase):
         self.assertEqual(native_token.address, Address(
             '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'))
         self.assertFalse(native_token.fiat)
+
+        btc_token = Currency(symbol='BTC')
+        self.assertTrue(isinstance(btc_token, Token))
+        self.assertFalse(isinstance(btc_token, NativeToken))
+        self.assertEqual(btc_token.symbol, "BTC")
+        self.assertEqual(btc_token.address, Address(
+            "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"))
+        self.assertEqual(btc_token.name, "Bitcoin")
+        self.assertFalse(btc_token.fiat)
 
 
 if __name__ == '__main__':

@@ -4,6 +4,8 @@ History
 -------
 0.8.102 [2023-05-08]
 * feat: enrich context.models object with list() and get_result()
+* feat: enable context.enter() for Contract and Token web3 calls
+* chore: turn off test_ledger.py for now
 
 0.8.101 [2023-05-04]
 * feat: enable multi chain in token

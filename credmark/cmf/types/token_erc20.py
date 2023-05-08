@@ -1,6 +1,6 @@
 # pylint: disable=line-too-long
 
-from typing import List, Union
+from typing import Any, List, Tuple, Union
 
 from eth_typing.evm import ChecksumAddress
 from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
@@ -66,6 +66,8 @@ class Token(Contract):
         decimals: Union[int, None] = None
         total_supply: Union[int, None] = None
         wrapped: Union[Address, None] = None
+        updated_at: dict[Tuple[str, int], Any] = {}
+        set_loaded: bool = False
 
     _meta: TokenMetadata = PrivateAttr(
         default_factory=lambda: Token.TokenMetadata())  # pylint: disable=unnecessary-lambda
@@ -158,6 +160,9 @@ class Token(Contract):
 
             if token_data.get('set_loaded', False):  # Special case for BTC
                 self._loaded = True
+                data['meta']['set_loaded'] = True
+            else:
+                data['meta']['set_loaded'] = False
 
         if data['address'] == Address.null():
             raise ModelDataError(
@@ -219,6 +224,10 @@ class Token(Contract):
     @property
     def symbol(self) -> str:
         self._load()
+        current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
+        if not self._meta.set_loaded:
+            self._meta.symbol = self._meta.updated_at.get(('symbol', current_block))
+
         if self._meta.symbol is None:
             try:
                 symbol_tmp = self.try_erc20_property('symbol')
@@ -232,22 +241,32 @@ class Token(Contract):
             elif not isinstance(symbol_tmp, str):
                 raise ModelDataError(f'Unknown value for symbol {symbol_tmp}')
             self._meta.symbol = symbol_tmp
+            self._meta.updated_at[('symbol', current_block)] = symbol_tmp
         return self._meta.symbol
 
     @property
     def decimals(self) -> int:
         self._load()
+        current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
+        if not self._meta.set_loaded:
+            self._meta.decimals = self._meta.updated_at.get(('decimals', current_block))
+
         if self._meta.decimals is None:
             try:
                 self._meta.decimals = self.try_erc20_property('decimals')
             except ModelDataError:
                 self._meta.decimals = self.try_erc20_property('DECIMALS')
+            self._meta.updated_at[('decimals', current_block)] = self._meta.decimals
 
         return self._meta.decimals
 
     @property
     def name(self) -> str:
         self._load()
+        current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
+        if not self._meta.set_loaded:
+            self._meta.name = self._meta.updated_at.get(('name', current_block))
+
         if self._meta.name is None:
             try:
                 name_tmp = self.try_erc20_property('name')
@@ -261,13 +280,19 @@ class Token(Contract):
             elif not isinstance(name_tmp, str):
                 raise ModelDataError(f'Unknown value for name {name_tmp}')
             self._meta.name = name_tmp
+            self._meta.updated_at[('name', current_block)] = name_tmp
         return self._meta.name
 
     @property
     def total_supply(self) -> int:
         self._load()
+        current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
+        if not self._meta.set_loaded:
+            self._meta.total_supply = self._meta.updated_at.get(('total_supply', current_block))
+
         if self._meta.total_supply is None:
             self._meta.total_supply = self.try_erc20_property('totalSupply')
+            self._meta.updated_at[('total_supply', current_block)] = self._meta.total_supply
         return self._meta.total_supply
 
     @property
@@ -352,6 +377,18 @@ class NativeToken(Token):
         context = credmark.cmf.model.ModelContext.current_context()
         balance = self.balance_of(address)
         return float(context.web3.fromWei(balance, 'ether'))
+
+    @property
+    def symbol(self):
+        return self._meta.symbol
+
+    @property
+    def name(self):
+        return self._meta.name
+
+    @property
+    def decimals(self):
+        return self._meta.decimals
 
     @property
     def ledger(self) -> None:
