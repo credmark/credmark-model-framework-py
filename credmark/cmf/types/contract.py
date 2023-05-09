@@ -1,12 +1,15 @@
 import json
-from typing import List, Optional, Union
+from typing import List, Optional, Sequence, Union
+
+from web3 import Web3
+from web3.contract.async_contract import AsyncContract as Web3AsyncContract
+from web3.contract.contract import Contract as Web3Contract
 
 import credmark.cmf.model
+
 # from credmark.cmf.engine.cache import ContractMetaCache
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
-from web3 import Web3
-from web3.contract.contract import Contract as Web3Contract
 
 from .abi import ABI
 from .account import Account
@@ -17,10 +20,12 @@ from .ledger_contract import ContractLedger
 
 SLOT_TRUEUSD = Web3.keccak(text="trueUSD.proxy.implementation").hex()
 SLOT_ZEPPELINOS = Web3.keccak(text='org.zeppelinos.proxy.implementation').hex()
-SLOT_EIP1967 = hex(int(Web3.keccak(text='eip1967.proxy.implementation').hex(), 16) - 1)
+SLOT_EIP1967 = hex(
+    int(Web3.keccak(text='eip1967.proxy.implementation').hex(), 16) - 1)
 SLOT_BEACON = hex(int(Web3.keccak(text='eip1967.proxy.beacon').hex(), 16) - 1)
 SLOT_PPROXY = hex(int(Web3.keccak(text='IMPLEMENTATION_SLOT').hex(), 16))
-SLOT_PROXYMANYTOONE = hex(int(Web3.keccak(text='IMPLEMENTATION_ADDRESS').hex(), 16) + 1)
+SLOT_PROXYMANYTOONE = hex(
+    int(Web3.keccak(text='IMPLEMENTATION_ADDRESS').hex(), 16) + 1)
 SLOT_ARA = hex(int(Web3.keccak(text='io.ara.proxy.implementation').hex(), 16))
 
 
@@ -33,7 +38,8 @@ def get_slot_proxy_address(context, contract_address,
             if contract_address == Address('0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B'):
                 cc = context.web3.eth.contract(address=Address(
                     contract_address).checksum, abi=contract_abi)
-                slot_proxy_address = Address(cc.functions.comptrollerImplementation().call())
+                slot_proxy_address = Address(
+                    cc.functions.comptrollerImplementation().call())
         elif contract_name in ['DelegateCallProxyManyToOne']:
             slot_proxy_address = Address(context.web3.eth.get_storage_at(
                 contract_address, SLOT_PROXYMANYTOONE))
@@ -49,15 +55,19 @@ def get_slot_proxy_address(context, contract_address,
             # EIP-897
             cc = context.web3.eth.contract(address=Address(
                 contract_address).checksum, abi=contract_abi)
+
             if cc.abi is not None and 'implementation' in cc.abi.functions:
-                slot_proxy_address = Address(cc.functions.implementation().call())
+                slot_proxy_address = Address(
+                    cc.functions.implementation().call())
         elif (contract_name == 'Delegator' and
                 contract_address == Address('0x1985365e9f78359a9B6AD760e32412f4a445E862')):
             cc = context.web3.eth.contract(address=Address(
                 contract_address).checksum, abi=contract_abi)
-            controller = Contract(address=Address(cc.functions.getController().call()))
+            controller = Contract(address=Address(
+                cc.functions.getController().call()))
             lookupName = cc.functions.controllerLookupName().call()
-            slot_proxy_address = Address(controller.functions.lookup(lookupName).call())
+            slot_proxy_address = Address(
+                controller.functions.lookup(lookupName).call())
         elif contract_name in ['OwnedUpgradeabilityProxy']:
             if contract_address == Address('0x0000000000085d4780B73119b644AE5ecd22b376'):
                 slot_proxy_address = Address(context.web3.eth.get_storage_at(
@@ -96,7 +106,8 @@ def get_slot_proxy_address(context, contract_address,
             cc = context.web3.eth.contract(address=Address(
                 contract_address).checksum, abi=contract_abi)
             if cc.abi is not None and 'getImplementation' in cc.abi.functions:
-                slot_proxy_address = Address(cc.functions.getImplementation().call())
+                slot_proxy_address = Address(
+                    cc.functions.getImplementation().call())
         elif contract_name in ['RenERC20Proxy',
                                'RenBTC',
                                'TransparentUpgradeableProxy',
@@ -140,7 +151,8 @@ class Contract(Account):
 
     _meta: ContractMetaData = PrivateAttr(
         default_factory=lambda: Contract.ContractMetaData())  # pylint: disable=unnecessary-lambda
-    _instance: Union[Web3Contract, None] = PrivateAttr(default=None)
+    _instance: Union[Web3Contract, Web3AsyncContract,
+                     None] = PrivateAttr(default=None)
     _proxy_implementation = PrivateAttr(default=None)
     _loaded = PrivateAttr(default=False)
     _ledger = PrivateAttr(default=None)
@@ -215,25 +227,29 @@ class Contract(Account):
             if self._meta.contract_name in ['BeaconProxy', 'BridgeToken'] and self._meta.is_transparent_proxy:
                 # TODO: Special case for BeaconProxy, proxy address may not up to date
                 proxy_address = res.get('implementation')
-                self._meta.proxy_implementation = Contract(address=proxy_address)
+                self._meta.proxy_implementation = Contract(
+                    address=proxy_address)
             else:
                 slot_proxy_address = get_slot_proxy_address(
                     context, self.address, self._meta.contract_name, self._meta.abi)
 
                 if slot_proxy_address is not None and not slot_proxy_address.is_null():
                     # TODO: as we only store the latest implementation in DB but not for the history.
-                    self._meta.proxy_implementation = Contract(address=slot_proxy_address)
+                    self._meta.proxy_implementation = Contract(
+                        address=slot_proxy_address)
                 elif self._meta.is_transparent_proxy:
                     proxy_address = res.get('implementation')
-                    self._meta.proxy_implementation = Contract(address=proxy_address)
+                    self._meta.proxy_implementation = Contract(
+                        address=proxy_address)
             self._loaded = True
         else:
             if self._meta.abi is None:
-                raise ModelDataError(f'abi not available for address {self.address}')
+                raise ModelDataError(
+                    f'abi not available for address {self.address}')
         self._loaded = True
 
     @ property
-    def instance(self) -> Web3Contract:
+    def instance(self) -> Union[Web3Contract, Web3AsyncContract]:
         """
         A web3 Web3Contract instance or raises a
         ``ModelDataError`` if no ABI is available.
@@ -419,6 +435,7 @@ class Contract(Account):
                 raise ModelRunError('Unable to obtain abi for the contract')
         return self._ledger
 
+    #pylint: disable=too-many-arguments
     def fetch_events(self,
                      event,
                      argument_filters=None,
@@ -426,7 +443,8 @@ class Contract(Account):
                      to_block=None,
                      address=None,
                      topics=None,
-                     contract_address=None):
+                     contract_address=None,
+                     argument_names: Optional[Sequence[str]] = None):
         """
         contract_address is by default set to the event's address.
 
@@ -465,7 +483,8 @@ class Contract(Account):
                             to_block,
                             address=address,
                             topics=topics,
-                            contract_address=contract_address)
+                            contract_address=contract_address,
+                            argument_names=argument_names)
 
 
 class ContractInfo(Contract):
@@ -477,5 +496,6 @@ class ContractInfo(Contract):
 
 
 class Contracts(IterableListGenericDTO[Contract]):
-    contracts: List[Contract] = DTOField(default=[], description="A List of Contracts")
+    contracts: List[Contract] = DTOField(
+        default=[], description="A List of Contracts")
     _iterator: str = PrivateAttr('contracts')

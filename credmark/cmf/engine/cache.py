@@ -307,9 +307,9 @@ class ModelRunCache(SqliteDB):
                                           f'{chain_id}/{block_number}/{(slug, version)}/{input}/'
                                           f'{self._db.filename=}')
 
-        result = dict(chain_id=chain_id, block_number=block_number,
-                      slug=slug, version=version, input=input, output=output,
-                      dependencies=dependencies, errors=errors)
+        result = {'chain_id': chain_id, 'block_number': block_number,
+                  'slug': slug, 'version': version, 'input': input, 'output': output,
+                  'dependencies': dependencies, 'errors': errors}
 
         if slug != 'contract.metadata':
             if self._trace:

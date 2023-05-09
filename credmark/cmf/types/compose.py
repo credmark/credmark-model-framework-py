@@ -82,10 +82,10 @@ class MapInputsOutput(IterableListGenericDTO[MapInputsResult[INPUTDTOCLS, DTOCLS
             return [[p.input,
                     p.output,
                     p.error]
-                    for p in self.results]
+                    for p in self]
         else:
             return [[p.input, *[f(p.output) for f in fields], p.error]
-                    for p in self.results]
+                    for p in self]
 
     def to_dataframe(self, fields: Optional[List[Tuple[str, Callable]]] = None) -> pd.DataFrame:
         """
@@ -149,11 +149,11 @@ class MapBlocksOutput(IterableListGenericDTO[MapBlockResult[DTOCLS]], Generic[DT
 
     def get(self, block_number=None, timestamp=None) -> Union[MapBlockResult[DTOCLS], None]:
         if block_number is not None:
-            return next((x for x in self.results if x.blockNumber == block_number), None)
+            return next((x for x in self if x.blockNumber == block_number), None)
         if timestamp is not None:
             return self.get(
                 block_number=max(s.blockNumber for s in
-                                 [s for s in self.results
+                                 [s for s in self
                                   if s.blockNumber.timestamp <= timestamp]))
         return None
 
@@ -169,13 +169,13 @@ class MapBlocksOutput(IterableListGenericDTO[MapBlockResult[DTOCLS]], Generic[DT
                     datetime.utcfromtimestamp(p.blockNumber.timestamp),
                     p.output,
                     p.error]
-                    for p in self.results]
+                    for p in self]
         else:
             return [([p.blockNumber,
                     datetime.utcfromtimestamp(p.blockNumber.timestamp)] +
                     [f(p.output) for f in fields] +
                     [p.error])
-                    for p in self.results]
+                    for p in self]
 
     def to_dataframe(self, fields: Optional[List[Tuple[str, Callable]]] = None) -> pd.DataFrame:
         """
