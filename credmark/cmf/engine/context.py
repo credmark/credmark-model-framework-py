@@ -702,10 +702,10 @@ class EngineModelContext(ModelContext):
         return slug, version, output
 
     def enter(self, block_number):
-        if self._block_number <= block_number:
+        if block_number > self._block_number:
             raise BlockNumberOutOfRangeError(
-                message=(f'You can not enter a context with a larger or equal block number '
-                         f'({block_number}) than the current context ({self._block_number}).'),
+                message=(
+                    f'You can not enter a context with a larger block number ({block_number} > current {self._block_number})'),
                 detail=BlockNumberOutOfRangeDetailDTO(
                     blockNumber=block_number,
                     maxBlockNumber=self._block_number))

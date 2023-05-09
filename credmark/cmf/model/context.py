@@ -93,7 +93,7 @@ class ModelContext:
         return self._parent_context
 
     @property
-    def models(self):
+    def models(self) -> Models:
         """
         The ``context.models`` attribute can be used to run models with a method
         call, with any ``-`` in the model slug replaced with ``_``.

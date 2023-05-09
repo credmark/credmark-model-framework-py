@@ -269,7 +269,7 @@ class TestToken(ModelTestCase):
     def test_token_on_mainnet(self):
         chain_tokens = FUNGIBLE_TOKEN_DATA_BY_SYMBOL[Network.Mainnet]
         for token_n, (token_symbol, token_meta) in enumerate(chain_tokens.items()):
-            print(f'{token_n+1}/{len(chain_tokens)}: {token_symbol}')
+            print(f'{token_n+1}/{len(chain_tokens)}: {token_symbol} {token_meta["address"]}')
             token = Token(symbol=token_symbol)
             self.assertEqual(token.symbol, token_meta['symbol'])
             self.assertEqual(token.name, token_meta['name'])
@@ -277,6 +277,8 @@ class TestToken(ModelTestCase):
             self.assertEqual(token.decimals, token_meta['decimals'])
 
         token = Token(symbol="CMK")
+        print(f'Testing on {token.instance.web3.eth.default_block}')
+
         self.assertEqual(token.symbol, "CMK")
         self.assertEqual(
             token.address, "0x68CFb82Eacb9f198d508B514d898a403c449533E")

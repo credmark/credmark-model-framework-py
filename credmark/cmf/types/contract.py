@@ -228,9 +228,13 @@ class Contract(Account):
         A web3 Web3Contract instance or raises a
         ``ModelDataError`` if no ABI is available.
         """
+        context = credmark.cmf.model.ModelContext.current_context()
+        if self._instance is not None:
+            if self._instance.web3.eth.default_block != context.web3.eth.default_block:
+                self._instance = None
+
         if self._instance is None:
             if self.abi is not None:
-                context = credmark.cmf.model.ModelContext.current_context()
                 self._instance = context.web3.eth.contract(
                     address=context.web3.toChecksumAddress(self.address),
                     abi=self.abi
