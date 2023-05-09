@@ -1,6 +1,6 @@
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long, protected-access, too-many-branches
 
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Union
 
 from eth_typing.evm import ChecksumAddress
 from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
@@ -66,8 +66,16 @@ class Token(Contract):
         decimals: Union[int, None] = None
         total_supply: Union[int, None] = None
         wrapped: Union[Address, None] = None
-        updated_at: dict[Tuple[str, int], Any] = {}
         set_loaded: bool = False
+        _cache: dict[str, dict[int, Any]] = PrivateAttr(default={})
+
+        def update_cache(self, field, block_number, value):
+            if field not in self._cache:
+                self._cache[field] = {}
+            self._cache[field][block_number] = value
+
+        def get_cache(self, field, block_number):
+            return self._cache.get(field, {}).get(block_number)
 
     _meta: TokenMetadata = PrivateAttr(
         default_factory=lambda: Token.TokenMetadata())  # pylint: disable=unnecessary-lambda
@@ -194,7 +202,7 @@ class Token(Contract):
                 _ = self.proxy_for.abi
             except BlockNumberOutOfRangeError as err:
                 raise BlockNumberOutOfRangeError(
-                    err.data.message + f' for contract {self.address}')
+                    err.data.message + f' for contract {self.address}') from err
             except ModelDataError:
                 self.proxy_for.set_abi(ERC20_BASE_ABI, set_loaded=True)
 
@@ -226,7 +234,7 @@ class Token(Contract):
         self._load()
         current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
         if not self._meta.set_loaded:
-            self._meta.symbol = self._meta.updated_at.get(('symbol', current_block))
+            self._meta.symbol = self._meta.get_cache('symbol', current_block)
 
         if self._meta.symbol is None:
             try:
@@ -241,7 +249,7 @@ class Token(Contract):
             elif not isinstance(symbol_tmp, str):
                 raise ModelDataError(f'Unknown value for symbol {symbol_tmp}')
             self._meta.symbol = symbol_tmp
-            self._meta.updated_at[('symbol', current_block)] = symbol_tmp
+            self._meta.update_cache('symbol', current_block, symbol_tmp)
         return self._meta.symbol
 
     @property
@@ -249,14 +257,14 @@ class Token(Contract):
         self._load()
         current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
         if not self._meta.set_loaded:
-            self._meta.decimals = self._meta.updated_at.get(('decimals', current_block))
+            self._meta.decimals = self._meta.get_cache('decimals', current_block)
 
         if self._meta.decimals is None:
             try:
                 self._meta.decimals = self.try_erc20_property('decimals')
             except ModelDataError:
                 self._meta.decimals = self.try_erc20_property('DECIMALS')
-            self._meta.updated_at[('decimals', current_block)] = self._meta.decimals
+            self._meta.update_cache('decimals', current_block, self._meta.decimals)
 
         return self._meta.decimals
 
@@ -265,7 +273,7 @@ class Token(Contract):
         self._load()
         current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
         if not self._meta.set_loaded:
-            self._meta.name = self._meta.updated_at.get(('name', current_block))
+            self._meta.name = self._meta.get_cache('name', current_block)
 
         if self._meta.name is None:
             try:
@@ -280,7 +288,7 @@ class Token(Contract):
             elif not isinstance(name_tmp, str):
                 raise ModelDataError(f'Unknown value for name {name_tmp}')
             self._meta.name = name_tmp
-            self._meta.updated_at[('name', current_block)] = name_tmp
+            self._meta.update_cache('name', current_block, name_tmp)
         return self._meta.name
 
     @property
@@ -288,11 +296,11 @@ class Token(Contract):
         self._load()
         current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
         if not self._meta.set_loaded:
-            self._meta.total_supply = self._meta.updated_at.get(('total_supply', current_block))
+            self._meta.total_supply = self._meta.get_cache('total_supply', current_block)
 
         if self._meta.total_supply is None:
             self._meta.total_supply = self.try_erc20_property('totalSupply')
-            self._meta.updated_at[('total_supply', current_block)] = self._meta.total_supply
+            self._meta.update_cache('total_supply', current_block, self._meta.total_supply)
         return self._meta.total_supply
 
     @property
@@ -380,15 +388,21 @@ class NativeToken(Token):
 
     @property
     def symbol(self):
-        return self._meta.symbol
+        if self._meta.symbol is not None:
+            return self._meta.symbol
+        raise ModelRunError(f'No symbol found for {self}')
 
     @property
     def name(self):
-        return self._meta.name
+        if self._meta.name is not None:
+            return self._meta.name
+        raise ModelRunError(f'No name found for {self}')
 
     @property
     def decimals(self):
-        return self._meta.decimals
+        if self._meta.decimals is not None:
+            return self._meta.decimals
+        raise ModelRunError(f'No decimals found for {self}')
 
     @property
     def ledger(self) -> None:

@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Any, Optional, Type, Union, overload
 
 from credmark.cmf.model.errors import ModelDataError, ModelInputError
-from credmark.dto import DTO, DTOType, DTOTypesTuple, EmptyInput
+from credmark.dto import DTO, DTOField, DTOType, DTOTypesTuple, EmptyInput
 from credmark.dto.encoder import json_dumps
 
 from .print import print_manifest_description
@@ -154,6 +154,15 @@ class LookupType(Enum):
 MODEL_RESULT_MODEL = 'model.result'
 
 
+class ModelResultInput(DTO):
+    use_model_result: bool = DTOField(True, description='Result from previous block number')
+
+
+class ModelResultOutput(DTO):
+    model_result_block: int = DTOField(description='Result from previous block number')
+    model_result_direction: str = DTOField(description='Model result direction')
+
+
 class Models:
     """
     """
@@ -215,7 +224,7 @@ class Models:
 
         if ('blockNumber' in prev_run and
             prev_run['blockNumber'] is not None and
-            prev_run['result'] is not None):
+                prev_run['result'] is not None):
             try:
                 return prev_run
             except ModelDataError:
