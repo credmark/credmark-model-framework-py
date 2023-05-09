@@ -1,10 +1,14 @@
+# pylint: disable=line-too-long
+
 from abc import abstractmethod
 from contextvars import ContextVar, Token
 from typing import Any, Type, TypeVar, Union, overload
 
-import credmark.cmf.types
-from credmark.dto import DTOType, EmptyInput
 from web3 import Web3
+
+from credmark.cmf.engine.web3_registry import Web3Registry
+from credmark.cmf.types import BlockNumber, Network
+from credmark.dto import DTOType, EmptyInput
 
 from .errors import ModelNoContextError
 from .ledger import Ledger
@@ -31,7 +35,8 @@ class ModelContext:
     as ``self.context``.
     """
 
-    __current_context: ContextVar[MaybeModelContext] = ContextVar('context', default=None)
+    __current_context: ContextVar[MaybeModelContext] = ContextVar(
+        'context', default=None)
 
     @classmethod
     def get_current_context(cls) -> MaybeModelContext:
@@ -71,18 +76,24 @@ class ModelContext:
             raise ModelNoContextError("No current ModelContext")
         return context
 
-    def __init__(self, chain_id: int, block_number: int,
-                 web3_registry):
+    def __init__(self, chain_id: int, block_number: BlockNumber,
+                 web3_registry: Web3Registry,
+                 parent_context: MaybeModelContext):
         self._chain_id = chain_id
-        self._block_number = credmark.cmf.types.BlockNumber(block_number)
-        self._web3 = None
+        self._block_number = block_number
         self._web3_registry = web3_registry
+        self._parent_context = parent_context
+        self._web3 = None
         self._ledger = None
         self._historical_util = None
         self._models = None
 
     @property
-    def models(self):
+    def parent_context(self):
+        return self._parent_context
+
+    @property
+    def models(self) -> Models:
         """
         The ``context.models`` attribute can be used to run models with a method
         call, with any ``-`` in the model slug replaced with ``_``.
@@ -133,6 +144,16 @@ class ModelContext:
         # it will return None.
         ...
 
+    @abstractmethod
+    def enter(self, block_number: Union[int, BlockNumber]) -> 'ModelContext':
+        ...
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_exc):
+        ModelContext.set_current_context(self.parent_context)
+
     @property
     def chain_id(self) -> int:
         """
@@ -141,14 +162,14 @@ class ModelContext:
         return self._chain_id
 
     @property
-    def network(self) -> credmark.cmf.types.Network:
+    def network(self) -> Network:
         """
         Context chain id as an integer
         """
-        return credmark.cmf.types.Network(self._chain_id)
+        return Network(self._chain_id)
 
     @property
-    def block_number(self):
+    def block_number(self) -> BlockNumber:
         """
         Context block number. A credmark.cmf.types.BlockNumber instance.
         """
@@ -157,7 +178,7 @@ class ModelContext:
     @block_number.setter
     def block_number(self, block_number: int):
         if block_number != self._block_number:
-            self._block_number = credmark.cmf.types.BlockNumber(block_number)
+            self._block_number = BlockNumber(block_number)
             self._web3 = None
             self._ledger = None
             self._historical_util = None
@@ -169,8 +190,7 @@ class ModelContext:
         """
         if self._web3 is None:
             self._web3 = self._web3_registry.web3_for_chain_id(self.chain_id)
-            self._web3.eth.default_block = self.block_number if \
-                self.block_number is not None else 'latest'
+            self._web3.eth.default_block = self.block_number if self.block_number is not None else 'latest'
         return self._web3
 
     @property

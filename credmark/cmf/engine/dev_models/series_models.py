@@ -3,13 +3,18 @@ from typing import Union
 from credmark.cmf.model import Model
 from credmark.cmf.model.context import ModelContext
 from credmark.cmf.model.errors import ModelDataError
-from credmark.cmf.types.rpc import (RpcBlockRangeOutput,
-                                    RpcBlockStartEndIntervalInput,
-                                    RpcBlockWindowIntervalInput)
-from credmark.cmf.types.series import (BlockSeries, BlockSeriesErrorRow,
-                                       BlockSeriesRow,
-                                       SeriesModelStartEndIntervalInput,
-                                       SeriesModelWindowIntervalInput)
+from credmark.cmf.types.rpc import (
+    RpcBlockRangeOutput,
+    RpcBlockStartEndIntervalInput,
+    RpcBlockWindowIntervalInput,
+)
+from credmark.cmf.types.series import (
+    BlockSeries,
+    BlockSeriesErrorRow,
+    BlockSeriesRow,
+    SeriesModelStartEndIntervalInput,
+    SeriesModelWindowIntervalInput,
+)
 from credmark.dto import DTOType
 
 

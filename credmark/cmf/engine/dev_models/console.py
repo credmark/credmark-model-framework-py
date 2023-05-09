@@ -1,4 +1,6 @@
 # pylint: disable=locally-disabled, unused-import, unused-variable
+# ruff: noqa: F401
+
 import importlib
 import inspect
 import sys
@@ -13,6 +15,10 @@ import logging
 import os
 
 import yaml
+from web3.contract.async_contract import AsyncContract as Web3AsyncContract
+from web3.contract.contract import Contract as Web3Contract
+from web3.exceptions import ABIFunctionNotFound
+
 from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
@@ -20,33 +26,68 @@ from credmark.cmf.model import Model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.cmf.model.models import RunModelMethod
 from credmark.cmf.model.print import print_manifest_description
-from credmark.cmf.types import (Account, Accounts, Address, BlockNumber,
-                                Contract, ContractLedger, Contracts, Currency,
-                                FiatCurrency, Maybe, NativePosition,
-                                NativeToken, Network, Portfolio, Position,
-                                PortfolioWithPrice, PositionWithPrice,
-                                Price, PriceWithQuote, PriceList, Records, Some, Token,
-                                TokenPosition, Tokens)
-from credmark.cmf.types.compose import (MapBlockResult, MapBlocksInput,
-                                        MapBlocksOutput,
-                                        MapBlockTimeSeriesInput,
-                                        MapBlockTimeSeriesOutput,
-                                        MapInputsInput, MapInputsOutput,
-                                        MapInputsResult)
-from credmark.cmf.types.ledger import (BlockTable, ContractTable, LogTable,
-                                       ReceiptTable, TokenTable,
-                                       TokenTransferTable, TraceTable,
-                                       TransactionTable)
-from credmark.dto import (DTO, DTOField, DTOPretty, EmptyInput, FloatDTO,
-                          IntDTO, IterableListGenericDTO, PrivateAttr, StrDTO)
+from credmark.cmf.types import (
+    Account,
+    Accounts,
+    Address,
+    BlockNumber,
+    Contract,
+    ContractLedger,
+    Contracts,
+    Currency,
+    FiatCurrency,
+    Maybe,
+    NativePosition,
+    NativeToken,
+    Network,
+    Portfolio,
+    PortfolioWithPrice,
+    Position,
+    PositionWithPrice,
+    Price,
+    PriceList,
+    PriceWithQuote,
+    Records,
+    Some,
+    Token,
+    TokenPosition,
+    Tokens,
+)
+from credmark.cmf.types.compose import (
+    MapBlockResult,
+    MapBlocksInput,
+    MapBlocksOutput,
+    MapBlockTimeSeriesInput,
+    MapBlockTimeSeriesOutput,
+    MapInputsInput,
+    MapInputsOutput,
+    MapInputsResult,
+)
+from credmark.cmf.types.ledger import (
+    BlockTable,
+    ContractTable,
+    LogTable,
+    ReceiptTable,
+    TokenTable,
+    TokenTransferTable,
+    TraceTable,
+    TransactionTable,
+)
+from credmark.dto import (
+    DTO,
+    DTOField,
+    DTOPretty,
+    EmptyInput,
+    FloatDTO,
+    IntDTO,
+    IterableListGenericDTO,
+    PrivateAttr,
+    StrDTO,
+)
 from credmark.dto.encoder import json_dump, json_dumps
-from web3.exceptions import ABIFunctionNotFound
-from web3.contract.contract import Contract as Web3Contract
-from web3.contract.async_contract import AsyncContract as Web3AsyncContract
+
 
 # pylint: disable= too-many-arguments
-
-
 def get_dt(year: int, month: int, day: int, hour=0, minute=0, second=0, microsecond=0):
     """Get a datetime for date and time values"""
     return datetime(year, month, day, hour, minute, second, microsecond, tzinfo=timezone.utc)
@@ -74,12 +115,13 @@ def log_output(log_file=None,
         EngineModelContext.logger.info(
             f'Enabled log to {log_file} with level={logging.getLevelName(log_level)}')
     else:
-        fh = logging.StreamHandler(sys.stderr)
+        fh = logging.StreamHandler()
         fh.set_name(handler_name)
         fh.setLevel(log_level)
         fh.setFormatter(logging.Formatter(fmt=formatter))
         EngineModelContext.logger.addHandler(fh)
-        EngineModelContext.logger.info(f'Enabled log with level={logging.getLevelName(log_level)}')
+        EngineModelContext.logger.info(
+            f'Enabled log with level={logging.getLevelName(log_level)}')
 
 
 @Model.describe(slug='console',
@@ -116,7 +158,8 @@ class ConsoleModel(Model):
                 for mod_def in module_imports:
                     try:
                         name = mod_def['name']
-                        self._import_module(name, mod_def.get('as', name), var_namespace)
+                        self._import_module(name, mod_def.get(
+                            'as', name), var_namespace)
                     except KeyError:
                         self.logger.error(
                             f'Error importing module {mod_def} from console config: Missing name')
@@ -131,7 +174,8 @@ class ConsoleModel(Model):
         try:
             var_namespace[name] = importlib.import_module(module_name)
         except Exception as exc:
-            self.logger.error(f'Error importing {module_name} from console config: {exc}')
+            self.logger.error(
+                f'Error importing {module_name} from console config: {exc}')
 
     def _import_module_global(self, path, var_namespace):
         try:
@@ -140,7 +184,8 @@ class ConsoleModel(Model):
             module = importlib.import_module('.'.join(parts[:-1]))
             var_namespace[name] = vars(module)[name]
         except Exception as exc:
-            self.logger.error(f'Error importing {path} from console config: {exc}')
+            self.logger.error(
+                f'Error importing {path} from console config: {exc}')
 
     def help(self):
         print('# Credmark model utility shortcuts')
@@ -159,7 +204,8 @@ class ConsoleModel(Model):
         print('# Console functions')
         print('help(): print this quick help')
         print('where(): where you are in the chain of blocks')
-        print('save("output_filename"): save console history to {output_filename}.py')
+        print(
+            'save("output_filename"): save console history to {output_filename}.py')
         print('save_shortcuts("output_filename"): '
               'save shortcut variables code to {output_filename}.py')
         print('load("input_filename"): load and run {input_filename}.py')
@@ -287,9 +333,9 @@ class ConsoleModel(Model):
 
         if len(self.blocks) == 1:
             banner1 = f'Entering Credmark Model Console at block {self.context.block_number}.'
-            banner2 = 'Help: help(), Quit: quit()\n' \
-                'Available vars: context, models, ledger, web3, etc.\n' \
-                'Available types: BlockNumber, Address, Contract, Token...\n'
+            banner2 = ('Help: help(), Quit: quit()\n'
+                       'Available vars: context, models, ledger, web3, etc.\n'
+                       'Available types: BlockNumber, Address, Contract, Token...\n')
             exit_msg = f'\nExiting Credmark Model Console at block {self.context.block_number}. '
         else:
             banner1 = f'\nSwitching context to block {self.context.block_number}.'

@@ -15,5 +15,6 @@ def extract_error_codes_and_descriptions(error_schema: dict):
                     err_type_d = err_type.get(
                         'description') if err_type is not None else None
                     err_type_d = err_type_d if err_type_d is not None else 'ModelError'
-                    result.append((err_type_d, code.get('enum'), code.get('description')))
+                    result.append((err_type_d, code.get(
+                        'enum'), code.get('description')))
     return result

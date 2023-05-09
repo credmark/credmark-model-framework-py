@@ -2,6 +2,8 @@ import logging
 import unittest
 from typing import Union
 
+from dotenv import find_dotenv, load_dotenv
+
 from credmark.cmf.engine.cache import ModelRunCache
 from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.mocks import ModelMockConfig, ModelMockRunner
@@ -9,7 +11,6 @@ from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.engine.web3_registry import Web3Registry
 from credmark.cmf.model.context import ModelContext
-from dotenv import find_dotenv, load_dotenv
 
 
 class ModelTestContextFactory:
@@ -67,6 +68,9 @@ class ModelTestContextFactory:
             chain_id, block_number, self.web3_registry,
             'test', 0, self.model_loader, model_cache,
             self.api, is_top_level=True)
+
+        context.__dict__['original_input'] = {}
+        context.__dict__['slug'] = 'test'
 
         ModelContext.set_current_context(context)
 
@@ -149,7 +153,7 @@ class ModelTestCase(unittest.TestCase):
 
     def create_model_context(self,
                              chain_id: int = 1,
-                             block_number: int = 15260851,
+                             block_number: int = 15_260_851,
                              mocks: Union[ModelMockConfig, None] = None):
         """
         Create a new model context and set it as the current context.

@@ -1,13 +1,17 @@
+# pylint: disable=line-too-long
+
 import json
-from typing import List, Optional, Union, Sequence
+from typing import List, Optional, Sequence, Union
+
+from web3 import Web3
+from web3.contract import Contract as Web3Contract
+from web3.contract.async_contract import AsyncContract as Web3AsyncContract
+from web3.contract.contract import Contract as Web3Contract
 
 import credmark.cmf.model
 from credmark.cmf.engine.cache import ContractMetaCache
-from credmark.cmf.model.errors import ModelDataError, ModelRunError
+from credmark.cmf.model.errors import ModelDataError, ModelEngineError, ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
-from web3 import Web3
-from web3.contract.contract import Contract as Web3Contract
-from web3.contract.async_contract import AsyncContract as Web3AsyncContract
 
 from .abi import ABI
 from .account import Account
@@ -32,15 +36,12 @@ def get_slot_proxy_address(context, contract_address,
     if context.chain_id == 1:
         if contract_name == 'Unitroller':
             if contract_address == Address('0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B'):
-                cc = context.web3.eth.contract(address=Address(
-                    contract_address).checksum, abi=contract_abi)
+                cc = context.web3.eth.contract(address=Address(contract_address).checksum, abi=contract_abi)
                 slot_proxy_address = Address(cc.functions.comptrollerImplementation().call())
         elif contract_name in ['DelegateCallProxyManyToOne']:
-            slot_proxy_address = Address(context.web3.eth.get_storage_at(
-                contract_address, SLOT_PROXYMANYTOONE))
+            slot_proxy_address = Address(context.web3.eth.get_storage_at(contract_address, SLOT_PROXYMANYTOONE))
         elif contract_name in ['AraProxy']:
-            slot_proxy_address = Address(context.web3.eth.get_storage_at(
-                contract_address, SLOT_ARA))
+            slot_proxy_address = Address(context.web3.eth.get_storage_at(contract_address, SLOT_ARA))
         elif contract_name in ['YAMDelegator',
                                'CErc20Delegator',
                                'AppProxyUpgradeable',
@@ -48,30 +49,24 @@ def get_slot_proxy_address(context, contract_address,
                                'TokenProxy',
                                'MeterGovProxy']:
             # EIP-897
-            cc = context.web3.eth.contract(address=Address(
-                contract_address).checksum, abi=contract_abi)
-
+            cc = context.web3.eth.contract(address=Address(contract_address).checksum, abi=contract_abi)
             if cc.abi is not None and 'implementation' in cc.abi.functions:
                 slot_proxy_address = Address(cc.functions.implementation().call())
         elif (contract_name == 'Delegator' and
                 contract_address == Address('0x1985365e9f78359a9B6AD760e32412f4a445E862')):
-            cc = context.web3.eth.contract(address=Address(
-                contract_address).checksum, abi=contract_abi)
+            cc = context.web3.eth.contract(address=Address(contract_address).checksum, abi=contract_abi)
             controller = Contract(address=Address(cc.functions.getController().call()))
             lookupName = cc.functions.controllerLookupName().call()
             slot_proxy_address = Address(controller.functions.lookup(lookupName).call())
         elif contract_name in ['OwnedUpgradeabilityProxy']:
             if contract_address == Address('0x0000000000085d4780B73119b644AE5ecd22b376'):
-                slot_proxy_address = Address(context.web3.eth.get_storage_at(
-                    contract_address, SLOT_TRUEUSD))
+                slot_proxy_address = Address(context.web3.eth.get_storage_at(contract_address, SLOT_TRUEUSD))
         elif contract_name in ['FiatTokenProxy',
                                'AdminUpgradeabilityProxy',
                                'InitializeGovernedUpgradeabilityProxy']:
-            slot_proxy_address = Address(context.web3.eth.get_storage_at(
-                contract_address, SLOT_EIP1967))
+            slot_proxy_address = Address(context.web3.eth.get_storage_at(contract_address, SLOT_EIP1967))
             if slot_proxy_address.is_null():
-                slot_proxy_address = Address(context.web3.eth.get_storage_at(
-                    contract_address, SLOT_ZEPPELINOS))
+                slot_proxy_address = Address(context.web3.eth.get_storage_at(contract_address, SLOT_ZEPPELINOS))
         elif contract_name in ['BeaconProxy', 'UpgradeBeaconProxy', ]:
             # TODO: BEACON has a special design. The actual contract could be two-levels down
             # From token -> beacon -> beacon's implementation
@@ -85,18 +80,14 @@ def get_slot_proxy_address(context, contract_address,
             # cc = Contract('0xd31a59c85ae9d8edefec411d448f90841571b89c');
             # pd.DataFrame(cc.fetch_events(cc.instance.events.BeaconUpgraded,
             # from_block=0, to_block=self.context.block_number))
-            slot_proxy_address = Address(context.web3.eth.get_storage_at(
-                contract_address, SLOT_BEACON))
+            slot_proxy_address = Address(context.web3.eth.get_storage_at(contract_address, SLOT_BEACON))
         elif contract_name in ['InitializedProxy']:
-            cc = context.web3.eth.contract(address=Address(
-                contract_address).checksum, abi=contract_abi)
+            cc = context.web3.eth.contract(address=Address(contract_address).checksum, abi=contract_abi)
             if cc.abi is not None and 'logic' in cc.abi.functions:
                 slot_proxy_address = Address(cc.functions.logic().call())
         elif contract_name in ['PProxyPausable', 'PProxy']:
-            slot_proxy_address = Address(context.web3.eth.get_storage_at(
-                contract_address, SLOT_PPROXY))
-            cc = context.web3.eth.contract(address=Address(
-                contract_address).checksum, abi=contract_abi)
+            slot_proxy_address = Address(context.web3.eth.get_storage_at(contract_address, SLOT_PPROXY))
+            cc = context.web3.eth.contract(address=Address(contract_address).checksum, abi=contract_abi)
             if cc.abi is not None and 'getImplementation' in cc.abi.functions:
                 slot_proxy_address = Address(cc.functions.getImplementation().call())
         elif contract_name in ['RenERC20Proxy',
@@ -107,11 +98,9 @@ def get_slot_proxy_address(context, contract_address,
                                'BridgeToken',
                                'ERC1967Proxy']:
             # if eip-1967 compliant, https://eips.ethereum.org/EIPS/eip-1967
-            slot_proxy_address = Address(context.web3.eth.get_storage_at(
-                contract_address, SLOT_EIP1967))
+            slot_proxy_address = Address(context.web3.eth.get_storage_at(contract_address, SLOT_EIP1967))
         # else:
-        #    slot_proxy_address = Address(context.web3.eth.get_storage_at(
-        #        contract_address, SLOT_EIP1967))
+        #    slot_proxy_address = Address(context.web3.eth.get_storage_at(contract_address, SLOT_EIP1967))
 
     if slot_proxy_address is None or slot_proxy_address.is_null():
         return None
@@ -184,13 +173,16 @@ class Contract(Account):
         if in_cache:
             contract_q_results = cached_meta
         else:
-            # fix block number when looking up contract
-            contract_q_results = context.run_model('contract.metadata',
-                                                   {'contractAddress': self.address},
-                                                   block_number=0)
-            ContractMetaCache().put(context.chain_id,
-                                    self.address,
-                                    contract_q_results)
+            try:
+                # fix block number when looking up contract
+                contract_q_results = context.run_model('contract.metadata',
+                                                       {'contractAddress': self.address},
+                                                       block_number=0)
+                ContractMetaCache().put(context.chain_id,
+                                        self.address,
+                                        contract_q_results)
+            except ModelEngineError:
+                contract_q_results = {"contracts": []}
 
         if len(contract_q_results['contracts']) > 0:
             res = contract_q_results['contracts'][0]
@@ -228,7 +220,8 @@ class Contract(Account):
             self._loaded = True
         else:
             if self._meta.abi is None:
-                raise ModelDataError(f'abi not available for address {self.address}')
+                raise ModelDataError(
+                    f'abi not available for address {self.address}')
         self._loaded = True
 
     @ property
@@ -237,9 +230,13 @@ class Contract(Account):
         A web3 Web3Contract instance or raises a
         ``ModelDataError`` if no ABI is available.
         """
+        context = credmark.cmf.model.ModelContext.current_context()
+        if self._instance is not None:
+            if self._instance.web3.eth.default_block != context.web3.eth.default_block:
+                self._instance = None
+
         if self._instance is None:
             if self.abi is not None:
-                context = credmark.cmf.model.ModelContext.current_context()
                 self._instance = context.web3.eth.contract(
                     address=context.web3.to_checksum_address(self.address),
                     abi=self.abi
@@ -250,7 +247,7 @@ class Contract(Account):
         else:
             return self._instance
 
-    @ property
+    @property
     def proxy_for(self):
         """
         A proxy implementation if available
@@ -259,7 +256,7 @@ class Contract(Account):
             self._load()
         return self._meta.proxy_implementation
 
-    @ property
+    @property
     def functions(self):
         """
         A web3 ContractFunctions instance for the contract.
@@ -272,7 +269,7 @@ class Contract(Account):
         else:
             return self.instance.functions
 
-    @ property
+    @property
     def events(self):
         """
         A web3 ContractEvents instance for the contract.
@@ -282,7 +279,7 @@ class Contract(Account):
             return self.proxy_for.events
         return self.instance.events
 
-    @ property
+    @property
     def info(self):
         """
         A :class:`credmark.cmf.types.contract.ContractInfo` instance for the contract.
@@ -292,7 +289,7 @@ class Contract(Account):
         self._load()
         return ContractInfo(**self.dict(), meta=self._meta)
 
-    @ property
+    @property
     def deploy_tx_hash(self):
         """
         The deploy transaction hash, if available, otherwise None.
@@ -301,7 +298,7 @@ class Contract(Account):
             self._load()
         return self._meta.deploy_tx_hash
 
-    @ property
+    @property
     def contract_name(self):
         """
         Name of the contract, if available, otherwise None.
@@ -310,7 +307,7 @@ class Contract(Account):
             self._load()
         return self._meta.contract_name
 
-    @ property
+    @property
     def constructor_args(self):
         """
         Constructor args, if any, otherwise None.
@@ -349,8 +346,9 @@ class Contract(Account):
                     if 'abi not available for address' not in err.data.message:
                         raise
         self._meta.abi = ABI(abi)
+        return self
 
-    @ property
+    @property
     def is_transparent_proxy(self):
         """
         True if is a transparent proxy. Otherwise False or None.
@@ -427,7 +425,8 @@ class Contract(Account):
                      address=None,
                      topics=None,
                      contract_address=None,
-                     argument_names: Optional[Sequence[str]] = None):
+                     argument_names: Optional[Sequence[str]] = None,
+                     by_range: Optional[int] = None):
         """
         contract_address is by default set to the event's address.
 
@@ -467,7 +466,8 @@ class Contract(Account):
                             address=address,
                             topics=topics,
                             contract_address=contract_address,
-                            argument_names=argument_names)
+                            argument_names=argument_names,
+                            by_range=by_range)
 
 
 class ContractInfo(Contract):
@@ -479,5 +479,6 @@ class ContractInfo(Contract):
 
 
 class Contracts(IterableListGenericDTO[Contract]):
-    contracts: List[Contract] = DTOField(default=[], description="A List of Contracts")
+    contracts: List[Contract] = DTOField(
+        default=[], description="A List of Contracts")
     _iterator: str = PrivateAttr('contracts')

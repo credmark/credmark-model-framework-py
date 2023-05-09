@@ -1,10 +1,15 @@
-from enum import Enum
+# ruff: noqa: E722
+
 import inspect
+from datetime import datetime
+from enum import Enum
 from typing import Dict, List, Tuple, Union
 
 import pandas as pd
+
 from credmark.cmf.model.errors import ModelRunError
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
+
 from .ledger_errors import InvalidColumnException
 
 
@@ -23,7 +28,8 @@ class LedgerAggregate(DTO):
     It is defined by an expression and the name to use as the
     column name in the returned data.
     """
-    expression: str = DTOField(..., description='Aggregate expression, for example "MAX(GAS_USED)"')
+    expression: str = DTOField(...,
+                               description='Aggregate expression, for example "MAX(GAS_USED)"')
     asName: str = DTOField(..., description='Returned as data column name')
 
 
@@ -33,10 +39,12 @@ class LedgerJoin(DTO):
     It is defined by table key, table alias and
     expression to join on.
     """
-    type: Union[JoinType, None] = DTOField(description='Type of join. Defaults to inner join.')
+    type: Union[JoinType, None] = DTOField(
+        description='Type of join. Defaults to inner join.')
     tableKey: str = DTOField(..., description='Key of the table to be joined')
     alias: Union[str, None] = DTOField(description='Alias for the table')
-    on: str = DTOField(..., description='Join expression, for example "a.address = b.address"')
+    on: str = DTOField(...,
+                       description='Join expression, for example "a.address = b.address"')
 
 
 class LedgerModelOutput(IterableListGenericDTO[dict]):
@@ -60,18 +68,24 @@ class LedgerModelOutput(IterableListGenericDTO[dict]):
                 if c in df.columns:
                     col_type = df[c].dtype
                     if col_type == 'float64':
-                        df = df.assign(**{c: (lambda x, c=c: x[c].apply(round))})
+                        df = df.assign(
+                            **{c: (lambda x, c=c: x[c].apply(round))})
                     elif col_type in ['int64', 'uint64']:
                         pass
                     elif col_type == 'O':
                         try:
-                            df = df.astype({c: "Int64"})
-                        except ValueError:
-                            pass
-                        except OverflowError:
-                            df = df.assign(**{c: (lambda x, c=c: x[c].apply(int))})
+                            df = df.astype({c: int})
+                        except:  # pylint:disable=bare-except
+                            try:
+                                df = df.astype({c: "Int64"})
+                            except ValueError:
+                                pass
+                            except OverflowError:
+                                df = df.assign(
+                                    **{c: (lambda x, c=c: x[c].apply(int))})
                     else:
-                        raise TypeError(f'column {c} has unsupported column type {col_type}')
+                        raise TypeError(
+                            f'column {c} has unsupported column type {col_type}')
         return df
 
     def bigint_cols(self):
@@ -219,17 +233,32 @@ class ColumnField(str):
     def div_(self, col):
         return self.op_(col, '/')
 
-    def to_char(self):
-        return self.func_('to_char')
+    def as_text(self):
+        return ColumnField(f'{self}::TEXT')
 
-    def as_integer(self):
-        return self.func_('as_integer')
+    def as_bigint(self):
+        return ColumnField(f'{self}::BIGINT')
+
+    def as_numeric(self):
+        return ColumnField(f'{self}::NUMERIC')
 
     def is_null(self):
         return ColumnField(f'{self} is null')
 
     def is_not_null(self):
         return ColumnField(f'{self} is not null')
+
+    def extract_epoch(self):
+        return ColumnField(f'extract(epoch from {self})')
+
+    def to_timestamp(self):
+        return ColumnField(f'to_timestamp({self})')
+
+    @staticmethod
+    def from_iso8601_str(timestamp):
+        if timestamp.endswith('Z'):
+            timestamp = timestamp[:-1] + '+00:00'
+        return int(datetime.fromisoformat(timestamp).timestamp())
 
 
 class LedgerTable:
@@ -265,7 +294,7 @@ class LedgerTable:
         return list(super().__dir__())
 
     def __repr__(self):
-        return str(dir(self))
+        return "{}({})".format(self.__class__.__name__, self.columns)
 
     def __getitem__(self, name):
         return self._column_dict[name]
@@ -322,6 +351,9 @@ class LedgerTable:
                     list(column_set),
                     f"invalid column name '{column}' not found in {list(column_set)}")
 
+    def describe(self) -> list[tuple[str, str]]:
+        return [(k, self.TYPE_MAPPER[k]) for k in self.columns]  # type: ignore
+
     @property
     def alias(self):
         return self._alias
@@ -333,106 +365,6 @@ class LedgerTable:
     @property
     def bigint_cols(self):
         return []
-
-
-class TransactionTable(LedgerTable):
-    """
-    Transactions ledger data table
-    Column names
-    """
-
-    HASH = ColumnField('hash')
-    """"""
-    NONCE = ColumnField('nonce')
-    """"""
-    BLOCK_HASH = ColumnField('block_hash')
-    """"""
-    TRANSACTION_INDEX = ColumnField('transaction_index')
-    """"""
-    FROM_ADDRESS = ColumnField('from_address')
-    """"""
-    TO_ADDRESS = ColumnField('to_address')
-    """"""
-    VALUE = ColumnField('value')
-    """"""
-    GAS = ColumnField('gas')
-    """"""
-    GAS_PRICE = ColumnField('gas_price')
-    """"""
-    INPUT = ColumnField('input')
-    """"""
-    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
-    """"""
-    MAX_FEE_PER_GAS = ColumnField('max_fee_per_gas')
-    """"""
-    MAX_PRIORITY_FEE_PER_GAS = ColumnField('max_priority_fee_per_gas')
-    """"""
-    TRANSACTION_TYPE = ColumnField('transaction_type')
-    """"""
-    BLOCK_NUMBER = ColumnField('block_number')
-    """"""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    @property
-    def bigint_cols(self):
-        return [self.VALUE, self.GAS_PRICE, self.MAX_FEE_PER_GAS, self.MAX_PRIORITY_FEE_PER_GAS]
-
-
-class TraceTable(LedgerTable):
-    """
-    Trace ledger data table
-    Column names
-    """
-
-    BLOCK_HASH = ColumnField('block_hash')
-    """"""
-    BLOCK_NUMBER = ColumnField('block_number')
-    """"""
-    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
-    """"""
-    TRANSACTION_HASH = ColumnField('transaction_hash')
-    """"""
-    TRANSACTION_INDEX = ColumnField('transaction_index')
-    """"""
-    FROM_ADDRESS = ColumnField('from_address')
-    """"""
-    TO_ADDRESS = ColumnField('to_address')
-    """"""
-    VALUE = ColumnField('value')
-    """"""
-    INPUT = ColumnField('input')
-    """"""
-    OUTPUT = ColumnField('output')
-    """"""
-    TRACE_TYPE = ColumnField('trace_type')
-    """"""
-    CALL_TYPE = ColumnField('call_type')
-    """"""
-    REWARD_TYPE = ColumnField('reward_type')
-    """"""
-    GAS = ColumnField('gas')
-    """"""
-    GAS_USED = ColumnField('gas_used')
-    """"""
-    SUB_TRACES = ColumnField('sub_traces')
-    """"""
-    TRACE_ADDRESS = ColumnField('trace_address')
-    """"""
-    ERROR = ColumnField('error')
-    """"""
-    STATUS = ColumnField('status')
-    """"""
-    TRACE_ID = ColumnField('trace_id')
-    """"""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    @property
-    def bigint_cols(self):
-        return [self.VALUE]
 
 
 class BlockTable(LedgerTable):
@@ -480,11 +412,33 @@ class BlockTable(LedgerTable):
     BASE_FEE_PER_GAS = ColumnField('base_fee_per_gas')
     """"""
 
-    def __init__(self, **kwargs):
+    TYPE_MAPPER = {
+        'number': 'int',
+        'hash': 'str',
+        'parent_hash': 'str',
+        'nonce': 'str',
+        'sha3_uncles': 'str',
+        'logs_bloom': 'str',
+        'transactions_root': 'str',
+        'state_root': 'str',
+        'receipts_root': 'str',
+        'miner': 'str',
+        'difficulty': 'int',
+        'total_difficulty': 'int',
+        'size': 'int',
+        'extra_data': 'str',
+        'gas_limit': 'int',
+        'gas_used': 'int',
+        'timestamp': 'str',
+        'transaction_count': 'int',
+        'base_fee_per_gas': 'int',
+    }
+
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     @property
-    def bigint_cols(self):
+    def bigint_cols(self) -> List[ColumnField]:
         return [self.DIFFICULTY, self.TOTAL_DIFFICULTY]
 
 
@@ -500,11 +454,9 @@ class ContractTable(LedgerTable):
     """"""
     FUNCTION_SIGHASHES = ColumnField('function_sighashes')
     """"""
-    IS_ERC20 = ColumnField('is_erc20 ')
+    IS_ERC20 = ColumnField('is_erc20')
     """"""
-    IS_ERC721 = ColumnField('is_erc721 ')
-    """"""
-    TRANSACTION_HASH = ColumnField('transaction_hash')
+    IS_ERC721 = ColumnField('is_erc721')
     """"""
     BLOCK_HASH = ColumnField('block_hash')
     """"""
@@ -513,8 +465,23 @@ class ContractTable(LedgerTable):
     BLOCK_TIMESTAMP = ColumnField('block_timestamp')
     """"""
 
-    def __init__(self, **kwargs):
+    TYPE_MAPPER = {
+        'address': 'str',
+        'bytecode': 'str',
+        'function_sighashes': 'str',
+        'is_erc20': 'bool',
+        'is_erc721': 'bool',
+        'block_hash': 'str',
+        'block_number': 'int',
+        'block_timestamp': 'str',
+    }
+
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self) -> List[ColumnField]:
+        return []
 
 
 class LogTable(LedgerTable):
@@ -539,11 +506,36 @@ class LogTable(LedgerTable):
     """"""
     DATA = ColumnField('data')
     """"""
-    TOPICS = ColumnField('topics')
+    TOPIC0 = ColumnField('topic0')
+    """"""
+    TOPIC1 = ColumnField('topic1')
+    """"""
+    TOPIC2 = ColumnField('topic2')
+    """"""
+    TOPIC3 = ColumnField('topic3')
     """"""
 
-    def __init__(self, **kwargs):
+    TYPE_MAPPER = {
+        'log_index': 'int',
+        'transaction_hash': 'str',
+        'transaction_index': 'int',
+        'block_hash': 'str',
+        'block_number': 'int',
+        'block_timestamp': 'str',
+        'address': 'str',
+        'data': 'str',
+        'topic0': 'str',
+        'topic1': 'str',
+        'topic2': 'str',
+        'topic3': 'str',
+    }
+
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self) -> List[ColumnField]:
+        return []
 
 
 class ReceiptTable(LedgerTable):
@@ -575,12 +567,91 @@ class ReceiptTable(LedgerTable):
     EFFECTIVE_GAS_PRICE = ColumnField('effective_gas_price')
     """"""
 
-    def __init__(self, **kwargs):
+    TYPE_MAPPER = {
+        'transaction_hash': 'str',
+        'transaction_index': 'int',
+        'block_hash': 'str',
+        'block_number': 'int',
+        'block_timestamp': 'str',
+        'cumulative_gas_used': 'int',
+        'gas_used': 'int',
+        'contract_address': 'Optional[str]',
+        'root': 'Optional[str]',
+        'status': 'int',
+        'effective_gas_price': 'int',
+    }
+
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     @property
-    def bigint_cols(self):
-        return [self.CUMULATIVE_GAS_USED, self.GAS_USED, self.EFFECTIVE_GAS_PRICE]
+    def bigint_cols(self) -> List[ColumnField]:
+        return [self.CUMULATIVE_GAS_USED, self.GAS_USED,
+                self.EFFECTIVE_GAS_PRICE]
+
+
+class TransactionTable(LedgerTable):
+    """
+    Transactions ledger data table
+    Column names
+    """
+
+    HASH = ColumnField('hash')
+    """"""
+    NONCE = ColumnField('nonce')
+    """"""
+    BLOCK_HASH = ColumnField('block_hash')
+    """"""
+    TRANSACTION_INDEX = ColumnField('transaction_index')
+    """"""
+    FROM_ADDRESS = ColumnField('from_address')
+    """"""
+    TO_ADDRESS = ColumnField('to_address')
+    """"""
+    VALUE = ColumnField('value')
+    """"""
+    GAS = ColumnField('gas')
+    """"""
+    GAS_PRICE = ColumnField('gas_price')
+    """"""
+    INPUT = ColumnField('input')
+    """"""
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
+    """"""
+    MAX_FEE_PER_GAS = ColumnField('max_fee_per_gas')
+    """"""
+    MAX_PRIORITY_FEE_PER_GAS = ColumnField('max_priority_fee_per_gas')
+    """"""
+    TRANSACTION_TYPE = ColumnField('transaction_type')
+    """"""
+    BLOCK_NUMBER = ColumnField('block_number')
+    """"""
+
+    TYPE_MAPPER = {
+        'hash': 'str',
+        'nonce': 'int',
+        'block_hash': 'str',
+        'transaction_index': 'int',
+        'from_address': 'str',
+        'to_address': 'str',
+        'value': 'int',
+        'gas': 'int',
+        'gas_price': 'int',
+        'input': 'str',
+        'block_timestamp': 'str',
+        'max_fee_per_gas': 'int',
+        'max_priority_fee_per_gas': 'int',
+        'transaction_type': 'str',
+        'block_number': 'int',
+    }
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self) -> List[ColumnField]:
+        return [self.VALUE, self.GAS_PRICE,
+                self.MAX_FEE_PER_GAS, self.MAX_PRIORITY_FEE_PER_GAS]
 
 
 class TokenTable(LedgerTable):
@@ -604,45 +675,22 @@ class TokenTable(LedgerTable):
     BLOCK_TIMESTAMP = ColumnField('block_timestamp')
     """"""
 
-    def __init__(self, **kwargs):
+    TYPE_MAPPER = {
+        'address': 'str',
+        'symbol': 'str',
+        'name': 'str',
+        'decimals': 'int',
+        'block_hash': 'str',
+        'block_number': 'int',
+        'block_timestamp': 'str',
+    }
+
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     @property
-    def bigint_cols(self):
+    def bigint_cols(self) -> List[ColumnField]:
         return []
-
-
-class TokenTransferTable(LedgerTable):
-    """
-    Token transfers ledger data table
-    Column names
-    """
-
-    TOKEN_ADDRESS = ColumnField('token_address')
-    """"""
-    FROM_ADDRESS = ColumnField('from_address')
-    """"""
-    TO_ADDRESS = ColumnField('to_address')
-    """"""
-    VALUE = ColumnField('value')
-    """"""
-    TRANSACTION_HASH = ColumnField('transaction_hash')
-    """"""
-    LOG_INDEX = ColumnField('log_index')
-    """"""
-    BLOCK_HASH = ColumnField('block_hash')
-    """"""
-    BLOCK_NUMBER = ColumnField('block_number')
-    """"""
-    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
-    """"""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    @property
-    def bigint_cols(self):
-        return [self.VALUE]
 
 
 class TokenBalanceTable(LedgerTable):
@@ -672,9 +720,139 @@ class TokenBalanceTable(LedgerTable):
     TRANSACTION_VALUE = ColumnField('transaction_value')
     """"""
 
-    def __init__(self, **kwargs):
+    TYPE_MAPPER = {
+        'block_timestamp': 'str',
+        'block_hash': 'str',
+        'block_number': 'int',
+        'token_address': 'str',
+        'transaction_hash': 'str',
+        'log_index': 'int',
+        'address': 'str',
+        'from_address': 'str',
+        'to_address': 'str',
+        'transaction_value': 'int',
+    }
+
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     @property
-    def bigint_cols(self):
+    def bigint_cols(self) -> List[ColumnField]:
         return [self.TRANSACTION_VALUE]
+
+
+class TokenTransferTable(LedgerTable):
+    """
+    Token transfers ledger data table
+    Column names
+    """
+
+    TOKEN_ADDRESS = ColumnField('token_address')
+    """"""
+    FROM_ADDRESS = ColumnField('from_address')
+    """"""
+    TO_ADDRESS = ColumnField('to_address')
+    """"""
+    VALUE = ColumnField('value')
+    """"""
+    TRANSACTION_HASH = ColumnField('transaction_hash')
+    """"""
+    LOG_INDEX = ColumnField('log_index')
+    """"""
+    BLOCK_HASH = ColumnField('block_hash')
+    """"""
+    BLOCK_NUMBER = ColumnField('block_number')
+    """"""
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
+    """"""
+
+    TYPE_MAPPER = {
+        'token_address': 'str',
+        'from_address': 'str',
+        'to_address': 'str',
+        'value': 'int',
+        'transaction_hash': 'str',
+        'log_index': 'int',
+        'block_hash': 'str',
+        'block_number': 'int',
+        'block_timestamp': 'str',
+    }
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self) -> List[ColumnField]:
+        return [self.VALUE]
+
+
+class TraceTable(LedgerTable):
+    """
+    Trace ledger data table
+    Column names
+    """
+
+    BLOCK_HASH = ColumnField('block_hash')
+    """"""
+    BLOCK_NUMBER = ColumnField('block_number')
+    """"""
+    BLOCK_TIMESTAMP = ColumnField('block_timestamp')
+    """"""
+    TRANSACTION_HASH = ColumnField('transaction_hash')
+    """"""
+    TRANSACTION_INDEX = ColumnField('transaction_index')
+    """"""
+    FROM_ADDRESS = ColumnField('from_address')
+    """"""
+    TO_ADDRESS = ColumnField('to_address')
+    """"""
+    VALUE = ColumnField('value')
+    """"""
+    INPUT = ColumnField('input')
+    """"""
+    OUTPUT = ColumnField('output')
+    """"""
+    TRACE_TYPE = ColumnField('trace_type')
+    """"""
+    CALL_TYPE = ColumnField('call_type')
+    """"""
+    REWARD_TYPE = ColumnField('reward_type')
+    """"""
+    GAS = ColumnField('gas')
+    """"""
+    TRACE_ADDRESS = ColumnField('trace_address')
+    """"""
+    ERROR = ColumnField('error')
+    """"""
+    STATUS = ColumnField('status')
+    """"""
+    TRACE_ID = ColumnField('trace_id')
+    """"""
+
+    TYPE_MAPPER = {
+        'block_hash': 'str',
+        'block_number': 'int',
+        'block_timestamp': 'str',
+        'transaction_hash': 'str',
+        'transaction_index': 'int',
+        'from_address': 'str',
+        'to_address': 'str',
+        'value': 'int',
+        'input': 'str',
+        'output': 'str',
+        'trace_type': 'str',
+        'call_type': 'str',
+        'reward_type': 'Optional[str]',
+        'gas': 'int',
+        'trace_address': 'str',
+        'error': 'Optional[str]',
+        'status': 'int',
+        'trace_id': 'str',
+    }
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self) -> List[ColumnField]:
+        return [self.VALUE]

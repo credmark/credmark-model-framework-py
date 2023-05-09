@@ -9,7 +9,11 @@ pandas>=1.3.0
 pydantic==1.9.0
 python-dotenv
 PyYAML==6.0
-sqlitedict>=2.0.0
+requests==2.27.1
+rlp==2.0.1
+rsa==4.8
+six==1.16.0
+toolz==0.11.2
 typing_extensions>=4.1
-web3 @ git+https://github.com/ethereum/web3.py@v6.0.0-beta.11
+web3==6.0.0
 # web3 @ git+https://github.com/credmark/web3.py.git@e886bbd74f0974cb1895846550ef71ce3af167fc

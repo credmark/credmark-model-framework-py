@@ -2,6 +2,7 @@ import datetime
 import json
 
 import numpy as np
+
 from credmark.dto import DTO, DTOTypesTuple
 
 

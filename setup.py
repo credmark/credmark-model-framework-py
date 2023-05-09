@@ -4,8 +4,11 @@
 import os
 import sys
 
+import versioneer
+
 try:
-    from setuptools import setup, find_namespace_packages as find_packages
+    from setuptools import find_namespace_packages as find_packages
+    from setuptools import setup
 except ImportError:
     from distutils.core import setup
     find_packages = None
@@ -19,8 +22,6 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
-
-import versioneer
 
 setup(
     name='credmark-model-framework',
