@@ -4,7 +4,6 @@ import json
 from typing import List, Optional, Sequence, Union
 
 from web3 import Web3
-from web3.contract import Contract as Web3Contract
 from web3.contract.async_contract import AsyncContract as Web3AsyncContract
 from web3.contract.contract import Contract as Web3Contract
 
