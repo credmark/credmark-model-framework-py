@@ -25,5 +25,6 @@ class RpcBlockNumber(DTO):
 
 
 class RpcBlockRangeOutput(IterableListGenericDTO[RpcBlockNumber]):
-    blockNumbers: List[RpcBlockNumber] = DTOField(default=[], description='List of block numbers')
+    blockNumbers: List[RpcBlockNumber] = DTOField(
+        default=[], description='List of block numbers')
     _iterator: str = PrivateAttr('blockNumbers')

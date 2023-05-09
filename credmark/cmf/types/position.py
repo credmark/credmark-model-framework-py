@@ -1,9 +1,9 @@
 import credmark.cmf.model
-from credmark.dto import DTO, DTOField, cross_examples
 from credmark.cmf.model.errors import ModelDataError
+from credmark.dto import DTO, DTOField, cross_examples
 
-from .token_erc20 import NativeToken, Token
 from .price import PriceWithQuote
+from .token_erc20 import NativeToken, Token
 
 
 class Position(DTO):
@@ -27,9 +27,10 @@ class Position(DTO):
             quote_dict = {}
 
         try:
-            token_price = context.run_model(price_model,
-                                            input={'base': self.asset} | quote_dict,
-                                            block_number=block_number)['price']
+            token_price = context.run_model(
+                price_model,
+                input={'base': self.asset} | quote_dict,
+                block_number=block_number)['price']
         except ModelDataError:
             token_price = 0
         return token_price * self.amount

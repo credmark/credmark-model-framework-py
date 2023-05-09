@@ -1,21 +1,41 @@
 # pylint: disable=locally-disabled, unused-import
+# ruff: noqa: F401
 
 import re
 from typing import Any, Dict, Generic, Iterator, List, TypeVar, Union
+
 from pydantic import (
     BaseModel as DTO,
+)
+from pydantic import (
+    Extra as DTOExtra,
+)
+from pydantic import (
     Field as DTOField,
-    ValidationError as DTOValidationError,
-    constr,
+)
+from pydantic import (
+    Json as DTOJson,
+)
+from pydantic import (
+    PrivateAttr,
     confloat,
     conint,
+    constr,
     validator,
-    Json as DTOJson,
-    Extra as DTOExtra,
-    PrivateAttr,
 )
+from pydantic import (
+    ValidationError as DTOValidationError,
+)
+
 # A GenericDTO is a kind of DTO: isinstance(g, DTO) == True
 from pydantic.generics import GenericModel as GenericDTO
+
+from .dto_schema import (
+    cross_examples,
+    dto_schema_viz,
+    print_example,
+    print_tree,
+)
 
 
 class DTOPretty:
@@ -230,16 +250,3 @@ A tuple containing the DTO types superclasses.
 This can be used when checking if an instance is a DTOType
 subclass: ```isinstance(obj, DTOTypesTuple)```
 """
-
-
-from .dto_schema import (
-    cross_examples,
-    dto_schema_viz,
-    print_tree,
-    print_example,
-)
-
-from .encoder import (
-    json_dump,
-    json_dumps
-)

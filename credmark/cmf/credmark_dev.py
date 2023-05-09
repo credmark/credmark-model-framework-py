@@ -8,10 +8,11 @@ import sys
 import unittest
 from typing import List, Union
 
+from dotenv import find_dotenv, load_dotenv
+
 from credmark.cmf.engine.model_unittest import ModelTestContextFactory
 from credmark.cmf.model.print import print_manifest, print_manifest_description
-from credmark.dto import json_dump, json_dumps
-from dotenv import find_dotenv, load_dotenv
+from credmark.dto.encoder import json_dump, json_dumps
 
 from .engine.context import EngineModelContext
 from .engine.github import get_latest_cmf_version_tag
@@ -41,8 +42,8 @@ def main():  # pylint: disable=too-many-statements
     parser.add_argument('--log_file', default=None, required=False,
                         help='log file to write')
     parser.add_argument('--model_path', default="models", required=False,
-                        help='Semicolon separated paths to the model folders \
-                            (or parent) or model python file. Defaults to models folder.')
+                        help=('Semicolon separated paths to the model folders'
+                              '(or parent) or model python file. Defaults to models folder.'))
     parser.add_argument('--manifest_file', type=str, default='models.json',
                         help='Name of the built manifest file. Defaults to models.json. '
                         '[Not required during development]')
@@ -98,7 +99,8 @@ def main():  # pylint: disable=too-many-statements
         help='The name of the new model file. Ex. "model.py"')
     parser_create.set_defaults(func=create_model)
 
-    parser_run = subparsers.add_parser('run', help='Run a model', aliases=['run-model'])
+    parser_run = subparsers.add_parser(
+        'run', help='Run a model', aliases=['run-model'])
     parser_run.add_argument('-b', '--block_number', type=int, required=False, default=None,
                             help='Block number used for the context of the model run.'
                             ' If not specified, it is set to the latest block of the chain.')
@@ -133,14 +135,17 @@ def main():  # pylint: disable=too-many-statements
                             help='JSON object of chain id to Web3 provider HTTP URL. '
                             'Overrides settings in env var or .env file.')
     add_api_url_arg(parser_run)
-    parser_run.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
-    parser_run.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False, default=0)
+    parser_run.add_argument(
+        '--run_id', help=argparse.SUPPRESS, required=False, default=None)
+    parser_run.add_argument('--depth', help=argparse.SUPPRESS,
+                            type=int, required=False, default=0)
     parser_run.add_argument(
         'model-slug', default='(missing model-slug arg)',
         help='Slug for the model to run or "console" for the interactive console.')
     parser_run.set_defaults(func=run_model, depth=0)
 
-    parser_test = subparsers.add_parser('test', help='Run model tests', aliases=['run-tests'])
+    parser_test = subparsers.add_parser(
+        'test', help='Run model tests', aliases=['run-tests'])
     parser_test.add_argument('-p', '--pattern', required=False, default='test*.py',
                              help='Pattern to match test files (test*.py default).')
     add_api_url_arg(parser_test)
@@ -316,7 +321,7 @@ def merge_manifests(manifests: List[dict], extra_manifests: List[dict]):
     merged = manifests.copy()
     slugs = {m['slug'] for m in merged}
     for m in extra_manifests:
-        if not m['slug'] in slugs:
+        if m['slug'] not in slugs:
             merged.append(m)
     merged.sort(key=lambda m: m['slug'])
     return merged
@@ -346,7 +351,8 @@ def list_deployed_models(args):  # pylint: disable=too-many-branches
         if model_slug:
             sys.stdout.write('\n')
             if len(manifests) == 0:
-                sys.stdout.write(f'Model slug {model_slug} not found on server.\n\n')
+                sys.stdout.write(
+                    f'Model slug {model_slug} not found on server.\n\n')
         else:
             sys.stdout.write('\nDeployed Models:\n\n')
 
@@ -399,7 +405,8 @@ def create_model(args):
         with open(file_path, 'w') as file:
             file.write(inspect.getsource(credmark.cmf.model.template))
     except Exception as exc:
-        logger.error(f'Error writing model template to path {file_path}: {exc}')
+        logger.error(
+            f'Error writing model template to path {file_path}: {exc}')
 
     sys.exit(0)
 
@@ -465,7 +472,8 @@ def run_tests(args):
     chain_to_provider_url = create_chain_to_provider_url(providers_json)
     model_loader = load_models(args, load_dev_models=True)
 
-    factory = ModelTestContextFactory(model_loader, chain_to_provider_url, api_url)
+    factory = ModelTestContextFactory(
+        model_loader, chain_to_provider_url, api_url)
     ModelTestContextFactory.use_factory(factory)
 
     pattern = args['pattern']
@@ -516,7 +524,7 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
 
         if debug_log:
             dbg_logger = logging.getLogger('credmark.cmf.engine.context.debug')
-            handler = logging.StreamHandler(sys.stderr)
+            handler = logging.StreamHandler()
             handler.setFormatter(logging.Formatter('%(message)s\n'))
             dbg_logger.propagate = False
             dbg_logger.addHandler(handler)
@@ -558,7 +566,8 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
 
         if model_slug != 'console':
             if format_json:
-                print(json_dumps(result, indent=4).replace('\\n', '\n').replace('\\"', '\''))
+                print(json_dumps(result, indent=4).replace(
+                    '\\n', '\n').replace('\\"', '\''))
             elif args['output']:
                 logger.info(f"Saving model results to {args['output']}")
                 with open(args['output'], 'w') as fp:

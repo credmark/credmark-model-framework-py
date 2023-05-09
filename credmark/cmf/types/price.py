@@ -20,7 +20,8 @@ class Price(DTO):
 
 
 class PriceWithQuote(Price):
-    quoteAddress: Address = DTOField(description='The address of quoted currency')
+    quoteAddress: Address = DTOField(
+        description='The address of quoted currency')
 
     def cross(self, other: 'PriceWithQuote'):
         return PriceWithQuote(price=self.price * other.price,
@@ -51,9 +52,11 @@ class PriceWithQuote(Price):
 
     class Config:
         schema_extra: dict = {
-            'examples': cross_examples(Price.Config.schema_extra['examples'],
-                                       [{'quoteAddress': Currency('USD').address}],
-                                       limit=10)
+            'examples': cross_examples(
+                Price.Config.schema_extra['examples'],
+                [{'quoteAddress': Currency(
+                    'USD').address}],
+                limit=10)
         }
 
 

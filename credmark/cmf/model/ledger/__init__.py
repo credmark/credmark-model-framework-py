@@ -1,7 +1,16 @@
-from credmark.cmf.types.ledger import (BlockTable, ContractTable, LogTable,
-                                       ReceiptTable, TokenBalanceTable,
-                                       TokenTable, TokenTransferTable,
-                                       TraceTable, TransactionTable)
+from typing import List
+
+from credmark.cmf.types.ledger import (
+    BlockTable,
+    ContractTable,
+    LogTable,
+    ReceiptTable,
+    TokenBalanceTable,
+    TokenTable,
+    TokenTransferTable,
+    TraceTable,
+    TransactionTable,
+)
 from credmark.cmf.types.ledger_query import LedgerQuery
 
 QUERY_METHOD_DOC_STRING = """
@@ -51,9 +60,11 @@ QUERY_METHOD_DOC_STRING = """
 
 def ledger_table_doc(func):
     def wrapper(self, *args, **kwargs):
-        func.__doc__ = QUERY_METHOD_DOC_STRING.replace('{TABLE}', func.__name__)
+        func.__doc__ = QUERY_METHOD_DOC_STRING.replace(
+            '{TABLE}', func.__name__)
         result = func(self, *args, **kwargs)
-        result.__doc__ = QUERY_METHOD_DOC_STRING.replace('{TABLE}', func.__name__)
+        result.__doc__ = QUERY_METHOD_DOC_STRING.replace(
+            '{TABLE}', func.__name__)
         return result
     return wrapper
 
@@ -119,6 +130,19 @@ class Ledger:
 
     def __init__(self):
         pass
+
+    def tables(self) -> List[str]:
+        """
+        Returns a list of tables in the ledger database.
+        """
+        return [prop for prop in dir(self) if
+                isinstance(getattr(self, prop), LedgerQuery)]
+
+    def table(self, table_name: str) -> List[str]:
+        """
+        Returns a query handle for the given table name.
+        """
+        return getattr(self, table_name)
 
     @property
     @ledger_table_doc

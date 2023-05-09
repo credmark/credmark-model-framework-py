@@ -3,17 +3,27 @@
   "python.languageServer": "Pylance",
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.diagnosticMode": "workspace",
-  "python.formatting.autopep8Args": [
-    "--ignore",
-    "E402", // Module level import not at top of file
+  "autopep8.args": [
     "--max-line-length",
-    "100"
+    "120",
+  ],
+  "ruff.args": [
+    "--ignore",
+    "E501",
+    "--ignore",
+    "F841",
   ],
   "python.linting.pylintEnabled": true,
   "python.linting.lintOnSave": true,
   "python.linting.enabled": true,
   "python.linting.pylintArgs": [],
-  "python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
+  "python.testing.unittestArgs": [
+    "-v",
+    "-s",
+    "./tests",
+    "-p",
+    "test_*.py"
+  ],
   "python.testing.pytestEnabled": false,
   "python.testing.unittestEnabled": true,
   "cSpell.words": [
@@ -28,6 +38,7 @@
     "autocommit",
     "autodoc",
     "autosummary",
+    "avalenche",
     "AVINOC",
     "Axie",
     "backoff",

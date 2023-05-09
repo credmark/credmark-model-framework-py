@@ -6,7 +6,8 @@ from .position import Position, PositionWithPrice
 
 
 class Portfolio(IterableListGenericDTO[Position]):
-    positions: List[Position] = DTOField(default=[], description='List of positions')
+    positions: List[Position] = DTOField(
+        default=[], description='List of positions')
     _iterator: str = PrivateAttr('positions')
 
     def get_value(self, price_model='price.quote', block_number=None, quote=None):
@@ -48,7 +49,8 @@ class Portfolio(IterableListGenericDTO[Position]):
 
 
 class PortfolioWithPrice(IterableListGenericDTO[PositionWithPrice]):
-    positions: List[PositionWithPrice] = DTOField(default=[], description='List of positions')
+    positions: List[PositionWithPrice] = DTOField(
+        default=[], description='List of positions')
     _iterator: str = PrivateAttr('positions')
 
     def get_value(self, price_model='price.quote', block_number=None, quote=None):

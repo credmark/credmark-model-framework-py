@@ -23,8 +23,7 @@ import sys
 import warnings
 from gettext import NullTranslations
 from os import path
-from typing import (Any, Dict, List, NamedTuple, Optional, Sequence, Set,
-                    Tuple, Type, Union)
+from typing import Any, Dict, List, NamedTuple, Optional, Sequence, Set, Tuple, Type, Union
 
 import sphinx.ext.autodoc.importer
 import sphinx.locale
@@ -47,8 +46,7 @@ from sphinx.util.osutil import ensuredir
 from sphinx.util.template import SphinxTemplateLoader
 
 # credmark_autosummary change:
-from . import (ImportExceptionGroup, get_documenter, import_by_name,
-               import_ivar_by_name)
+from . import ImportExceptionGroup, get_documenter, import_by_name, import_ivar_by_name
 
 logger = logging.getLogger(__name__)
 
@@ -83,12 +81,19 @@ class AutosummaryEntry(NamedTuple):
 
 
 def setup_documenters(app: Any) -> None:
-    from sphinx.ext.autodoc import (AttributeDocumenter, ClassDocumenter,
-                                    DataDocumenter, DecoratorDocumenter,
-                                    ExceptionDocumenter, FunctionDocumenter,
-                                    MethodDocumenter, ModuleDocumenter,
-                                    NewTypeAttributeDocumenter,
-                                    NewTypeDataDocumenter, PropertyDocumenter)
+    from sphinx.ext.autodoc import (
+        AttributeDocumenter,
+        ClassDocumenter,
+        DataDocumenter,
+        DecoratorDocumenter,
+        ExceptionDocumenter,
+        FunctionDocumenter,
+        MethodDocumenter,
+        ModuleDocumenter,
+        NewTypeAttributeDocumenter,
+        NewTypeDataDocumenter,
+        PropertyDocumenter,
+    )
     documenters: List[Type[Documenter]] = [
         ModuleDocumenter, ClassDocumenter, ExceptionDocumenter, DataDocumenter,
         FunctionDocumenter, MethodDocumenter, NewTypeAttributeDocumenter,
@@ -344,33 +349,26 @@ def generate_autosummary_content(name: str, obj: Any, parent: Any,
     if doc.objtype == 'module':
         scanner = ModuleScanner(app, obj)
         ns['members'] = scanner.scan(imported_members)
-        ns['functions'], ns['all_functions'] = \
-            get_members(obj, {'function'}, imported=imported_members)
-        ns['classes'], ns['all_classes'] = \
-            get_members(obj, {'class'}, imported=imported_members)
+        ns['functions'], ns['all_functions'] = get_members(obj, {'function'}, imported=imported_members)
+        ns['classes'], ns['all_classes'] = get_members(obj, {'class'}, imported=imported_members)
 
         # credmark_autosummary
-        ns['pydantic_models'], ns['all_pydantic_models'] = \
-            get_members(obj, {'pydantic_model'}, imported=imported_members)
-        ns['pydantic_settings'], ns['all_pydantic_settings'] = \
-            get_members(obj, {'pydantic_settings'}, imported=imported_members)
+        ns['pydantic_models'], ns['all_pydantic_models'] = get_members(
+            obj, {'pydantic_model'}, imported=imported_members)
+        ns['pydantic_settings'], ns['all_pydantic_settings'] = get_members(
+            obj, {'pydantic_settings'}, imported=imported_members)
         # -- credmark_autosummary
 
-        ns['exceptions'], ns['all_exceptions'] = \
-            get_members(obj, {'exception'}, imported=imported_members)
-        ns['attributes'], ns['all_attributes'] = \
-            get_module_attrs(ns['members'])
+        ns['exceptions'], ns['all_exceptions'] = get_members(obj, {'exception'}, imported=imported_members)
+        ns['attributes'], ns['all_attributes'] = get_module_attrs(ns['members'])
         ispackage = hasattr(obj, '__path__')
         if ispackage and recursive:
             ns['modules'], ns['all_modules'] = get_modules(obj)
     elif doc.objtype == 'class':
         ns['members'] = dir(obj)
-        ns['inherited_members'] = \
-            set(dir(obj)) - set(obj.__dict__.keys())
-        ns['methods'], ns['all_methods'] = \
-            get_members(obj, {'method'}, ['__init__'])
-        ns['attributes'], ns['all_attributes'] = \
-            get_members(obj, {'attribute', 'property'})
+        ns['inherited_members'] = set(dir(obj)) - set(obj.__dict__.keys())
+        ns['methods'], ns['all_methods'] = get_members(obj, {'method'}, ['__init__'])
+        ns['attributes'], ns['all_attributes'] = get_members(obj, {'attribute', 'property'})
         # credmark_autosummary
         ns['is_int'] = issubclass(obj, int)
         ns['is_str'] = issubclass(obj, str)
@@ -603,8 +601,7 @@ def find_autosummary_in_lines(lines: List[str],
                 name = m.group(1).strip()
                 if name.startswith('~'):
                     name = name[1:]
-                if current_module and \
-                   not name.startswith(current_module + '.'):
+                if current_module and not name.startswith(current_module + '.'):
                     name = "%s.%s" % (current_module, name)
                 if toctree and template:
                     documented.append(AutosummaryEntry(name, toctree, template, recursive))

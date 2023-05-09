@@ -1,5 +1,7 @@
+# pylint: disable=line-too-long
+
 import logging
-from typing import Generic, List, Type, TypeVar, Union
+from typing import Any, Generic, List, Optional, Type, TypeVar, Union
 
 from credmark.dto import DTO, DTOField, GenericDTO
 from credmark.dto.transform import transform_data_for_dto
@@ -17,13 +19,16 @@ class ModelCallStackEntry(DTO):
     version: str = DTOField(..., description='Model version')
     """
     """
-    chainId: Union[int, None] = DTOField(None, description='Context chain id')
+    chainId: Optional[int] = DTOField(None, description='Context chain id')
     """
     """
-    blockNumber: Union[int, None] = DTOField(None, description='Context block number')
+    blockNumber: Optional[int] = DTOField(None, description='Context block number')
     """
     """
-    trace: Union[str, None] = DTOField(None, description='Trace of code that generated the error')
+    input: Optional[Any] = DTOField(None, description='Context input')
+    """
+    """
+    trace: Optional[str] = DTOField(None, description='Trace of code that generated the error')
     """
     """
 
@@ -59,8 +64,7 @@ class ModelErrorDTO(GenericDTO, Generic[DetailDTOClass]):
     """
     """
     permanent: bool = DTOField(
-        False,
-        description='If true, the error will always give the same result for the same context.')
+        False, description='If true, the error will always give the same result for the same context.')
     """
     """
 
@@ -138,7 +142,7 @@ class ModelBaseError(Exception):
         cls.class_map[cls.__name__] = cls
         cls.dto_set.add(cls.dto_class)
 
-    @ classmethod
+    @classmethod
     def class_for_name(cls, name: str):
         """
         Return a specific error class for a name.
@@ -146,7 +150,7 @@ class ModelBaseError(Exception):
         """
         return cls.class_map.get(name)
 
-    @ classmethod
+    @classmethod
     def base_error_schema(cls):
         return cls.schema_for_dto_class(cls.dto_class)
 
@@ -162,7 +166,7 @@ class ModelBaseError(Exception):
             s['title'] = title
         return s
 
-    @ classmethod
+    @classmethod
     def error_schemas(cls):
         schemas = []
         for dto in cls.dto_set:
@@ -357,8 +361,8 @@ class ModelNotFoundError(ModelEngineError):
 
     @classmethod
     def create(cls, slug: str, version: Union[str, None], message: Union[str, None] = None):
-        message = f'Missing model "{slug}" version {version if version is not None else "any"}' \
-            + ('. ' + message if message is not None else '')
+        message = (f'Missing model "{slug}" version {version if version is not None else "any"}.'
+                   f'{(" " + message) if message is not None else ""}')
         return ModelNotFoundError(message=message,
                                   detail=SlugAndVersionDTO(slug=slug, version=version))
 

@@ -2,6 +2,78 @@
 
 History
 -------
+0.8.102 [2023-05-08]
+* feat: enrich context.models object with list() and get_result()
+* feat: enable context.enter() for Contract and Token web3 calls
+* chore: turn off test_ledger.py for now
+
+0.8.101 [2023-05-04]
+* feat: enable multi chain in token
+
+0.8.100 [2023-05-01]
+* fix: exclude group by columns if already in aggregates
+* opt: remove sqlitedict (added from 0.8.33)
+
+0.8.99 [2023-04-28]
+* chore: lint with ruff
+
+0.8.98 [2023-04-26]
+* feat: add input to call stack
+
+0.8.97 [2023-04-25]
+* fix: network to str
+
+0.8.96 [2023-04-25]
+* fix: ipython context
+
+0.8.95 [2023-04-25]
+* feat: add network dict
+
+.8.95 [2023-04-25]
+* feat: add network dict
+
+0.8.94 [2023-04-25]
+* feat: add originator to ledger model input
+
+0.8.93 [2023-04-22]
+* feat: add context.ledger.describe()
+
+0.8.92 [2023-04-22]
+* feat: add context.ledger.tables() and context.ledger.table()
+
+0.8.91 [2023-04-22]
+* fix: table join
+
+0.8.90 [2023-04-21]
+* fix: contract lookup error handling
+
+0.8.89 [2023-04-21]
+* feat: expose original_input in context
+
+0.8.88 [2023-04-20]
+* fix: by range event fetching
+
+0.8.87 [2023-04-20]
+* lint: clean up for ledger
+
+0.8.86 [2023-04-19]
+* refactor: redundant block sampling
+
+0.8.85 [2023-04-18]
+* chore: make ipython loader robust to environment variables
+
+0.8.84 [2023-04-17]
+* chore: split token list to separate file per chainId
+* chore: support new DB
+* chore: new create_context
+* feat: fetch_events with by_range
+
+0.8.83 [2023-04-04]
+* feat: added public nodes
+* feat: added public api key
+
+0.8.82 [2023-03-27]
+* fix: fix ipython under non-Ethereum networks
 
 0.8.81 [2023-03-18]
 * fix: fetch_event for multiple events with same name
@@ -177,7 +249,6 @@ History
 0.8.33 [2022-08-14]
 * Improve local cache with Sqlitedict (#152), allow multiple readonly base cache (#153) and type annotation (#154)
 * Create function for ipython extension (#152)
-
 
 0.8.32 [2022-08-10]
 * Make models call available to Account/Contract/Token (#150)

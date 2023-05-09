@@ -1,19 +1,20 @@
-from typing import List, Union
+# pylint: disable=line-too-long, protected-access, too-many-branches
+
+from typing import Any, List, Union
+
+from eth_typing.evm import ChecksumAddress
+from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
 
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.dto import DTOField, IterableListGenericDTO, PrivateAttr
-from eth_typing.evm import ChecksumAddress
-from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
 
 from .abi import ABI
 from .address import Address, evm_address_regex
-from .contract import Contract
 from .block_number import BlockNumberOutOfRangeError
+from .contract import Contract
 from .data.erc_standard_data import ERC20_BASE_ABI
-from .data.fungible_token_data import (FUNGIBLE_TOKEN_DATA_BY_ADDRESS,
-                                       FUNGIBLE_TOKEN_DATA_BY_SYMBOL,
-                                       NATIVE_TOKEN)
+from .data.fungible_token_data import FUNGIBLE_TOKEN_DATA_BY_ADDRESS, FUNGIBLE_TOKEN_DATA_BY_SYMBOL, NATIVE_TOKEN
 
 
 def get_token_from_configuration(
@@ -65,6 +66,16 @@ class Token(Contract):
         decimals: Union[int, None] = None
         total_supply: Union[int, None] = None
         wrapped: Union[Address, None] = None
+        set_loaded: bool = False
+        _cache: dict[str, dict[int, Any]] = PrivateAttr(default={})
+
+        def update_cache(self, field, block_number, value):
+            if field not in self._cache:
+                self._cache[field] = {}
+            self._cache[field][block_number] = value
+
+        def get_cache(self, field, block_number):
+            return self._cache.get(field, {}).get(block_number)
 
     _meta: TokenMetadata = PrivateAttr(
         default_factory=lambda: Token.TokenMetadata())  # pylint: disable=unnecessary-lambda
@@ -86,7 +97,8 @@ class Token(Contract):
             return value
         if isinstance(value, Token):
             return value
-        raise TypeError(f'{cls.__name__} must be deserialized with an str or dict')
+        raise TypeError(
+            f'{cls.__name__} must be deserialized with an str or dict')
 
     def __new__(cls, *args, **data):
         if cls == NativeToken:
@@ -156,9 +168,13 @@ class Token(Contract):
 
             if token_data.get('set_loaded', False):  # Special case for BTC
                 self._loaded = True
+                data['meta']['set_loaded'] = True
+            else:
+                data['meta']['set_loaded'] = False
 
         if data['address'] == Address.null():
-            raise ModelDataError(f'NULL address ({Address.null()}) is not a valid Token Address')
+            raise ModelDataError(
+                f'NULL address ({Address.null()}) is not a valid Token Address')
 
         super().__init__(**data)
 
@@ -186,7 +202,7 @@ class Token(Contract):
                 _ = self.proxy_for.abi
             except BlockNumberOutOfRangeError as err:
                 raise BlockNumberOutOfRangeError(
-                    err.data.message + f' for contract {self.address}')
+                    err.data.message + f' for contract {self.address}') from err
             except ModelDataError:
                 self.proxy_for.set_abi(ERC20_BASE_ABI, set_loaded=True)
 
@@ -216,53 +232,75 @@ class Token(Contract):
     @property
     def symbol(self) -> str:
         self._load()
+        current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
+        if not self._meta.set_loaded:
+            self._meta.symbol = self._meta.get_cache('symbol', current_block)
+
         if self._meta.symbol is None:
             try:
                 symbol_tmp = self.try_erc20_property('symbol')
             except ModelDataError:
                 symbol_tmp = self.try_erc20_property('SYMBOL')
             if isinstance(symbol_tmp, bytes):
-                symbol_tmp = symbol_tmp.decode('utf-8', errors='strict').replace('\x00', '')
+                symbol_tmp = symbol_tmp.decode(
+                    'utf-8', errors='strict').replace('\x00', '')
             elif isinstance(symbol_tmp, str):
                 symbol_tmp = symbol_tmp.replace('\x00', '')
             elif not isinstance(symbol_tmp, str):
                 raise ModelDataError(f'Unknown value for symbol {symbol_tmp}')
             self._meta.symbol = symbol_tmp
+            self._meta.update_cache('symbol', current_block, symbol_tmp)
         return self._meta.symbol
 
     @property
     def decimals(self) -> int:
         self._load()
+        current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
+        if not self._meta.set_loaded:
+            self._meta.decimals = self._meta.get_cache('decimals', current_block)
+
         if self._meta.decimals is None:
             try:
                 self._meta.decimals = self.try_erc20_property('decimals')
             except ModelDataError:
                 self._meta.decimals = self.try_erc20_property('DECIMALS')
+            self._meta.update_cache('decimals', current_block, self._meta.decimals)
 
         return self._meta.decimals
 
     @property
     def name(self) -> str:
         self._load()
+        current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
+        if not self._meta.set_loaded:
+            self._meta.name = self._meta.get_cache('name', current_block)
+
         if self._meta.name is None:
             try:
                 name_tmp = self.try_erc20_property('name')
             except ModelDataError:
                 name_tmp = self.try_erc20_property('NAME')
             if isinstance(name_tmp, bytes):
-                name_tmp = name_tmp.decode('utf-8', errors='strict').replace('\x00', '')
+                name_tmp = name_tmp.decode(
+                    'utf-8', errors='strict').replace('\x00', '')
             elif isinstance(name_tmp, str):
                 name_tmp = name_tmp.replace('\x00', '')
             elif not isinstance(name_tmp, str):
                 raise ModelDataError(f'Unknown value for name {name_tmp}')
             self._meta.name = name_tmp
+            self._meta.update_cache('name', current_block, name_tmp)
         return self._meta.name
 
     @property
     def total_supply(self) -> int:
         self._load()
+        current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
+        if not self._meta.set_loaded:
+            self._meta.total_supply = self._meta.get_cache('total_supply', current_block)
+
         if self._meta.total_supply is None:
             self._meta.total_supply = self.try_erc20_property('totalSupply')
+            self._meta.update_cache('total_supply', current_block, self._meta.total_supply)
         return self._meta.total_supply
 
     @property
@@ -304,7 +342,8 @@ class NativeToken(Token):
         context = credmark.cmf.model.ModelContext.current_context()
         token_data = NATIVE_TOKEN[context.chain_id]
         if token_data is None:
-            raise ModelRunError(f'No native token specified for chain id: {context.chain_id}')
+            raise ModelRunError(
+                f'No native token specified for chain id: {context.chain_id}')
 
         if len(args) > 0:
             if isinstance(args[0], str):
@@ -328,30 +367,42 @@ class NativeToken(Token):
                 f'Wrong address {address} specified for {token_data["address"]} '
                 f'for chain id: {context.chain_id}')
         super().__init__(**({'address': token_data['address']}))
-        if context.chain_id == 1:
-            self._meta.abi = ABI([])
-            self._meta.symbol = token_data['symbol']
-            self._meta.name = token_data['name']
-            self._meta.decimals = token_data['decimals']
-            self._meta.wrapped = Address(token_data['wrapped'])
-            self._meta.total_supply = 0
-            self._loaded = True
+
+        self._meta.abi = ABI([])
+        self._meta.symbol = token_data['symbol']
+        self._meta.name = token_data['name']
+        self._meta.decimals = token_data['decimals']
+        self._meta.wrapped = Address(token_data['wrapped'])
+        self._meta.total_supply = 0
+        self._loaded = True
 
     def balance_of(self, address: ChecksumAddress) -> int:
         context = credmark.cmf.model.ModelContext.current_context()
-        if context.chain_id == 1:
-            balance = context.web3.eth.get_balance(address)
-            return balance
-        else:
-            raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
+        balance = context.web3.eth.get_balance(address)
+        return balance
 
     def balance_of_scaled(self, address: ChecksumAddress) -> float:
         context = credmark.cmf.model.ModelContext.current_context()
-        if context.chain_id == 1:
-            balance = self.balance_of(address)
-            return float(context.web3.from_wei(balance, 'ether'))
-        else:
-            raise ModelRunError(f'Not supported for chain id: {context.chain_id}')
+        balance = self.balance_of(address)
+        return float(context.web3.fromWei(balance, 'ether'))
+
+    @property
+    def symbol(self):
+        if self._meta.symbol is not None:
+            return self._meta.symbol
+        raise ModelRunError(f'No symbol found for {self}')
+
+    @property
+    def name(self):
+        if self._meta.name is not None:
+            return self._meta.name
+        raise ModelRunError(f'No name found for {self}')
+
+    @property
+    def decimals(self):
+        if self._meta.decimals is not None:
+            return self._meta.decimals
+        raise ModelRunError(f'No decimals found for {self}')
 
     @property
     def ledger(self) -> None:

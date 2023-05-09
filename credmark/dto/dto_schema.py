@@ -45,7 +45,8 @@ def dto_schema_viz(head_node,  # pylint: disable=too-many-arguments,too-many-loc
 
                 if 'properties' in node and len(node['properties']) > 0:
                     props = node['properties']
-                    required = node['required'] if 'required' in node else list(props.keys())
+                    required = node['required'] if 'required' in node else list(
+                        props.keys())
                     for prop_name, prop_item in props.items():
                         if only_required:
                             if prop_name not in required:
@@ -69,7 +70,8 @@ def dto_schema_viz(head_node,  # pylint: disable=too-many-arguments,too-many-loc
                             if ret == [{var_name: node['type']}]:
                                 ret = drill_ret
                             else:
-                                ret = cross_examples(ret, drill_ret, limit=limit)
+                                ret = cross_examples(
+                                    ret, drill_ret, limit=limit)
 
                 return ret
 
@@ -89,7 +91,8 @@ def dto_schema_viz(head_node,  # pylint: disable=too-many-arguments,too-many-loc
                 # array of other types
                 array_type = node['items']['type'] if 'type' in node['items'] else 'Any'
                 if 'items' in node['items']:
-                    array_type = ','.join([item['type'] for item in node['items']['items']])
+                    array_type = ','.join([item['type']
+                                          for item in node['items']['items']])
                     array_type = f'({array_type})'
                 if ret_type == 'tree':
                     return [(n_iter, var_name, f'List[{array_type}]')]
@@ -173,7 +176,8 @@ def print_tree(tree, prefix, print_func):
                 print_tree(elem, prefix, print_func)
         elif isinstance(tree, dict):
             for elem, value in tree.items():
-                print_func(f'{prefix}{elem}: {print_tree(value, prefix, print_func)}\n')
+                print_func(
+                    f'{prefix}{elem}: {print_tree(value, prefix, print_func)}\n')
         else:
             raise ValueError(tree)
     else:
@@ -182,8 +186,8 @@ def print_tree(tree, prefix, print_func):
 
 def print_example(examples, prefix, print_func):
     if len(examples) > 0:
-        for n, l in enumerate(examples):
-            l_with_double_quote = str(l).replace("'", '"')
-            print_func(f'{prefix}#{n+1:02d}: {l_with_double_quote}\n')
+        for n, line in enumerate(examples):
+            line_with_double_quote = str(line).replace("'", '"')
+            print_func(f'{prefix}#{n+1:02d}: {line_with_double_quote}\n')
     else:
         print_func(f'{prefix}{{}}\n')

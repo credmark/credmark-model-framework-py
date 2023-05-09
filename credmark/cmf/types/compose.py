@@ -2,9 +2,9 @@ from datetime import datetime
 from typing import Callable, Generic, List, Optional, Tuple, TypeVar, Union
 
 import pandas as pd
+
 from credmark.cmf.model.errors import ModelErrorDTO
-from credmark.dto import (DTO, DTOField, DTOType, GenericDTO,
-                          IterableListGenericDTO, PrivateAttr)
+from credmark.dto import DTO, DTOField, DTOType, GenericDTO, IterableListGenericDTO, PrivateAttr
 
 from .block_number import BlockNumber
 
@@ -95,7 +95,8 @@ class MapInputsOutput(IterableListGenericDTO[MapInputsResult[INPUTDTOCLS, DTOCLS
         Extract tuples from results data
 
         """
-        results_as_list = self.to_list(fields=None if fields is None else [f for (_, f) in fields])
+        results_as_list = self.to_list(
+            fields=None if fields is None else [f for (_, f) in fields])
         if fields is None:
             return pd.DataFrame(results_as_list, columns=['input', 'output', 'error'])
         else:
@@ -185,7 +186,8 @@ class MapBlocksOutput(IterableListGenericDTO[MapBlockResult[DTOCLS]], Generic[DT
         Extract tuples from results data
 
         """
-        results_as_list = self.to_list(fields=None if fields is None else [f for (_, f) in fields])
+        results_as_list = self.to_list(fields=None if fields is None else [
+                                       f for (_, f) in fields])
         if fields is None:
             return pd.DataFrame(results_as_list,
                                 columns=['blockNumber', 'blockTime', 'output', 'error'])
@@ -203,8 +205,10 @@ class MapBlockTimeSeriesOutput(MapBlocksOutput[DTOCLS], Generic[DTOCLS]):
     endTimestamp: int = DTOField(
         ...,
         description='End timestamp of block series, inclusive unless exclusive is True.')
-    interval: int = DTOField(..., description='Interval in seconds of the sample timestamp.')
-    exclusive: bool = DTOField(..., description='If true, blocks are exclusive of end timestamp.')
+    interval: int = DTOField(...,
+                             description='Interval in seconds of the sample timestamp.')
+    exclusive: bool = DTOField(...,
+                               description='If true, blocks are exclusive of end timestamp.')
 
 
 class MapBlockTimeSeriesInput(DTO):
@@ -220,7 +224,8 @@ class MapBlockTimeSeriesInput(DTO):
     modelInput: Union[dict, DTOType, None] = DTOField(
         default=None,
         description='Input for the model run at each block number.')
-    modelSlug: str = DTOField(description='Slug of model to run at each block number.')
+    modelSlug: str = DTOField(
+        description='Slug of model to run at each block number.')
     modelVersion: Optional[str] = DTOField(
         default=None,
         description='Optional version of the model to run. Normally you should not set this.')
@@ -232,7 +237,8 @@ class MapInputsInput(DTO):
     """
     modelInputs: List[Union[dict, DTOType]] = DTOField(
         description='A list of inputs. The specified model will be run once with each input.')
-    modelSlug: str = DTOField(description='Slug of model to run with each input.')
+    modelSlug: str = DTOField(
+        description='Slug of model to run with each input.')
     modelVersion: Optional[str] = DTOField(
         default=None,
         description='Optional version of the model to run. Normally you should not set this.')
@@ -248,7 +254,8 @@ class MapBlocksInput(DTO):
     modelInput: Union[dict, DTOType, None] = DTOField(
         default=None,
         description='Input for the model run at each block number.')
-    modelSlug: str = DTOField(description='Slug of model to run at each block number.')
+    modelSlug: str = DTOField(
+        description='Slug of model to run at each block number.')
     modelVersion: Optional[str] = DTOField(
         default=None,
         description='Optional version of the model to run. Normally you should not set this.')

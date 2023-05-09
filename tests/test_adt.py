@@ -29,7 +29,8 @@ class TestModel(ModelTestCase):
         df = mm.to_dataframe()
         self.assertTrue(df.shape[0] == 2)
 
-        df = mm.to_dataframe(fields=[('x', lambda x: f'{x["price"]*100} {x["src"]*100}')])
+        df = mm.to_dataframe(
+            fields=[('x', lambda x: f'{x["price"]*100} {x["src"]*100}')])
         self.assertTrue(df.shape[0] == 2)
 
         df = mm.to_dataframe(fields=[('x', lambda x: f'{x["price"]*100} {x["src"]*10}'),
@@ -42,7 +43,8 @@ class TestModel(ModelTestCase):
         df = mm.to_dataframe()
         self.assertTrue(df.shape[0] == 2)
 
-        df = mm.to_dataframe(fields=[('x', lambda x: f'{x.price} {x.src*100}')])
+        df = mm.to_dataframe(
+            fields=[('x', lambda x: f'{x.price} {x.src*100}')])
         self.assertTrue(df.shape[0] == 2)
 
         df = mm.to_dataframe(fields=[('x', lambda x: f'{x.price*100} {x.src*10}'),

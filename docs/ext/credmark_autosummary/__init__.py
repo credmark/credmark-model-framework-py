@@ -66,8 +66,7 @@ from docutils.statemachine import StringList
 from sphinx import addnodes
 from sphinx.application import Sphinx
 from sphinx.config import Config
-from sphinx.deprecation import (RemovedInSphinx50Warning,
-                                RemovedInSphinx60Warning, deprecated_alias)
+from sphinx.deprecation import RemovedInSphinx50Warning
 from sphinx.environment import BuildEnvironment
 from sphinx.environment.adapters.toctree import TocTree
 from sphinx.errors import PycodeError
@@ -80,8 +79,7 @@ from sphinx.project import Project
 from sphinx.pycode import ModuleAnalyzer
 from sphinx.registry import SphinxComponentRegistry
 from sphinx.util import logging, rst
-from sphinx.util.docutils import (NullReporter, SphinxDirective, SphinxRole,
-                                  new_document, switch_source_input)
+from sphinx.util.docutils import NullReporter, SphinxDirective, SphinxRole, new_document, switch_source_input
 from sphinx.util.inspect import signature_from_str
 from sphinx.util.matching import Matcher
 from sphinx.util.typing import OptionSpec
@@ -746,7 +744,7 @@ def import_ivar_by_name(name: str, prefixes: List[str] = [],
             return real_name + "." + attr, INSTANCEATTR, obj, modname
     except (ImportError, ValueError, PycodeError) as exc:
         raise ImportError from exc
-    except ImportExceptionGroup as _err:
+    except ImportExceptionGroup:
         raise  # pass through it as is
 
     raise ImportError
