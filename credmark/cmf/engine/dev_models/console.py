@@ -34,6 +34,7 @@ from credmark.cmf.types import (
     Contracts,
     Currency,
     FiatCurrency,
+    JoinType,
     Maybe,
     NativePosition,
     NativeToken,

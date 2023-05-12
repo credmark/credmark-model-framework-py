@@ -5,7 +5,7 @@ import credmark.cmf.model
 from credmark.cmf.model.errors import ModelInputError, ModelRunError
 
 from .abi import ABI
-from .ledger import ColumnField, LedgerModelOutput, LedgerTable
+from .ledger import ColumnField, JoinType, LedgerModelOutput, LedgerTable
 from .ledger_query import LedgerQueryBase
 
 
@@ -106,6 +106,8 @@ class ContractEntityQuery(LedgerQueryBase):
 
     def select(self,  # pylint: disable=too-many-arguments
                columns: Union[List[str], List[ColumnField], None] = None,
+               joins: Union[List[Union[Tuple[LedgerTable, str],
+                                       Tuple[JoinType, LedgerTable, str]]], None] = None,
                where: Union[str, None] = None,
                group_by: Union[List[str], List[ColumnField], None] = None,
                order_by: Union[str, ColumnField, None] = None,
@@ -187,6 +189,7 @@ class ContractEntityQuery(LedgerQueryBase):
             model_slug=model_slug,
             originator=context.__dict__['slug'],
             columns=columns,
+            joins=joins,
             where=where,
             group_by=group_by,
             order_by=order_by,

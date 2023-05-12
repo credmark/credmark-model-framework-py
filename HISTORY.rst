@@ -2,6 +2,10 @@
 
 History
 -------
+0.8.103 [2023-05-12]
+* feat: support of contract ledger join
+* feat: add as_integer() for ColumnField
+
 0.8.102 [2023-05-08]
 * feat: enrich context.models object with list() and get_result()
 * feat: enable context.enter() for Contract and Token web3 calls

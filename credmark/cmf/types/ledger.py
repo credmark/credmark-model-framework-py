@@ -239,6 +239,9 @@ class ColumnField(str):
     def as_bigint(self):
         return ColumnField(f'{self}::BIGINT')
 
+    def as_integer(self):
+        return ColumnField(f'{self}::INTEGER')
+
     def as_numeric(self):
         return ColumnField(f'{self}::NUMERIC')
 
