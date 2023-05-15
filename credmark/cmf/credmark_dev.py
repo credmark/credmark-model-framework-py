@@ -175,6 +175,8 @@ def main():  # pylint: disable=too-many-statements
     parser_test_all.add_argument('--json', action='store_true',
                                  default=False, help="Output as json")
     parser_test_all.add_argument('-e', '--exit-on-fail', action='store_true')
+    parser_test_all.add_argument('-p', '--prefix', required=False, default=None,
+                                 help='comma-separated list of prefixes to match slug')
     add_run_arg(parser_test_all)
     add_api_url_arg(parser_test_all)
     parser_test_all.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
@@ -650,12 +652,15 @@ def run_model_no_exit(args):
 
 
 def test_all_models(args):
+    # pylint: disable=too-many-nested-blocks
     model_loader = load_models(args, True)
     manifests = model_loader.loaded_model_manifests()
     format_json: bool = args['format_json']
     get_manifests = args.get('manifests')
     get_json = args.get('json')
     exit_on_fail = args['exit_on_fail']
+    prefix = args.get('prefix')
+    model_prefix = None if prefix is None else prefix.split(',')
 
     # TODO: allow multi-chain
     # Add output of command line to run
@@ -672,19 +677,29 @@ def test_all_models(args):
                     print(m)
 
         first_input = {}
+        skip_test = False
         for i, v in m.items():
             if i == 'slug':
                 model_args['model-slug'] = v
+                if model_prefix is not None:
+                    for pre in model_prefix:
+                        if v.startswith(pre):
+                            skip_test = False
+                        else:
+                            skip_test = True
             else:
                 if i == 'input':
                     if v.get('skip_test', False):
-                        continue
+                        skip_test = True
                     input_examples = dto_schema_viz(
                         v, v.get('title', 'Object'), v, 0,
                         'example',
                         only_required=False, tag='top', limit=10)
                     first_input = input_examples[0]
                     model_args['input'] = json.dumps(first_input)
+
+        if skip_test:
+            continue
 
         model_run_args = {
             'slug': model_args['model-slug'],

@@ -123,7 +123,7 @@ def create_error_schema_for_error_descs(slug: str,
 
     except Exception as err:
         raise ModelDefinitionError(
-            f'Exception processing "errors" in model {slug} describe(): {err}')
+            f'Exception processing "errors" in model {slug} describe(): {err}') from None
 
 
 def validate_model_slug(slug: str, prefix: Union[str, None] = None):
