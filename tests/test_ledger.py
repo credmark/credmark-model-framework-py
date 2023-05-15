@@ -1,9 +1,8 @@
 # pylint: disable=line-too-long
 
 import credmark.cmf.model
-from credmark.cmf.engine.dev_models.console import get_block, get_dt
 from credmark.cmf.engine.model_unittest import ModelTestCase
-from credmark.cmf.types import Address, Contract, JoinType, Token
+from credmark.cmf.types import Address, BlockNumber, Contract, JoinType, Token
 from credmark.cmf.types.ledger_errors import InvalidQueryException
 
 
@@ -154,7 +153,7 @@ class TestLedger(ModelTestCase):
 
     def test_ledger_tables(self):
         context = credmark.cmf.model.ModelContext.current_context()
-        block_20220101 = get_block(get_dt(2022, 1, 1))
+        block_20220101 = BlockNumber.from_ymd(2022, 1, 1)
 
         with context.ledger.Contract as oo:
             df = oo.select(columns=oo.columns, limit=5,

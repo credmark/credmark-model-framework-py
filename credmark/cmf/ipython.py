@@ -263,7 +263,7 @@ Example: context, model_loader = %cmf default
         load_module_items(var_namespace, 'credmark.cmf.types')
         load_module_items(var_namespace, 'credmark.dto')
         load_module_items(var_namespace, 'credmark.cmf.engine.dev_models.console',
-                          ['get_dt', 'get_block', 'log_output'])
+                          ['log_output'])
 
         if cmf_param.get('register_utility_global', True):
             var_namespace['ledger'] = context.ledger

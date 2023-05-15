@@ -86,17 +86,6 @@ from credmark.dto import (
 from credmark.dto.encoder import json_dump, json_dumps
 
 
-# pylint: disable= too-many-arguments
-def get_dt(year: int, month: int, day: int, hour=0, minute=0, second=0, microsecond=0):
-    """Get a datetime for date and time values"""
-    return datetime(year, month, day, hour, minute, second, microsecond, tzinfo=timezone.utc)
-
-
-def get_block(in_dt: datetime):
-    """Get the BlockNumber instance at or before the datetime timestamp."""
-    return BlockNumber.from_timestamp(in_dt.replace(tzinfo=timezone.utc).timestamp())
-
-
 def log_output(log_file=None,
                log_level=logging.DEBUG,
                formatter='%(asctime)s - %(name)s - %(levelname)s - %(message)s'):
@@ -195,8 +184,10 @@ class ConsoleModel(Model):
         print('# Utility functions')
         print('list_models(): List available models')
         print('describe_model(slug): Describe a model by slug')
-        print('get_dt(y,m,d,h=0,m=0,s=0,ms=0): create UTC datetime')
-        print('get_block(in_dt): get the block number before the datetime timestamp')
+        print('block_number.get_dt(y,m,d,h=0,m=0,s=0,ms=0): create UTC datetime')
+        print('block_number.from_datetime(in_dt): '
+              'get the block number before the datetime timestamp')
+        print('block_number.from_ymd(y,m,d,h=0,m=0,s=0): get the block number from ymdhms')
         print('log_output(log_file, log_level=logging.DEBUG): set the logging output file, '
               'e.g. tmp/debug.log')
         print('')
@@ -284,7 +275,7 @@ class ConsoleModel(Model):
         'run_model = self.context.run_model #(model_slug, input=EmptyInput(), return_type=dict)',
     ]
 
-    utility_functions = [get_dt, get_block]
+    utility_functions = []
 
     def load_locals(self, _ns=globals):
         _ns()['list_models'] = self.list_models
