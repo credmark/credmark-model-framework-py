@@ -307,13 +307,21 @@ Out[2]: datetime.datetime(2022, 1, 13, 22, 59, 55, tzinfo=datetime.timezone.utc)
 Get the {class}`~credmark.cmf.types.block_number.BlockNumber` for a timestamp at or before 2022-01-01 10:30:00 UTC
 
 ```
-In [1]: bn = get_block(get_dt(2022,1,1,10,30,00))
+In [1]: bn = BlockNumber.from_datetime(datetime(2023, 1, 1, 17, 24))
 
 In [2]: bn
-Out[2]: 13919019
+Out[2]: 16313387
 
-In [3]: bn.timestamp_datetime
-Out[3]: datetime.datetime(2022, 1, 1, 10, 29, 56, tzinfo=datetime.timezone.utc)
+In [3]: bn.timestamp
+Out[3]: 1672593839
+
+In [3]: bn = BlockNumber.from_ymd(2022, 1, 1, 10, 30, 00)
+
+In [4]: bn
+Out[4]: 13919019
+
+In [5]: bn.timestamp_datetime
+Out[5]: datetime.datetime(2022, 1, 1, 10, 29, 56, tzinfo=datetime.timezone.utc)
 ```
 
 #### Query the ledger

@@ -3,9 +3,8 @@
 import unittest
 
 import credmark.cmf.model
-from credmark.cmf.engine.dev_models.console import get_dt
 from credmark.cmf.engine.model_unittest import ModelTestCase
-from credmark.cmf.types import Contract
+from credmark.cmf.types import BlockNumber, Contract
 
 
 class TestLedgerGeneric(ModelTestCase):
@@ -87,7 +86,7 @@ class TestLedgerGeneric(ModelTestCase):
                 aggregates=[(oo.MAX_FEE_PER_GAS.sum_(), 'sum_gas')],
                 limit=5,
                 where=oo.BLOCK_TIMESTAMP.gt(
-                    oo.field(int(get_dt(2022, 3, 1).timestamp())).to_timestamp()),
+                    oo.field(int(BlockNumber.get_dt(2022, 3, 1).timestamp())).to_timestamp()),
                 group_by=[oo.BLOCK_TIMESTAMP],
                 order_by=oo.BLOCK_TIMESTAMP).to_dataframe()
             print(df)
