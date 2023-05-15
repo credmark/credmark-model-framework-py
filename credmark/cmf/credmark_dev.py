@@ -47,11 +47,12 @@ def add_run_arg(parser):
                         help='JSON object of chain id to Web3 provider HTTP URL. '
                         'Overrides settings in env var or .env file.')
     parser.add_argument('-l', '--use_local_models', default=None,
-                        help=('Comma-separated list of model slugs for models that should '
-                              'favor use of the local version. This is only required when a model is '
-                              'calling another model. '
-                              'Use "*" to favor the use of local versions of all models.'
-                              ' Use "-" to use no local models.'))
+                        help=(
+                            'Comma-separated list of model slugs for models that should '
+                            'favor use of the local version. This is only required when a model is '
+                            'calling another model. '
+                            'Use "*" to favor the use of local versions of all models. '
+                            'Use "-" to use no local models.'))
     parser.add_argument('-v', '--model_version', default=None, required=False,
                         help='Version of the model to run. Defaults to latest.')
     parser.add_argument('-i', '--input', required=False, default='{}',
@@ -535,6 +536,7 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
     sys.exit(run_model_no_exit(args))
 
 
+# pylint: disable=too-many-locals, too-many-branches, too-many-statements
 def run_model_no_exit(args):
     exit_code = 0
 
