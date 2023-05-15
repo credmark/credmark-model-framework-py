@@ -2,6 +2,10 @@
 
 History
 -------
+0.8.104 [2023-05-15]
+* fix: move get_dt() and get_block() to BlockNumber object
+* feat: enrich command-line for create, help and test-all
+
 0.8.103 [2023-05-12]
 * feat: support of contract ledger join
 * feat: add as_integer() for ColumnField
