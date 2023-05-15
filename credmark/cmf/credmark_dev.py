@@ -677,6 +677,8 @@ def test_all_models(args):
                 model_args['model-slug'] = v
             else:
                 if i == 'input':
+                    if v.get('skip_test', False):
+                        continue
                     input_examples = dto_schema_viz(
                         v, v.get('title', 'Object'), v, 0,
                         'example',
@@ -690,6 +692,7 @@ def test_all_models(args):
             'chain_id': model_args['chain_id'],
             'block_number': model_args['block_number'],
         }
+
         if format_json:
             print(json_dumps(model_run_args, indent=4).replace(
                 '\\n', '\n').replace('\\"', '\''))
