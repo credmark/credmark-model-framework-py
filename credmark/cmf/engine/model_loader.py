@@ -189,7 +189,7 @@ class ModelLoader:
             try:
                 return json.load(stream)
             except Exception as exc:
-                raise Exception(f'Error loading json manifest: {exc}')
+                raise Exception(f'Error loading json manifest: {exc}') from None
 
     def _process_model_manifest(self, manifest, base_path, fpath):
         models: list = manifest.get('models')
@@ -228,7 +228,7 @@ class ModelLoader:
             model_manifest['version'] = str(model_manifest['version'])
         except KeyError as err:
             raise Exception(
-                f'Missing field {err} for model {model_manifest.get("slug", "<unknown>")}')
+                f'Missing field {err} for model {model_manifest.get("slug", "<unknown>")}') from None
 
         if mclass is not None:
             self._add_model_class(mclass)
@@ -270,7 +270,7 @@ class ModelLoader:
         try:
             pver = version.Version(ver)
         except version.InvalidVersion:
-            raise Exception(f'${model_class} has invalid version ({ver})')
+            raise Exception(f'${model_class} has invalid version ({ver})') from None
 
         self._add_slug_version_model_class(slug, pver, model_class)
 

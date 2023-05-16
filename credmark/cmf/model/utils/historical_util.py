@@ -204,7 +204,7 @@ class HistoricalUtil:
         except Exception as _err:
             raise ModelRunError(
                 f"Invalid historical time string '{time_str}': "
-                f"unknown number format. {_err}")
+                f"unknown number format. {_err}") from None
         return (key, num)
 
     def range_timestamp(self, key: str, num: int):

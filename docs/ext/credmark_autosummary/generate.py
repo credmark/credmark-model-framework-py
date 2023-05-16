@@ -288,10 +288,12 @@ def generate_autosummary_content(name: str, obj: Any, parent: Any,
 
     def get_members(obj: Any,
                     types: Set[str],
-                    include_public: List[str] = [],
+                    include_public: Optional[List[str]] = None,
                     imported: bool = True) -> Tuple[List[str], List[str]]:
         items: List[str] = []
         public: List[str] = []
+
+        include_public = [] if include_public is None else include_public
 
         all_members = get_all_members(obj)
         for name, value in all_members.items():

@@ -33,7 +33,7 @@ from credmark.cmf.types import (
     BlockNumberOutOfRangeDetailDTO,
     BlockNumberOutOfRangeError,
 )
-from credmark.dto import DTOType, DTOValidationError, EmptyInput
+from credmark.dto import DTOType, DTOValidationError
 from credmark.dto.encoder import json_dumps
 from credmark.dto.transform import (
     DataTransformError,
@@ -434,7 +434,7 @@ class EngineModelContext(ModelContext):
 
     def run_model(self,
                   slug,
-                  input=EmptyInput(),
+                  input,
                   return_type=None,
                   block_number: Union[BlockNumber, int, None] = None,
                   version=None,
@@ -760,7 +760,7 @@ class EngineModelContext(ModelContext):
             except DataTransformError as err:
                 # We convert to an input error here to distinguish
                 # from output transform errors below
-                raise ModelInputError(str(err))
+                raise ModelInputError(str(err)) from None
 
             input_as_dict = transform_dto_to_dict(input)
 
@@ -807,7 +807,7 @@ class EngineModelContext(ModelContext):
                         output = json.loads(json_dumps(output))
 
                 except DataTransformError as err:
-                    raise ModelOutputError(str(err))
+                    raise ModelOutputError(str(err)) from None
 
             EngineModelContext.notify_model_run(slug,
                                                 model_class.version,

@@ -75,4 +75,4 @@ def transform_data_for_dto(  # pylint: disable=too-many-return-statements
                 return dto_class(**data)
     except Exception as e:
         raise DataTransformError(
-            f'Error validating model {slug} {data_source}: {e}')
+            f'Error validating model {slug} {data_source}: {e}') from None

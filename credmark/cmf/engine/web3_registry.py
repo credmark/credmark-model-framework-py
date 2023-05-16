@@ -50,7 +50,7 @@ class Web3Registry:
                 chain_to_provider_url: dict = json.loads(providers_json)
             except Exception as err:
                 raise Exception(
-                    f'Error parsing JSON in env var CREDMARK_WEB3_PROVIDERS: {err}')
+                    f'Error parsing JSON in env var CREDMARK_WEB3_PROVIDERS: {err}') from None
         else:
             chain_to_provider_url = {}
 
