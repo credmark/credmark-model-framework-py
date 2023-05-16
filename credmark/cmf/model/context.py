@@ -8,7 +8,7 @@ from web3 import Web3
 
 from credmark.cmf.engine.web3_registry import Web3Registry
 from credmark.cmf.types import BlockNumber, Network
-from credmark.dto import DTOType, EmptyInput
+from credmark.dto import DTOType
 
 from .errors import ModelNoContextError
 from .ledger import Ledger
@@ -229,7 +229,7 @@ class ModelContext:
     @abstractmethod
     def run_model(self,
                   slug: str,
-                  input: Union[dict, DTOType] = EmptyInput(),
+                  input: Union[dict, DTOType],
                   return_type: Union[Type[dict], None] = None,
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,
@@ -239,7 +239,7 @@ class ModelContext:
     @abstractmethod
     def run_model(self,  # type: ignore
                   slug,
-                  input=EmptyInput(),
+                  input,
                   return_type=None,
                   block_number=None,
                   version=None,

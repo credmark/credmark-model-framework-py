@@ -108,7 +108,7 @@ class Records(GenericDTO):
         if len(self.records) == 0:
             return pd.DataFrame(columns=self.fields, data=[])
 
-        data_dict = [dict(zip(self.fields, r)) for r in self.records]
+        data_dict = [dict(zip(self.fields, r, strict=True)) for r in self.records]
         df_in = pd.DataFrame(data_dict)
         if len(self.fix_int_columns) > 0:
             for field in self.fix_int_columns:
@@ -117,8 +117,8 @@ class Records(GenericDTO):
         return df_in
 
     @classmethod
-    def from_dataframe(cls, _df, fix_int_columns=[]):  # pylint:disable=dangerous-default-value
+    def from_dataframe(cls, _df, fix_int_columns=None):  # pylint:disable=dangerous-default-value
         return cls(records=list(_df.itertuples(index=False, name=None)),
                    fields=_df.columns.tolist(),
                    n_rows=_df.shape[0],
-                   fix_int_columns=fix_int_columns)
+                   fix_int_columns=[] if fix_int_columns is None else fix_int_columns)

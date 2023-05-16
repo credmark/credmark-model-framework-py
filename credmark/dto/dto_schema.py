@@ -159,7 +159,7 @@ def dto_schema_viz(head_node,  # pylint: disable=too-many-arguments,too-many-loc
             return [{var_name: 'object'}]
 
     except Exception as err:
-        raise ValueError(f'Unknown schema node {var_name, node, err, tag}')
+        raise ValueError(f'Unknown schema node {var_name, node, err, tag}') from None
 
 
 def print_tree(tree, prefix, print_func):

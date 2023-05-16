@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.105 [2023-05-16]
+* chore: ruff-ed
+
 0.8.104 [2023-05-15]
 * fix: move get_dt() and get_block() to BlockNumber object
 * feat: enrich command-line for create, help and test-all

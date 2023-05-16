@@ -172,7 +172,7 @@ class ModelApi:
             logger.error(
                 f'Error running api request for {slug} {self.__url}: {err}')
             raise ModelRunRequestError(
-                f'Unable to reach model runner for model {slug}', '503')
+                f'Unable to reach model runner for model {slug}', '503') from None
         except ModelBaseError:
             raise
         except Exception as err:
@@ -185,15 +185,15 @@ class ModelApi:
                     error_result = resp.json()
                 except Exception:
                     raise ModelRunRequestError(
-                        f'Model run error response: {resp.text}', str(resp.status_code))
+                        f'Model run error response: {resp.text}', str(resp.status_code)) from None
 
                 raise ModelRunRequestError(
                     str(error_result.get('message', 'Error response from runner api')),
                     str(error_result.get('statusCode', 500)),
-                )
+                ) from None
 
             raise ModelRunRequestError(
-                f'Model run request error: {str(err)}', str(503))
+                f'Model run request error: {str(err)}', str(503)) from None
         finally:
             # Ensure the response is closed in case we ever don't
             # read the content.

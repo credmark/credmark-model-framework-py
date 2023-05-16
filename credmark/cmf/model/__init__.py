@@ -208,10 +208,10 @@ def describe(slug: str,  # pylint: disable=too-many-arguments
         setattr(cls, attr_name, attr_prop)
         setattr(cls, '_' + attr_name, attr_value)
 
-        setattr(cls, 'slug', slug)
-        setattr(cls, 'version', version)
-        setattr(cls, 'inputDTO', input)
-        setattr(cls, 'outputDTO', output)
+        cls.slug = slug
+        cls.version = version
+        cls.inputDTO = input
+        cls.outputDTO = output
 
         # Checks for the class
         # 1. it need to be inherited from Model class

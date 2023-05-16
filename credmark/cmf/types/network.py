@@ -63,9 +63,10 @@ class NetworkDict(DefaultDict[Network, T], Generic[T]):
     @staticmethod
     def _process_args(mapping=(), **kwargs):
         if hasattr(mapping, 'items'):
-            mapping = getattr(mapping, 'items')()
+            mapping = mapping.items()
+
         return ((Network.parse_network(k), v)
-                for k, v in chain(mapping, getattr(kwargs, 'items')()))
+                for k, v in chain(mapping, kwargs.items()))
 
     def __setitem__(self, k: NetworkKey, v: T):
         super().__setitem__(Network.parse_network(k), v)
@@ -92,6 +93,7 @@ class NetworkDict(DefaultDict[Network, T], Generic[T]):
         super().setdefault(Network.parse_network(k), v)
 
     def update(self, mapping: Iterable[tuple[NetworkKey, T]] = (), **kwargs):
+        print('update')
         super().update(self._process_args(mapping, **kwargs))
 
     @classmethod
