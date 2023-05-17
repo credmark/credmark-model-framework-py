@@ -108,7 +108,7 @@ class Records(GenericDTO):
         if len(self.records) == 0:
             return pd.DataFrame(columns=self.fields, data=[])
 
-        data_dict = [dict(zip(self.fields, r, strict=True)) for r in self.records]
+        data_dict = [dict(zip(self.fields, r)) for r in self.records]
         df_in = pd.DataFrame(data_dict)
         if len(self.fix_int_columns) > 0:
             for field in self.fix_int_columns:
