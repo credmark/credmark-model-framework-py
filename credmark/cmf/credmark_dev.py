@@ -666,15 +666,6 @@ def test_all_models(args):
     # Add output of command line to run
     for m in manifests:
         model_args = args
-        if get_manifests:
-            if format_json:
-                print(json_dumps(m, indent=4).replace(
-                    '\\n', '\n').replace('\\"', '\''))
-            else:
-                if get_json:
-                    json.dump({'models': m}, sys.stdout)
-                else:
-                    print(m)
 
         first_input = {}
         skip_test = False
@@ -700,6 +691,16 @@ def test_all_models(args):
 
         if skip_test:
             continue
+
+        if get_manifests:
+            if format_json:
+                print(json_dumps(m, indent=4).replace(
+                    '\\n', '\n').replace('\\"', '\''))
+            else:
+                if get_json:
+                    json.dump({'models': m}, sys.stdout)
+                else:
+                    print(m)
 
         model_run_args = {
             'slug': model_args['model-slug'],

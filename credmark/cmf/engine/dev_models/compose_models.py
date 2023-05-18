@@ -93,13 +93,17 @@ class ComposeMapBlockTimeSeriesModel(ComposeMapBlockTimeSeriesModelMeta):
     def run(self, input: MapBlockTimeSeriesInput) -> MapBlockTimeSeriesOutput[dict]:
         return self.run_with_local(input, local=False)
 
+class MapBlockTimeSeriesInputLocal(MapBlockTimeSeriesInput):
+    class Config:
+        schema_extra = MapBlockTimeSeriesInput.Config.schema_extra | {'skip_test': True}
+
 
 @Model.describe(slug='compose.map-block-time-series-local',
                 version='0.0',
                 display_name='Compose Map Block Time Series',
                 description='Run a model on each of a time series of blocks',
                 developer='Credmark',
-                input=MapBlockTimeSeriesInput,
+                input=MapBlockTimeSeriesInputLocal,
                 output=MapBlockTimeSeriesOutput[dict])
 class ComposeMapBlockTimeSeriesModelLocal(ComposeMapBlockTimeSeriesModelMeta):
     def run(self, input: MapBlockTimeSeriesInput) -> MapBlockTimeSeriesOutput[dict]:
