@@ -232,12 +232,14 @@ class MapBlockTimeSeriesInput(DTO):
 
     class Config:
         schema_extra = {
-            'examples': [{"modelSlug": "price.quote",
-                          "modelInput": {"base": {"address": "0xD533a949740bb3306d119CC777fa900bA034cd52"}},
-                          "endTimestamp": 1645446694,
-                          "interval": 86400,
-                          "count": 3,
-                          "exclusive": True}]}
+            'examples': [{
+                "modelSlug": "price.quote",
+                "modelInput": {
+                    "base": {"address": "0xD533a949740bb3306d119CC777fa900bA034cd52"}},
+                "endTimestamp": 1645446694,
+                "interval": 86400,
+                "count": 3,
+                "exclusive": True}]}
 
 
 class MapBlocksInput(DTO):
