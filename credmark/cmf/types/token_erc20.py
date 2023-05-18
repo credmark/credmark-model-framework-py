@@ -422,3 +422,9 @@ class Tokens(IterableListGenericDTO[Token]):
     tokens: List[Token] = DTOField(
         default=[], description="An iterable list of Token Objects")
     _iterator: str = PrivateAttr('tokens')
+
+    class Config:
+        schema_extra = {
+            "examples": [{"tokens": ['0x6B175474E89094C44Da98b954EedeAC495271d0F', # DAI
+                                     '0x514910771AF9Ca656af840dff83E8264EcF986CA']}] # LINK
+        }
