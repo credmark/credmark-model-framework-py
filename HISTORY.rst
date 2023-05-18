@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.106 [2023-05-18]
+* feat: test-all improvements
+
 0.8.105 [2023-05-16]
 * chore: ruff-ed
 

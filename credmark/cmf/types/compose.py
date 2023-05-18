@@ -230,18 +230,16 @@ class MapBlockTimeSeriesInput(DTO):
         default=None,
         description='Optional version of the model to run. Normally you should not set this.')
 
-
-class MapInputsInput(DTO):
-    """
-    Input for the compose.map-inputs model.
-    """
-    modelInputs: List[Union[dict, DTOType]] = DTOField(
-        description='A list of inputs. The specified model will be run once with each input.')
-    modelSlug: str = DTOField(
-        description='Slug of model to run with each input.')
-    modelVersion: Optional[str] = DTOField(
-        default=None,
-        description='Optional version of the model to run. Normally you should not set this.')
+    class Config:
+        schema_extra = {
+            'examples': [{
+                "modelSlug": "price.quote",
+                "modelInput": {
+                    "base": {"address": "0xD533a949740bb3306d119CC777fa900bA034cd52"}},
+                "endTimestamp": 1645446694,
+                "interval": 86400,
+                "count": 3,
+                "exclusive": True}]}
 
 
 class MapBlocksInput(DTO):
@@ -259,3 +257,31 @@ class MapBlocksInput(DTO):
     modelVersion: Optional[str] = DTOField(
         default=None,
         description='Optional version of the model to run. Normally you should not set this.')
+
+    class Config:
+        schema_extra = {
+            'examples': [{
+                "modelSlug": "price.quote",
+                "modelInput": {"base": {"address": "0xD533a949740bb3306d119CC777fa900bA034cd52"}},
+                "blockNumbers": [14249443, 14219443, 14209443]}]}
+
+
+class MapInputsInput(DTO):
+    """
+    Input for the compose.map-inputs model.
+    """
+    modelInputs: List[Union[dict, DTOType]] = DTOField(
+        description='A list of inputs. The specified model will be run once with each input.')
+    modelSlug: str = DTOField(
+        description='Slug of model to run with each input.')
+    modelVersion: Optional[str] = DTOField(
+        default=None,
+        description='Optional version of the model to run. Normally you should not set this.')
+
+    class Config:
+        schema_extra = {
+            'examples': [
+                {"modelSlug": "price.quote",
+                 "modelInputs":
+                 [{"base": {"address": "0xD533a949740bb3306d119CC777fa900bA034cd52"}},
+                  {"base": {"address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B"}}]}]}
