@@ -10,6 +10,7 @@ from typing import List
 # Not to load console model when stdin/out/error are closed.
 if not sys.stdin.closed and not sys.stdout.closed and not sys.stderr.closed:
     import IPython
+    from IPython.core.getipython import get_ipython
 
 import logging
 import os
@@ -210,7 +211,7 @@ class ConsoleModel(Model):
         print(f'The block stack is {self.blocks}')
 
     def save(self, filename):
-        ipython = IPython.get_ipython()
+        ipython = get_ipython()
         if ipython is not None:
             # ipython will automatically add a .py ext
             ipython.magic(f"%save -f {filename}")
@@ -228,7 +229,7 @@ class ConsoleModel(Model):
             file.write('\n')
 
     def load(self, filename):
-        ipython = IPython.get_ipython()
+        ipython = get_ipython()
         if ipython is not None:
             # ipython will automatically add a .py ext
             ipython.magic(f"%load {filename}")
@@ -238,7 +239,7 @@ class ConsoleModel(Model):
         Change context to a new block number.
         """
         back_block = self.context.block_number
-        self.context.run_model(self.slug, block_number=to_block)
+        self.context.run_model(self.slug, {}, block_number=to_block)
         self.context.block_number = back_block
         self.context.web3.eth.default_block = back_block
         self.load_locals()

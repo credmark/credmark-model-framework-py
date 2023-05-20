@@ -2,7 +2,7 @@
 
 import contextlib
 from enum import Enum
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import credmark.cmf.model
 
@@ -38,18 +38,16 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
     def _gen_model_input(self,
                          model_slug: str,
                          originator: str,
-                         columns: Union[List[str],
-                                        List[ColumnField], None] = None,
-                         joins: Union[List[Union[Tuple[LedgerTable, str],
-                                                 Tuple[JoinType, LedgerTable, str]]], None] = None,
-                         where: Union[str, None] = None,
-                         group_by: Union[List[str],
-                                         List[ColumnField], None] = None,
-                         order_by: Union[str, ColumnField, None] = None,
-                         limit: Union[int, None] = None,
-                         offset: Union[int, None] = None,
-                         aggregates: Union[List[Tuple[str, str]], None] = None,
-                         having: Union[str, None] = None) -> dict:
+                         columns: Optional[Union[List[str], List[ColumnField]]] = None,
+                         joins: Optional[List[Union[Tuple[LedgerTable, str],
+                                                    Tuple[JoinType, LedgerTable, str]]]] = None,
+                         where: Optional[str] = None,
+                         group_by: Optional[Union[List[str], List[ColumnField]]] = None,
+                         order_by: Optional[Union[str, ColumnField]] = None,
+                         limit: Optional[int] = None,
+                         offset: Optional[int] = None,
+                         aggregates: Optional[List[Tuple[str, str]]] = None,
+                         having: Optional[str] = None) -> dict:
 
         aggregates_names = [agg[0] for agg in aggregates] if aggregates else []
 
