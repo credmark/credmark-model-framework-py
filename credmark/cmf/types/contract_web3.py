@@ -1,5 +1,7 @@
 # pylint:disable=too-many-locals, too-many-arguments
 
+
+import asyncio
 import math
 from typing import Optional, Sequence
 
@@ -9,6 +11,34 @@ from web3._utils.filters import construct_event_filter_params
 
 # from web3._utils.abi import get_constructor_abi, merge_args_and_kwargs
 # from web3._utils.contracts import encode_abi
+
+
+async def fetch_events_async(async_w3, event_filter_params, from_block, end_block):
+    """
+    events = asyncio.run(fetch_events_async(async_w3, event_filter_params,
+                         from_block, to_block))  # type: ignore
+    """
+    numOfChunk = 10
+    size_per_chunk = (end_block - from_block + 1) // numOfChunk
+    if size_per_chunk > 0:
+        tasks = []
+        for i in range(numOfChunk):
+            _from_block = from_block + i * size_per_chunk
+            if i == numOfChunk - 1:
+                _to_block = end_block
+            else:
+                _to_block = _from_block + size_per_chunk - 1
+            print((_from_block, _to_block, _to_block-_from_block+1))
+            tasks.append(async_w3.eth.get_logs(event_filter_params |
+                                               {'fromBlock': _from_block, 'toBlock': _to_block}))
+    else:
+        tasks = [async_w3.eth.get_logs(event_filter_params | {'fromBlock': from_block,
+                                                              'toBlock': end_block})]
+    events = []
+    for result in asyncio.as_completed(tasks):
+        b = await result
+        events.extend(b)
+    return events
 
 
 def fetch_events(
@@ -39,8 +69,9 @@ def fetch_events(
         raise TypeError(
             "Missing mandatory keyword argument to getLogs: from_Block")
 
+    w3 = event.web3
     if to_block is None:
-        to_block = event.web3.eth.block_number
+        to_block = w3.eth.block_number
 
     # TODO: existing code reports error with multiple events with same name, different input
     # abi = event._get_event_abi()  # pylint:disable=protected-access
@@ -57,7 +88,7 @@ def fetch_events(
             'Multiple events found with same name and argument names')
     event_abi = event_abis[0]
 
-    abi_codec = event.web3.codec
+    abi_codec = w3.codec
 
     # Set up any indexed event filters if needed
     argument_filters = {} if argument_filters is None else argument_filters
@@ -76,7 +107,7 @@ def fetch_events(
         )
 
         # Call node over JSON-RPC API
-        logs = event.web3.eth.getLogs(event_filter_params)
+        logs = w3.eth.getLogs(event_filter_params)
 
         # Convert raw binary event data to easily manipulable Python objects
         for entry in logs:
@@ -84,14 +115,15 @@ def fetch_events(
             args = data['args']
             yield {**data, **args}  # type: ignore
     else:
-        n_range_upper = int(
-            math.ceil((int(to_block) - int(from_block) + 1) / by_range))
+        n_range_upper = int(math.ceil((int(to_block) - int(from_block) + 1) / by_range))
+
         for n_range in range(n_range_upper):
             _from_block = from_block + n_range * by_range
             if n_range == n_range_upper - 1:
                 _to_block = to_block
             else:
                 _to_block = _from_block + by_range - 1
+
             _data_filter_set, event_filter_params = construct_event_filter_params(
                 event_abi,
                 abi_codec,
@@ -104,7 +136,7 @@ def fetch_events(
             )
 
             # Call node over JSON-RPC API
-            logs = event.web3.eth.getLogs(event_filter_params)
+            logs = w3.eth.getLogs(event_filter_params)
 
             # Convert raw binary event data to easily manipulable Python objects
             for entry in logs:
