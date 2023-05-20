@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.107 [2023-05-21]
+* feat: add web3 async
+
 0.8.106 [2023-05-18]
 * feat: test-all improvements
 

@@ -76,18 +76,10 @@ class Web3Registry:
             self.__chain_to_provider_url.update(chain_to_provider_url)
 
     # pylint:disable=line-too-long
-    def web3_for_chain_id(self, chain_id: int):
+    def web3_for_chain_id(self, chain_id: int, use_async: bool, request_kwargs: Optional[dict] = None):
         url = self.__chain_to_provider_url.get(str(chain_id))
         if url is None:
             raise Exception(
                 f'No web3 provider url for chain id {chain_id}. '
                 "In .env file or environment, set CREDMARK_WEB3_PROVIDERS as {'1':'https://web3-node-provider-url'}.")
-        return self.web3_for_provider_url(url, chain_id, False)
-
-    def web3_async_for_chain_id(self, chain_id: int):
-        url = self.__chain_to_provider_url.get(str(chain_id))
-        if url is None:
-            raise Exception(
-                f'No web3 provider url for chain id {chain_id}. '
-                "In .env file or environment, set CREDMARK_WEB3_PROVIDERS as {'1':'https://web3-node-provider-url'}.")
-        return self.web3_for_provider_url(url, chain_id, True)
+        return self.web3_for_provider_url(url, chain_id, use_async, request_kwargs)
