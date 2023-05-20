@@ -106,8 +106,8 @@ class ContractEntityQuery(LedgerQueryBase):
 
     def select(self,  # pylint: disable=too-many-arguments
                columns: Optional[Union[List[str], List[ColumnField]]] = None,
-               joins: Optional[List[Union[Tuple[LedgerTable, str],
-                                          Tuple[JoinType, LedgerTable, str]]]] = None,
+               joins: Optional[list[Union[tuple[JoinType, LedgerTable, str],
+                                          tuple[LedgerTable, str]]]] = None,
                where: Optional[str] = None,
                group_by: Optional[Union[List[str], List[ColumnField]]] = None,
                order_by: Optional[Union[str, ColumnField]] = None,

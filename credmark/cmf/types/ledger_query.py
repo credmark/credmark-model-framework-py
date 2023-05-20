@@ -2,7 +2,7 @@
 
 import contextlib
 from enum import Enum
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 import credmark.cmf.model
 
@@ -38,15 +38,14 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
     def _gen_model_input(self,
                          model_slug: str,
                          originator: str,
-                         columns: Optional[Union[List[str], List[ColumnField]]] = None,
-                         joins: Optional[List[Union[Tuple[LedgerTable, str],
-                                                    Tuple[JoinType, LedgerTable, str]]]] = None,
+                         columns: Optional[Union[list[str], list[ColumnField]]] = None,
+                         joins: Optional[list[Union[tuple[JoinType, LedgerTable, str], tuple[LedgerTable, str]]]] = None,
                          where: Optional[str] = None,
-                         group_by: Optional[Union[List[str], List[ColumnField]]] = None,
+                         group_by: Optional[Union[list[str], list[ColumnField]]] = None,
                          order_by: Optional[Union[str, ColumnField]] = None,
                          limit: Optional[int] = None,
                          offset: Optional[int] = None,
-                         aggregates: Optional[List[Tuple[str, str]]] = None,
+                         aggregates: Optional[list[Tuple[str, str]]] = None,
                          having: Optional[str] = None) -> dict:
 
         aggregates_names = [agg[0] for agg in aggregates] if aggregates else []
@@ -132,17 +131,16 @@ class LedgerQuery(LedgerQueryBase):
         self._cwgo_query = kwargs['cwgo_query_table']
 
     def select(self,
-               columns: Union[List[str], List[ColumnField], None] = None,
-               joins: Union[List[Union[Tuple[LedgerTable, str],
-                                       Tuple[JoinType, LedgerTable, str]]], None] = None,
-               where: Union[str, None] = None,
-               group_by: Union[List[str], List[ColumnField], None] = None,
-               order_by: Union[str, ColumnField, None] = None,
-               limit: Union[int, None] = None,
-               offset: Union[int, None] = None,
-               aggregates: Union[List[Tuple[str, str]], None] = None,
-               having: Union[str, None] = None,
-               bigint_cols: Union[List[str], None] = None) -> LedgerModelOutput:
+               columns: Optional[Union[list[str], list[ColumnField]]] = None,
+               joins: Optional[list[Union[tuple[JoinType, LedgerTable, str], tuple[LedgerTable, str]]]] = None,
+               where: Optional[str] = None,
+               group_by: Optional[Union[list[str], list[ColumnField]]] = None,
+               order_by: Optional[Union[str, ColumnField]] = None,
+               limit: Optional[int] = None,
+               offset: Optional[int] = None,
+               aggregates: Optional[list[tuple[str, str]]] = None,
+               having: Optional[str] = None,
+               bigint_cols: Optional[list[str]] = None) -> LedgerModelOutput:
         """
         Query data from the table.
         """
