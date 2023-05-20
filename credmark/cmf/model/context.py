@@ -84,6 +84,7 @@ class ModelContext:
         self._web3_registry = web3_registry
         self._parent_context = parent_context
         self._web3 = None
+        self._web3_async = None
         self._ledger = None
         self._historical_util = None
         self._models = None
@@ -180,6 +181,7 @@ class ModelContext:
         if block_number != self._block_number:
             self._block_number = BlockNumber(block_number)
             self._web3 = None
+            self._web3_async = None
             self._ledger = None
             self._historical_util = None
 
@@ -192,6 +194,16 @@ class ModelContext:
             self._web3 = self._web3_registry.web3_for_chain_id(self.chain_id)
             self._web3.eth.default_block = self.block_number if self.block_number is not None else 'latest'
         return self._web3
+
+    @property
+    def web3_async(self) -> Web3:
+        """
+        A configured web3 instance
+        """
+        if self._web3_async is None:
+            self._web3_async = self._web3_registry.web3_async_for_chain_id(self.chain_id)
+            self._web3_async.eth.default_block = self.block_number if self.block_number is not None else 'latest'
+        return self._web3_async
 
     @property
     def ledger(self) -> Ledger:

@@ -163,18 +163,11 @@ def create_cmf_context(cmf_param, display_params=False):
                                                 chain_to_provider_url=cmf_init.chain_to_provider_url,
                                                 api_url=cmf_init.api_url, run_id=None, console=True, use_local_models=cmf_init.use_local_models)
 
-    if param['chain_to_provider_url'][str(param['chain_id'])].startswith('http'):
-        context._web3 = Web3(HTTPProvider(context.web3.provider.endpoint_uri,  # type: ignore
-                             request_kwargs={'timeout': 3600 * 10}))
-
-        if param['chain_id'] in [Network.Rinkeby,
-                                 Network.BSC,
-                                 Network.Polygon,
-                                 Network.Optimism,
-                                 Network.Avalanche]:
-            context._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-
+    if context._web3 is not None:
+        # request_kwargs={'timeout': 3600 * 10}
         context._web3.eth.default_block = int(context.block_number)
+    else:
+        raise ValueError('Web3 is not initialized properly')
 
     if display_params:
         print(f'Credmark context created with \n'
