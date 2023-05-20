@@ -78,6 +78,7 @@ from credmark.dto import (
     DTOField,
     DTOPretty,
     EmptyInput,
+    EmptyInputSkipTest,
     FloatDTO,
     IntDTO,
     IterableListGenericDTO,
@@ -116,6 +117,7 @@ def log_output(log_file=None,
 @Model.describe(slug='console',
                 version='1.0',
                 display_name='Console',
+                input=EmptyInputSkipTest,
                 description='Credmark Model REPL')
 class ConsoleModel(Model):
 
