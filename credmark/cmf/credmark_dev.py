@@ -9,6 +9,7 @@ import logging
 import os
 import sys
 import unittest
+from datetime import datetime
 from typing import List, Union
 
 from dotenv import find_dotenv, load_dotenv
@@ -670,6 +671,7 @@ def test_all_models(args):
     # TODO: allow multi-chain
     # Add output of command line to run
     for m in manifests:
+        _m_start_time = datetime.now()
         model_args = args
 
         first_input = {}
@@ -678,21 +680,28 @@ def test_all_models(args):
         multi_chain_inputs = []
         test_multi_chain = False
 
+        has_input = False
+        has_slug = False
         for i, v in m.items():
             if i == 'slug':
                 model_args['model-slug'] = v
+                has_slug = True
                 if model_prefix is not None:
                     for pre in model_prefix:
                         if v.startswith(pre):
                             skip_test = False
                             # print(f'Running {v} with {pre}')
+                if has_input:
+                    break
             else:
                 if i == 'input':
                     if v.get('skip_test', False):
                         skip_test = True
+                        break
 
                     test_multi_chain = v.get('test_multi_chain', False)
 
+                    has_input = True
                     if not test_multi_chain:
                         input_examples = dto_schema_viz(
                             v, v.get('title', 'Object'), v, 0,
@@ -712,9 +721,13 @@ def test_all_models(args):
                                (v['example']['_test_multi_chain'].get('block_number', input_block_number)))]
                              if 'example' in v
                              else [])
+                    if has_slug:
+                        break
 
         if skip_test:
             continue
+
+        _m_end_time = datetime.now()
 
         if get_manifests:
             if format_json:
@@ -746,6 +759,10 @@ def test_all_models(args):
             _exit_code = run_model_no_exit(model_args | model_run_args)
             if exit_on_fail and _exit_code != 0:
                 sys.exit(_exit_code)
+
+        _r_end_time = datetime.now()
+
+        # print(f'm time {m_end_time - m_start_time} r time {r_end_time - m_end_time}')
 
 
 if __name__ == '__main__':
