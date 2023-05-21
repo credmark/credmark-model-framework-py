@@ -115,9 +115,7 @@ class EmptyInput(DTO):
 
 class EmptyInputSkipTest(EmptyInput):
     class Config:
-        schema_extra = {
-            'skip_test': True  # Too long to run
-        }
+        schema_extra = {'skip_test': True}
 
 
 class IntDTO(int):

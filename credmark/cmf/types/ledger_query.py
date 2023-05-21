@@ -6,7 +6,7 @@ from typing import Optional, Tuple, Union
 
 import credmark.cmf.model
 
-from .ledger import ColumnField, JoinType, LedgerAggregate, LedgerJoin, LedgerModelOutput, LedgerTable
+from .ledger import ColumnField, JoinAllTypes, LedgerAggregate, LedgerJoin, LedgerModelOutput
 from .ledger_errors import InvalidQueryException
 
 
@@ -39,7 +39,7 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                          model_slug: str,
                          originator: str,
                          columns: Optional[Union[list[str], list[ColumnField]]] = None,
-                         joins: Optional[list[Union[tuple[JoinType, LedgerTable, str], tuple[LedgerTable, str]]]] = None,
+                         joins: Optional[list[JoinAllTypes]] = None,
                          where: Optional[str] = None,
                          group_by: Optional[Union[list[str], list[ColumnField]]] = None,
                          order_by: Optional[Union[str, ColumnField]] = None,
@@ -125,6 +125,8 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
 
 
 # pylint: disable=too-many-arguments, protected-access
+
+
 class LedgerQuery(LedgerQueryBase):
     def __init__(self, **kwargs):
         super().__init__()
@@ -132,7 +134,7 @@ class LedgerQuery(LedgerQueryBase):
 
     def select(self,
                columns: Optional[Union[list[str], list[ColumnField]]] = None,
-               joins: Optional[list[Union[tuple[JoinType, LedgerTable, str], tuple[LedgerTable, str]]]] = None,
+               joins: Optional[list[JoinAllTypes]] = None,
                where: Optional[str] = None,
                group_by: Optional[Union[list[str], list[ColumnField]]] = None,
                order_by: Optional[Union[str, ColumnField]] = None,

@@ -123,6 +123,9 @@ class SeriesModelStartEndIntervalInput(DTO):
     modelSlug: str
     modelVersion: Optional[str] = None
 
+    class Config:
+        schema_extra = { 'skip_test': True }
+
 
 class SeriesModelWindowIntervalInput(DTO):
     window: int
@@ -130,3 +133,12 @@ class SeriesModelWindowIntervalInput(DTO):
     modelInput: Union[dict, DTOType, None] = None
     modelSlug: str
     modelVersion: Optional[str] = None
+
+    class Config:
+        schema_extra = {
+            'example': {"modelSlug": "token.balance",
+                        "modelInput": {
+                            "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                            "account": "0x55FE002aefF02F77364de339a1292923A15844B8"
+                        }, "window": 20000, "interval": 10000}
+        }

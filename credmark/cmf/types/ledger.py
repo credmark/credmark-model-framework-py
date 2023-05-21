@@ -859,3 +859,9 @@ class TraceTable(LedgerTable):
     @property
     def bigint_cols(self) -> List[ColumnField]:
         return [self.VALUE]
+
+
+JoinAllTypes = Union[tuple[JoinType, LedgerTable, str],
+                     tuple[LedgerTable, str],
+                     tuple[JoinType, LedgerTable, ColumnField],
+                     tuple[LedgerTable, ColumnField]]
