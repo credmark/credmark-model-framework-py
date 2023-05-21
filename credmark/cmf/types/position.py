@@ -1,5 +1,5 @@
 import credmark.cmf.model
-from credmark.cmf.model.errors import ModelDataError
+from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.dto import DTO, DTOField, cross_examples
 
 from .price import PriceWithQuote
@@ -31,7 +31,7 @@ class Position(DTO):
                 price_model,
                 input={'base': self.asset} | quote_dict,
                 block_number=block_number)['price']
-        except ModelDataError:
+        except (ModelDataError, ModelRunError):
             token_price = 0
         return token_price * self.amount
 

@@ -19,8 +19,10 @@ class Portfolio(IterableListGenericDTO[Position]):
             ModelDataError: if no pools available for a position's price data.
         """
         if len(self.positions) > 0:
-            return sum(pos.get_value(price_model, block_number=block_number, quote=quote)
-                       for pos in self.positions)  # pylint:disable=not-an-iterable
+            total = 0
+            for pos in self.positions:
+                total += pos.get_value(price_model, block_number=block_number, quote=quote)
+            return total
         return 0
 
     class Config:
