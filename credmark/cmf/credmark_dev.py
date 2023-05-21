@@ -673,7 +673,7 @@ def test_all_models(args):
         model_args = args
 
         first_input = {}
-        skip_test = True if model_prefix is not None else False
+        skip_test = model_prefix is not None
 
         multi_chain_inputs = []
         test_multi_chain = False
