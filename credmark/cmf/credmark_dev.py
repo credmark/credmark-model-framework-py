@@ -542,7 +542,7 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
 
 
 # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-def run_model_no_exit(args):
+def run_model_no_exit(args, model_loader=None):
     exit_code = 0
 
     try:
@@ -553,8 +553,9 @@ def run_model_no_exit(args):
 
         chain_to_provider_url = create_chain_to_provider_url(providers_json)
 
-        model_loader = load_models(args, load_dev_models=not args.get(
-            'run_id'))  # we assume developer will not pass a run_id
+        if model_loader is None:
+            model_loader = load_models(args, load_dev_models=not args.get(
+                'run_id'))  # we assume developer will not pass a run_id
 
         chain_id: int = args['chain_id']
         block_number: Union[int, None] = args['block_number']
@@ -756,7 +757,7 @@ def test_all_models(args):
             else:
                 print(model_run_args)
 
-            _exit_code = run_model_no_exit(model_args | model_run_args)
+            _exit_code = run_model_no_exit(model_args | model_run_args, model_loader=model_loader)
             if exit_on_fail and _exit_code != 0:
                 sys.exit(_exit_code)
 
