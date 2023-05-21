@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+#pylint: disable=line-too-long
+
 import argparse
 import inspect
 import json
@@ -662,13 +664,20 @@ def test_all_models(args):
     prefix = args.get('prefix')
     model_prefix = None if prefix is None else prefix.split(',')
 
+    input_chain_id = args.get('chain_id')
+    input_block_number = args.get('block_number')
+
     # TODO: allow multi-chain
     # Add output of command line to run
     for m in manifests:
         model_args = args
 
         first_input = {}
-        skip_test = False
+        skip_test = True if model_prefix is not None else False
+
+        multi_chain_inputs = []
+        test_multi_chain = False
+
         for i, v in m.items():
             if i == 'slug':
                 model_args['model-slug'] = v
@@ -676,18 +685,33 @@ def test_all_models(args):
                     for pre in model_prefix:
                         if v.startswith(pre):
                             skip_test = False
-                        else:
-                            skip_test = True
+                            # print(f'Running {v} with {pre}')
             else:
                 if i == 'input':
                     if v.get('skip_test', False):
                         skip_test = True
-                    input_examples = dto_schema_viz(
-                        v, v.get('title', 'Object'), v, 0,
-                        'example',
-                        only_required=False, tag='top', limit=10)
-                    first_input = input_examples[0]
-                    model_args['input'] = json.dumps(first_input)
+
+                    test_multi_chain = v.get('test_multi_chain', False)
+
+                    if not test_multi_chain:
+                        input_examples = dto_schema_viz(
+                            v, v.get('title', 'Object'), v, 0,
+                            'example',
+                            only_required=False, tag='top', limit=10)
+                        first_input = input_examples[0]
+                        multi_chain_inputs = [(first_input, input_chain_id, input_block_number)]
+                    else:
+                        multi_chain_inputs = [
+                            (i,
+                             i['_test_multi_chain']['chain_id'],
+                             i['_test_multi_chain'].get('block_number', input_block_number))
+                            for i in v.get('examples', [])
+                            if '_test_multi_chain' in i] + \
+                            ([(v['example'],
+                               v['example']['_test_multi_chain']['chain_id'],
+                               (v['example']['_test_multi_chain'].get('block_number', input_block_number)))]
+                             if 'example' in v
+                             else [])
 
         if skip_test:
             continue
@@ -702,22 +726,26 @@ def test_all_models(args):
                 else:
                     print(m)
 
-        model_run_args = {
-            'slug': model_args['model-slug'],
-            'input': model_args['input'],
-            'chain_id': model_args['chain_id'],
-            'block_number': model_args['block_number'],
-        }
+        for model_input, multi_chain_chain_id, multi_chain_block_number in multi_chain_inputs:
+            if '_test_multi_chain' in model_input:
+                del model_input['_test_multi_chain']
 
-        if format_json:
-            print(json_dumps(model_run_args, indent=4).replace(
-                '\\n', '\n').replace('\\"', '\''))
-        else:
-            print(model_run_args)
+            model_run_args = {
+                'slug': model_args['model-slug'],
+                'input': json.dumps(model_input),
+                'chain_id': multi_chain_chain_id,
+                'block_number': multi_chain_block_number,
+            }
 
-        _exit_code = run_model_no_exit(model_args)
-        if exit_on_fail and _exit_code != 0:
-            sys.exit(_exit_code)
+            if format_json:
+                print(json_dumps(model_run_args, indent=4).replace(
+                    '\\n', '\n').replace('\\"', '\''))
+            else:
+                print(model_run_args)
+
+            _exit_code = run_model_no_exit(model_args | model_run_args)
+            if exit_on_fail and _exit_code != 0:
+                sys.exit(_exit_code)
 
 
 if __name__ == '__main__':
