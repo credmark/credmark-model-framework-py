@@ -178,7 +178,7 @@ def main():  # pylint: disable=too-many-statements
     parser_test_all.add_argument('--json', action='store_true',
                                  default=False, help="Output as json")
     parser_test_all.add_argument('-e', '--exit-on-fail', action='store_true')
-    parser_test_all.add_argument('-p', '--prefix', required=False, default=None,
+    parser_test_all.add_argument('-t', '--prefix', required=False, default=None,
                                  help='comma-separated list of prefixes to match slug')
     add_run_arg(parser_test_all)
     add_api_url_arg(parser_test_all)
