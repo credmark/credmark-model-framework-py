@@ -480,3 +480,17 @@ class Contracts(IterableListGenericDTO[Contract]):
     contracts: List[Contract] = DTOField(
         default=[], description="A List of Contracts")
     _iterator: str = PrivateAttr('contracts')
+
+    @classmethod
+    def from_addresses(cls, addresses: List[Address]) -> 'Contracts':
+        """
+        Create a Contracts instance from a list of addresses.
+        """
+        return cls(contracts=[Contract(address=address) for address in addresses])
+
+    @classmethod
+    def empty(cls) -> 'Contracts':
+        """
+        Create a Contracts instance with no contracts.
+        """
+        return cls(contracts=[])
