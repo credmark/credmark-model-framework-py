@@ -428,3 +428,17 @@ class Tokens(IterableListGenericDTO[Token]):
             "examples": [{"tokens": ['0x6B175474E89094C44Da98b954EedeAC495271d0F', # DAI
                                      '0x514910771AF9Ca656af840dff83E8264EcF986CA']}] # LINK
         }
+
+    @classmethod
+    def from_addresses(cls, addresses: List[Address]) -> 'Tokens':
+        """
+        Returns a Tokens instance from a list of addresses.
+        """
+        return cls(tokens=[Token(address=address) for address in addresses])
+
+    @classmethod
+    def empty(cls) -> 'Tokens':
+        """
+        Returns an empty Tokens instance.
+        """
+        return cls(tokens=[])
