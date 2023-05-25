@@ -8,6 +8,7 @@ from credmark.cmf.engine.context import EngineModelContext
 from credmark.cmf.engine.model_unittest import ModelTestCase, model_context
 from credmark.cmf.model import Model
 from credmark.cmf.types import Token
+from credmark.cmf.types.block_number import BlockNumberOutOfRangeError
 from credmark.cmf.types.network import Network
 from credmark.dto import DTO, DTOField
 
@@ -78,6 +79,10 @@ class TestModel(ModelTestCase):
             self.assertEqual(cc.network, Network.Optimism)
             self.assertEqual(cc.block_number.sample_timestamp,
                              context.block_number.sample_timestamp)
+
+        with self.assertRaises(BlockNumberOutOfRangeError):
+            with context.fork(block_number=current_block + 10):
+                pass
 
         with context.fork(block_number=context.block_number - 10) as cc:
             self.assertEqual(

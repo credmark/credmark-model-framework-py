@@ -409,6 +409,14 @@ class EngineModelContext(ModelContext):
             else:
                 block_number = self.block_number
 
+        if chain_id == self.chain_id and block_number > self._block_number:
+            raise BlockNumberOutOfRangeError(
+                message=(
+                    f'You can not enter a context with a larger block number ({block_number} > current {self._block_number})'),
+                detail=BlockNumberOutOfRangeDetailDTO(
+                    blockNumber=block_number,
+                    maxBlockNumber=self._block_number))
+
         forked_context = EngineModelContext(
             chain_id,
             block_number,
@@ -758,28 +766,6 @@ class EngineModelContext(ModelContext):
             raise err
 
         return slug, version, output
-
-    def enter(self, block_number):
-        if block_number > self._block_number:
-            raise BlockNumberOutOfRangeError(
-                message=(
-                    f'You can not enter a context with a larger block number ({block_number} > current {self._block_number})'),
-                detail=BlockNumberOutOfRangeDetailDTO(
-                    blockNumber=block_number,
-                    maxBlockNumber=self._block_number))
-
-        context = EngineModelContext(self.chain_id,
-                                     block_number,
-                                     self._web3_registry,
-                                     self.run_id,
-                                     self.__depth,
-                                     self.__model_loader,
-                                     self.__model_cache,
-                                     self.__api,
-                                     self.__client)
-
-        ModelContext.set_current_context(context)
-        return context
 
     def _run_local_model_with_class(self,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
                                     slug: str,
