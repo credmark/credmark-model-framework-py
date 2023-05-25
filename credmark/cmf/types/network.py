@@ -22,6 +22,40 @@ class Network(IntEnum):
     def __str__(self):
         return str(self.value)
 
+    @property
+    def chain_id(self):
+        return self.value
+
+    @property
+    def has_ledger(self):
+        return self in [Network.Mainnet]
+
+    @property
+    def has_node(self):
+        return self in [Network.Mainnet,
+                        Network.BSC,
+                        Network.Polygon,
+                        Network.ArbitrumOne,
+                        Network.Optimism,
+                        Network.Avalanche,
+                        Network.Fantom]
+
+    @property
+    def is_testnet(self):
+        return self in [Network.Rinkeby,
+                        Network.Ropsten,
+                        Network.Görli,
+                        Network.Kovan,
+                        Network.BSCTestnet]
+
+    @property
+    def uses_geth_poa(self):
+        return self in [Network.Rinkeby,
+                        Network.BSC,
+                        Network.Polygon,
+                        Network.Optimism,
+                        Network.Avalanche]
+
     @classmethod
     def parse_network(cls, n: Any) -> "Network":
         if isinstance(n, str):

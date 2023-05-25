@@ -2,6 +2,11 @@
 
 History
 -------
+0.8.109 [2023-05-25]
+* feat: replace context enter with fork context
+* fix: network enum enhancements
+* fix: allow BlockNumber to be > context.block_number
+
 0.8.108 [2023-05-22]
 * fix: improve test-all and test cases
 
