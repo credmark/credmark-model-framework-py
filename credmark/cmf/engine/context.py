@@ -4,7 +4,8 @@ import json
 import logging
 import sys
 import traceback
-from typing import Callable, List, Optional, Set, Type, Union
+from contextlib import contextmanager
+from typing import Callable, List, Set, Type, Union
 
 from credmark.cmf.engine.cache import ModelRunCache
 from credmark.cmf.engine.errors import ModelRunRequestError
@@ -32,6 +33,7 @@ from credmark.cmf.types import (
     BlockNumber,
     BlockNumberOutOfRangeDetailDTO,
     BlockNumberOutOfRangeError,
+    Network
 )
 from credmark.dto import DTOType, DTOValidationError
 from credmark.dto.encoder import json_dumps
@@ -41,8 +43,9 @@ from credmark.dto.transform import (
     transform_dto_to_dict,
 )
 
-LEDGER_GET_LATEST_BLOCK_NUMBER_SLUG = 'ledger.block-number'
+LEDGER_BLOCK_NUMBER_SLUG = 'ledger.block-number'
 CHAIN_GET_LATEST_BLOCK_NUMBER_SLUG = 'chain.get-latest-block'
+CHAIN_GET_BLOCK_NUMBER_BY_TIMESTAMP_SLUG = 'chain.get-block'
 
 
 def extract_most_recent_run_model_traceback(exc_traceback, skip=1):
@@ -174,7 +177,8 @@ class EngineModelContext(ModelContext):
                 cls.logger.debug(f'Using local models {local_model_slugs}')
             else:
                 if len(local_model_slugs) > 1:
-                    cls.logger.warning(f'Using no local models (conflicting args: {use_local_models})')
+                    cls.logger.warning(
+                        f'Using no local models (conflicting args: {use_local_models})')
                 else:
                     cls.logger.debug('Using no local models')
             cls.use_local_models_slugs.update(local_model_slugs)
@@ -204,8 +208,7 @@ class EngineModelContext(ModelContext):
         context = EngineModelContext(
             chain_id, block_number, web3_registry,
             run_id, depth, model_loader, _model_cache, api, client,
-            is_top_level=not console,
-            parent_context=None)
+            is_top_level=not console)
 
         if console:
             context.is_active = True
@@ -332,8 +335,8 @@ class EngineModelContext(ModelContext):
 
     @classmethod
     def get_latest_block_number(cls, api: ModelApi, chain_id: int):
-        if chain_id == 1:
-            _s, _v, output, _e, _d = api.run_model(LEDGER_GET_LATEST_BLOCK_NUMBER_SLUG,
+        if Network(chain_id).has_ledger:
+            _s, _v, output, _e, _d = api.run_model(LEDGER_BLOCK_NUMBER_SLUG,
                                                    None, chain_id, 0, {}, raise_error_results=True)
             if output is None:
                 raise Exception('Error response getting latest block number')
@@ -346,6 +349,27 @@ class EngineModelContext(ModelContext):
             number, timestamp = output['blockNumber'], output['timestamp']
         return BlockNumber(number, timestamp)
 
+    @classmethod
+    def get_block_number_by_timestamp(cls, api: ModelApi, chain_id: int, sample_timestamp):
+
+        if Network(chain_id).has_ledger:
+            _s, _v, output, _e, _d = api.run_model(LEDGER_BLOCK_NUMBER_SLUG,
+                                                   None, chain_id, 0,
+                                                   {"timestamp": sample_timestamp},
+                                                   raise_error_results=True)
+            if output is None:
+                raise Exception('Error response getting latest block number')
+            number, timestamp = output['number'], output['timestamp']
+        else:
+            _s, _v, output, _e, _d = api.run_model(CHAIN_GET_BLOCK_NUMBER_BY_TIMESTAMP_SLUG,
+                                                   None, chain_id, 0,
+                                                   {"timestamp": sample_timestamp},
+                                                   raise_error_results=True)
+            if output is None:
+                raise Exception('Error response getting latest block number')
+            number, timestamp = output['block_number'], output['block_timestamp']
+        return BlockNumber(number, timestamp, sample_timestamp)
+
     def __init__(self,  # pylint: disable=too-many-arguments
                  chain_id: int,
                  block_number: Union[BlockNumber, int],
@@ -353,15 +377,14 @@ class EngineModelContext(ModelContext):
                  run_id: Union[str, None],
                  depth: int,
                  model_loader: ModelLoader,
-                 model_cache: Optional[ModelRunCache],
-                 api: Union[ModelApi, None],
+                 model_cache: Union[ModelRunCache, None],
+                 api: ModelApi,
                  client: Union[str, None] = None,
-                 is_top_level: bool = False,
-                 parent_context: Union[ModelContext, None] = None):
+                 is_top_level: bool = False):
         if isinstance(block_number, int):
             block_number = BlockNumber(block_number)
 
-        super().__init__(chain_id, block_number, web3_registry, parent_context)
+        super().__init__(chain_id, block_number, web3_registry)
         self.run_id = run_id
         self.__client = client
         self.__depth = depth
@@ -371,6 +394,39 @@ class EngineModelContext(ModelContext):
         self.__api = api
         self.__is_top_level = is_top_level
         self.is_active = False
+
+    @contextmanager
+    def fork(self,
+             *,
+             chain_id=None,
+             block_number=None):
+        if chain_id is None:
+            chain_id = self.chain_id
+        if block_number is None:
+            if chain_id != self.chain_id:
+                block_number = self.get_block_number_by_timestamp(
+                    self.__api, chain_id, self.block_number.sample_timestamp)
+            else:
+                block_number = self.block_number
+
+        forked_context = EngineModelContext(
+            chain_id,
+            block_number,
+            self._web3_registry,
+            self.run_id,
+            self.__depth,
+            self.__model_loader,
+            self.__model_cache,
+            self.__api,
+            self.__client,
+            self.__is_top_level,
+        )
+
+        token = ModelContext.set_current_context(forked_context)
+        try:
+            yield forked_context
+        finally:
+            ModelContext.reset_current_context(token)
 
     @property
     def dependencies(self):
@@ -392,7 +448,8 @@ class EngineModelContext(ModelContext):
                 try:
                     deployed_manifests = self.__api.get_models()
                     for m in deployed_manifests:
-                        m |= {'mclass': self.__model_loader.get_model_class(m['slug'], m['version'])}
+                        m |= {'mclass': self.__model_loader.get_model_class(
+                            m['slug'], m['version'])}
                         slug = m['slug']
                         self._model_manifest_map[slug] = m
                         self._model_underscore_manifest_map[slug.replace(
@@ -545,7 +602,8 @@ class EngineModelContext(ModelContext):
 
         try:
             if self.__depth >= self.max_run_depth:
-                raise MaxModelRunDepthError(f'Max model run depth hit {self.__depth}')
+                raise MaxModelRunDepthError(
+                    f'Max model run depth hit {self.__depth}')
 
             return self._run_model_with_class(
                 slug,
@@ -718,8 +776,7 @@ class EngineModelContext(ModelContext):
                                      self.__model_loader,
                                      self.__model_cache,
                                      self.__api,
-                                     self.__client,
-                                     parent_context=self)
+                                     self.__client)
 
         ModelContext.set_current_context(context)
         return context
@@ -749,14 +806,14 @@ class EngineModelContext(ModelContext):
                                          self.__model_loader,
                                          self.__model_cache,
                                          self.__api,
-                                         self.__client,
-                                         parent_context=self)
+                                         self.__client)
 
         original_input = input
 
         try:
             try:
-                input = transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
+                input = transform_data_for_dto(
+                    input, model_class.inputDTO, slug, 'input')
             except DataTransformError as err:
                 # We convert to an input error here to distinguish
                 # from output transform errors below

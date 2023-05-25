@@ -41,11 +41,7 @@ class Web3Registry:
 
         w3 = Web3(provider)  # type: ignore
 
-        if chain_id in [Network.Rinkeby,
-                        Network.BSC,
-                        Network.Polygon,
-                        Network.Optimism,
-                        Network.Avalanche]:
+        if Network(chain_id).uses_geth_poa:
             return inject_poa(w3)
         else:
             return w3

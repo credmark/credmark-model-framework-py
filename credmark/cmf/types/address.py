@@ -62,7 +62,7 @@ class Address(str):
 
         return cls(addr)
 
-    def __new__(cls, addr):
+    def __new__(cls, addr: Union[str, int, bytes]):
         if isinstance(addr, int):
             if addr > MAX_ADDRESS_VALUE:
                 raise ValueError(
@@ -83,7 +83,7 @@ class Address(str):
                 f'Address instance must be created with a string, int or bytes {addr}')
         return str.__new__(cls, addr.lower())
 
-    def __init__(self, _addr: Union[str, int]):
+    def __init__(self, _addr: Union[str, int, bytes]):
         super().__init__()
         self._checksum = validate_address(self)
 
