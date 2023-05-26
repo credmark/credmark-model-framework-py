@@ -33,7 +33,7 @@ SLOT_ARA = hex(int(Web3.keccak(text='io.ara.proxy.implementation').hex(), 16))
 def get_slot_proxy_address(context, contract_address,
                            contract_name, contract_abi) -> Optional[Address]:
     slot_proxy_address = None
-    if context.network.has_ledger:
+    if context.chain_id == 1:
         if contract_name == 'Unitroller':
             if contract_address == Address('0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B'):
                 cc = context.web3.eth.contract(address=Address(

@@ -28,7 +28,8 @@ class Network(IntEnum):
 
     @property
     def has_ledger(self):
-        return self in [Network.Mainnet]
+        return self in [Network.Mainnet,
+                        Network.BSC]
 
     @property
     def has_node(self):

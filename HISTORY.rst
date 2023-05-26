@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.112 [2023-05-26]
+* feat: enable ledger for BSC
+
 0.8.111 [2023-05-26]
 * feat: add skip to test-all
 * feat: add BSC tokens to fungible token data (BTCB and WBNB, etc.)

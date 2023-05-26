@@ -351,7 +351,6 @@ class EngineModelContext(ModelContext):
 
     @classmethod
     def get_block_number_by_timestamp(cls, api: ModelApi, chain_id: int, sample_timestamp):
-
         if Network(chain_id).has_ledger:
             _s, _v, output, _e, _d = api.run_model(LEDGER_BLOCK_NUMBER_SLUG,
                                                    None, chain_id, 0,
