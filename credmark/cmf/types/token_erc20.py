@@ -238,8 +238,8 @@ class Token(Contract):
         current_chain_id = credmark.cmf.model.ModelContext.current_context().chain_id
 
         if not self._meta.set_loaded:
-            self._meta.symbol = self._meta.get_cache(
-                field='symbol', chain_id=current_chain_id, block_number=current_block)
+            self._meta.symbol = self._meta.get_cache(field='symbol',
+                                                     chain_id=current_chain_id, block_number=current_block)
 
         if self._meta.symbol is None:
             try:
@@ -254,8 +254,9 @@ class Token(Contract):
             elif not isinstance(symbol_tmp, str):
                 raise ModelDataError(f'Unknown value for symbol {symbol_tmp}')
             self._meta.symbol = symbol_tmp
-            self._meta.update_cache(field='symbol', chain_id=current_chain_id,
-                                    block_number=current_block, value=self._meta.symbol)
+            self._meta.update_cache(field='symbol',
+                                    chain_id=current_chain_id, block_number=current_block,
+                                    value=self._meta.symbol)
         return self._meta.symbol
 
     @property
