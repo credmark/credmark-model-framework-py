@@ -67,15 +67,17 @@ class Token(Contract):
         total_supply: Union[int, None] = None
         wrapped: Union[Address, None] = None
         set_loaded: bool = False
-        _cache: dict[str, dict[int, Any]] = PrivateAttr(default={})
+        _cache: dict[str, dict[int, dict[int, Any]]] = PrivateAttr(default={})
 
-        def update_cache(self, field, block_number, value):
+        def get_cache(self, field, chain_id, block_number):
+            return self._cache.get(field, {}).get(chain_id, {}).get(block_number)
+
+        def update_cache(self, field, chain_id, block_number, value):
             if field not in self._cache:
                 self._cache[field] = {}
-            self._cache[field][block_number] = value
-
-        def get_cache(self, field, block_number):
-            return self._cache.get(field, {}).get(block_number)
+            if chain_id not in self._cache[field]:
+                self._cache[field][chain_id] = {}
+            self._cache[field][chain_id][block_number] = value
 
     _meta: TokenMetadata = PrivateAttr(
         default_factory=lambda: Token.TokenMetadata())  # pylint: disable=unnecessary-lambda
@@ -233,8 +235,10 @@ class Token(Contract):
     def symbol(self) -> str:
         self._load()
         current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
+        current_chain_id = credmark.cmf.model.ModelContext.current_context().chain_id
+
         if not self._meta.set_loaded:
-            self._meta.symbol = self._meta.get_cache('symbol', current_block)
+            self._meta.symbol = self._meta.get_cache('symbol', current_chain_id, current_block)
 
         if self._meta.symbol is None:
             try:
@@ -249,22 +253,24 @@ class Token(Contract):
             elif not isinstance(symbol_tmp, str):
                 raise ModelDataError(f'Unknown value for symbol {symbol_tmp}')
             self._meta.symbol = symbol_tmp
-            self._meta.update_cache('symbol', current_block, symbol_tmp)
+            self._meta.update_cache('symbol', current_chain_id, current_block, self._meta.symbol)
         return self._meta.symbol
 
     @property
     def decimals(self) -> int:
         self._load()
         current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
+        current_chain_id = credmark.cmf.model.ModelContext.current_context().chain_id
+
         if not self._meta.set_loaded:
-            self._meta.decimals = self._meta.get_cache('decimals', current_block)
+            self._meta.decimals = self._meta.get_cache('decimals', current_chain_id, current_block)
 
         if self._meta.decimals is None:
             try:
                 self._meta.decimals = self.try_erc20_property('decimals')
             except ModelDataError:
                 self._meta.decimals = self.try_erc20_property('DECIMALS')
-            self._meta.update_cache('decimals', current_block, self._meta.decimals)
+            self._meta.update_cache('decimals', current_block, current_chain_id, self._meta.decimals)
 
         return self._meta.decimals
 
@@ -272,8 +278,9 @@ class Token(Contract):
     def name(self) -> str:
         self._load()
         current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
+        current_chain_id = credmark.cmf.model.ModelContext.current_context().chain_id
         if not self._meta.set_loaded:
-            self._meta.name = self._meta.get_cache('name', current_block)
+            self._meta.name = self._meta.get_cache('name', current_chain_id, current_block)
 
         if self._meta.name is None:
             try:
@@ -288,19 +295,20 @@ class Token(Contract):
             elif not isinstance(name_tmp, str):
                 raise ModelDataError(f'Unknown value for name {name_tmp}')
             self._meta.name = name_tmp
-            self._meta.update_cache('name', current_block, name_tmp)
+            self._meta.update_cache('name', current_chain_id, current_block, self._meta.name)
         return self._meta.name
 
     @property
     def total_supply(self) -> int:
         self._load()
         current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
+        current_chain_id = credmark.cmf.model.ModelContext.current_context().chain_id
         if not self._meta.set_loaded:
-            self._meta.total_supply = self._meta.get_cache('total_supply', current_block)
+            self._meta.total_supply = self._meta.get_cache('total_supply', current_chain_id, current_block)
 
         if self._meta.total_supply is None:
             self._meta.total_supply = self.try_erc20_property('totalSupply')
-            self._meta.update_cache('total_supply', current_block, self._meta.total_supply)
+            self._meta.update_cache('total_supply', current_chain_id, current_block, self._meta.total_supply)
         return self._meta.total_supply
 
     @property
@@ -425,8 +433,8 @@ class Tokens(IterableListGenericDTO[Token]):
 
     class Config:
         schema_extra = {
-            "examples": [{"tokens": ['0x6B175474E89094C44Da98b954EedeAC495271d0F', # DAI
-                                     '0x514910771AF9Ca656af840dff83E8264EcF986CA']}] # LINK
+            "examples": [{"tokens": ['0x6B175474E89094C44Da98b954EedeAC495271d0F',  # DAI
+                                     '0x514910771AF9Ca656af840dff83E8264EcF986CA']}]  # LINK
         }
 
     @classmethod
