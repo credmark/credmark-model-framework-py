@@ -238,7 +238,8 @@ class Token(Contract):
         current_chain_id = credmark.cmf.model.ModelContext.current_context().chain_id
 
         if not self._meta.set_loaded:
-            self._meta.symbol = self._meta.get_cache('symbol', current_chain_id, current_block)
+            self._meta.symbol = self._meta.get_cache(
+                field='symbol', chain_id=current_chain_id, block_number=current_block)
 
         if self._meta.symbol is None:
             try:
@@ -253,7 +254,8 @@ class Token(Contract):
             elif not isinstance(symbol_tmp, str):
                 raise ModelDataError(f'Unknown value for symbol {symbol_tmp}')
             self._meta.symbol = symbol_tmp
-            self._meta.update_cache('symbol', current_chain_id, current_block, self._meta.symbol)
+            self._meta.update_cache(field='symbol', chain_id=current_chain_id,
+                                    block_number=current_block, value=self._meta.symbol)
         return self._meta.symbol
 
     @property
@@ -263,14 +265,18 @@ class Token(Contract):
         current_chain_id = credmark.cmf.model.ModelContext.current_context().chain_id
 
         if not self._meta.set_loaded:
-            self._meta.decimals = self._meta.get_cache('decimals', current_chain_id, current_block)
+            self._meta.decimals = self._meta.get_cache(field='decimals',
+                                                       chain_id=current_chain_id,
+                                                       block_number=current_block)
 
         if self._meta.decimals is None:
             try:
                 self._meta.decimals = self.try_erc20_property('decimals')
             except ModelDataError:
                 self._meta.decimals = self.try_erc20_property('DECIMALS')
-            self._meta.update_cache('decimals', current_block, current_chain_id, self._meta.decimals)
+            self._meta.update_cache(field='decimals',
+                                    chain_id=current_chain_id, block_number=current_block,
+                                    value=self._meta.decimals)
 
         return self._meta.decimals
 
@@ -280,7 +286,9 @@ class Token(Contract):
         current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
         current_chain_id = credmark.cmf.model.ModelContext.current_context().chain_id
         if not self._meta.set_loaded:
-            self._meta.name = self._meta.get_cache('name', current_chain_id, current_block)
+            self._meta.name = self._meta.get_cache(field='name',
+                                                   chain_id=current_chain_id,
+                                                   block_number=current_block)
 
         if self._meta.name is None:
             try:
@@ -295,7 +303,9 @@ class Token(Contract):
             elif not isinstance(name_tmp, str):
                 raise ModelDataError(f'Unknown value for name {name_tmp}')
             self._meta.name = name_tmp
-            self._meta.update_cache('name', current_chain_id, current_block, self._meta.name)
+            self._meta.update_cache(field='name',
+                                    chain_id=current_chain_id, block_number=current_block,
+                                    value=self._meta.name)
         return self._meta.name
 
     @property
@@ -304,11 +314,15 @@ class Token(Contract):
         current_block = int(credmark.cmf.model.ModelContext.current_context().web3.eth.default_block)
         current_chain_id = credmark.cmf.model.ModelContext.current_context().chain_id
         if not self._meta.set_loaded:
-            self._meta.total_supply = self._meta.get_cache('total_supply', current_chain_id, current_block)
+            self._meta.total_supply = self._meta.get_cache(field='total_supply',
+                                                           chain_id=current_chain_id,
+                                                           block_number=current_block)
 
         if self._meta.total_supply is None:
             self._meta.total_supply = self.try_erc20_property('totalSupply')
-            self._meta.update_cache('total_supply', current_chain_id, current_block, self._meta.total_supply)
+            self._meta.update_cache(field='total_supply',
+                                    chain_id=current_chain_id, block_number=current_block,
+                                    value=self._meta.total_supply)
         return self._meta.total_supply
 
     @property
