@@ -18,6 +18,12 @@ POLYGON_TOKENS = {
         "name": "USD Coin (PoS)",
         'address': '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     },
+    "miMATIC": {
+        "symbol": "miMATIC",
+        "decimals": 18,
+        "name": "miMATIC",
+        'address': '0xa3Fa99A148fA48D14Ed51d610c367C61876997F1',
+    },
     "DPI": {
         "symbol": "DPI",
         "decimals": 18,
