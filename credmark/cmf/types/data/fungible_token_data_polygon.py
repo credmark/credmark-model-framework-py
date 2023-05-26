@@ -2,7 +2,7 @@ POLYGON_TOKENS = {
     "MATIC": {
         "symbol": "MATIC",
         "decimals": 18,
-        "name": "polygon",
+        "name": "Matic Token",
         'address': '0x0000000000000000000000000000000000001010',
         "is_native_token": True,
     },
@@ -15,7 +15,7 @@ POLYGON_TOKENS = {
     "USDC": {
         "symbol": "USDC",
         "decimals": 6,
-        "name": "USDC Coin (PoS)",
+        "name": "USD Coin (PoS)",
         'address': '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     },
     "DPI": {

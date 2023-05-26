@@ -179,7 +179,9 @@ def main():  # pylint: disable=too-many-statements
                                  default=False, help="Output as json")
     parser_test_all.add_argument('-e', '--exit-on-fail', action='store_true')
     parser_test_all.add_argument('-t', '--prefix', required=False, default=None,
-                                 help='comma-separated list of prefixes to match slug')
+                                 help='comma-separated list of prefixes to match slug to run')
+    parser_test_all.add_argument('-s', '--skip-test', required=False, default=None,
+                                 help='comma-separated list of prefixes to match slug to skip')
     add_run_arg(parser_test_all)
     add_api_url_arg(parser_test_all)
     parser_test_all.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
@@ -663,8 +665,10 @@ def test_all_models(args):
     get_manifests = args.get('manifests')
     get_json = args.get('json')
     exit_on_fail = args['exit_on_fail']
-    prefix = args.get('prefix')
-    model_prefix = None if prefix is None else prefix.split(',')
+    get_prefix = args.get('prefix')
+    model_prefix = None if get_prefix is None else get_prefix.split(',')
+    get_skip_test = args.get('skip_test')
+    model_prefix_skip = None if get_skip_test is None else get_skip_test.split(',')
 
     input_chain_id = args.get('chain_id')
     input_block_number = args.get('block_number')
@@ -679,7 +683,7 @@ def test_all_models(args):
         skip_test = model_prefix is not None
 
         multi_chain_inputs = []
-        test_multi_chain = False
+        test_multi = False
 
         has_input = False
         has_slug = False
@@ -692,6 +696,11 @@ def test_all_models(args):
                         if v.startswith(pre):
                             skip_test = False
                             # print(f'Running {v} with {pre}')
+                if model_prefix_skip is not None:
+                    for pre in model_prefix_skip:
+                        if v.startswith(pre):
+                            skip_test = True
+                            break
                 if has_input:
                     break
             else:
@@ -700,10 +709,10 @@ def test_all_models(args):
                         skip_test = True
                         break
 
-                    test_multi_chain = v.get('test_multi_chain', False)
+                    test_multi = v.get('test_multi', False)
 
                     has_input = True
-                    if not test_multi_chain:
+                    if not test_multi:
                         input_examples = dto_schema_viz(
                             v, v.get('title', 'Object'), v, 0,
                             'example',
@@ -713,13 +722,13 @@ def test_all_models(args):
                     else:
                         multi_chain_inputs = [
                             (i,
-                             i['_test_multi_chain']['chain_id'],
-                             i['_test_multi_chain'].get('block_number', input_block_number))
+                             i['_test_multi']['chain_id'],
+                             i['_test_multi'].get('block_number', input_block_number))
                             for i in v.get('examples', [])
-                            if '_test_multi_chain' in i] + \
+                            if '_test_multi' in i] + \
                             ([(v['example'],
-                               v['example']['_test_multi_chain']['chain_id'],
-                               (v['example']['_test_multi_chain'].get('block_number', input_block_number)))]
+                               v['example']['_test_multi']['chain_id'],
+                               (v['example']['_test_multi'].get('block_number', input_block_number)))]
                              if 'example' in v
                              else [])
                     if has_slug:
@@ -741,8 +750,8 @@ def test_all_models(args):
                     print(m)
 
         for model_input, multi_chain_chain_id, multi_chain_block_number in multi_chain_inputs:
-            if '_test_multi_chain' in model_input:
-                del model_input['_test_multi_chain']
+            if '_test_multi' in model_input:
+                del model_input['_test_multi']
 
             model_run_args = {
                 'slug': model_args['model-slug'],

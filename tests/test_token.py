@@ -2,6 +2,7 @@
 
 import unittest
 
+import credmark.cmf.model
 from credmark.cmf.engine.model_unittest import ModelTestCase
 from credmark.cmf.model.errors import ModelBaseError, ModelRunError
 from credmark.cmf.types import Account, Address, Contract, Network, Portfolio, Position, Token
@@ -301,6 +302,20 @@ class TestToken(ModelTestCase):
             self.assertEqual(native_token.symbol, "ETH")
             self.assertEqual(native_token.name, "Ethereum")
             self.assertEqual(native_token.decimals, 18)
+
+    def test_token_on_alt_chains(self):
+        context = credmark.cmf.model.ModelContext.current_context()
+        for chain_id, chain_tokens in FUNGIBLE_TOKEN_DATA_BY_SYMBOL.items():
+            if chain_id in [Network.BSC, Network.Polygon]:
+                print(f'Test tokens on chain: {chain_id}')
+                with context.fork(chain_id=chain_id):
+                    for token_n, (token_symbol, token_meta) in enumerate(chain_tokens.items()):
+                        print(f'{token_n+1}/{len(chain_tokens)}: {token_symbol} {token_meta["address"]}', flush=True)
+                        token = Token(symbol=token_symbol).as_erc20(set_loaded=True)
+                        self.assertEqual(token.symbol, token_meta['symbol'])
+                        self.assertEqual(token.name, token_meta['name'])
+                        self.assertEqual(token.address, token_meta['address'])
+                        self.assertEqual(token.decimals, token_meta['decimals'])
 
 
 if __name__ == '__main__':

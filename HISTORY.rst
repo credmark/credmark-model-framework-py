@@ -2,6 +2,13 @@
 
 History
 -------
+0.8.111 [2023-05-26]
+* feat: add skip to test-all
+* feat: add BSC tokens to fungible token data (BTCB and WBNB, etc.)
+* fix: update Contract instance when chain_id changes
+* fix: correct name of USD Coin in Polygon token data
+* fix: update Token cache to include chain_id
+
 0.8.110 [2023-05-25]
 * fix: remove context enter remnants
 * fix: fail on fork to block > context.block_number
