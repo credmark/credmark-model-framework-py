@@ -253,7 +253,7 @@ class Contract(Account):
         """
         context = credmark.cmf.model.ModelContext.current_context()
         if self._instance is not None:
-            if self._instance.web3.eth.chain_id != context.web3.eth.chain_id or self._instance.web3.eth.default_block != context.web3.eth.default_block:
+            if self._instance.web3.eth.chain_id != context.chain_id or self._instance.web3.eth.default_block != context.block_number:
                 self._instance = None
 
         if self._instance is None:
