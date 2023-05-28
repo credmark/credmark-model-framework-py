@@ -182,6 +182,7 @@ def main():  # pylint: disable=too-many-statements
                                  help='comma-separated list of prefixes to match slug to run')
     parser_test_all.add_argument('-s', '--skip-test', required=False, default=None,
                                  help='comma-separated list of prefixes to match slug to skip')
+    parser_test_all.add_argument('-r', '--dry-run', action='store_true', help='Dry run')
     add_run_arg(parser_test_all)
     add_api_url_arg(parser_test_all)
     parser_test_all.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
@@ -669,6 +670,7 @@ def test_all_models(args):
     model_prefix = None if get_prefix is None else get_prefix.split(',')
     get_skip_test = args.get('skip_test')
     model_prefix_skip = None if get_skip_test is None else get_skip_test.split(',')
+    get_dry_run = args.get('dry_run')
 
     input_chain_id = args.get('chain_id')
     input_block_number = args.get('block_number')
@@ -692,13 +694,45 @@ def test_all_models(args):
                 model_args['model-slug'] = v
                 has_slug = True
                 if model_prefix is not None:
+                    false_by_other = False
                     for pre in model_prefix:
-                        if v.startswith(pre):
+                        if pre.endswith('+'):
+                            pre = pre[:-2] + chr(ord(pre[-2]) + 1)
+                            if v >= pre and not false_by_other:
+                                skip_test = False
+                            else:
+                                skip_test = True
+                                false_by_other = True
+                        elif pre.endswith('-'):
+                            pre = pre[:-2] + chr(ord(pre[-2]) - 1)
+                            if v <= pre and not false_by_other:
+                                skip_test = False
+                            else:
+                                skip_test = True
+                                false_by_other = True
+                        elif v.startswith(pre):
                             skip_test = False
+                            break
                             # print(f'Running {v} with {pre}')
+
                 if model_prefix_skip is not None:
                     for pre in model_prefix_skip:
-                        if v.startswith(pre):
+                        true_by_other = False
+                        if pre.endswith('+'):
+                            pre = pre[:-2] + chr(ord(pre[-2]) + 1)
+                            if v >= pre and not true_by_other:
+                                skip_test = True
+                            else:
+                                skip_test = False
+                                true_by_other = True
+                        elif pre.endswith('-'):
+                            pre = pre[:-2] + chr(ord(pre[-2]) - 1)
+                            if v <= pre and not true_by_other:
+                                skip_test = True
+                            else:
+                                skip_test = False
+                                true_by_other = True
+                        elif v.startswith(pre):
                             skip_test = True
                             break
                 if has_input:
@@ -735,6 +769,10 @@ def test_all_models(args):
                         break
 
         if skip_test:
+            continue
+
+        if get_dry_run:
+            print(model_args['model-slug'])
             continue
 
         _m_end_time = datetime.now()

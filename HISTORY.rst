@@ -2,6 +2,10 @@
 
 History
 -------
+0.8.113 [2023-05-29]
+* feat: support for dry run and test model selection in test_all_models function
+* feat: updated token data for BSC and Polygon networks
+
 0.8.112 [2023-05-26]
 * feat: enable ledger for BSC
 

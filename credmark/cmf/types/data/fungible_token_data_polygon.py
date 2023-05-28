@@ -24,6 +24,12 @@ POLYGON_TOKENS = {
         "name": "miMATIC",
         'address': '0xa3Fa99A148fA48D14Ed51d610c367C61876997F1',
     },
+    "ATOM": {
+        "symbol": "ATOM",
+        "decimals": 6,
+        "name": "Cosmos (PoS)",
+        'address': '0xac51C4c48Dc3116487eD4BC16542e27B5694Da1b',
+    },
     "DPI": {
         "symbol": "DPI",
         "decimals": 18,

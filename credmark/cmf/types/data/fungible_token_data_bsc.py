@@ -23,6 +23,12 @@ BSC_TOKENS = {
         'name': 'USD Coin',
         'address': '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
     },
+    'ATOM': {
+        'symbol': 'ATOM',
+        'decimals': 18,
+        'name': 'Cosmos Token',
+        'address': '0x0eb3a705fc54725037cc9e008bdede697f62f335',
+    },
     'WBNB': {
         'symbol': 'WBNB',
         'decimals': 18,
