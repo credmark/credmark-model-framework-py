@@ -799,8 +799,10 @@ def test_all_models(args):
             }
 
             if format_json:
-                print(json_dumps(model_run_args, indent=4).replace(
-                    '\\n', '\n').replace('\\"', '\''))
+                print(json_dumps(model_run_args, indent=4)
+                      .replace('\\"', '__DQ__')
+                      .replace('"', "'")
+                      .replace('__DQ__', '"'))
             else:
                 print(model_run_args)
 
