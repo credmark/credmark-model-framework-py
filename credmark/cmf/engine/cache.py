@@ -76,11 +76,12 @@ class BasicDB:
     ]
 
     def __init__(self):
-        self.__db = {}
-        self._logger = logging.getLogger(self.__class__.__name__)
         self.__stats = {'total': 0, 'hit': 0, 'miss': 0, 'exclude': 0, 'new': 0}
-        self._trace = False
         self.__enabled = True
+        self.__db = {}
+
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._trace = False
 
     def log_on(self):
         self._trace = True
@@ -151,22 +152,28 @@ class BasicDB:
     def __len__(self):
         return self.__db.__len__()
 
+    def _get_cache(self, *args, **kwargs):
+        return self.__db.get(*args, **kwargs)
+
 
 class ModelRunCache(BasicDB):
     def __init__(self, enabled=True):
         super().__init__()
-        self.__enabled = enabled
+        if enabled:
+            self.enable()
+        else:
+            self.disable()
 
     def slugs(self,
               is_v: Callable[[Any], bool] = (lambda _: True)
               ) -> Generator[Tuple[str, str, int, str], None, None]:
-        for k, v in self.__db.items():
+        for k, v in self.items():
             if is_v(v):
                 yield (v['slug'], v['version'], v['block_number'], k)
 
     def block_numbers(self):
         block_numbers = set()
-        for v in self.__db.values():
+        for v in self.values():
             if v['block_number'] not in block_numbers:
                 block_numbers.add(v['block_number'])
                 yield v['block_number']
@@ -189,7 +196,7 @@ class ModelRunCache(BasicDB):
     def get(self, chain_id, block_number,
             slug, version, input) -> \
             Optional[Tuple[str, Optional[Dict], Optional[Dict], Dict]]:
-        if not self.__enabled:
+        if not self.enabled:
             return None
 
         if slug in self.exclude_slugs:
@@ -197,7 +204,7 @@ class ModelRunCache(BasicDB):
             return None
 
         cache_key = self.encode_run_key(chain_id, block_number, slug, version, input)
-        needle = self.__db.get(cache_key, None)
+        needle = self._get_cache(cache_key, None)
         if needle is None:
             if needle is None:
                 if self._trace:
@@ -226,11 +233,11 @@ class ModelRunCache(BasicDB):
                 depends.copy())
 
     def put(self, chain_id, block_number, slug, version, input, output, dependencies, errors=None):
-        if not self.__enabled or slug in self.exclude_slugs:
+        if not self.enabled or slug in self.exclude_slugs:
             return
 
         key = self.encode_run_key(chain_id, block_number, slug, version, input)
-        if key in self.__db:
+        if key in self:
             if self._trace:
                 self._logger.info('No case for overwriting cache: '
                                   f'{chain_id}/{block_number}/{(slug, version)}/{input}/')
@@ -249,7 +256,7 @@ class ModelRunCache(BasicDB):
                 self._logger.info(result)
 
         self._cache_new()
-        self.__db[key] = result
+        self[key] = result
 
     def get_contract(self, address, chain_id=0):
         return self.get(chain_id, 0,
