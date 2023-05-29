@@ -65,7 +65,7 @@ def my_decode(obj):
     return json.loads(zlib.decompress(bytes(obj)))
 
 
-class SqliteDB:
+class BasicDB:
     # non-deterministic model results
     exclude_slugs = [
         'rpc.get-latest-blocknumber',
@@ -75,61 +75,12 @@ class SqliteDB:
         'console',
     ]
 
-    _trace = False
-    _stats = {'total': 0, 'hit': 0, 'miss': 0, 'exclude': 0, 'new': 0}
-    _enabled = True
-
     def __init__(self):
-        self._db = {}
+        self.__db = {}
         self._logger = logging.getLogger(self.__class__.__name__)
-
-    def encode(self, key):
-        return hashlib.sha256(key.encode('utf-8')).hexdigest()
-
-    def cache_exclude(self):
-        self._stats['exclude'] += 1
-        self._stats['total'] += 1
-
-    def cache_hit(self):
-        self._stats['hit'] += 1
-        self._stats['total'] += 1
-
-    def cache_miss(self):
-        self._stats['miss'] += 1
-        self._stats['total'] += 1
-
-    def cache_new(self):
-        self._stats['new'] += 1
-        self._stats['total'] += 1
-
-    def enable(self):
-        self._enabled = True
-
-    def disable(self):
-        self._enabled = False
-
-    @property
-    def enabled(self):
-        return self._enabled
-
-
-class ModelRunCache(SqliteDB):
-    def __init__(self, enabled=True):
-        super().__init__()
-        self._enabled = enabled
-
-    @property
-    def stats(self):
-        return self._stats
-
-    def __getitem__(self, key):
-        return self._db.__getitem__(key)
-
-    def __setitem__(self, key, value):
-        return self._db.__setitem__(key, value)
-
-    def __delitem__(self, key):
-        return self._db.__delitem__(key)
+        self.__stats = {'total': 0, 'hit': 0, 'miss': 0, 'exclude': 0, 'new': 0}
+        self._trace = False
+        self.__enabled = True
 
     def log_on(self):
         self._trace = True
@@ -141,33 +92,81 @@ class ModelRunCache(SqliteDB):
 
     def clear(self, do_clear):
         if do_clear:
-            self._db.clear()
+            self.__db.clear()
+
+    def encode(self, key):
+        return hashlib.sha256(key.encode('utf-8')).hexdigest()
+
+    def _cache_exclude(self):
+        self.__stats['exclude'] += 1
+        self.__stats['total'] += 1
+
+    def _cache_hit(self):
+        self.__stats['hit'] += 1
+        self.__stats['total'] += 1
+
+    def _cache_miss(self):
+        self.__stats['miss'] += 1
+        self.__stats['total'] += 1
+
+    def _cache_new(self):
+        self.__stats['new'] += 1
+        self.__stats['total'] += 1
+
+    def enable(self):
+        self.__enabled = True
+
+    def disable(self):
+        self.__enabled = False
+
+    @property
+    def enabled(self):
+        return self.__enabled
+
+    @property
+    def stats(self):
+        return self.__stats
+
+    def __getitem__(self, key):
+        return self.__db.__getitem__(key)
+
+    def __setitem__(self, key, value):
+        return self.__db.__setitem__(key, value)
+
+    def __delitem__(self, key):
+        return self.__db.__delitem__(key)
 
     def keys(self):
-        yield from self._db.keys()
+        yield from self.__db.keys()
 
     def items(self):
-        yield from self._db.items()
+        yield from self.__db.items()
 
     def __iter__(self):
-        yield from self._db.__iter__()
+        yield from self.__db.__iter__()
 
     def values(self):
-        yield from self._db.values()
+        yield from self.__db.values()
 
     def __len__(self):
-        return self._db.__len__()
+        return self.__db.__len__()
+
+
+class ModelRunCache(BasicDB):
+    def __init__(self, enabled=True):
+        super().__init__()
+        self.__enabled = enabled
 
     def slugs(self,
               is_v: Callable[[Any], bool] = (lambda _: True)
               ) -> Generator[Tuple[str, str, int, str], None, None]:
-        for k, v in self._db.items():
+        for k, v in self.__db.items():
             if is_v(v):
                 yield (v['slug'], v['version'], v['block_number'], k)
 
     def block_numbers(self):
         block_numbers = set()
-        for v in self._db.values():
+        for v in self.__db.values():
             if v['block_number'] not in block_numbers:
                 block_numbers.add(v['block_number'])
                 yield v['block_number']
@@ -189,25 +188,25 @@ class ModelRunCache(SqliteDB):
 
     def get(self, chain_id, block_number,
             slug, version, input) -> \
-            Tuple[Optional[str], Tuple[Optional[Dict], Optional[Dict], Dict]]:
-        if not self._enabled:
-            return None, ({}, None, {})
+            Optional[Tuple[str, Optional[Dict], Optional[Dict], Dict]]:
+        if not self.__enabled:
+            return None
 
         if slug in self.exclude_slugs:
-            self.cache_exclude()
-            return None, ({}, None, {})
+            self._cache_exclude()
+            return None
 
-        key = self.encode_run_key(chain_id, block_number, slug, version, input)
-        needle = self._db.get(key, None)
+        cache_key = self.encode_run_key(chain_id, block_number, slug, version, input)
+        needle = self.__db.get(cache_key, None)
         if needle is None:
             if needle is None:
                 if self._trace:
                     self._logger.info(f'[{self.__class__.__name__}] Not found: '
                                       f'{chain_id}/{block_number}/{(slug, version)}/[{input}]')
-                self.cache_miss()
-                return None, ({}, None, {})
+                self._cache_miss()
+                return None
 
-        self.cache_hit()
+        self._cache_hit()
         if self._trace:
             self._logger.info(f'[{self.__class__.__name__}] Found: '
                               f'{chain_id}/{block_number}/{(slug, version)}/{input}'
@@ -222,16 +221,16 @@ class ModelRunCache(SqliteDB):
         output = needle['output']
         errors = needle.get('errors')
         depends = needle.get('dependencies', {})
-        return key, (output.copy() if output is not None else None,
-                     errors.copy() if errors is not None else None,
-                     depends.copy())
+        return (cache_key, output.copy() if output is not None else None,
+                errors.copy() if errors is not None else None,
+                depends.copy())
 
     def put(self, chain_id, block_number, slug, version, input, output, dependencies, errors=None):
-        if not self._enabled or slug in self.exclude_slugs:
+        if not self.__enabled or slug in self.exclude_slugs:
             return
 
         key = self.encode_run_key(chain_id, block_number, slug, version, input)
-        if key in self._db:
+        if key in self.__db:
             if self._trace:
                 self._logger.info('No case for overwriting cache: '
                                   f'{chain_id}/{block_number}/{(slug, version)}/{input}/')
@@ -249,11 +248,11 @@ class ModelRunCache(SqliteDB):
             if self._trace:
                 self._logger.info(result)
 
-        self.cache_new()
-        self._db[key] = result
+        self._cache_new()
+        self.__db[key] = result
 
     def get_contract(self, address, chain_id=0):
         return self.get(chain_id, 0,
                         'contract.metadata',
                         None,
-                        {"contractAddress": address.lower()})[1][2]
+                        {"contractAddress": address.lower()})

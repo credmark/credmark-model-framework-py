@@ -29,12 +29,7 @@ from credmark.cmf.model.errors import (
     create_instance_from_error_dict,
 )
 from credmark.cmf.model.models import RunModelMethod
-from credmark.cmf.types import (
-    BlockNumber,
-    BlockNumberOutOfRangeDetailDTO,
-    BlockNumberOutOfRangeError,
-    Network
-)
+from credmark.cmf.types import BlockNumber, BlockNumberOutOfRangeDetailDTO, BlockNumberOutOfRangeError, Network
 from credmark.dto import DTOType, DTOValidationError
 from credmark.dto.encoder import json_dumps
 from credmark.dto.transform import (
@@ -686,8 +681,8 @@ class EngineModelContext(ModelContext):
                 version_requested = version
                 input_as_dict = transform_dto_to_dict(input)
 
-                in_cache, cached_output = (
-                    (None, {}) if self.__model_cache is None
+                in_cache = (
+                    None if self.__model_cache is None
                     else self.__model_cache.get(self.chain_id, int(run_block_number),
                                                 slug, version_requested, input_as_dict))
 
@@ -695,7 +690,7 @@ class EngineModelContext(ModelContext):
                     if debug_log:
                         self.debug_logger.debug(
                             f'cached from remote, {slug, version_requested, input_as_dict}')
-                    output, error, dependencies = cached_output
+                    _cache_key, output, error, dependencies = in_cache
                 else:
                     # We pass depth - 1 which is the callers depth
                     # since we already incremented for this model run request
@@ -806,8 +801,8 @@ class EngineModelContext(ModelContext):
 
             input_as_dict = transform_dto_to_dict(input)
 
-            in_cache, cached_output = (
-                (None, {}) if self.__model_cache is None
+            in_cache = (
+                None if self.__model_cache is None
                 else self.__model_cache.get(context.chain_id,
                                             int(context.block_number),
                                             model_class.slug,
@@ -817,7 +812,7 @@ class EngineModelContext(ModelContext):
                 if debug_log:
                     self.debug_logger.debug(
                         f'cached from local {model_class.slug, model_class.version, input_as_dict}')
-                output, _error, _dependencies = cached_output
+                _cache_key, output, _error, _dependencies = in_cache
             else:
                 ModelContext.set_current_context(context)
                 context.is_active = True
@@ -937,6 +932,7 @@ class EngineModelContext(ModelContext):
             self._add_dependency(slug, version, 1)
 
         if in_cache is None and self.__model_cache is not None:
+            # Save to cache
             output_as_dict = transform_dto_to_dict(output)
             self.__model_cache.put(context.chain_id,
                                    int(context.block_number),
