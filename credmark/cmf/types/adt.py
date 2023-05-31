@@ -73,6 +73,9 @@ class Some(GenericDTO, Generic[DTOCLS]):
 
         return pd.DataFrame(data_dict)
 
+    def sorted(self, key=None, reverse=False):
+        return sorted(self.some, key=key, reverse=reverse)
+
 
 class Records(GenericDTO):
     records: List[Tuple] = DTOField([])

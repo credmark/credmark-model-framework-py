@@ -66,6 +66,8 @@ class RunModelMethod:
                  version: Union[str, None] = None,
                  **kwargs) -> Union[dict, DTOType]:
 
+        slug = f"{self.__prefix.replace('_', '-')}"
+
         model_input = {}
         if self.__input is not None:
             if isinstance(self.__input, DTOTypesTuple):
@@ -84,7 +86,7 @@ class RunModelMethod:
             input = model_input | kwargs
 
         return self.__context.run_model(
-            f"{self.__prefix.replace('_', '-')}",
+            slug,
             input,
             block_number=self.__block_number,
             version=version,
@@ -165,6 +167,7 @@ class ModelResultOutput(DTO):
 
 class Models:
     """
+    Models class under context
     """
 
     def __init__(self, context, block_number: Union[int, None] = None, local: bool = False,
