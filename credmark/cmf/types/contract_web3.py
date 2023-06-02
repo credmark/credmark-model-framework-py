@@ -110,7 +110,7 @@ def fetch_events(
     if async_web3 is not None:
         events = asyncio.run(fetch_events_async(async_web3, event_filter_params,
                                                 from_block, to_block, async_worker))  # type: ignore
-
+        events = sorted(events, key=lambda x: (x.blockNumber, x.logIndex))
         for entry in events:
             data = {**get_event_data(abi_codec, event_abi, entry)}
             args = data['args']
