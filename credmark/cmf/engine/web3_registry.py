@@ -4,6 +4,7 @@ import os
 from typing import Optional, Union
 
 from web3 import AsyncHTTPProvider, HTTPProvider, Web3, WebsocketProvider
+from web3.eth import AsyncEth
 
 from credmark.cmf.engine.web3 import inject_poa
 from credmark.cmf.types.network import CREDMARK_PUBLIC_PROVIDERS, Network
@@ -26,9 +27,9 @@ class Web3Registry:
         if provider is None:
             if provider_url.startswith('http'):
                 if use_async:
-                    provider = Web3.AsyncHTTPProvider(provider_url, **request_kwargs)
+                    provider = AsyncHTTPProvider(provider_url, **request_kwargs)
                 else:
-                    provider = Web3.HTTPProvider(provider_url, **request_kwargs)
+                    provider = HTTPProvider(provider_url, **request_kwargs)
             elif provider_url.startswith('ws'):
                 if use_async:
                     raise Exception('Async WebsocketProvider not supported')
@@ -39,7 +40,10 @@ class Web3Registry:
                     f'Unknown prefix for Web3 provider {provider_url}')
             cls._url_to_web3_provider[(provider_url, use_async)] = provider
 
-        w3 = Web3(provider)  # type: ignore
+        if use_async:
+            w3 = Web3(provider, modules={"eth": (AsyncEth,)}, middlewares=[])  # type: ignore
+        else:
+            w3 = Web3(provider)
 
         if Network(chain_id).uses_geth_poa:
             return inject_poa(w3)
