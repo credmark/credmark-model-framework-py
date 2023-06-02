@@ -1,10 +1,11 @@
-# pylint:disable=too-many-locals, too-many-arguments
+# pylint:disable=too-many-locals, too-many-arguments, invalid-name
 
 
 import asyncio
 import math
 from typing import Optional, Sequence
 
+from web3 import Web3
 from web3._utils.abi import get_abi_input_names
 from web3._utils.events import get_event_data
 from web3._utils.filters import construct_event_filter_params
@@ -13,31 +14,30 @@ from web3._utils.filters import construct_event_filter_params
 # from web3._utils.contracts import encode_abi
 
 
-async def fetch_events_async(async_w3, event_filter_params, from_block, end_block):
+async def fetch_events_async(_async_web3, event_filter_params, from_block, end_block, num_of_chunk):
     """
-    events = asyncio.run(fetch_events_async(async_w3, event_filter_params,
-                         from_block, to_block))  # type: ignore
+    events = asyncio.run(fetch_events_async(async_web3, event_filter_params,
+                         from_block, to_block, num_of_chunk))  # type: ignore
     """
-    numOfChunk = 10
-    size_per_chunk = (end_block - from_block + 1) // numOfChunk
+    num_of_chunk = 10
+    size_per_chunk = (end_block - from_block + 1) // num_of_chunk
     if size_per_chunk > 0:
         tasks = []
-        for i in range(numOfChunk):
+        for i in range(num_of_chunk):
             _from_block = from_block + i * size_per_chunk
-            if i == numOfChunk - 1:
+            if i == num_of_chunk - 1:
                 _to_block = end_block
             else:
                 _to_block = _from_block + size_per_chunk - 1
-            print((_from_block, _to_block, _to_block-_from_block+1))
-            tasks.append(async_w3.eth.get_logs(event_filter_params |
-                                               {'fromBlock': _from_block, 'toBlock': _to_block}))
+            block_range = {'fromBlock': _from_block, 'toBlock': _to_block}
+            tasks.append(_async_web3.eth.get_logs(event_filter_params | block_range))
     else:
-        tasks = [async_w3.eth.get_logs(event_filter_params | {'fromBlock': from_block,
-                                                              'toBlock': end_block})]
+        block_range = {'fromBlock': from_block, 'toBlock': end_block}
+        tasks = [_async_web3.eth.get_logs(event_filter_params | block_range)]
     events = []
     for result in asyncio.as_completed(tasks):
-        b = await result
-        events.extend(b)
+        evts = await result
+        events.extend(evts)
     return events
 
 
@@ -50,11 +50,13 @@ def fetch_events(
         topics=None,
         contract_address=None,
         argument_names: Optional[Sequence[str]] = None,
-        by_range: Optional[int] = None):
+        by_range: Optional[int] = None,
+        async_web3: Optional[Web3] = None,
+        async_worker: int = 10):
     """Get events using eth_getLogs API.
 
     This is a stateless method, as opposite to createFilter and works with
-    stateless nodes like QuikNode and Infura.
+    stateless nodes like QuickNode and Infura.
 
     :param event: Event instance from your contract.events
     :param argument_filters:
@@ -94,52 +96,52 @@ def fetch_events(
     argument_filters = {} if argument_filters is None else argument_filters
     _filters = {**argument_filters}
 
-    if by_range is None:
-        _data_filter_set, event_filter_params = construct_event_filter_params(
-            event_abi,
-            abi_codec,
-            contract_address=event.address if contract_address is None else contract_address,
-            argument_filters=_filters,
-            fromBlock=from_block,
-            toBlock=to_block,
-            address=address,
-            topics=topics,
-        )
+    _data_filter_set, event_filter_params = construct_event_filter_params(
+        event_abi,
+        abi_codec,
+        contract_address=event.address if contract_address is None else contract_address,
+        argument_filters=_filters,
+        fromBlock=from_block,
+        toBlock=to_block,
+        address=address,
+        topics=topics,
+    )
 
-        # Call node over JSON-RPC API
-        logs = w3.eth.getLogs(event_filter_params)
+    if async_web3 is not None:
+        events = asyncio.run(fetch_events_async(async_web3, event_filter_params,
+                                                from_block, to_block, async_worker))  # type: ignore
 
-        # Convert raw binary event data to easily manipulable Python objects
-        for entry in logs:
+        for entry in events:
             data = {**get_event_data(abi_codec, event_abi, entry)}
             args = data['args']
             yield {**data, **args}  # type: ignore
     else:
-        n_range_upper = int(math.ceil((int(to_block) - int(from_block) + 1) / by_range))
-
-        for n_range in range(n_range_upper):
-            _from_block = from_block + n_range * by_range
-            if n_range == n_range_upper - 1:
-                _to_block = to_block
-            else:
-                _to_block = _from_block + by_range - 1
-
-            _data_filter_set, event_filter_params = construct_event_filter_params(
-                event_abi,
-                abi_codec,
-                contract_address=event.address if contract_address is None else contract_address,
-                argument_filters=_filters,
-                fromBlock=_from_block,
-                toBlock=_to_block,
-                address=address,
-                topics=topics,
-            )
-
+        if by_range is None:
             # Call node over JSON-RPC API
-            logs = w3.eth.getLogs(event_filter_params)
+            events = w3.eth.getLogs(event_filter_params)
 
             # Convert raw binary event data to easily manipulable Python objects
-            for entry in logs:
+            for entry in events:
                 data = {**get_event_data(abi_codec, event_abi, entry)}
                 args = data['args']
                 yield {**data, **args}  # type: ignore
+        else:
+            n_range_upper = int(math.ceil((int(to_block) - int(from_block) + 1) / by_range))
+
+            for n_range in range(n_range_upper):
+                _from_block = from_block + n_range * by_range
+                if n_range == n_range_upper - 1:
+                    _to_block = to_block
+                else:
+                    _to_block = _from_block + by_range - 1
+
+                event_filter_params |= {'fromBlock': _from_block, 'toBlock': _to_block}
+
+                # Call node over JSON-RPC API
+                events = w3.eth.getLogs(event_filter_params)
+
+                # Convert raw binary event data to easily manipulable Python objects
+                for entry in events:
+                    data = {**get_event_data(abi_codec, event_abi, entry)}
+                    args = data['args']
+                    yield {**data, **args}  # type: ignore

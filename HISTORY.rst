@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.114 [2023-06-02]
+* feat: add support for async web3 in fetch_events
+
 0.8.113 [2023-05-29]
 * feat: support for dry run and test model selection in test_all_models function
 * feat: updated token data for BSC and Polygon networks

@@ -447,7 +447,9 @@ class Contract(Account):
                      topics=None,
                      contract_address=None,
                      argument_names: Optional[Sequence[str]] = None,
-                     by_range: Optional[int] = None):
+                     by_range: Optional[int] = None,
+                     use_async: Optional[bool] = False,
+                     async_worker: int = 10):
         """
         contract_address is by default set to the event's address.
 
@@ -488,7 +490,9 @@ class Contract(Account):
                             topics=topics,
                             contract_address=contract_address,
                             argument_names=argument_names,
-                            by_range=by_range)
+                            by_range=by_range,
+                            async_web3=context.web3_async if use_async else None,
+                            async_worker=async_worker)
 
 
 class ContractInfo(Contract):
