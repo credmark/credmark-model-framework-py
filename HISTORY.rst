@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.115 [2023-06-03]
+* fix: disable BSC ledger
+
 0.8.114 [2023-06-02]
 * feat: add support for async web3 in fetch_events
 
