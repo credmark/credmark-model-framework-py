@@ -78,5 +78,94 @@ BSC_TOKENS = {
         'name': 'Cardano Token',
         'address': '0x3EE2200Efb3400fAbB9AacF31297cBdD1d435D47'
     },
-
+    'LINK': {
+        'symbol': 'LINK',
+        'decimals': 18,
+        'name': 'ChainLink Token',
+        'address': '0xF8A0BF9cF54Bb92F17374d9e9A321E6a111a51bD',
+    },
+    'wBETH': {
+        'symbol': 'wBETH',
+        'decimals': 18,
+        'name': 'Wrapped Binance Beacon ETH',
+        'address': '0xa2E3356610840701BDf5611a53974510Ae27E2e1',
+    },
+    'agEUR': {
+        'symbol': 'agEUR',
+        'decimals': 18,
+        'name': 'agEUR',
+        'address': '0x12f31B73D812C6Bb0d735a218c086d44D5fe5f89',
+    },
+    'ID': {
+        'symbol': 'ID',
+        'decimals': 18,
+        'name': 'SPACE ID',
+        'address': '0x2dfF88A56767223A5529eA5960Da7A3F5f766406',
+    },
+    'DOT': {
+        'symbol': 'DOT',
+        'decimals': 18,
+        'name': 'Polkadot Token',
+        'address': '0x7083609fCE4d1d8Dc0C979AAb8c869Ea2C873402',
+    },
+    'MATIC': {
+        'symbol': 'MATIC',
+        'decimals': 18,
+        'name': 'Matic Token',
+        'address': '0xCC42724C6683B7E57334c4E856f4c9965ED682bD',
+    },
+    'unshETH': {
+        'symbol': 'unshETH',
+        'decimals': 18,
+        'name': 'unshETH Ether',
+        'address': '0x0Ae38f7E10A43B5b2fB064B42a2f4514cbA909ef',
+    },
+    'SFP': {
+        'symbol': 'SFP',
+        'decimals': 18,
+        'name': 'SafePal Token',
+        'address': '0xD41FDb03Ba84762dD66a0af1a6C8540FF1ba5dfb',
+    },
+    'GAL': {
+        'symbol': 'GAL',
+        'decimals': 18,
+        'name': 'Project Galaxy',
+        'address': '0xe4Cc45Bb5DBDA06dB6183E8bf016569f40497Aa5',
+    },
+    'Metis': {
+        'symbol': 'Metis',
+        'decimals': 18,
+        'name': 'Metis Token',
+        'address': '0xe552Fb52a4F19e44ef5A967632DBc320B0820639',
+    },
+    'DAI': {
+        'symbol': 'DAI',
+        'decimals': 18,
+        'name': 'Dai Token',
+        'address': '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3',
+    },
+    'stkBNB': {
+        'symbol': 'stkBNB',
+        'decimals': 18,
+        'name': 'Staked BNB',
+        'address': '0xc2E9d07F66A89c44062459A47a0D2Dc038E4fb16',
+    },
+    'ankrETH': {
+        'symbol': 'ankrETH',
+        'decimals': 18,
+        'name': 'Ankr Staked ETH',
+        'address': '0xe05A08226c49b636ACf99c40Da8DC6aF83CE5bB3',
+    },
+    'BNBx': {
+        'symbol': 'BNBx',
+        'decimals': 18,
+        'name': 'Liquid Staking BNB',
+        'address': '0x1bdd3Cf7F79cfB8EdbB955f20ad99211551BA275'
+    },
+    'RPG': {
+        'symbol': 'RPG',
+        'decimals': 18,
+        'name': 'Rangers Protocol Gas',
+        'address': '0xc2098a8938119A52B1F7661893c0153A6CB116d5'
+    },
 }
