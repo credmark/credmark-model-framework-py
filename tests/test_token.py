@@ -268,21 +268,12 @@ class TestToken(ModelTestCase):
                 raise Exception('There is no native token on {chain_id}')
 
     def test_token_on_mainnet(self):
-        chain_tokens = FUNGIBLE_TOKEN_DATA_BY_SYMBOL[Network.Mainnet]
-        for token_n, (token_symbol, token_meta) in enumerate(chain_tokens.items()):
-            print(f'{token_n+1}/{len(chain_tokens)}: {token_symbol} {token_meta["address"]}')
-            token = Token(symbol=token_symbol)
-            self.assertEqual(token.symbol, token_meta['symbol'])
-            self.assertEqual(token.name, token_meta['name'])
-            self.assertEqual(token.address, token_meta['address'])
-            self.assertEqual(token.decimals, token_meta['decimals'])
-
         token = Token(symbol="CMK")
         print(f'Testing on {token.instance.web3.eth.default_block}')
 
         self.assertEqual(token.symbol, "CMK")
-        self.assertEqual(
-            token.address, "0x68CFb82Eacb9f198d508B514d898a403c449533E")
+        self.assertEqual(token.address,
+                         "0x68CFb82Eacb9f198d508B514d898a403c449533E")
         self.assertEqual(token.decimals, 18)
         self.assertEqual(token.total_supply, 100_000_000 * 10**18)
 
@@ -303,14 +294,17 @@ class TestToken(ModelTestCase):
             self.assertEqual(native_token.name, "Ethereum")
             self.assertEqual(native_token.decimals, 18)
 
-    def test_token_on_alt_chains(self):
+    def test_token_on_chains(self):
         context = credmark.cmf.model.ModelContext.current_context()
         for chain_id, chain_tokens in FUNGIBLE_TOKEN_DATA_BY_SYMBOL.items():
-            if chain_id in [Network.BSC, Network.Polygon]:
+            if chain_id in [Network.BSC, Network.Polygon, Network.Mainnet]:
                 with context.fork(chain_id=chain_id) as cc:
                     print(f'Test tokens on chain: {chain_id} on {cc.block_number}')
                     for token_n, (token_symbol, token_meta) in enumerate(chain_tokens.items()):
-                        token = Token(token_symbol).as_erc20(set_loaded=True)
+                        if chain_id == 1:
+                            token = Token(token_symbol)
+                        else:
+                            token = Token(token_symbol).as_erc20(set_loaded=True)
                         self.assertEqual(token.symbol, token_meta['symbol'])
                         self.assertEqual(token.name, token_meta['name'])
                         self.assertEqual(token.address, token_meta['address'])

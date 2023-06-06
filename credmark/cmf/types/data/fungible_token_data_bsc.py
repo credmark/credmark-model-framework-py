@@ -59,4 +59,24 @@ BSC_TOKENS = {
         'decimals': 18,
         'name': 'Level Token',
         'address': '0xB64E280e9D1B5DbEc4AcceDb2257A87b400DB149'
-    }}
+    },
+    'EDU': {
+        'symbol': 'EDU',
+        'decimals': 18,
+        'name': 'EDU Coin',
+        'address': '0xBdEAe1cA48894A1759A8374D63925f21f2Ee2639'
+    },
+    'XRP': {
+        'symbol': 'XRP',
+        'decimals': 18,
+        'name': 'XRP Token',
+        'address': '0x1D2F0da169ceB9fC7B3144628dB156f3F6c60dBE'
+    },
+    'ADA': {
+        'symbol': 'ADA',
+        'decimals': 18,
+        'name': 'Cardano Token',
+        'address': '0x3EE2200Efb3400fAbB9AacF31297cBdD1d435D47'
+    },
+
+}

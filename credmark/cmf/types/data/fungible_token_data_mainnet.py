@@ -1062,4 +1062,41 @@ MAINNET_TOKENS = {
         "name": "Index",
         "address": "0x0954906da0Bf32d5479e25f46056d22f08464cab"
     },
+    'STG': {
+        "symbol": "STG",
+        "decimals": 18,
+        "name": "StargateToken",
+        'address': '0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6'
+    },
+    'SDAO': {
+        "symbol": "SDAO",
+        "decimals": 18,
+        "name": "Singularity Dao",
+        'address': '0x993864E43Caa7F7F12953AD6fEb1d1Ca635B875F'
+    },
+    'MASK': {
+        "symbol": "MASK",
+        "decimals": 18,
+        "name": "Mask Network",
+        'address': '0x69af81e73A73B40adF4f3d4223Cd9b1ECE623074'
+    },
+    'wBETH': {
+        "symbol": "wBETH",
+        "decimals": 18,
+        "name": "Wrapped Binance Beacon ETH",
+        'address': '0xa2E3356610840701BDf5611a53974510Ae27E2e1'
+    },
+    'Cake': {
+        "symbol": "Cake",
+        "decimals": 18,
+        "name": "PancakeSwap Token",
+        'address': '0x152649eA73beAb28c5b49B26eb48f7EAD6d4c898'
+    },
+    'BLUR': {
+        "symbol": "BLUR",
+        "decimals": 18,
+        "name": "Blur",
+        'address': '0x5283D291DBCF85356A21bA090E6db59121208b44'
+    },
+
 }
