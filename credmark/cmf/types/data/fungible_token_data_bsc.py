@@ -42,4 +42,10 @@ BSC_TOKENS = {
         'name': 'BTCB Token',
         'address': '0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c',
     },
+    'Cake': {
+        'symbol': 'Cake',
+        'decimals': 18,
+        'name': 'PancakeSwap Token',
+        'address': '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82'
+    }
 }
