@@ -47,5 +47,16 @@ BSC_TOKENS = {
         'decimals': 18,
         'name': 'PancakeSwap Token',
         'address': '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82'
-    }
-}
+    },
+    'STA': {
+        'symbol': 'STA',
+        'decimals': 8,
+        'name': 'STA TOKEN',
+        'address': '0x4D1E90aB966ae26c778b2f9f365aA40abB13f53C'
+    },
+    'LVL': {
+        'symbol': 'LVL',
+        'decimals': 18,
+        'name': 'Level Token',
+        'address': '0xB64E280e9D1B5DbEc4AcceDb2257A87b400DB149'
+    }}

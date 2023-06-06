@@ -81,7 +81,7 @@ MAINNET_TOKENS = {
     "UST (Wormhole)": {
         "symbol": "UST",
         "decimals": 6,
-        "name": "UST (Wormhole)",
+        "name": "UST",
         "address": "0xa693B19d2931d498c5B318dF961919BB4aee87a5",
         "protocol": "terra chain"
     },
@@ -873,7 +873,7 @@ MAINNET_TOKENS = {
     "LUNA (Wormhole)": {
         "symbol": "LUNA",
         "decimals": 6,
-        "name": "LUNA (Wormhole)",
+        "name": "LUNA",
         "address": "0xbd31EA8212119f94A611FA969881CBa3EA06Fa3d"
     },
     "TRIBE": {

@@ -307,15 +307,15 @@ class TestToken(ModelTestCase):
         context = credmark.cmf.model.ModelContext.current_context()
         for chain_id, chain_tokens in FUNGIBLE_TOKEN_DATA_BY_SYMBOL.items():
             if chain_id in [Network.BSC, Network.Polygon]:
-                print(f'Test tokens on chain: {chain_id}')
-                with context.fork(chain_id=chain_id):
+                with context.fork(chain_id=chain_id) as cc:
+                    print(f'Test tokens on chain: {chain_id} on {cc.block_number}')
                     for token_n, (token_symbol, token_meta) in enumerate(chain_tokens.items()):
-                        print(f'{token_n+1}/{len(chain_tokens)}: {token_symbol} {token_meta["address"]}', flush=True)
-                        token = Token(symbol=token_symbol).as_erc20(set_loaded=True)
+                        token = Token(token_symbol).as_erc20(set_loaded=True)
                         self.assertEqual(token.symbol, token_meta['symbol'])
                         self.assertEqual(token.name, token_meta['name'])
                         self.assertEqual(token.address, token_meta['address'])
                         self.assertEqual(token.decimals, token_meta['decimals'])
+                        print(f'{token_n+1}/{len(chain_tokens)}: {token_symbol} {token_meta["address"]}', flush=True)
 
 
 if __name__ == '__main__':
