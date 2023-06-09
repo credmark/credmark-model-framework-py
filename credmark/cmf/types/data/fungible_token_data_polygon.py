@@ -77,5 +77,41 @@ POLYGON_TOKENS = {
         "decimals": 18,
         "name": "SushiToken (PoS)",
         'address': '0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a',
+    },
+    'XSGD': {
+        "symbol": "XSGD",
+        "decimals": 6,
+        "name": "XSGD",
+        'address': '0xDC3326e71D45186F113a2F448984CA0e8D201995',
+    },
+    'BOB': {
+        "symbol": "BOB",
+        "decimals": 18,
+        "name": "BOB",
+        'address': '0xB0B195aEFA3650A6908f15CdaC7D92F8a5791B0B',
+    },
+    'SHIB': {
+        "symbol": "SHIB",
+        "decimals": 18,
+        "name": "SHIBA INU (PoS)",
+        'address': '0x6f8a06447Ff6FcF75d803135a7de15CE88C1d4ec',
+    },
+    'GNS': {
+        "symbol": "GNS",
+        "decimals": 18,
+        "name": "Gains Network",
+        'address': '0xE5417Af564e4bFDA1c483642db72007871397896'
+    },
+    'agEUR': {
+        "symbol": "agEUR",
+        "decimals": 18,
+        "name": "agEUR",
+        'address': '0xE0B52e49357Fd4DAf2c15e02058DCE6BC0057db4'
+    },
+    'CRV': {
+        "symbol": "CRV",
+        "decimals": 18,
+        "name": "CRV (PoS)",
+        'address': '0x172370d5Cd63279eFa6d502DAB29171933a610AF'
     }
 }

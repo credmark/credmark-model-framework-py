@@ -299,7 +299,7 @@ class TestToken(ModelTestCase):
         for chain_id, chain_tokens in FUNGIBLE_TOKEN_DATA_BY_SYMBOL.items():
             if chain_id in [Network.BSC, Network.Polygon, Network.Mainnet]:
                 with context.fork(chain_id=chain_id) as cc:
-                    print(f'Test tokens on chain: {chain_id} on {cc.block_number}')
+                    print(f'Test tokens on chain: {chain_id} @ {cc.block_number}')
                     for token_n, (token_symbol, token_meta) in enumerate(chain_tokens.items()):
                         if chain_id == 1:
                             token = Token(token_symbol)
