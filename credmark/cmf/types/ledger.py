@@ -455,8 +455,8 @@ class ContractTable(LedgerTable):
     """"""
     BYTECODE = ColumnField('bytecode')
     """"""
-    FUNCTION_SIGHASHES = ColumnField('function_sighashes')
-    """"""
+    # FUNCTION_SIGHASHES = ColumnField('function_sighashes')
+    # """"""
     IS_ERC20 = ColumnField('is_erc20')
     """"""
     IS_ERC721 = ColumnField('is_erc721')
