@@ -45,6 +45,14 @@ class TestLedger(ModelTestCase):
                                limit=10).to_dataframe()
                 self.assertEqual(df.shape[0], 10)
 
+    def test_ledger_contract_events(self):
+        context = credmark.cmf.model.ModelContext.current_context()
+        block_number = context.block_number
+        cc = Contract('0xC36442b4a4522E871399CD717aBDD847Ab11FE88')
+        with cc.ledger.events.Collect as q:
+            df = q.select(q.columns, where=q.BLOCK_NUMBER.between_(block_number-1000, block_number)).to_dataframe()
+            self.assertGreaterEqual(df.shape[0], 0)
+
     def test_transaction(self):
         with self.context.ledger.Transaction.as_('tx') as tx:
             df = tx.select([tx.BLOCK_NUMBER, tx.FROM_ADDRESS, tx.TO_ADDRESS, tx.VALUE],
@@ -117,7 +125,7 @@ class TestLedger(ModelTestCase):
                 self.assertTrue(6949017 not in df.block_number.unique())
                 self.assertTrue(13949017 not in df.block_number.unique())
 
-            print(f'Between {(13919017, 13949018)}')
+            # print(f'Between {(13919017, 13949018)}')
             df = oo.select(
                 where=oo.BLOCK_NUMBER.between_(13919017, 13949018),
                 group_by=[oo.HASH, oo.BLOCK_NUMBER],
@@ -127,7 +135,7 @@ class TestLedger(ModelTestCase):
             self.assertTrue(df.block_number.max() <= 13949017)
 
             # between with number with str_lower True/False: ineffective
-            print(f'Between {(6949017, 6949018)}')
+            # print(f'Between {(6949017, 6949018)}')
             df = oo.select(
                 where=oo.BLOCK_NUMBER.between_(
                     6949017, 6949018, case_sensitive=True),
