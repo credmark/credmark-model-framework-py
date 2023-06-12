@@ -1,5 +1,5 @@
-# pylint: disable=locally-disabled, unused-import
-# ruff: noqa: F401
+# pylint: disable=locally-disabled, unused-import, line-too-long
+# ruff: noqa: F401, E501
 
 from .account import Account, Accounts
 from .address import NULL_ADDRESS, Address
@@ -23,7 +23,7 @@ from .ledger_query import LedgerQuery
 from .ledger_series import LedgerBlockNumberTimeSeries, LedgerBlockTimeSeriesInput
 from .network import Network, NetworkDict
 from .portfolio import Portfolio, PortfolioWithPrice
-from .position import NativePosition, Position, PositionWithPrice, TokenPosition
+from .position import NativePosition, NativePositionWithPrice, Position, PositionWithPrice, TokenPosition
 from .price import Price, PriceList, PriceWithQuote
 from .token_erc20 import NativeToken, Token, Tokens
 from .token_wei import TokenWei
