@@ -38,11 +38,9 @@ class TestPolygon(ModelTestCase):
             _ = cc.abi
             self.assertTrue(cc.abi is not None)
 
-            # "0x104b9b1c41c6764e88edf1207f498902d840fe2a"	14951280	"0xcb9cc9d0f8f4ac451a523d3c064553dd33ea39e3"
-            # "0xb6f53428b2e9a7875844299b2d3f80bfd696678e"	35695159	"0x469f7cbcd9e3b82287bed461d2dc8965cc8e4e66"
             cc = Contract("0xb6f53428b2e9a7875844299b2d3f80bfd696678e")
             _ = cc.abi
-            # self.assertTrue(cc.proxy_for is not None)
+            self.assertTrue(cc.proxy_for is not None)
 
     def test_contract(self):
         context = credmark.cmf.model.ModelContext.current_context()
