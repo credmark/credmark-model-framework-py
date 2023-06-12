@@ -1,3 +1,5 @@
+from typing import Optional
+
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
 from credmark.dto import DTO, DTOField, cross_examples
@@ -52,8 +54,12 @@ class NativePosition(Position):
     asset: NativeToken
 
 
+class NativePositionWithPrice(NativePosition):
+    fiat_quote: Optional[PriceWithQuote]
+
+
 class PositionWithPrice(Position):
-    fiat_quote: PriceWithQuote
+    fiat_quote: Optional[PriceWithQuote]
 
     class Config:
         schema_extra = {
