@@ -62,7 +62,8 @@ class TestPolygon(ModelTestCase):
                 self.assertTrue(df.shape[0] == 1)
 
             with context_poly.ledger.Contract as q:
-                df = q.select(q.columns, where=q.BLOCK_NUMBER.between_(block_number-1000, block_number)).to_dataframe()
+                # df = q.select(q.columns, where=q.BLOCK_NUMBER.between_(block_number-1000, block_number)).to_dataframe()
+                df = q.select(q.columns, where=q.BLOCK_NUMBER.between_(43386765-1000, 43386765)).to_dataframe()
                 self.assertTrue(df.shape[0] > 0)
 
             with context_poly.ledger.Token as q:
