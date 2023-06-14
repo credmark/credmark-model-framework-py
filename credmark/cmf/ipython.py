@@ -53,11 +53,13 @@ def load_module_items(namespace, module_name, selection: Optional[List[str]] = N
                 namespace[a] = getattr(imp, a)
 
 
-def create_cmf(cmf_param, display_params=False):
+def create_cmf(cmf_param=None, show=False):
     """
     create cmf
     """
-    context, _model_loader = create_cmf_context(cmf_param, display_params)
+    if cmf_param is None:
+        cmf_param = {}
+    context, _model_loader = create_cmf_context(cmf_param, show)
 
     model_loaded = _model_loader.loaded_model_version_lists()
     for _k, cache_value in model_loaded.items():
@@ -73,7 +75,7 @@ def create_cmf(cmf_param, display_params=False):
 
 
 # pylint: disable=too-many-locals, too-many-statements
-def create_cmf_context(cmf_param, display_params=False):
+def create_cmf_context(cmf_param, show=False):
     models_spec = importlib.util.find_spec("models")
     if models_spec is not None and models_spec.submodule_search_locations is not None:
         models_path = [models_spec.submodule_search_locations[0]]
@@ -170,7 +172,7 @@ def create_cmf_context(cmf_param, display_params=False):
         context.chain_id, True, {'request_kwargs': {'timeout': 3600 * 10}})
     context._web3_async.eth.default_block = int(context.block_number)
 
-    if display_params:
+    if show:
         print(f'Credmark context created with \n'
               f'- chain_id={cmf_init.chain_id}\n'
               f'- block_number={cmf_init.block_number}\n'
@@ -249,7 +251,7 @@ Example: context, model_loader = %cmf default
                 pprint(cmf_param)
 
         context, model_loader = create_cmf_context(
-            cmf_param, display_params=verbose)
+            cmf_param, show=verbose)
         var_namespace = local_ns
         load_module_items(var_namespace, 'credmark.cmf.model', ['Model'])
         load_module_items(var_namespace, 'credmark.cmf.model.errors',
