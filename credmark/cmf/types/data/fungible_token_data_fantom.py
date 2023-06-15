@@ -37,6 +37,12 @@ FANTOM_TOKENS = {
         "name": "AlpacaToken",
         "address": "0xad996a45fd2373ed0b10efa4a8ecb9de445a4302"
     },
+    "ANKR": {
+        "symbol": "ANKR",
+        "decimals": 18,
+        "name": "Ankr",
+        "address": "0x0615dbba33fe61a31c7ed131bda6655ed76748b1"
+    },
     "ANY": {
         "symbol": "ANY",
         "decimals": 18,
@@ -61,6 +67,12 @@ FANTOM_TOKENS = {
         "name": "Axelar",
         "address": "0x8b1f4432f943c465a973fedc6d7aa50fc96f1f65"
     },
+    "axlUSDC": {
+        "symbol": "axlUSDC",
+        "decimals": 6,
+        "name": "Axelar Wrapped USDC",
+        "address": "0x1b6382dbdea11d97f24495c9a90b7c88469134a4"
+    },
     "BAND": {
         "symbol": "BAND",
         "decimals": 18,
@@ -72,6 +84,12 @@ FANTOM_TOKENS = {
         "decimals": 18,
         "name": "BASED",
         "address": "0x8d7d3409881b51466b483b11ea1b8a03cded89ae"
+    },
+    "bECH": {
+        "symbol": "bECH",
+        "decimals": 18,
+        "name": "Bridged Echelon",
+        "address": "0xb868b46bcec6595a953e351e6d8459bedef6805e"
     },
     "BEETS": {
         "symbol": "BEETS",
@@ -133,17 +151,29 @@ FANTOM_TOKENS = {
         "name": "Bitcoin",
         "address": "0x321162cd933e2be498cd2267a90534a804051b11"
     },
+    "BUILD": {
+        "symbol": "BUILD",
+        "decimals": 18,
+        "name": "Build Token",
+        "address": "0xa6097a4dbef3eb44c50bad6286a5ed2bc4418aa2"
+    },
+    "CERBY": {
+        "symbol": "CERBY",
+        "decimals": 18,
+        "name": "Cerby Token",
+        "address": "0xdef1fac7bf08f173d286bbbdcbeeade695129840"
+    },
     "CHARM": {
         "symbol": "CHARM",
         "decimals": 18,
         "name": "Charm Token",
         "address": "0x248cb87dda803028dfead98101c9465a2fbda0d4"
     },
-    "CODE7": {
-        "symbol": "CODE7",
+    "CHILL": {
+        "symbol": "CHILL",
         "decimals": 18,
-        "name": "Code7 Finance",
-        "address": "0xf77864fcffec4598813e3378681c9330b771ca88"
+        "name": "ChillPill",
+        "address": "0xe47d957f83f8887063150aaf7187411351643392"
     },
     "CONK": {
         "symbol": "CONK",
@@ -187,12 +217,6 @@ FANTOM_TOKENS = {
         "name": "Dai Stablecoin",
         "address": "0x8d11ec38a3eb5e956b052f67da8bdc9bef8abf3e"
     },
-    "DARKO": {
-        "symbol": "DARKO",
-        "decimals": 18,
-        "name": "Dark Opera",
-        "address": "0x274b7eb297615ce21a1cd5b920f867389a367a8a"
-    },
     "DEUS": {
         "symbol": "DEUS",
         "decimals": 18,
@@ -211,17 +235,17 @@ FANTOM_TOKENS = {
         "name": "Dola USD Stablecoin",
         "address": "0x3129662808bec728a27ab6a6b9afd3cbaca8a43c"
     },
-    "DP": {
-        "symbol": "DP",
-        "decimals": 18,
-        "name": "Dark Planet",
-        "address": "0x08b1c9a96c663ee1e0cd7029f13aced7dcf5e373"
-    },
     "DSHARE": {
         "symbol": "DSHARE",
         "decimals": 18,
         "name": "DSHARE",
         "address": "0x6e209329a33a63c463dbb65ae2d6655fe5c98411"
+    },
+    "DSLA": {
+        "symbol": "DSLA",
+        "decimals": 18,
+        "name": "DSLA",
+        "address": "0x25a528af62e56512a19ce8c3cab427807c28cc19"
     },
     "ELK": {
         "symbol": "ELK",
@@ -229,17 +253,41 @@ FANTOM_TOKENS = {
         "name": "Elk",
         "address": "0xeeeeeb57642040be42185f49c52f7e9b38f8eeee"
     },
+    "EQUAL": {
+        "symbol": "EQUAL",
+        "decimals": 18,
+        "name": "Equalizer",
+        "address": "0x3fd3a0c85b70754efc07ac9ac0cbbdce664865a6"
+    },
     "ETH": {
         "symbol": "ETH",
         "decimals": 18,
         "name": "Ethereum",
         "address": "0x74b23882a30290451a17c44f4f05243b6b58c76d"
     },
+    "FABBC": {
+        "symbol": "FABBC",
+        "decimals": 8,
+        "name": "Fantom ABBC",
+        "address": "0xe83ce6bfb580583bd6a62b4be7b34fc25f02910d"
+    },
     "FAME": {
         "symbol": "FAME",
         "decimals": 18,
         "name": "FAME",
         "address": "0x904f51a2e7eeaf76aaf0418cbaf0b71149686f4a"
+    },
+    "fBOMB": {
+        "symbol": "fBOMB",
+        "decimals": 18,
+        "name": "Fantom Bomb",
+        "address": "0x74ccbe53f77b08632ce0cb91d3a545bf6b8e0979"
+    },
+    "FEAR": {
+        "symbol": "FEAR",
+        "decimals": 18,
+        "name": "Fear NFTs [via ChainPort.io]",
+        "address": "0x14418c22165553251b002b289f8abe4d1ed41d76"
     },
     "FHM": {
         "symbol": "FHM",
@@ -253,17 +301,17 @@ FANTOM_TOKENS = {
         "name": "Fantom Libero Financial Freedom",
         "address": "0xc3f069d7439baf6d4d6e9478d9cc77778e62d147"
     },
-    "fOLIVE": {
-        "symbol": "fOLIVE",
-        "decimals": 18,
-        "name": "OliveCash Token",
-        "address": "0xa9937092c4e2b0277c16802cc8778d252854688a"
-    },
     "FRAX": {
         "symbol": "FRAX",
         "decimals": 18,
         "name": "Frax",
         "address": "0xdc301622e621166bd8e82f2ca0a26c13ad0be355"
+    },
+    "frxETH": {
+        "symbol": "frxETH",
+        "decimals": 18,
+        "name": "Frax Ether",
+        "address": "0x9e73f99ee061c8807f69f9c6ccc44ea3d8c373ee"
     },
     "FS": {
         "symbol": "FS",
@@ -295,17 +343,17 @@ FANTOM_TOKENS = {
         "name": "Geist.Finance Protocol Token",
         "address": "0xd8321aa83fb0a4ecd6348d4577431310a6e0814d"
     },
+    "GEL": {
+        "symbol": "GEL",
+        "decimals": 18,
+        "name": "Gelato Network Token",
+        "address": "0x15b7c0c907e4c6b9adaaaabc300c08991d6cea05"
+    },
     "gOHM": {
         "symbol": "gOHM",
         "decimals": 18,
         "name": "Governance OHM",
         "address": "0x91fa20244fb509e8289ca630e5db3e9166233fdc"
-    },
-    "GRO": {
-        "symbol": "GRO",
-        "decimals": 18,
-        "name": "Growth-Peg Token",
-        "address": "0x91f1430833879272643658f8ed07d60257ddf321"
     },
     "GTON": {
         "symbol": "GTON",
@@ -331,6 +379,12 @@ FANTOM_TOKENS = {
         "name": "Hundred Finance",
         "address": "0x10010078a54396f62c96df8532dc2b4847d47ed3"
     },
+    "HYVE": {
+        "symbol": "HYVE",
+        "decimals": 18,
+        "name": "HYVE",
+        "address": "0x90b89e881961e1053aeaddba13217d56f747349a"
+    },
     "IB": {
         "symbol": "IB",
         "decimals": 18,
@@ -343,11 +397,35 @@ FANTOM_TOKENS = {
         "name": "IceToken",
         "address": "0xf16e81dce15b08f326220742020379b855b87df9"
     },
+    "INF": {
+        "symbol": "INF",
+        "decimals": 18,
+        "name": "Infam",
+        "address": "0x000000ef379ee7f4c051f4b9af901a9219d9ec5c"
+    },
+    "KALM": {
+        "symbol": "KALM",
+        "decimals": 18,
+        "name": "Kalmar Token",
+        "address": "0x4f851750a3e6f80f1e1f89c67b56960bfc29a934"
+    },
     "KP3R": {
         "symbol": "KP3R",
         "decimals": 18,
         "name": "Keep3r",
         "address": "0x2a5062d22adcfaafbd5c541d4da82e4b450d4212"
+    },
+    "LEVL": {
+        "symbol": "LEVL",
+        "decimals": 18,
+        "name": "Levolution.io Token",
+        "address": "0xf8a363cf116b6b633faedf66848ed52895ce703b"
+    },
+    "LIF3": {
+        "symbol": "LIF3",
+        "decimals": 18,
+        "name": "LIF3",
+        "address": "0xbf60e7414ef09026733c1e7de72e7393888c64da"
     },
     "LINK": {
         "symbol": "LINK",
@@ -373,6 +451,12 @@ FANTOM_TOKENS = {
         "name": "MAGIK",
         "address": "0x87a5c9b60a3aaf1064006fe64285018e50e0d020"
     },
+    "MAKI": {
+        "symbol": "MAKI",
+        "decimals": 18,
+        "name": "MakiSwap",
+        "address": "0xedf5e2ac09002094cc51b597cebe58c70182adc5"
+    },
     "MARS": {
         "symbol": "MARS",
         "decimals": 9,
@@ -384,6 +468,12 @@ FANTOM_TOKENS = {
         "decimals": 9,
         "name": "MagicCraft",
         "address": "0xe705af5f63fcabdcdf5016aa838eaaac35d12890"
+    },
+    "MGG": {
+        "symbol": "MGG",
+        "decimals": 18,
+        "name": "MetaGaming Guild [via ChainPort.io]",
+        "address": "0xfda8355e8ce22ac44f2d175f4acfec8fac7472d7"
     },
     "MIM": {
         "symbol": "MIM",
@@ -403,17 +493,23 @@ FANTOM_TOKENS = {
         "name": "MUMMY",
         "address": "0x01e77288b38b416f972428d562454fb329350bac"
     },
+    "MOD": {
+        "symbol": "MOD",
+        "decimals": 18,
+        "name": "Modefi",
+        "address": "0xe64b9fd040d1f9d4715c645e0d567ef69958d3d9"
+    },
     "MODA": {
         "symbol": "MODA",
         "decimals": 18,
         "name": "moda",
         "address": "0x6496994241804d7fe2b032901931e03bcd82301f"
     },
-    "MSHARE": {
-        "symbol": "MSHARE",
+    "MPX": {
+        "symbol": "MPX",
         "decimals": 18,
-        "name": "MSHARE",
-        "address": "0xc8ca9026ad0882133ef126824f6852567c571a4e"
+        "name": "MPX",
+        "address": "0x66eed5ff1701e6ed8470dc391f05e27b1d0657eb"
     },
     "MST": {
         "symbol": "MST",
@@ -427,17 +523,17 @@ FANTOM_TOKENS = {
         "name": "Multichain",
         "address": "0x9fb9a33956351cf4fa040f65a13b835a3c8764e3"
     },
-    "MvDOLLAR": {
-        "symbol": "MvDOLLAR",
-        "decimals": 18,
-        "name": "MiniVerse Dollar",
-        "address": "0x57976c467608983513c9355238dc6de1b1abbcca"
-    },
     "NOKU": {
         "symbol": "NOKU",
         "decimals": 18,
         "name": "NOKU v2",
         "address": "0xfb4d42bed5618fb1a377ddb64eb56b92a6d117f2"
+    },
+    "O3": {
+        "symbol": "O3",
+        "decimals": 18,
+        "name": "O3 Swap Token",
+        "address": "0xee9801669c6138e84bd50deb500827b776777d28"
     },
     "OATH": {
         "symbol": "OATH",
@@ -445,11 +541,11 @@ FANTOM_TOKENS = {
         "name": "Oath Token",
         "address": "0x21ada0d2ac28c3a5fa3cd2ee30882da8812279b6"
     },
-    "OBOL": {
-        "symbol": "OBOL",
+    "OK": {
+        "symbol": "OK",
         "decimals": 18,
-        "name": "OBOL",
-        "address": "0x1539c63037d95f84a5981f96e43850d1451b6216"
+        "name": "Okcash",
+        "address": "0xd3ac016b1b8c80eeadde4d186a9138c9324e4189"
     },
     "OKSE": {
         "symbol": "OKSE",
@@ -457,11 +553,11 @@ FANTOM_TOKENS = {
         "name": "Okse",
         "address": "0x3b53d2c7b44d40be05fa5e2309ffeb6eb2492d88"
     },
-    "OOZE": {
-        "symbol": "OOZE",
+    "ONI": {
+        "symbol": "ONI",
         "decimals": 18,
-        "name": "Ooze",
-        "address": "0x60e6afeb3ac2fbc82a8d312bea3b47dc6b4848d2"
+        "name": "Onino",
+        "address": "0x667c856f1a624baefe89fc4909c8701296c86c98"
     },
     "ORKAN": {
         "symbol": "ORKAN",
@@ -505,6 +601,12 @@ FANTOM_TOKENS = {
         "name": "Pooch",
         "address": "0x31a47b49b4dbdc54d403b8c4880ac9bb1a9ebae8"
     },
+    "PORTX": {
+        "symbol": "PORTX",
+        "decimals": 18,
+        "name": "ChainPort Token [via ChainPort.io]",
+        "address": "0x504ec4f9af7bbf8cad73ccc2121a3a7fb4c81bcf"
+    },
     "PREMIA": {
         "symbol": "PREMIA",
         "decimals": 18,
@@ -517,17 +619,17 @@ FANTOM_TOKENS = {
         "name": "Punchy Token",
         "address": "0x18ee5e886750cc1afdc728c5608da33305837da8"
     },
+    "RADIO": {
+        "symbol": "RADIO",
+        "decimals": 18,
+        "name": "RadioShack Token",
+        "address": "0xf899e3909b4492859d44260e1de41a9e663e70f5"
+    },
     "RAINI": {
         "symbol": "RAINI",
         "decimals": 18,
         "name": "Raini",
         "address": "0xe83dfaaafd3310474d917583ae9633b4f68fb036"
-    },
-    "RAINSPIRIT": {
-        "symbol": "RAINSPIRIT",
-        "decimals": 18,
-        "name": "rainSpirit",
-        "address": "0xf9c6e3c123f0494a4447100bd7dbd536f43cc33a"
     },
     "REAPER": {
         "symbol": "REAPER",
@@ -547,12 +649,6 @@ FANTOM_TOKENS = {
         "name": "EverRise",
         "address": "0xc17c30e98541188614df99239cabd40280810ca3"
     },
-    "SCAR": {
-        "symbol": "SCAR",
-        "decimals": 18,
-        "name": "SCAR",
-        "address": "0x0b41469497f46efa3937fba4ed92153146f55ca9"
-    },
     "SCARE": {
         "symbol": "SCARE",
         "decimals": 18,
@@ -565,11 +661,23 @@ FANTOM_TOKENS = {
         "name": "Scream",
         "address": "0xe0654c8e6fd4d733349ac7e09f6f23da256bf475"
     },
+    "SD": {
+        "symbol": "SD",
+        "decimals": 18,
+        "name": "Stader",
+        "address": "0x412a13c109ac30f0db80ad3bd1defd5d0a6c0ac6"
+    },
     "SEX": {
         "symbol": "SEX",
         "decimals": 18,
         "name": "Solidex",
         "address": "0xd31fcd1f7ba190dbc75354046f6024a9b86014d7"
+    },
+    "sfrxETH": {
+        "symbol": "sfrxETH",
+        "decimals": 18,
+        "name": "Staked Frax Ether",
+        "address": "0xb90ccd563918ff900928dc529aa01046795ccb4a"
     },
     "sFTMX": {
         "symbol": "sFTMX",
@@ -582,6 +690,12 @@ FANTOM_TOKENS = {
         "decimals": 18,
         "name": "ShadeToken",
         "address": "0x3a3841f5fa9f2c283ea567d5aeea3af022dd2262"
+    },
+    "SLM": {
+        "symbol": "SLM",
+        "decimals": 18,
+        "name": "SoliMax",
+        "address": "0x39263a476aadf768be43a99b24c4e461098524a4"
     },
     "SNX": {
         "symbol": "SNX",
@@ -612,6 +726,12 @@ FANTOM_TOKENS = {
         "decimals": 9,
         "name": "Spartacus",
         "address": "0x5602df4a94eb6c680190accfa2a475621e0ddbdc"
+    },
+    "SPACE": {
+        "symbol": "SPACE",
+        "decimals": 18,
+        "name": "Space Token",
+        "address": "0x5f7f94a1dd7b15594d17543beb8b30b111dd464c"
     },
     "SPELL": {
         "symbol": "SPELL",
@@ -661,29 +781,17 @@ FANTOM_TOKENS = {
         "name": "Synapse",
         "address": "0xe55e19fb4f2d85af758950957714292dac1e25b2"
     },
-    "TAKE": {
-        "symbol": "TAKE",
-        "decimals": 18,
-        "name": "Takepile Token",
-        "address": "0xe9e5a97acc59bb68813bf368487fbffd0a39713b"
-    },
     "TAROT": {
         "symbol": "TAROT",
         "decimals": 18,
         "name": "Tarot",
         "address": "0xc5e2b037d30a390e62180970b3aa4e91868764cd"
     },
-    "TART": {
-        "symbol": "TART",
+    "TCS": {
+        "symbol": "TCS",
         "decimals": 18,
-        "name": "TARTARUS",
-        "address": "0xe36ac17edb23bdd89d363d152365df019e3eaf71"
-    },
-    "TAZOR": {
-        "symbol": "TAZOR",
-        "decimals": 9,
-        "name": "TAZOR",
-        "address": "0xee65d8b88f86ace0f7ba42ba2d2c679b6f604bf0"
+        "name": "Timechain Swap Token",
+        "address": "0xfbfae0dd49882e503982f8eb4b8b1e464eca0b91"
     },
     "TOMB": {
         "symbol": "TOMB",
@@ -727,6 +835,12 @@ FANTOM_TOKENS = {
         "name": "TrueUSD",
         "address": "0x9879abdea01a879644185341f7af7d8343556b7a"
     },
+    "ULX": {
+        "symbol": "ULX",
+        "decimals": 18,
+        "name": "Ultron",
+        "address": "0x8867f422cd9cf0c66ba71d22bc8edc641e91949d"
+    },
     "UNDEAD": {
         "symbol": "UNDEAD",
         "decimals": 18,
@@ -757,6 +871,12 @@ FANTOM_TOKENS = {
         "name": "UST",
         "address": "0x846e4d51d7e2043c1a87e0ab7490b93fb940357b"
     },
+    "VEMP": {
+        "symbol": "VEMP",
+        "decimals": 18,
+        "name": "vEmpire Gamer Token",
+        "address": "0x526f1dc408cfe7fc5330ab9f1e78474ceff2a5dd"
+    },
     "VOID": {
         "symbol": "VOID",
         "decimals": 18,
@@ -768,6 +888,12 @@ FANTOM_TOKENS = {
         "decimals": 18,
         "name": "Waterfall",
         "address": "0x6b2a7b82d3f7a6e1f5a5831ab40666ec717645d5"
+    },
+    "wBAN": {
+        "symbol": "wBAN",
+        "decimals": 18,
+        "name": "Wrapped Banano",
+        "address": "0xe20b9e246db5a0d21bf9209e4858bc9a3ff7a034"
     },
     "WBOND": {
         "symbol": "WBOND",
@@ -785,9 +911,7 @@ FANTOM_TOKENS = {
         "symbol": "WFTM",
         "decimals": 18,
         "name": "Wrapped Fantom",
-        "address": "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83",
-        "is_native_token": True,
-
+        "address": "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83"
     },
     "WIGO": {
         "symbol": "WIGO",
@@ -801,6 +925,12 @@ FANTOM_TOKENS = {
         "name": "WingSwap",
         "address": "0xf24be6c063bee7c7844dd90a21fdf7d783d41a94"
     },
+    "wMEMO": {
+        "symbol": "wMEMO",
+        "decimals": 18,
+        "name": "Wrapped MEMO",
+        "address": "0xddc0385169797937066bbd8ef409b5b3c0dfeb52"
+    },
     "WOO": {
         "symbol": "WOO",
         "decimals": 18,
@@ -813,11 +943,23 @@ FANTOM_TOKENS = {
         "name": "Wrapped sHEC",
         "address": "0x94ccf60f700146bea8ef7832820800e2dfa92eda"
     },
+    "WSPP": {
+        "symbol": "WSPP",
+        "decimals": 18,
+        "name": "WolfSafePoorPeople",
+        "address": "0x685a211c9d96d0c8c9d22b7ae309538d4c69c15c"
+    },
     "WV": {
         "symbol": "WV",
         "decimals": 18,
         "name": "Wolf Ventures",
         "address": "0x911d1feae99e112b5014cfa60038325d863352f1"
+    },
+    "XY": {
+        "symbol": "XY",
+        "decimals": 18,
+        "name": "XY Token",
+        "address": "0x444444443b0fcb2733b93f23c910580fba52fffa"
     },
     "YEL": {
         "symbol": "YEL",

@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.117 [2023-06-15]
+* chore: update token list
+
 0.8.116 [2023-06-11]
 * feat: support polygon ledger
 * feat: add .has_dex_price() to network

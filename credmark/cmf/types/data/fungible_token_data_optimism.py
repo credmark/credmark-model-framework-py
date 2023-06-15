@@ -31,6 +31,12 @@ OPTIMISM_TOKENS = {
         "name": "Alchemix ETH",
         "address": "0x3e29d3a9316dab217754d13b28646b76607c5f04"
     },
+    "AMKT": {
+        "symbol": "AMKT",
+        "decimals": 18,
+        "name": "Alongside Crypto Market Index",
+        "address": "0xc27d9bc194a648fe3069955a5126699c4e49351c"
+    },
     "BAL": {
         "symbol": "BAL",
         "decimals": 18,
@@ -42,6 +48,12 @@ OPTIMISM_TOKENS = {
         "decimals": 18,
         "name": "BitANT",
         "address": "0x5029c236320b8f15ef0a657054b84d90bfbeded3"
+    },
+    "BitBTC": {
+        "symbol": "BitBTC",
+        "decimals": 18,
+        "name": "BitBTC",
+        "address": "0xc98b98d17435aa00830c87ea02474c5007e1f272"
     },
     "BOB": {
         "symbol": "BOB",
@@ -61,11 +73,23 @@ OPTIMISM_TOKENS = {
         "name": "Bitcoin",
         "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
     },
+    "BUILD": {
+        "symbol": "BUILD",
+        "decimals": 18,
+        "name": "Build Token",
+        "address": "0xe4de4b87345815c71aa843ea4841bcdc682637bb"
+    },
     "BUSD": {
         "symbol": "BUSD",
         "decimals": 18,
         "name": "BUSD Token",
         "address": "0x9c9e5fd8bbc25984b178fdce6117defa39d2db39"
+    },
+    "cbETH": {
+        "symbol": "cbETH",
+        "decimals": 18,
+        "name": "Coinbase Wrapped Staked ETH",
+        "address": "0xaddb6a0412de1ba0f936dcaeb8aaa24578dcf3b2"
     },
     "COLLAB": {
         "symbol": "COLLAB",
@@ -91,11 +115,23 @@ OPTIMISM_TOKENS = {
         "name": "Dai Stablecoin",
         "address": "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1"
     },
+    "DAI+": {
+        "symbol": "DAI+",
+        "decimals": 18,
+        "name": "DAI+",
+        "address": "0x970d50d09f3a656b43e11b0d45241a84e3a6e011"
+    },
     "DCN": {
         "symbol": "DCN",
         "decimals": 0,
         "name": "Dentacoin",
         "address": "0x1da650c3b2daa8aa9ff6f661d4156ce24d08a062"
+    },
+    "DF": {
+        "symbol": "DF",
+        "decimals": 18,
+        "name": "dForce",
+        "address": "0x9e5aac1ba1a2e6aed6b32689dfcf62a509ca96f3"
     },
     "DHT": {
         "symbol": "DHT",
@@ -115,6 +151,18 @@ OPTIMISM_TOKENS = {
         "name": "Ethereum Name Service",
         "address": "0x65559aa14915a70190438ef90104769e5e890a00"
     },
+    "EQZ": {
+        "symbol": "EQZ",
+        "decimals": 18,
+        "name": "Equalizer",
+        "address": "0x81ab7e0d570b01411fcc4afd3d50ec8c241cb74b"
+    },
+    "ERN": {
+        "symbol": "ERN",
+        "decimals": 18,
+        "name": "Ethos Reserve Note",
+        "address": "0xc5b001dc33727f8f26880b184090d3e252470d45"
+    },
     "EST": {
         "symbol": "EST",
         "decimals": 18,
@@ -125,8 +173,13 @@ OPTIMISM_TOKENS = {
         "symbol": "ETH",
         "decimals": 18,
         "name": "Ether",
-        "address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000",
-        "is_native_token": True
+        "address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000"
+    },
+    "fBOMB": {
+        "symbol": "fBOMB",
+        "decimals": 18,
+        "name": "Fantom Bomb",
+        "address": "0x74ccbe53f77b08632ce0cb91d3a545bf6b8e0979"
     },
     "FRAX": {
         "symbol": "FRAX",
@@ -134,11 +187,29 @@ OPTIMISM_TOKENS = {
         "name": "Frax",
         "address": "0x2e3d870790dc77a83dd1d18184acc7439a53f475"
     },
+    "frxETH": {
+        "symbol": "frxETH",
+        "decimals": 18,
+        "name": "Frax Ether",
+        "address": "0x6806411765af15bddd26f8f544a34cc40cb9838b"
+    },
     "FXS": {
         "symbol": "FXS",
         "decimals": 18,
         "name": "Frax Share",
         "address": "0x67ccea5bb16181e7b4109c9c2143c24a1c2205be"
+    },
+    "GTC": {
+        "symbol": "GTC",
+        "decimals": 18,
+        "name": "Gitcoin",
+        "address": "0x1eba7a6a72c894026cd654ac5cdcf83a46445b08"
+    },
+    "GYSR": {
+        "symbol": "GYSR",
+        "decimals": 18,
+        "name": "Geyser",
+        "address": "0x117cfd9060525452db4a34d51c0b3b7599087f05"
     },
     "HAN": {
         "symbol": "HAN",
@@ -188,6 +259,12 @@ OPTIMISM_TOKENS = {
         "name": "ChainLink Token",
         "address": "0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6"
     },
+    "LIZ": {
+        "symbol": "LIZ",
+        "decimals": 18,
+        "name": "Theranos Coin",
+        "address": "0x3bb4445d30ac020a84c1b5a8a2c6248ebc9779d0"
+    },
     "LRC": {
         "symbol": "LRC",
         "decimals": 18,
@@ -224,11 +301,35 @@ OPTIMISM_TOKENS = {
         "name": "Maker",
         "address": "0xab7badef82e9fe11f6f33f87bc9bc2aa27f2fcb5"
     },
+    "MTA": {
+        "symbol": "MTA",
+        "decimals": 18,
+        "name": "Meta",
+        "address": "0x929b939f8524c3be977af57a4a0ad3fb1e374b50"
+    },
     "NFTE": {
         "symbol": "NFTE",
         "decimals": 18,
         "name": "NFTEarth",
         "address": "0xc96f4f893286137ac17e07ae7f217ffca5db3ab6"
+    },
+    "O3": {
+        "symbol": "O3",
+        "decimals": 18,
+        "name": "O3 Swap Token",
+        "address": "0xee9801669c6138e84bd50deb500827b776777d28"
+    },
+    "OATH": {
+        "symbol": "OATH",
+        "decimals": 18,
+        "name": "Oath Token",
+        "address": "0x39fde572a18448f8139b7788099f0a0740f51205"
+    },
+    "OK": {
+        "symbol": "OK",
+        "decimals": 18,
+        "name": "Okcash",
+        "address": "0xd3ac016b1b8c80eeadde4d186a9138c9324e4189"
     },
     "OP": {
         "symbol": "OP",
@@ -260,6 +361,12 @@ OPTIMISM_TOKENS = {
         "name": "Perpetual",
         "address": "0x9e1028f5f1d5ede59748ffcee5532509976840e0"
     },
+    "POOL": {
+        "symbol": "POOL",
+        "decimals": 18,
+        "name": "PoolTogether",
+        "address": "0x395ae52bb17aef68c2888d941736a71dc6d4e125"
+    },
     "POP": {
         "symbol": "POP",
         "decimals": 18,
@@ -271,6 +378,18 @@ OPTIMISM_TOKENS = {
         "decimals": 18,
         "name": "Premia",
         "address": "0x374ad0f47f4ca39c78e5cc54f1c9e426ff8f231a"
+    },
+    "PSP": {
+        "symbol": "PSP",
+        "decimals": 18,
+        "name": "ParaSwap",
+        "address": "0xd3594e879b358f430e20f82bea61e83562d49d48"
+    },
+    "RADIO": {
+        "symbol": "RADIO",
+        "decimals": 18,
+        "name": "RadioShack Token",
+        "address": "0xf899e3909b4492859d44260e1de41a9e663e70f5"
     },
     "RAI": {
         "symbol": "RAI",
@@ -296,17 +415,47 @@ OPTIMISM_TOKENS = {
         "name": "Rilla",
         "address": "0x96d17e1301b31556e5e263389583a9331e6749e9"
     },
+    "ROOBEE": {
+        "symbol": "ROOBEE",
+        "decimals": 18,
+        "name": "ROOBEE",
+        "address": "0xb12c13e66ade1f72f71834f2fc5082db8c091358"
+    },
     "SARCO": {
         "symbol": "SARCO",
         "decimals": 18,
         "name": "Sarcophagus",
         "address": "0x7c6b91d9be155a6db01f749217d76ff02a7227f2"
     },
+    "sBTC": {
+        "symbol": "sBTC",
+        "decimals": 18,
+        "name": "Synth sBTC",
+        "address": "0x298b9b95708152ff6968aafd889c6586e9169f1d"
+    },
     "sETH": {
         "symbol": "sETH",
         "decimals": 18,
         "name": "Synth sETH",
         "address": "0xe405de8f52ba7559f9df3c368500b6e6ae6cee49"
+    },
+    "sfrxETH": {
+        "symbol": "sfrxETH",
+        "decimals": 18,
+        "name": "Staked Frax Ether",
+        "address": "0x484c2d6e3cdd945a8b2df735e079178c1036578c"
+    },
+    "sLINK": {
+        "symbol": "sLINK",
+        "decimals": 18,
+        "name": "Synth sLINK",
+        "address": "0xc5db22719a06418028a40a9b5e9a7c02959d0d08"
+    },
+    "SLM": {
+        "symbol": "SLM",
+        "decimals": 18,
+        "name": "SoliMax",
+        "address": "0xd652776de7ad802be5ec7bebfafda37600222b48"
     },
     "SNX": {
         "symbol": "SNX",
@@ -320,11 +469,29 @@ OPTIMISM_TOKENS = {
         "name": "Sonne",
         "address": "0x1db2466d9f5e10d7090e7152b68d62703a2245f0"
     },
+    "SPANK": {
+        "symbol": "SPANK",
+        "decimals": 18,
+        "name": "SPANK",
+        "address": "0xcfd1d50ce23c46d3cf6407487b2f8934e96dc8f9"
+    },
+    "SUKU": {
+        "symbol": "SUKU",
+        "decimals": 18,
+        "name": "SUKU",
+        "address": "0xef6301da234fc7b0545c6e877d3359fe0b9e50a4"
+    },
     "sUSD": {
         "symbol": "sUSD",
         "decimals": 18,
         "name": "Synth sUSD",
         "address": "0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9"
+    },
+    "SUSHI": {
+        "symbol": "SUSHI",
+        "decimals": 18,
+        "name": "SushiToken",
+        "address": "0x3eaeb77b03dbc0f6321ae1b72b2e9adb0f60112b"
     },
     "SYN": {
         "symbol": "SYN",
@@ -332,11 +499,35 @@ OPTIMISM_TOKENS = {
         "name": "Synapse",
         "address": "0x5a5fff6f753d7c11a56a52fe47a177a87e431655"
     },
+    "TAROT": {
+        "symbol": "TAROT",
+        "decimals": 18,
+        "name": "Tarot",
+        "address": "0x375488f097176507e39b9653b88fdc52cde736bf"
+    },
     "THALES": {
         "symbol": "THALES",
         "decimals": 18,
         "name": "Thales DAO Token",
         "address": "0x217d47011b23bb961eb6d93ca9945b7501a5bb11"
+    },
+    "TheDAO": {
+        "symbol": "TheDAO",
+        "decimals": 16,
+        "name": "TheDAO",
+        "address": "0xd8f365c2c85648f9b89d9f1bf72c0ae4b1c36cfd"
+    },
+    "TRB": {
+        "symbol": "TRB",
+        "decimals": 18,
+        "name": "Tellor",
+        "address": "0xaf8ca653fa2772d58f4368b0a71980e9e3ceb888"
+    },
+    "TUSD": {
+        "symbol": "TUSD",
+        "decimals": 18,
+        "name": "TrueUSD",
+        "address": "0xcb59a0a753fdb7491d5f3d794316f1ade197b21e"
     },
     "UMA": {
         "symbol": "UMA",
@@ -350,6 +541,12 @@ OPTIMISM_TOKENS = {
         "name": "Uniswap",
         "address": "0x6fd9d7ad17242c41f7131d257212c54a0e816691"
     },
+    "UNIDX": {
+        "symbol": "UNIDX",
+        "decimals": 18,
+        "name": "UniDex",
+        "address": "0x5d47baba0d66083c52009271faf3f50dcc01023c"
+    },
     "USD+": {
         "symbol": "USD+",
         "decimals": 6,
@@ -362,11 +559,23 @@ OPTIMISM_TOKENS = {
         "name": "USD Coin",
         "address": "0x7f5c764cbc14f9669b88837ca1490cca17c31607"
     },
+    "USDD": {
+        "symbol": "USDD",
+        "decimals": 18,
+        "name": "Decentralized USD",
+        "address": "0x7113370218f31764c1b6353bdf6004d86ff6b9cc"
+    },
     "USDT": {
         "symbol": "USDT",
         "decimals": 6,
         "name": "Tether USD",
         "address": "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58"
+    },
+    "UST": {
+        "symbol": "UST",
+        "decimals": 6,
+        "name": "UST (Wormhole)",
+        "address": "0xba28feb4b6a6b81e3f26f08b83a19e715c4294fd"
     },
     "USX": {
         "symbol": "USX",
@@ -379,6 +588,18 @@ OPTIMISM_TOKENS = {
         "decimals": 18,
         "name": "Velodrome",
         "address": "0x3c8b650257cfb5f272f799f5e2b4e65093a11a05"
+    },
+    "WAD": {
+        "symbol": "WAD",
+        "decimals": 18,
+        "name": "WardenSwap",
+        "address": "0x703d57164ca270b0b330a87fd159cfef1490c0a5"
+    },
+    "WALBT": {
+        "symbol": "WALBT",
+        "decimals": 18,
+        "name": "Wrapped AllianceBlock Token",
+        "address": "0x276cf9e7a43d1b9422decd1f1d2608f3d588caad"
     },
     "WBTC": {
         "symbol": "WBTC",
@@ -397,5 +618,29 @@ OPTIMISM_TOKENS = {
         "decimals": 18,
         "name": "Wrapped liquid staked Ether 2.0",
         "address": "0x1f32b1c2345538c0c6f582fcb022739c4a194ebb"
+    },
+    "wTBT": {
+        "symbol": "wTBT",
+        "decimals": 18,
+        "name": "wTBT(Bridge Token)",
+        "address": "0xdb4ea87ff83eb1c80b8976fc47731da6a31d35e5"
+    },
+    "wUSDR": {
+        "symbol": "wUSDR",
+        "decimals": 9,
+        "name": "Wrapped USDR",
+        "address": "0x340fe1d898eccaad394e2ba0fc1f93d27c7b717a"
+    },
+    "XCHF": {
+        "symbol": "XCHF",
+        "decimals": 18,
+        "name": "CryptoFranc",
+        "address": "0xe4f27b04cc7729901876b44f4eaa5102ec150265"
+    },
+    "ZRX": {
+        "symbol": "ZRX",
+        "decimals": 18,
+        "name": "0x Protocol Token",
+        "address": "0xd1917629b3e6a72e6772aab5dbe58eb7fa3c2f33"
     }
 }
