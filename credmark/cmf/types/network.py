@@ -31,6 +31,10 @@ class Network(IntEnum):
         return self in [Network.Mainnet]
 
     @property
+    def has_dex_price(self):
+        return self in [Network.Mainnet, Network.BSC, Network.Polygon]
+
+    @property
     def has_node(self):
         return self in [Network.Mainnet,
                         Network.BSC,

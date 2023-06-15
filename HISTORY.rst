@@ -4,6 +4,7 @@ History
 -------
 0.8.116 [2023-06-11]
 * feat: support polygon ledger
+* feat: add .has_dex_price() to network
 
 0.8.115 [2023-06-03]
 * fix: disable BSC ledger
