@@ -173,9 +173,13 @@ def create_cmf_context(cmf_param, show=False):
     context._web3_async.eth.default_block = int(context.block_number)
 
     if show:
+        if cmf_init.block_number is None:
+            block_number_print = f'None ({context.block_number})'
+        else:
+            block_number_print = f'{context.block_number}'
         print(f'Credmark context created with \n'
               f'- chain_id={cmf_init.chain_id}\n'
-              f'- block_number={cmf_init.block_number}\n'
+              f'- block_number={block_number_print}\n'
               f'- chain_provider_url={provider_url[:10]+"..."+provider_url[-4:]}\n'
               f'- model_loader_path={model_loader_path}\n'
               f'- api_url={cmf_init.api_url}\n'
