@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.118 [2023-06-19]
+* feat: enable ledger for polygon
+
 0.8.117 [2023-06-15]
 * chore: update token list
 
