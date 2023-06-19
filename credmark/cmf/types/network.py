@@ -28,7 +28,7 @@ class Network(IntEnum):
 
     @property
     def has_ledger(self):
-        return self in [Network.Mainnet]
+        return self in [Network.Mainnet, Network.Polygon]
 
     @property
     def has_dex_price(self):
