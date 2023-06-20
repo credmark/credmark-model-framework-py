@@ -180,7 +180,7 @@ def create_cmf_context(cmf_param, show=False):
         print(f'Credmark context created with \n'
               f'- chain_id={cmf_init.chain_id}\n'
               f'- block_number={block_number_print}\n'
-              f'- chain_provider_url={provider_url[:10]+"..."+provider_url[-4:]}\n'
+              f'- chain_to_provider_url={provider_url[:10]+"..."+provider_url[-4:]}\n'
               f'- model_loader_path={model_loader_path}\n'
               f'- api_url={cmf_init.api_url}\n'
               f'- use_local_models={cmf_init.use_local_models}\n'
