@@ -2,6 +2,9 @@
 
 History
 -------
+0.8.119 [2023-06-21]
+* cleanup: portfolio and position DTOs
+
 0.8.118 [2023-06-19]
 * feat: enable ledger for polygon
 

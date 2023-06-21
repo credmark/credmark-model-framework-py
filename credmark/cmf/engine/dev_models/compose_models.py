@@ -20,7 +20,8 @@ from credmark.cmf.types.ledger_series import (
 
 class LedgerModelSlugs:
 
-    ledger_block_number_time_series = 'ledger.block-number-time-series'
+    ledger_block_time_series = 'ledger.block-time-series'
+    ledger_block_number_series = 'ledger.block-number-series'
     """
     Get a range of block numbers by end time, interval, and count
     """
@@ -47,7 +48,7 @@ class ComposeMapBlockTimeSeriesModelMeta(Model):
             exclusive=input.exclusive
         )
 
-        block_series = context.run_model(LedgerModelSlugs.ledger_block_number_time_series,
+        block_series = context.run_model(LedgerModelSlugs.ledger_block_time_series,
                                          ts_input,
                                          return_type=LedgerBlockNumberTimeSeries)
 
@@ -93,9 +94,11 @@ class ComposeMapBlockTimeSeriesModel(ComposeMapBlockTimeSeriesModelMeta):
     def run(self, input: MapBlockTimeSeriesInput) -> MapBlockTimeSeriesOutput[dict]:
         return self.run_with_local(input, local=False)
 
+
 class MapBlockTimeSeriesInputLocal(MapBlockTimeSeriesInput):
     class Config:
-        schema_extra = MapBlockTimeSeriesInput.Config.schema_extra | {'skip_test': True}
+        schema_extra = MapBlockTimeSeriesInput.Config.schema_extra | {
+            'skip_test': True}
 
 
 @Model.describe(slug='compose.map-block-time-series-local',
