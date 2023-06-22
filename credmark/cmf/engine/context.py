@@ -88,6 +88,9 @@ class EngineModelContext(ModelContext):
     def reset_cache(self):
         self.__model_cache = ModelRunCache()
 
+    def disable_cache(self):
+        self.__model_cache = None
+
     @property
     def model_cache(self):
         return self.__model_cache
