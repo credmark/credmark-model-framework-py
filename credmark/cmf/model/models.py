@@ -1,10 +1,8 @@
 import io
-from enum import Enum
-from typing import Any, Optional, Type, Union, overload
+from typing import Optional, Type, Union, overload
 
-from credmark.cmf.model.errors import ModelDataError, ModelInputError
-from credmark.dto import DTO, DTOField, DTOType, DTOTypesTuple, EmptyInput
-from credmark.dto.encoder import json_dumps
+from credmark.cmf.model.errors import ModelInputError
+from credmark.dto import DTO, DTOType, DTOTypesTuple, EmptyInput
 
 from .print import print_manifest_description
 
@@ -144,27 +142,6 @@ class RunModelMethod:
             return super().__dir__()
 
 
-class LookupType(Enum):
-    FIRST = 'first'
-    LAST = 'last'
-    BACKWARD_LAST = 'backward_last'  # include the current block number
-    FORWARD_FIRST = 'forward_first'
-    BACKWARD_LAST_EXCLUDE = 'backward_last_exclude'  # not include the current block number
-    FORWARD_FIRST_EXCLUDE = 'forward_first_exclude'
-
-
-MODEL_RESULT_MODEL = 'model.result'
-
-
-class ModelResultInput(DTO):
-    use_model_result: bool = DTOField(True, description='Result from previous block number')
-
-
-class ModelResultOutput(DTO):
-    model_result_block: int = DTOField(description='Result from previous block number')
-    model_result_direction: str = DTOField(description='Model result direction')
-
-
 class Models:
     """
     Models class under context
@@ -205,32 +182,3 @@ class Models:
 
     def list(self) -> list[str]:
         return dir(self)
-
-    def get_result(self, slug, version, model_input, lookup_type) -> Optional[Any]:
-        """
-        + use this method with following import
-        from credmark.cmf.model.models import LookupType
-
-        + Usually, use the following input to look up for result
-            - self.slug
-            - self.version
-            - self.context.__dict__['original_input']
-            - LookupType.BACKWARD_LAST_EXCLUDE
-        """
-
-        prev_run = self.__context.run_model(
-            MODEL_RESULT_MODEL,
-            {'slug': slug,
-             'version': version,
-             'input': json_dumps(model_input),
-             'lookupType': lookup_type.value})
-
-        if ('blockNumber' in prev_run and
-            prev_run['blockNumber'] is not None and
-                prev_run['result'] is not None):
-            try:
-                return prev_run
-            except ModelDataError:
-                return None
-
-        return None

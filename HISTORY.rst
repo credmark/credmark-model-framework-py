@@ -2,6 +2,12 @@
 
 History
 -------
+0.8.120 [2023-07-04]
+* feat: cache policy
+* feat: incremental model
+* feat: immutable model
+* cleanup: removed lookup cache result
+
 0.8.119 [2023-06-21]
 * cleanup: portfolio and position DTOs
 
