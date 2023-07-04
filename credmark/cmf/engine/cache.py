@@ -5,9 +5,36 @@ import json
 import logging
 import sqlite3
 import zlib
+from enum import Enum
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
 from credmark.dto.encoder import json_dumps
+
+
+class CachePolicy(str, Enum):
+    '''
+    Specify cache policy for model. The following cache policies are available:
+
+    - FULL - Default policy. Cache by chain, block and input.
+    - SKIP - Ignore cache, always recompute.
+    - OFF_CHAIN - Ignore chain and block, only cache by input.
+    - IGNORE_BLOCK - Ignore block, cache by chain and input.
+    - INCREMENTAL - For models that only append to output with new blocks.
+    These models should always return a BlockSeries. Use additional `from_block` arg
+    in run method to only return BlockSeries for `from_block` -> `context.block`.
+    This cache policy is only available in `credmark.cmf.model.IncrementalModel`
+    - IMMUTABLE - For models whose result is only available after a particular
+    block and will not change for the future block numbers. For blocks before which
+    data is unavailable, the model should throw ModelDataError. This cache policy is
+    only available in `credmark.cmf.model.ImmutableModel`
+    '''
+
+    FULL = 'full'
+    SKIP = 'skip'
+    OFF_CHAIN = 'off_chain'
+    IGNORE_BLOCK = 'ignore_block'
+    INCREMENTAL = 'incremental'
+    IMMUTABLE = 'immutable'
 
 
 class Singleton:
@@ -76,7 +103,8 @@ class BasicDB:
     ]
 
     def __init__(self):
-        self.__stats = {'total': 0, 'hit': 0, 'miss': 0, 'exclude': 0, 'new': 0}
+        self.__stats = {'total': 0, 'hit': 0,
+                        'miss': 0, 'exclude': 0, 'new': 0}
         self.__enabled = True
         self.__db = {}
 
@@ -203,7 +231,8 @@ class ModelRunCache(BasicDB):
             self._cache_exclude()
             return None
 
-        cache_key = self.encode_run_key(chain_id, block_number, slug, version, input)
+        cache_key = self.encode_run_key(
+            chain_id, block_number, slug, version, input)
         needle = self._get_cache(cache_key, None)
         if needle is None:
             if needle is None:

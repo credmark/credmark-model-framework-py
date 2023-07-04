@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from credmark.cmf.model import Model
+from credmark.cmf.model import CachePolicy, Model
 from credmark.cmf.model.errors import ModelDataError
 from credmark.cmf.types.compose import (
     MapBlockResult,
@@ -88,6 +88,7 @@ class ComposeMapBlockTimeSeriesModelMeta(Model):
                 display_name='Compose Map Block Time Series',
                 description='Run a model on each of a time series of blocks',
                 developer='Credmark',
+                cache=CachePolicy.SKIP,
                 input=MapBlockTimeSeriesInput,
                 output=MapBlockTimeSeriesOutput[dict])
 class ComposeMapBlockTimeSeriesModel(ComposeMapBlockTimeSeriesModelMeta):
@@ -106,6 +107,7 @@ class MapBlockTimeSeriesInputLocal(MapBlockTimeSeriesInput):
                 display_name='Compose Map Block Time Series',
                 description='Run a model on each of a time series of blocks',
                 developer='Credmark',
+                cache=CachePolicy.SKIP,
                 input=MapBlockTimeSeriesInputLocal,
                 output=MapBlockTimeSeriesOutput[dict])
 class ComposeMapBlockTimeSeriesModelLocal(ComposeMapBlockTimeSeriesModelMeta):
@@ -118,6 +120,7 @@ class ComposeMapBlockTimeSeriesModelLocal(ComposeMapBlockTimeSeriesModelMeta):
                 display_name='Compose Map Blocks',
                 description='Run a model on each of a list of blocks',
                 developer='Credmark',
+                cache=CachePolicy.SKIP,
                 input=MapBlocksInput,
                 output=MapBlocksOutput[dict])
 class ComposeMapBlocksModel(Model):
@@ -157,6 +160,7 @@ class ComposeMapBlocksModel(Model):
                 display_name='Compose Map Inputs',
                 description='Run a model on each of a list of inputs',
                 developer='Credmark',
+                cache=CachePolicy.SKIP,
                 input=MapInputsInput,
                 output=MapInputsOutput[dict, dict])
 class ComposeMapInputsModel(Model):

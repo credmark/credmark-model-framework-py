@@ -124,7 +124,7 @@ class SeriesModelStartEndIntervalInput(DTO):
     modelVersion: Optional[str] = None
 
     class Config:
-        schema_extra = { 'skip_test': True }
+        schema_extra = {'skip_test': True}
 
 
 class SeriesModelWindowIntervalInput(DTO):
@@ -142,3 +142,7 @@ class SeriesModelWindowIntervalInput(DTO):
                             "account": "0x55FE002aefF02F77364de339a1292923A15844B8"
                         }, "window": 20000, "interval": 10000}
         }
+
+
+class ImmutableOutput(DTO):
+    firstResultBlockNumber: int

@@ -601,7 +601,7 @@ def run_model_no_exit(args, model_loader=None):
 
         result = EngineModelContext.create_context_and_run_model(
             chain_id=chain_id,
-            block_number=block_number,
+            block=block_number,
             model_slug=model_slug,
             model_version=model_version,
             input=input,
