@@ -1501,6 +1501,13 @@ BSC_TOKENS = {
         "name": "Binance Wrapped MVL",
         "address": "0x5f588efaf8eb57e3837486e834fc5a4e07768d98"
     },
+    "BNB": {
+        "symbol": "BNB",
+        "decimals": 18,
+        "name": "BSC",
+        "address": '0x0000000000000000010000100100111001000010',
+        "is_native_token": True,
+    },
     "BNBP": {
         "symbol": "BNBP",
         "decimals": 18,

@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar, Token
 from typing import Any, Generator, Type, TypeVar, Union, overload
 
-from web3 import Web3
+from web3 import AsyncWeb3, Web3
 
 from credmark.cmf.engine.web3_registry import Web3Registry
 from credmark.cmf.types import BlockNumber, Network
@@ -194,19 +194,17 @@ class ModelContext:
         A configured web3 instance
         """
         if self._web3 is None:
-            self._web3 = self._web3_registry.web3_for_chain_id(
-                self.chain_id, False)
+            self._web3 = self._web3_registry.web3_for_chain_id(self.chain_id)
             self._web3.eth.default_block = self.block_number if self.block_number is not None else 'latest'
         return self._web3
 
     @property
-    def web3_async(self) -> Web3:
+    def web3_async(self) -> AsyncWeb3:
         """
         A configured web3 instance
         """
         if self._web3_async is None:
-            self._web3_async = self._web3_registry.web3_for_chain_id(
-                self.chain_id, True)
+            self._web3_async = self._web3_registry.async_web3_for_chain_id(self.chain_id)
             self._web3_async.eth.default_block = self.block_number if self.block_number is not None else 'latest'
         return self._web3_async
 

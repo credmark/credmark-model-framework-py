@@ -60,7 +60,7 @@ class ModelApi:
             self.__session.headers.update(
                 {'Authorization': 'Bearer ' + api_key})
 
-        retries = Retry(total=5, backoff_factor=1, allowed_methods=False,
+        retries = Retry(total=5, backoff_factor=1,
                         status_forcelist=[429, 502], respect_retry_after_header=True)
         self.__session.mount('http://', HTTPAdapter(max_retries=retries))
         self.__session.mount('https://', HTTPAdapter(max_retries=retries))

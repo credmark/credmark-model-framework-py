@@ -331,6 +331,13 @@ FANTOM_TOKENS = {
         "name": "Frapped USDT",
         "address": "0x049d68029688eabf473097a2fc38ef61633a3c7a"
     },
+    "FTM": {
+        "symbol": "FTM",
+        "address": '0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF',
+        "decimals": 18,
+        "name": "Fantom",
+        "is_native_token": True,
+    },
     "FXS": {
         "symbol": "FXS",
         "decimals": 18,

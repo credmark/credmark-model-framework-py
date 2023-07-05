@@ -274,7 +274,7 @@ class TestToken(ModelTestCase):
 
     def test_token_on_mainnet(self):
         token = Token(symbol="CMK")
-        print(f'Testing on {token.instance.web3.eth.default_block}')
+        print(f'Testing on {token.instance.w3.eth.default_block}')
 
         self.assertEqual(token.symbol, "CMK")
         self.assertEqual(token.address,
