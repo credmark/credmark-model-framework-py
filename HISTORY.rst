@@ -2,6 +2,15 @@
 
 History
 -------
+
+0.8.122 [2023-07-06]
+* fix: support for from_block_number in credmark-dev
+
+0.8.121 [2023-07-06]
+* fix: add native tokens to arb/polygon
+* feat: add disable_cache
+* chore: bump grpcio from 1.43.0 to 1.53.0
+
 0.8.120 [2023-07-04]
 * feat: cache policy
 * feat: incremental model

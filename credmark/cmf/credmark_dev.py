@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-#pylint: disable=line-too-long
+# pylint: disable=line-too-long
 
 import argparse
 import inspect
@@ -42,6 +42,9 @@ def add_run_arg(parser):
     parser.add_argument('-b', '--block_number', type=int, required=False, default=None,
                         help='Block number used for the context of the model run.'
                         ' If not specified, it is set to the latest block of the chain.')
+    parser.add_argument('-f', '--from_block_number', type=int, required=False, default=None,
+                        help='From block number is used for partial run of incremental models.'
+                        ' If not specified, it is set to 0.')
     parser.add_argument('-c', '--chain_id', type=int, default=1, required=False,
                         help='Chain ID. Defaults to 1.')
     parser.add_argument('-j', '--format_json', action='store_true', default=False,
@@ -562,6 +565,7 @@ def run_model_no_exit(args, model_loader=None):
 
         chain_id: int = args['chain_id']
         block_number: Union[int, None] = args['block_number']
+        from_block_number: Union[int, None] = args['from_block_number']
         model_slug: str = args['model-slug']
         model_version: Union[str, None] = args['model_version']
         api_url: Union[str, None] = args['api_url']
@@ -602,6 +606,7 @@ def run_model_no_exit(args, model_loader=None):
         result = EngineModelContext.create_context_and_run_model(
             chain_id=chain_id,
             block=block_number,
+            from_block=from_block_number,
             model_slug=model_slug,
             model_version=model_version,
             input=input,
