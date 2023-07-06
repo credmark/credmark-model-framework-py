@@ -320,7 +320,6 @@ class TestToken(ModelTestCase):
                         self.assertEqual(token.address, token_meta['address'])
                         self.assertEqual(token.decimals, token_meta['decimals'])
                         print(f'{token_n+1}/{len(chain_tokens)}: {token_symbol} {token_meta["address"]}', flush=True)
-                        break
 
 
 if __name__ == '__main__':
