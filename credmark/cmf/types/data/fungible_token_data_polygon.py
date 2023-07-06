@@ -1865,7 +1865,8 @@ POLYGON_TOKENS = {
         "symbol": "MATIC",
         "decimals": 18,
         "name": "Matic Token",
-        "address": "0x0000000000000000000000000000000000001010"
+        "address": "0x0000000000000000000000000000000000001010",
+        "is_native_token": True,
     },
     "MaticX": {
         "symbol": "MaticX",

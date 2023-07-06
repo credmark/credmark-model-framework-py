@@ -545,7 +545,8 @@ ARBITRUM_ONE_TOKENS = {
         "symbol": "ETH",
         "decimals": 18,
         "name": "Ethereum",
-        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        "is_native_token": True,
     },
     "ETHFAI": {
         "symbol": "ETHFAI",
@@ -1579,11 +1580,17 @@ ARBITRUM_ONE_TOKENS = {
         "name": "USD+",
         "address": "0xe80772eaf6e2e18b651f160bc9158b2a5cafca65"
     },
-    "USDC": {
+    "USDC.e": {  # Bridged USDC
         "symbol": "USDC",
         "decimals": 6,
         "name": "USD Coin (Arb1)",
         "address": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8"
+    },
+    "USDC": {
+        "symbol": "USDC",
+        "decimals": 6,
+        "name": "USD Coin",
+        "address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
     },
     "USDD": {
         "symbol": "USDD",

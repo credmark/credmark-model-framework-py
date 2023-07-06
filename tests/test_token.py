@@ -142,11 +142,13 @@ class TestToken(ModelTestCase):
                         self.assertEqual(token_symbol, token_meta['symbol'])
                     except AssertionError:
                         passed = False
-                        if chain_id == 1:
+                        if chain_id == Network.Mainnet:
                             passed = token_symbol in ['UST (Wormhole)',
                                                       'wLUNA',
                                                       'LUNA (Wormhole)',
                                                       'GreenMetaverseToken']
+                        elif chain_id == Network.ArbitrumOne:
+                            passed = token_symbol in ['USDC.e']
 
                         if not passed:
                             print(token_symbol, token_meta['symbol'])
@@ -169,9 +171,11 @@ class TestToken(ModelTestCase):
                             token_meta['symbol'] not in symbols_set)
                     except AssertionError:
                         passed = False
-                        if chain_id == 1:
+                        if chain_id == Network.Mainnet:
                             passed = token_meta['symbol'] in [
                                 'UST', 'GMT', 'LUNA']
+                        elif chain_id == Network.ArbitrumOne:
+                            passed = token_symbol in ['USDC']
 
                         if not passed:
                             print(token_meta['symbol'],
@@ -182,7 +186,7 @@ class TestToken(ModelTestCase):
                         self.assertTrue(token_meta['name'] not in names_set)
                     except AssertionError:
                         passed = False
-                        if chain_id == 1:
+                        if chain_id == Network.Mainnet:
                             passed = 'UST' == token_meta['name']
                         elif chain_id == Network.Avalanche:
                             passed = token_meta['address'] in [
@@ -204,7 +208,8 @@ class TestToken(ModelTestCase):
                     raise
 
             if not chain_has_native_token:
-                raise Exception(f'There is no native token on {chain_id}')
+                if chain_id in [Network.Mainnet,  Network.BSC, Network.Polygon, Network.ArbitrumOne]:
+                    raise Exception(f'There is no native token on {chain_id}')
 
         for chain_id, chain_tokens in FUNGIBLE_TOKEN_DATA_BY_ADDRESS.items():
             chain_has_native_token = False
@@ -232,7 +237,7 @@ class TestToken(ModelTestCase):
                             token_meta['symbol'] not in symbols_set)
                     except AssertionError:
                         passed = False
-                        if chain_id == 1:
+                        if chain_id == Network.Mainnet:
                             passed = token_meta['symbol'] in [
                                 'GMT', 'UST', 'LUNA']
 
@@ -301,7 +306,7 @@ class TestToken(ModelTestCase):
                 with context.fork(chain_id=chain_id) as cc:
                     print(f'Test tokens on chain: {chain_id} @ {cc.block_number}')
                     for token_n, (token_symbol, token_meta) in enumerate(chain_tokens.items()):
-                        if chain_id == 1:
+                        if chain_id == Network.Mainnet:
                             token = Token(token_symbol)
                         else:
                             token = Token(token_symbol).as_erc20(set_loaded=True)

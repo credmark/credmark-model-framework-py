@@ -137,8 +137,7 @@ def create_cmf_context(cmf_param, show=False):
             raise ValueError(
                 f'{p} specified for model_loader_path is not a valid path')
 
-    provider_url = cmf_init.chain_to_provider_url.get(
-        str(cmf_init.chain_id), None)
+    provider_url = cmf_init.chain_to_provider_url.get(str(cmf_init.chain_id), None)
     if provider_url is None:
         print(f'Warning: missing provider for chain_id={cmf_init.chain_id}')
         raise ValueError()
