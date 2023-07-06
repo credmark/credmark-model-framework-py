@@ -1,5 +1,7 @@
 from typing import List
 
+import credmark.cmf.model
+from credmark.cmf.model.models import Models
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 
 from .address import Address, evm_address_regex
@@ -47,6 +49,16 @@ class Account(DTO):
             'examples': [{'address': '0x1F98431c8aD98523631AE4a59f267346ea31F984', }]
         }
 
+    @property
+    def models(self):
+        if self._models is None:
+            # The models instance can be used to run models like a method
+            # We don't pass the block_number so it uses the default
+            # (our context) block number.
+            context = credmark.cmf.model.ModelContext.current_context()
+            self._models = Models(context, input=self)
+        return self._models
+
     def to_accounts(self):
         return Accounts(accounts=[self.address])  # type: ignore
 
@@ -57,7 +69,7 @@ class Accounts(IterableListGenericDTO[Account]):
     _iterator: str = PrivateAttr('accounts')
 
     def to_address(self) -> List[Address]:
-        #pylint: disable=not-an-iterable
+        # pylint: disable=not-an-iterable
         return [acc.address for acc in self.accounts]
 
     class Config:
