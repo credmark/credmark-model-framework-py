@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from credmark.cmf.model import Model
+from credmark.cmf.model import CachePolicy, Model
 from credmark.cmf.model.errors import ModelDataError
 from credmark.cmf.types.compose import (
     MapBlockResult,
@@ -20,7 +20,8 @@ from credmark.cmf.types.ledger_series import (
 
 class LedgerModelSlugs:
 
-    ledger_block_number_time_series = 'ledger.block-number-time-series'
+    ledger_block_time_series = 'ledger.block-time-series'
+    ledger_block_number_series = 'ledger.block-number-series'
     """
     Get a range of block numbers by end time, interval, and count
     """
@@ -47,7 +48,7 @@ class ComposeMapBlockTimeSeriesModelMeta(Model):
             exclusive=input.exclusive
         )
 
-        block_series = context.run_model(LedgerModelSlugs.ledger_block_number_time_series,
+        block_series = context.run_model(LedgerModelSlugs.ledger_block_time_series,
                                          ts_input,
                                          return_type=LedgerBlockNumberTimeSeries)
 
@@ -87,6 +88,7 @@ class ComposeMapBlockTimeSeriesModelMeta(Model):
                 display_name='Compose Map Block Time Series',
                 description='Run a model on each of a time series of blocks',
                 developer='Credmark',
+                cache=CachePolicy.SKIP,
                 input=MapBlockTimeSeriesInput,
                 output=MapBlockTimeSeriesOutput[dict])
 class ComposeMapBlockTimeSeriesModel(ComposeMapBlockTimeSeriesModelMeta):
@@ -94,12 +96,19 @@ class ComposeMapBlockTimeSeriesModel(ComposeMapBlockTimeSeriesModelMeta):
         return self.run_with_local(input, local=False)
 
 
+class MapBlockTimeSeriesInputLocal(MapBlockTimeSeriesInput):
+    class Config:
+        schema_extra = MapBlockTimeSeriesInput.Config.schema_extra | {
+            'skip_test': True}
+
+
 @Model.describe(slug='compose.map-block-time-series-local',
                 version='0.0',
                 display_name='Compose Map Block Time Series',
                 description='Run a model on each of a time series of blocks',
                 developer='Credmark',
-                input=MapBlockTimeSeriesInput,
+                cache=CachePolicy.SKIP,
+                input=MapBlockTimeSeriesInputLocal,
                 output=MapBlockTimeSeriesOutput[dict])
 class ComposeMapBlockTimeSeriesModelLocal(ComposeMapBlockTimeSeriesModelMeta):
     def run(self, input: MapBlockTimeSeriesInput) -> MapBlockTimeSeriesOutput[dict]:
@@ -111,6 +120,7 @@ class ComposeMapBlockTimeSeriesModelLocal(ComposeMapBlockTimeSeriesModelMeta):
                 display_name='Compose Map Blocks',
                 description='Run a model on each of a list of blocks',
                 developer='Credmark',
+                cache=CachePolicy.SKIP,
                 input=MapBlocksInput,
                 output=MapBlocksOutput[dict])
 class ComposeMapBlocksModel(Model):
@@ -150,6 +160,7 @@ class ComposeMapBlocksModel(Model):
                 display_name='Compose Map Inputs',
                 description='Run a model on each of a list of inputs',
                 developer='Credmark',
+                cache=CachePolicy.SKIP,
                 input=MapInputsInput,
                 output=MapInputsOutput[dict, dict])
 class ComposeMapInputsModel(Model):

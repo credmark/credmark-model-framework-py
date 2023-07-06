@@ -10,6 +10,7 @@ from typing import List
 # Not to load console model when stdin/out/error are closed.
 if not sys.stdin.closed and not sys.stdout.closed and not sys.stderr.closed:
     import IPython
+    from IPython.core.getipython import get_ipython
 
 import logging
 import os
@@ -36,21 +37,18 @@ from credmark.cmf.types import (
     Contracts,
     Currency,
     FiatCurrency,
+    JoinType,
     Maybe,
-    NativePosition,
     NativeToken,
     Network,
     Portfolio,
-    PortfolioWithPrice,
     Position,
-    PositionWithPrice,
     Price,
     PriceList,
     PriceWithQuote,
     Records,
     Some,
     Token,
-    TokenPosition,
     Tokens,
 )
 from credmark.cmf.types.compose import (
@@ -78,6 +76,7 @@ from credmark.dto import (
     DTOField,
     DTOPretty,
     EmptyInput,
+    EmptyInputSkipTest,
     FloatDTO,
     IntDTO,
     IterableListGenericDTO,
@@ -85,17 +84,6 @@ from credmark.dto import (
     StrDTO,
 )
 from credmark.dto.encoder import json_dump, json_dumps
-
-
-# pylint: disable= too-many-arguments
-def get_dt(year: int, month: int, day: int, hour=0, minute=0, second=0, microsecond=0):
-    """Get a datetime for date and time values"""
-    return datetime(year, month, day, hour, minute, second, microsecond, tzinfo=timezone.utc)
-
-
-def get_block(in_dt: datetime):
-    """Get the BlockNumber instance at or before the datetime timestamp."""
-    return BlockNumber.from_timestamp(in_dt.replace(tzinfo=timezone.utc).timestamp())
 
 
 def log_output(log_file=None,
@@ -127,6 +115,7 @@ def log_output(log_file=None,
 @Model.describe(slug='console',
                 version='1.0',
                 display_name='Console',
+                input=EmptyInputSkipTest,
                 description='Credmark Model REPL')
 class ConsoleModel(Model):
 
@@ -196,8 +185,10 @@ class ConsoleModel(Model):
         print('# Utility functions')
         print('list_models(): List available models')
         print('describe_model(slug): Describe a model by slug')
-        print('get_dt(y,m,d,h=0,m=0,s=0,ms=0): create UTC datetime')
-        print('get_block(in_dt): get the block number before the datetime timestamp')
+        print('block_number.get_dt(y,m,d,h=0,m=0,s=0,ms=0): create UTC datetime')
+        print('block_number.from_datetime(in_dt): '
+              'get the block number before the datetime timestamp')
+        print('block_number.from_ymd(y,m,d,h=0,m=0,s=0): get the block number from ymdhms')
         print('log_output(log_file, log_level=logging.DEBUG): set the logging output file, '
               'e.g. tmp/debug.log')
         print('')
@@ -220,7 +211,7 @@ class ConsoleModel(Model):
         print(f'The block stack is {self.blocks}')
 
     def save(self, filename):
-        ipython = IPython.get_ipython()
+        ipython = get_ipython()
         if ipython is not None:
             # ipython will automatically add a .py ext
             ipython.magic(f"%save -f {filename}")
@@ -238,7 +229,7 @@ class ConsoleModel(Model):
             file.write('\n')
 
     def load(self, filename):
-        ipython = IPython.get_ipython()
+        ipython = get_ipython()
         if ipython is not None:
             # ipython will automatically add a .py ext
             ipython.magic(f"%load {filename}")
@@ -248,7 +239,7 @@ class ConsoleModel(Model):
         Change context to a new block number.
         """
         back_block = self.context.block_number
-        self.context.run_model(self.slug, block_number=to_block)
+        self.context.run_model(self.slug, {}, block_number=to_block)
         self.context.block_number = back_block
         self.context.web3.eth.default_block = back_block
         self.load_locals()
@@ -285,7 +276,7 @@ class ConsoleModel(Model):
         'run_model = self.context.run_model #(model_slug, input=EmptyInput(), return_type=dict)',
     ]
 
-    utility_functions = [get_dt, get_block]
+    utility_functions = []
 
     def load_locals(self, _ns=globals):
         _ns()['list_models'] = self.list_models

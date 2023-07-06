@@ -3,44 +3,61 @@ import json
 import os
 from typing import Optional, Union
 
-from web3 import HTTPProvider, Web3, WebsocketProvider
-from web3.middleware.geth_poa import geth_poa_middleware
-
+from web3 import AsyncHTTPProvider, AsyncWeb3, HTTPProvider, Web3, WebsocketProvider
+from credmark.cmf.engine.web3 import inject_poa
 from credmark.cmf.types.network import CREDMARK_PUBLIC_PROVIDERS, Network
-
 
 class Web3Registry:
 
     # Cache of urls to providers that are reused
     # We don't cache chainId to providers because that
     # can change from request to request when running in a lambda
-    _url_to_web3_provider: dict[str,
-                                Union[HTTPProvider, WebsocketProvider]] = {}
+    _url_to_web3_provider: dict[str, Union[HTTPProvider, WebsocketProvider]] = {}
+    _url_to_async_web3_provider: dict[str, AsyncHTTPProvider] = {}
 
     @classmethod
-    def web3_for_provider_url(cls, provider_url: str, chain_id: int):
+    def web3_for_provider_url(cls, provider_url: str, chain_id: int,
+                              request_kwargs: Optional[dict] = None):
+        if request_kwargs is None:
+            request_kwargs = {}
         provider = cls._url_to_web3_provider.get(provider_url)
         if provider is None:
             if provider_url.startswith('http'):
-                provider = Web3.HTTPProvider(provider_url)
+                    provider = HTTPProvider(provider_url, **request_kwargs)
             elif provider_url.startswith('ws'):
-                provider = Web3.WebsocketProvider(provider_url)
+                provider = WebsocketProvider(provider_url, **request_kwargs)
             else:
                 raise Exception(
                     f'Unknown prefix for Web3 provider {provider_url}')
             cls._url_to_web3_provider[provider_url] = provider
 
-        if chain_id in [Network.Rinkeby,
-                        Network.BSC,
-                        Network.Polygon,
-                        Network.Optimism,
-                        Network.Avalanche]:
-            w3 = Web3(provider)
-            w3.middleware_onion.inject(geth_poa_middleware, layer=0)
-            return w3
-        else:
-            # create a new web3 instance with cached provider
-            return Web3(provider)
+        w3 = Web3(provider)
+
+        if Network(chain_id).uses_geth_poa:
+            inject_poa(w3)
+        return w3
+        
+    @classmethod
+    def async_web3_for_provider_url(cls, provider_url: str, chain_id: int,
+                              request_kwargs: Optional[dict] = None):
+        if request_kwargs is None:
+            request_kwargs = {}
+        provider = cls._url_to_async_web3_provider.get(provider_url)
+        if provider is None:
+            if provider_url.startswith('http'):
+                    provider = AsyncHTTPProvider(provider_url, **request_kwargs)
+            elif provider_url.startswith('ws'):
+                raise Exception('Async WebsocketProvider not supported')
+            else:
+                raise Exception(
+                    f'Unknown prefix for Web3 provider {provider_url}')
+            cls._url_to_async_web3_provider[provider_url] = provider
+
+        w3 = AsyncWeb3(provider)
+
+        if Network(chain_id).uses_geth_poa:
+            inject_poa(w3)
+        return w3
 
     @staticmethod
     def load_providers_from_env():
@@ -50,7 +67,7 @@ class Web3Registry:
                 chain_to_provider_url: dict = json.loads(providers_json)
             except Exception as err:
                 raise Exception(
-                    f'Error parsing JSON in env var CREDMARK_WEB3_PROVIDERS: {err}')
+                    f'Error parsing JSON in env var CREDMARK_WEB3_PROVIDERS: {err}') from None
         else:
             chain_to_provider_url = {}
 
@@ -68,10 +85,18 @@ class Web3Registry:
             self.__chain_to_provider_url.update(chain_to_provider_url)
 
     # pylint:disable=line-too-long
-    def web3_for_chain_id(self, chain_id: int):
+    def web3_for_chain_id(self, chain_id: int, request_kwargs: Optional[dict] = None):
         url = self.__chain_to_provider_url.get(str(chain_id))
         if url is None:
             raise Exception(
                 f'No web3 provider url for chain id {chain_id}. '
                 "In .env file or environment, set CREDMARK_WEB3_PROVIDERS as {'1':'https://web3-node-provider-url'}.")
-        return self.web3_for_provider_url(url, chain_id)
+        return self.web3_for_provider_url(url, chain_id, request_kwargs)
+    
+    def async_web3_for_chain_id(self, chain_id: int, request_kwargs: Optional[dict] = None):
+        url = self.__chain_to_provider_url.get(str(chain_id))
+        if url is None:
+            raise Exception(
+                f'No web3 provider url for chain id {chain_id}. '
+                "In .env file or environment, set CREDMARK_WEB3_PROVIDERS as {'1':'https://web3-node-provider-url'}.")
+        return self.async_web3_for_provider_url(url, chain_id, request_kwargs)

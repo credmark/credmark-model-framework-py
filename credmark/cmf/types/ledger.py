@@ -239,6 +239,9 @@ class ColumnField(str):
     def as_bigint(self):
         return ColumnField(f'{self}::BIGINT')
 
+    def as_integer(self):
+        return ColumnField(f'{self}::INTEGER')
+
     def as_numeric(self):
         return ColumnField(f'{self}::NUMERIC')
 
@@ -452,8 +455,8 @@ class ContractTable(LedgerTable):
     """"""
     BYTECODE = ColumnField('bytecode')
     """"""
-    FUNCTION_SIGHASHES = ColumnField('function_sighashes')
-    """"""
+    # FUNCTION_SIGHASHES = ColumnField('function_sighashes')
+    # """"""
     IS_ERC20 = ColumnField('is_erc20')
     """"""
     IS_ERC721 = ColumnField('is_erc721')
@@ -856,3 +859,9 @@ class TraceTable(LedgerTable):
     @property
     def bigint_cols(self) -> List[ColumnField]:
         return [self.VALUE]
+
+
+JoinAllTypes = Union[tuple[JoinType, LedgerTable, str],
+                     tuple[LedgerTable, str],
+                     tuple[JoinType, LedgerTable, ColumnField],
+                     tuple[LedgerTable, ColumnField]]

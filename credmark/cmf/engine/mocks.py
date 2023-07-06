@@ -313,7 +313,7 @@ class ModelMockRunner:
             value = vars(module)[name]
         except (ImportError, KeyError) as err:
             raise Exception(
-                f'Error importing symbol {name} from module {modulename}: {err}')
+                f'Error importing symbol {name} from module {modulename}: {err}') from None
         return value
 
     def _load_configuration(self, config_module_name: str):
@@ -324,7 +324,7 @@ class ModelMockRunner:
                 self.add_mock_configuration(config)
         except Exception as exc:
             raise Exception(
-                f'Error loading mocks mock module {config_module_name}: {exc}')
+                f'Error loading mocks mock module {config_module_name}: {exc}') from None
 
     def _split_output_match_list(self, slug: str, mocks: List[ModelMock]):
         output_list = []

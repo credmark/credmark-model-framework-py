@@ -25,24 +25,6 @@ AVALANCHE_TOKENS = {
         "name": "Arable Protocol",
         "address": "0x00ee200df31b869a321b10400da10b561f3ee60d"
     },
-    "AFINS": {
-        "symbol": "AFINS",
-        "decimals": 18,
-        "name": "altFINS",
-        "address": "0xb648fa7a5f5ed3b3c743140346e3dc3fe94a9125"
-    },
-    "AGF": {
-        "symbol": "AGF",
-        "decimals": 18,
-        "name": "Augmented Finance",
-        "address": "0xb67a9374da03d4114a6fb8f0e7f2b82b5cb34ee3"
-    },
-    "AHILL": {
-        "symbol": "AHILL",
-        "decimals": 18,
-        "name": "Avalanche Hills",
-        "address": "0x223174d9f096d8b468b24f620a02f43b70792789"
-    },
     "AKITA": {
         "symbol": "AKITA",
         "decimals": 18,
@@ -79,11 +61,11 @@ AVALANCHE_TOKENS = {
         "name": "Ampleforth secured by Meter Passport",
         "address": "0x027dbca046ca156de9622cd1e2d907d375e53aa7"
     },
-    "ANTG": {
-        "symbol": "ANTG",
+    "ANKR": {
+        "symbol": "ANKR",
         "decimals": 18,
-        "name": "AntGold",
-        "address": "0xca1068444196cdfe676fd15a29f35e502580a69e"
+        "name": "Ankr Network",
+        "address": "0x20cf1b6e9d856321ed4686877cf4538f2c84b4de"
     },
     "ANY": {
         "symbol": "ANY",
@@ -91,17 +73,36 @@ AVALANCHE_TOKENS = {
         "name": "Anyswap",
         "address": "0xb44a9b6905af7c801311e8f4e76932ee959c663c"
     },
-    "APEIN": {
-        "symbol": "APEIN",
+    "av3CRV": {
+        "symbol": "av3CRV",
         "decimals": 18,
-        "name": "Ape In",
-        "address": "0x938fe3788222a74924e062120e7bfac829c719fb"
+        "name": "Curve.fi avDAI/avUSDC/avUSDT",
+        "address": "0x1337bedc9d22ecbe766df105c9623922a27963ec"
+    },
+    "AVABBC": {
+        "symbol": "AVABBC",
+        "decimals": 8,
+        "name": "Avalanche ABBC",
+        "address": "0xe83ce6bfb580583bd6a62b4be7b34fc25f02910d"
     },
     "AVAT": {
         "symbol": "AVAT",
         "decimals": 6,
         "name": "AVAT",
         "address": "0x7086c48c997b8597a1692798155b4fcf2cee7f0f"
+    },
+    "AVAX": {
+        "symbol": "AVAX",
+        "address": '0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa',
+        "decimals": 18,
+        "name": "Avalanche",
+        "is_native_token": True,
+    },
+    "AVME": {
+        "symbol": "AVME",
+        "decimals": 18,
+        "name": "AVME",
+        "address": "0x1ecd47ff4d9598f89721a2866bfeb99505a413ed"
     },
     "AVXL": {
         "symbol": "AVXL",
@@ -121,11 +122,23 @@ AVALANCHE_TOKENS = {
         "name": "XEN Crypto",
         "address": "0xc0c5aa69dbe4d6dddfbc89c0957686ec60f24389"
     },
+    "AXIAL": {
+        "symbol": "AXIAL",
+        "decimals": 18,
+        "name": "AxialToken",
+        "address": "0xcf8419a615c57511807236751c0af38db4ba3351"
+    },
     "AXL": {
         "symbol": "AXL",
         "decimals": 6,
         "name": "Axelar",
         "address": "0x44c784266cf024a60e8acf2427b9857ace194c5d"
+    },
+    "axlUSDC": {
+        "symbol": "axlUSDC",
+        "decimals": 6,
+        "name": "Axelar Wrapped USDC",
+        "address": "0xfab550568c688d5d8a52c7d794cb93edc26ec0ec"
     },
     "BAT.e": {
         "symbol": "BAT.e",
@@ -139,11 +152,23 @@ AVALANCHE_TOKENS = {
         "name": "BAYMAX",
         "address": "0x18706c65b12595edb43643214eacdb4f618dd166"
     },
+    "bECH": {
+        "symbol": "bECH",
+        "decimals": 18,
+        "name": "Bridged Echelon",
+        "address": "0x6195de423da947f52ae8d55331c207c963ed2b3f"
+    },
     "BETA": {
         "symbol": "BETA",
         "decimals": 18,
         "name": "Beta Token",
         "address": "0x511d35c52a3c244e7b8bd92c0c297755fbd89212"
+    },
+    "BETS": {
+        "symbol": "BETS",
+        "decimals": 18,
+        "name": "BetSwirl Token",
+        "address": "0xc763f8570a48c4c00c80b76107cbe744dda67b79"
     },
     "BFG": {
         "symbol": "BFG",
@@ -163,11 +188,23 @@ AVALANCHE_TOKENS = {
         "name": "BioFi",
         "address": "0x9366d30feba284e62900f6295bc28c9906f33172"
     },
-    "BLZZ": {
-        "symbol": "BLZZ",
+    "BISKIT": {
+        "symbol": "BISKIT",
         "decimals": 18,
-        "name": "Blizz.Finance Protocol Token",
-        "address": "0x0f34919404a290e71fc6a510cb4a6acb8d764b24"
+        "name": "BISKIT TOKEN",
+        "address": "0x5eb941f679d5097c59469b2b3822e33eaa0eb1bd"
+    },
+    "BLIZZ": {
+        "symbol": "BLIZZ",
+        "decimals": 18,
+        "name": "Blizzard",
+        "address": "0xa2776a53da0bf664ea34b8efa1c8ab4241a10968"
+    },
+    "BOBC": {
+        "symbol": "BOBC",
+        "decimals": 18,
+        "name": "bobcoin",
+        "address": "0x590eb2920486486c2d9bb3eb651f73b81df87bcf"
     },
     "BOG": {
         "symbol": "BOG",
@@ -175,23 +212,17 @@ AVALANCHE_TOKENS = {
         "name": "Bogged Finance",
         "address": "0xb09fe1613fe03e7361319d2a43edc17422f36b09"
     },
-    "BOOFI": {
-        "symbol": "BOOFI",
+    "BOO": {
+        "symbol": "BOO",
         "decimals": 18,
-        "name": "Boo Finance Token",
-        "address": "0xb00f1ad977a949a3ccc389ca1d1282a2946963b0"
+        "name": "SpookyToken",
+        "address": "0xbd83010eb60f12112908774998f65761cf9f6f9a"
     },
     "BPT": {
         "symbol": "BPT",
         "decimals": 18,
         "name": "Bold Point Token",
         "address": "0x1111111111182587795ef1098ac7da81a108c97a"
-    },
-    "BRIBE": {
-        "symbol": "BRIBE",
-        "decimals": 18,
-        "name": "Police & Thief Game - BRIBE",
-        "address": "0xce2fbed816e320258161ced52c2d0cebcdfd8136"
     },
     "BRO": {
         "symbol": "BRO",
@@ -217,17 +248,23 @@ AVALANCHE_TOKENS = {
         "name": "Bitcoin",
         "address": "0x152b9d0fdc40c096757f570a51e494bd4b943e50"
     },
+    "BUILD": {
+        "symbol": "BUILD",
+        "decimals": 18,
+        "name": "Build Token",
+        "address": "0x5f018e73c185ab23647c82bd039e762813877f0e"
+    },
     "BUSD": {
         "symbol": "BUSD",
         "decimals": 18,
         "name": "BUSD Token",
         "address": "0x9c9e5fd8bbc25984b178fdce6117defa39d2db39"
     },
-    "BUSINESSES": {
-        "symbol": "BUSINESSES",
+    "BUSD.e": {
+        "symbol": "BUSD.e",
         "decimals": 18,
-        "name": "$BUSINESSES",
-        "address": "0x15c841043e13ffaa9a99fabea236d40f45615623"
+        "name": "Binance USD",
+        "address": "0x19860ccb0a68fd4213ab9d8266f7bbf05a8dde98"
     },
     "CAI": {
         "symbol": "CAI",
@@ -247,6 +284,18 @@ AVALANCHE_TOKENS = {
         "name": "ChoccyCoin",
         "address": "0xb723783e0f9015c8e20b87f6cf7ae24df6479e62"
     },
+    "CDT": {
+        "symbol": "CDT",
+        "decimals": 18,
+        "name": "CheckDot",
+        "address": "0x0cbd6fadcf8096cc9a43d90b45f65826102e3ece"
+    },
+    "CERBY": {
+        "symbol": "CERBY",
+        "decimals": 18,
+        "name": "Cerby Token",
+        "address": "0xdef1fac7bf08f173d286bbbdcbeeade695129840"
+    },
     "CHAM": {
         "symbol": "CHAM",
         "decimals": 18,
@@ -259,6 +308,12 @@ AVALANCHE_TOKENS = {
         "name": "Chronicum",
         "address": "0xbf1230bb63bfd7f5d628ab7b543bcefa8a24b81b"
     },
+    "CINU": {
+        "symbol": "CINU",
+        "decimals": 9,
+        "name": "CHEEMSINU",
+        "address": "0xc11bf915db4b43714bc8d32bf83bf5ea53d40981"
+    },
     "CLY": {
         "symbol": "CLY",
         "decimals": 18,
@@ -270,6 +325,12 @@ AVALANCHE_TOKENS = {
         "decimals": 18,
         "name": "Compound",
         "address": "0xc3048e19e76cb9a3aa9d77d8c03c29fc906e2437"
+    },
+    "COOK": {
+        "symbol": "COOK",
+        "decimals": 18,
+        "name": "Poly-Peg COOK",
+        "address": "0x637afeff75ca669ff92e4570b14d6399a658902f"
     },
     "CRA": {
         "symbol": "CRA",
@@ -294,12 +355,6 @@ AVALANCHE_TOKENS = {
         "decimals": 18,
         "name": "Cartesi Token",
         "address": "0x6b289cceaa8639e3831095d75a3e43520fabf552"
-    },
-    "CYCLE": {
-        "symbol": "CYCLE",
-        "decimals": 18,
-        "name": "Cycle Token",
-        "address": "0x81440c939f2c1e34fc7048e518a637205a632a74"
     },
     "DAI.e": {
         "symbol": "DAI.e",
@@ -331,11 +386,17 @@ AVALANCHE_TOKENS = {
         "name": "DegisToken",
         "address": "0x9f285507ea5b4f33822ca7abb5ec8953ce37a645"
     },
-    "DFIAT": {
-        "symbol": "DFIAT",
+    "DEP": {
+        "symbol": "DEP",
         "decimals": 18,
-        "name": "DeFiato [via ChainPort.io]",
-        "address": "0xafe3d2a31231230875dee1fa1eef14a412443d22"
+        "name": "DEAPCOIN",
+        "address": "0xd4d026322c88c2d49942a75dff920fcfbc5614c1"
+    },
+    "DEXTF": {
+        "symbol": "DEXTF",
+        "decimals": 18,
+        "name": "DEXTF Token",
+        "address": "0x03e8d118a1864c7dc53bf91e007ab7d91f5a06fa"
     },
     "DGNX": {
         "symbol": "DGNX",
@@ -349,11 +410,23 @@ AVALANCHE_TOKENS = {
         "name": "Deliq",
         "address": "0x50c72103940d419fb64448f258f7eabba784f84b"
     },
+    "DOMI": {
+        "symbol": "DOMI",
+        "decimals": 18,
+        "name": "Domi",
+        "address": "0xfc6da929c031162841370af240dec19099861d3b"
+    },
     "DON": {
         "symbol": "DON",
         "decimals": 18,
         "name": "Dogeon Token",
         "address": "0x1db749847c4abb991d8b6032102383e6bfd9b1c7"
+    },
+    "DSLA": {
+        "symbol": "DSLA",
+        "decimals": 18,
+        "name": "DSLA",
+        "address": "0xd7c295e399ca928a3a14b01d760e794f1adf8990"
     },
     "DYP": {
         "symbol": "DYP",
@@ -385,6 +458,12 @@ AVALANCHE_TOKENS = {
         "name": "Ethereum",
         "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     },
+    "EUROe": {
+        "symbol": "EUROe",
+        "decimals": 6,
+        "name": "EUROe Stablecoin",
+        "address": "0x820802fa8a99901f52e39acd21177b0be6ee2974"
+    },
     "EVO": {
         "symbol": "EVO",
         "decimals": 18,
@@ -403,17 +482,17 @@ AVALANCHE_TOKENS = {
         "name": "STEP.APP",
         "address": "0x714f020c54cc9d104b6f4f6998c63ce2a31d1888"
     },
-    "FLY": {
-        "symbol": "FLY",
-        "decimals": 18,
-        "name": "FLY",
-        "address": "0x78ea3fef1c1f07348199bf44f45b803b9b0dbe28"
-    },
     "FRAX": {
         "symbol": "FRAX",
         "decimals": 18,
         "name": "Frax",
         "address": "0xd24c2ad096400b6fbcd2ad8b24e7acbc21a1da64"
+    },
+    "FRM": {
+        "symbol": "FRM",
+        "decimals": 18,
+        "name": "Ferrum Network Token",
+        "address": "0xe5caef4af8780e59df925470b050fb23c43ca68c"
     },
     "FXS": {
         "symbol": "FXS",
@@ -433,17 +512,23 @@ AVALANCHE_TOKENS = {
         "name": "GAU Token",
         "address": "0xca8ebfb8e1460aaac7c272cb9053b3d42412aac2"
     },
-    "GB": {
-        "symbol": "GB",
-        "decimals": 9,
-        "name": "Good Bridging",
-        "address": "0x90842eb834cfd2a1db0b1512b254a18e4d396215"
+    "GEM": {
+        "symbol": "GEM",
+        "decimals": 18,
+        "name": "NFTmall GEM Token",
+        "address": "0xdebb1d6a2196f2335ad51fbde7ca587205889360"
     },
     "GENI": {
         "symbol": "GENI",
         "decimals": 9,
         "name": "Genius",
         "address": "0x444444444444c1a66f394025ac839a535246fcc8"
+    },
+    "GGP": {
+        "symbol": "GGP",
+        "decimals": 18,
+        "name": "GoGoPool Protocol",
+        "address": "0x69260b9483f9871ca57f81a90d91e2f96c2cd11d"
     },
     "GM": {
         "symbol": "GM",
@@ -469,41 +554,17 @@ AVALANCHE_TOKENS = {
         "name": "Grape Finance",
         "address": "0x5541d83efad1f281571b343977648b75d95cdac2"
     },
-    "GRO": {
-        "symbol": "GRO",
-        "decimals": 18,
-        "name": "Growth-Peg Token",
-        "address": "0x72699ba15cc734f8db874fa9652c8de12093f187"
-    },
     "GRT.e": {
         "symbol": "GRT.e",
         "decimals": 18,
         "name": "Graph Token",
         "address": "0x8a0cac13c7da965a312f08ea4229c37869e85cb9"
     },
-    "GTON": {
-        "symbol": "GTON",
-        "decimals": 18,
-        "name": "Graviton",
-        "address": "0x4e720dd3ac5cfe1e1fbde4935f386bb1c66f4642"
-    },
-    "GVILLE": {
-        "symbol": "GVILLE",
-        "decimals": 18,
-        "name": "Grantsville",
-        "address": "0x7c22e823b5ee641ed534ce3e368b59b5f0a3b7e0"
-    },
     "HCT": {
         "symbol": "HCT",
         "decimals": 18,
         "name": "Hurricane Token",
         "address": "0x45c13620b55c35a5f539d26e88247011eb10fdbd"
-    },
-    "HeC": {
-        "symbol": "HeC",
-        "decimals": 18,
-        "name": "HeroesChained",
-        "address": "0xc7f4debc8072e23fe9259a5c0398326d8efb7f5c"
     },
     "HON": {
         "symbol": "HON",
@@ -528,6 +589,12 @@ AVALANCHE_TOKENS = {
         "decimals": 18,
         "name": "Husky",
         "address": "0x65378b697853568da9ff8eab60c13e1ee9f4a654"
+    },
+    "ICE": {
+        "symbol": "ICE",
+        "decimals": 18,
+        "name": "IceToken",
+        "address": "0xe0ce60af0850bf54072635e66e79df17082a1109"
     },
     "IDIA": {
         "symbol": "IDIA",
@@ -582,6 +649,12 @@ AVALANCHE_TOKENS = {
         "decimals": 18,
         "name": "Kassandra",
         "address": "0xf32398dae246c5f672b52a54e9b413dffcae1a44"
+    },
+    "KALM": {
+        "symbol": "KALM",
+        "decimals": 18,
+        "name": "Kalmar Token",
+        "address": "0x62aceea3e666c5706ce1c61055fac1a669d31d93"
     },
     "KLO": {
         "symbol": "KLO",
@@ -643,11 +716,29 @@ AVALANCHE_TOKENS = {
         "name": "Matic Token",
         "address": "0xa56b1b9f4e5a1a1e0868f5fd4352ce7cdf0c2a4f"
     },
+    "MCV": {
+        "symbol": "MCV",
+        "decimals": 18,
+        "name": "MCVERSE",
+        "address": "0x916aba115f5162960e48a2675ad4d8cbd09ce8e4"
+    },
     "METAG": {
         "symbol": "METAG",
         "decimals": 18,
         "name": "METAG",
         "address": "0x2b0b320b47d8e0dd0e4477cf90c307c7ed984ad2"
+    },
+    "MFI": {
+        "symbol": "MFI",
+        "decimals": 18,
+        "name": "MarginSwap",
+        "address": "0x9fda7ceec4c18008096c2fe2b85f05dc300f94d0"
+    },
+    "MILK2": {
+        "symbol": "MILK2",
+        "decimals": 18,
+        "name": "MilkyWay Token by SpaceSwap v2",
+        "address": "0x721c299e6bf7d6a430d9bea3364ea197314bce09"
     },
     "MIM": {
         "symbol": "MIM",
@@ -661,12 +752,6 @@ AVALANCHE_TOKENS = {
         "name": "MAI",
         "address": "0x3b55e45fd6bd7d4724f5c47e0d1bcaedd059263e"
     },
-    "MIND+": {
-        "symbol": "MIND+",
-        "decimals": 18,
-        "name": "MIND+",
-        "address": "0x92876c3a3e2b0788c841587a14989392a555bffe"
-    },
     "MKR.e": {
         "symbol": "MKR.e",
         "decimals": 18,
@@ -679,17 +764,17 @@ AVALANCHE_TOKENS = {
         "name": "Moremoney USD",
         "address": "0x0f577433bf59560ef2a79c124e9ff99fca258948"
     },
-    "MOR": {
-        "symbol": "MOR",
-        "decimals": 18,
-        "name": "Mor Stablecoin",
-        "address": "0x87bade473ea0513d4aa7085484aeaa6cb6ebe7e3"
-    },
     "MORE": {
         "symbol": "MORE",
         "decimals": 18,
         "name": "More Token",
         "address": "0xd9d90f882cddd6063959a9d837b05cb748718a05"
+    },
+    "MSTR": {
+        "symbol": "MSTR",
+        "decimals": 18,
+        "name": "MSTR Token",
+        "address": "0xe397784960f814ba35c9ee0bc4c9dffdf86925f9"
     },
     "MU": {
         "symbol": "MU",
@@ -715,6 +800,12 @@ AVALANCHE_TOKENS = {
         "name": "New Order",
         "address": "0x4bfc90322dd638f81f034517359bd447f8e0235a"
     },
+    "NFTD": {
+        "symbol": "NFTD",
+        "decimals": 18,
+        "name": "NFTrade Token [via ChainPort.io]",
+        "address": "0x9e3ca00f2d4a9e5d4f0add0900de5f15050812cf"
+    },
     "NHCT": {
         "symbol": "NHCT",
         "decimals": 18,
@@ -733,6 +824,18 @@ AVALANCHE_TOKENS = {
         "name": "AllianceBlock Nexera Token",
         "address": "0x644192291cc835a93d6330b24ea5f5fedd0eef9e"
     },
+    "O3": {
+        "symbol": "O3",
+        "decimals": 18,
+        "name": "O3 Swap Token",
+        "address": "0xee9801669c6138e84bd50deb500827b776777d28"
+    },
+    "OBX": {
+        "symbol": "OBX",
+        "decimals": 18,
+        "name": "OpenBlox Token",
+        "address": "0xccf719c44e2c36e919335692e89d22cf13d6aaeb"
+    },
     "ODDZ": {
         "symbol": "ODDZ",
         "decimals": 18,
@@ -745,35 +848,41 @@ AVALANCHE_TOKENS = {
         "name": "Oh! Finance",
         "address": "0x937e077abaea52d3abf879c9b9d3f2ebd15baa21"
     },
+    "OK": {
+        "symbol": "OK",
+        "decimals": 18,
+        "name": "Okcash",
+        "address": "0xd3ac016b1b8c80eeadde4d186a9138c9324e4189"
+    },
     "OKSE": {
         "symbol": "OKSE",
         "decimals": 18,
         "name": "Okse",
         "address": "0xbc7b0223dd16cbc679c0d04ba3f4530d76dfba87"
     },
-    "OLIVE": {
-        "symbol": "OLIVE",
+    "ONSTON": {
+        "symbol": "ONSTON",
         "decimals": 18,
-        "name": "OliveCash Token",
-        "address": "0x617724974218a18769020a70162165a539c07e8a"
+        "name": "ONSTON",
+        "address": "0x72bc9d71dd9ad563f52270c6ce5fb30f617c7a1d"
     },
-    "ORBIT": {
-        "symbol": "ORBIT",
+    "OOE": {
+        "symbol": "OOE",
         "decimals": 18,
-        "name": "Europa Token",
-        "address": "0x340990358ae38008181b6db6156d9021a2d425da"
+        "name": "OpenOcean",
+        "address": "0x0ebd9537a25f56713e34c45b38f421a1e7191469"
+    },
+    "ORBS": {
+        "symbol": "ORBS",
+        "decimals": 18,
+        "name": "Orbs",
+        "address": "0x340fe1d898eccaad394e2ba0fc1f93d27c7b717a"
     },
     "ORCA": {
         "symbol": "ORCA",
         "decimals": 18,
         "name": "OrcaDAO",
         "address": "0x8b1d98a91f853218ddbb066f20b8c63e782e2430"
-    },
-    "pAVAX": {
-        "symbol": "pAVAX",
-        "decimals": 18,
-        "name": "pAVAX",
-        "address": "0x6ca558bd3eab53da1b25ab97916dd14bf6cfee4e"
     },
     "PEFI": {
         "symbol": "PEFI",
@@ -786,12 +895,6 @@ AVALANCHE_TOKENS = {
         "decimals": 18,
         "name": "Pera Finance",
         "address": "0xfda866cfece71f4c17b4a5e5f9a00ac08c72eadc"
-    },
-    "PIGGY": {
-        "symbol": "PIGGY",
-        "decimals": 18,
-        "name": "PIGGY",
-        "address": "0x1a877b68bda77d78eea607443ccde667b31b0cdf"
     },
     "PIZZA": {
         "symbol": "PIZZA",
@@ -810,12 +913,6 @@ AVALANCHE_TOKENS = {
         "decimals": 18,
         "name": "Pangolin",
         "address": "0x60781c2586d68229fde47564546784ab3faca982"
-    },
-    "POLAR": {
-        "symbol": "POLAR",
-        "decimals": 18,
-        "name": "POLAR",
-        "address": "0x6c1c0319d8ddcb0ffe1a68c5b3829fd361587db4"
     },
     "PTP": {
         "symbol": "PTP",
@@ -853,17 +950,17 @@ AVALANCHE_TOKENS = {
         "name": "EverRise",
         "address": "0xc17c30e98541188614df99239cabd40280810ca3"
     },
-    "rloop": {
-        "symbol": "rloop",
-        "decimals": 18,
-        "name": "rLoop",
-        "address": "0x822b906e74d493d07223cf6858620ccda66b2154"
-    },
     "ROCO": {
         "symbol": "ROCO",
         "decimals": 18,
         "name": "ROCO",
         "address": "0xb2a85c5ecea99187a977ac34303b80acbddfa208"
+    },
+    "ROOBEE": {
+        "symbol": "ROOBEE",
+        "decimals": 18,
+        "name": "ROOBEE",
+        "address": "0x4036f3d9c45a20f44f0b8b85dd6ca33005ff9654"
     },
     "ROY": {
         "symbol": "ROY",
@@ -883,11 +980,17 @@ AVALANCHE_TOKENS = {
         "name": "Staked AVAX",
         "address": "0x2b2c81e08f1af8835a78bb2a90ae924ace0ea4be"
     },
-    "SB": {
-        "symbol": "SB",
-        "decimals": 9,
-        "name": "Snowbank",
-        "address": "0x7d1232b90d3f809a54eeaeebc639c62df8a8942f"
+    "SHAKE": {
+        "symbol": "SHAKE",
+        "decimals": 18,
+        "name": "SHAKE token by SpaceSwap v2",
+        "address": "0xc1d02e488a9ce2481bfdcd797d5373dd2e70a9c2"
+    },
+    "SHIBX": {
+        "symbol": "SHIBX",
+        "decimals": 18,
+        "name": "SHIBAVAX",
+        "address": "0x440abbf18c54b2782a4917b80a1746d3a2c2cce1"
     },
     "sifu": {
         "symbol": "sifu",
@@ -901,17 +1004,17 @@ AVALANCHE_TOKENS = {
         "name": "Snail Trail",
         "address": "0x5a15bdcf9a3a8e799fa4381e666466a516f2d9c8"
     },
-    "SLOT": {
-        "symbol": "SLOT",
-        "decimals": 18,
-        "name": "Snowtomb Lot",
-        "address": "0x924157b5dbb387a823719916b25256410a4ad470"
-    },
     "SMRTr": {
         "symbol": "SMRTr",
         "decimals": 18,
         "name": "SmarterCoin",
         "address": "0x6d923f688c7ff287dc3a5943caeefc994f97b290"
+    },
+    "SNCT": {
+        "symbol": "SNCT",
+        "decimals": 18,
+        "name": "Snake City Token",
+        "address": "0x2905d6d6957983d9ed73bc019ff2782c39dd7a49"
     },
     "SNOB": {
         "symbol": "SNOB",
@@ -937,6 +1040,12 @@ AVALANCHE_TOKENS = {
         "name": "Spell Token",
         "address": "0xce1bffbd5374dac86a2893119683f4911a2f7814"
     },
+    "SPORE": {
+        "symbol": "SPORE",
+        "decimals": 9,
+        "name": "Spore.Finance",
+        "address": "0x6e7f5c0b9f4432716bdd0a77a3601291b9d9e985"
+    },
     "START": {
         "symbol": "START",
         "decimals": 18,
@@ -955,11 +1064,11 @@ AVALANCHE_TOKENS = {
         "name": "StargateToken",
         "address": "0x2f6f07cdcf3588944bf4c42ac74ff24bf56e7590"
     },
-    "STOMB": {
-        "symbol": "STOMB",
+    "STL": {
+        "symbol": "STL",
         "decimals": 18,
-        "name": "Snowtomb Token",
-        "address": "0x9e6832d13b29d0b1c1c3465242681039b31c7a05"
+        "name": "Stella Token",
+        "address": "0x66b071a55b7c258c2086527e35ee355771aa05b8"
     },
     "STORM": {
         "symbol": "STORM",
@@ -979,17 +1088,17 @@ AVALANCHE_TOKENS = {
         "name": "SushiToken",
         "address": "0x37b608519f91f70f2eeb0e5ed9af4061722e4f76"
     },
+    "SWAP.e": {
+        "symbol": "SWAP.e",
+        "decimals": 18,
+        "name": "TrustSwap Token",
+        "address": "0xc7b5d72c836e718cda8888eaf03707faef675079"
+    },
     "SYN": {
         "symbol": "SYN",
         "decimals": 18,
         "name": "Synapse",
         "address": "0x1f1e7c893855525b303f99bdf5c3c05be09ca251"
-    },
-    "TAZOR": {
-        "symbol": "TAZOR",
-        "decimals": 9,
-        "name": "TAZOR",
-        "address": "0xee65d8b88f86ace0f7ba42ba2d2c679b6f604bf0"
     },
     "THOR": {
         "symbol": "THOR",
@@ -1015,12 +1124,6 @@ AVALANCHE_TOKENS = {
         "name": "TSD Stablecoin",
         "address": "0x4fbf0429599460d327bd5f55625e30e4fc066095"
     },
-    "TUNDRA": {
-        "symbol": "TUNDRA",
-        "decimals": 18,
-        "name": "TUNDRAToken",
-        "address": "0x21c5402c3b7d40c89cc472c9df5dd7e51bbab1b1"
-    },
     "TUS": {
         "symbol": "TUS",
         "decimals": 18,
@@ -1039,6 +1142,12 @@ AVALANCHE_TOKENS = {
         "name": "UNIFARM Token",
         "address": "0xd60effed653f3f1b69047f2d2dc4e808a548767b"
     },
+    "ULX": {
+        "symbol": "ULX",
+        "decimals": 18,
+        "name": "Ultron",
+        "address": "0xc685e8eddc9f078666794cbfcd8d8351bac404ef"
+    },
     "UMA.e": {
         "symbol": "UMA.e",
         "decimals": 18,
@@ -1051,11 +1160,11 @@ AVALANCHE_TOKENS = {
         "name": "Uniswap",
         "address": "0x8ebaf22b6f053dffeaf46f4dd9efa95d89ba8580"
     },
-    "USD+": {
-        "symbol": "USD+",
-        "decimals": 6,
-        "name": "USD+",
-        "address": "0xe80772eaf6e2e18b651f160bc9158b2a5cafca65"
+    "URQA": {
+        "symbol": "URQA",
+        "decimals": 18,
+        "name": "UREEQA Token [via ChainPort.io]",
+        "address": "0xbd3936ec8d83a5d4e73eca625ecfa006da8c8f52"
     },
     "USDC": {
         "symbol": "USDC",
@@ -1111,12 +1220,11 @@ AVALANCHE_TOKENS = {
         "name": "Vector",
         "address": "0x5817d4f0b62a59b17f75207da1848c2ce75e7af4"
     },
-    "WAVAX": {
-        "symbol": "WAVAX",
+    "WALBT": {
+        "symbol": "WALBT",
         "decimals": 18,
-        "name": "Wrapped AVAX",
-        "address": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
-        "is_native_token": True,
+        "name": "Wrapped AllianceBlock Token",
+        "address": "0x9e037de681cafa6e661e6108ed9c2bd1aa567ecd"
     },
     "WBNB": {
         "symbol": "WBNB",
@@ -1178,6 +1286,18 @@ AVALANCHE_TOKENS = {
         "name": "WOWswap",
         "address": "0xa384bc7cdc0a93e686da9e7b8c0807cd040f4e0b"
     },
+    "wROSE": {
+        "symbol": "wROSE",
+        "decimals": 18,
+        "name": "Wrapped ROSE",
+        "address": "0x12af5c1a232675f62f405b5812a80e7a6f75d746"
+    },
+    "WSPP": {
+        "symbol": "WSPP",
+        "decimals": 18,
+        "name": "WolfSafePoorPeople",
+        "address": "0xe668f8030bf17f3931a3069f31f4fa56efe9dd54"
+    },
     "WTF": {
         "symbol": "WTF",
         "decimals": 18,
@@ -1201,6 +1321,18 @@ AVALANCHE_TOKENS = {
         "decimals": 18,
         "name": "Avalaunch",
         "address": "0xd1c3f94de7e5b45fa4edbba472491a9f4b166fc4"
+    },
+    "XETA": {
+        "symbol": "XETA",
+        "decimals": 18,
+        "name": "XANA",
+        "address": "0x31c994ac062c1970c086260bc61babb708643fac"
+    },
+    "XIO": {
+        "symbol": "XIO",
+        "decimals": 18,
+        "name": "XIO Network",
+        "address": "0x2cf51e73c3516f3d86e9c0b4de0971dbf0766fd4"
     },
     "YAK": {
         "symbol": "YAK",
@@ -1232,11 +1364,11 @@ AVALANCHE_TOKENS = {
         "name": "YUSD Stablecoin",
         "address": "0x111111111111ed1d73f860f57b2798b683f2d325"
     },
-    "yyAVAX": {
-        "symbol": "yyAVAX",
+    "ZEE": {
+        "symbol": "ZEE",
         "decimals": 18,
-        "name": "YieldYak gAVAX",
-        "address": "0xf7d9281e8e363584973f946201b82ba72c965d27"
+        "name": "ZeroSwapToken",
+        "address": "0x44754455564474a89358b2c2265883df993b12f0"
     },
     "ZOO": {
         "symbol": "ZOO",

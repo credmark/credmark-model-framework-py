@@ -1,6 +1,6 @@
 from typing import Union
 
-from credmark.cmf.model import Model
+from credmark.cmf.model import CachePolicy, Model
 from credmark.cmf.model.context import ModelContext
 from credmark.cmf.model.errors import ModelDataError
 from credmark.cmf.types.rpc import (
@@ -79,11 +79,12 @@ def run_model_for_block_range(context: ModelContext,
 @Model.describe(slug='series.time-start-end-interval',
                 version='0.0',
                 display_name='Series Time Interval',
-                description='Run a model over a series of blocks specifying '
-                'a time start, end, and interval',
-                             developer='Credmark',
-                             input=SeriesModelStartEndIntervalInput,
-                             output=BlockSeries[dict])
+                description=('Run a model over a series of blocks specifying '
+                             'a time start, end, and interval'),
+                developer='Credmark',
+                cache=CachePolicy.SKIP,
+                input=SeriesModelStartEndIntervalInput,
+                output=BlockSeries[dict])
 class SeriesTimeStartEndInterval(Model):
 
     def run(self, input: SeriesModelStartEndIntervalInput) -> BlockSeries[dict]:
@@ -110,6 +111,7 @@ class SeriesTimeStartEndInterval(Model):
                 description='Run a model over a series of blocks specifying '
                 'a time window and interval',
                 developer='Credmark',
+                cache=CachePolicy.SKIP,
                 input=SeriesModelWindowIntervalInput,
                 output=BlockSeries[dict])
 class SeriesTimeWindowInterval(Model):
@@ -137,6 +139,7 @@ class SeriesTimeWindowInterval(Model):
                 description='Run a model over a series of blocks specifying '
                 'a block start, end, and interval',
                 developer='Credmark',
+                cache=CachePolicy.SKIP,
                 input=SeriesModelStartEndIntervalInput,
                 output=BlockSeries[dict])
 class SeriesBlockStartEndInterval(Model):
@@ -165,6 +168,7 @@ class SeriesBlockStartEndInterval(Model):
                 description='Run a model over a series of blocks specifying '
                 'a block window and interval',
                 developer='Credmark',
+                cache=CachePolicy.SKIP,
                 input=SeriesModelWindowIntervalInput,
                 output=BlockSeries[dict])
 class SeriesBlockWindowInterval(Model):

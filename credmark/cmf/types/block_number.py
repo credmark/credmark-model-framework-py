@@ -105,11 +105,6 @@ class BlockNumber(IntDTO):
             raise TypeError('BlockNumber->sampleTimestamp should be an int')
 
         context = credmark.cmf.model.ModelContext.get_current_context()
-        # Block number is initialized during the creation of the first context,
-        # skip the check for such case.
-        if context is not None and number > context.block_number:
-            raise BlockNumberOutOfRangeError.create(
-                number, context.block_number)
 
         if number < 0:
             raise BlockNumberOutOfRangeError(
@@ -212,3 +207,19 @@ class BlockNumber(IntDTO):
         return BlockNumber(number=get_blocknumber_result['blockNumber'],
                            timestamp=get_blocknumber_result['blockTimestamp'],
                            sampleTimestamp=get_blocknumber_result['sampleTimestamp'])
+
+    @classmethod
+    def from_datetime(cls, in_dt: datetime):
+        """Get the BlockNumber instance at or before the datetime timestamp."""
+        return cls.from_timestamp(in_dt.replace(tzinfo=timezone.utc).timestamp())
+
+    @classmethod
+    def from_ymd(cls, year: int, month: int, day: int, hour=0, minute=0, second=0, microsecond=0):
+        """Get the BlockNumber instance at or before the datetime timestamp."""
+        return cls.from_datetime(cls.get_dt(year, month, day, hour, minute, second, microsecond))
+
+    # pylint: disable= too-many-arguments
+    @staticmethod
+    def get_dt(year: int, month: int, day: int, hour=0, minute=0, second=0, microsecond=0):
+        """Get a datetime for date and time values"""
+        return datetime(year, month, day, hour, minute, second, microsecond, tzinfo=timezone.utc)

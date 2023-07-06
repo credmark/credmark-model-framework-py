@@ -113,6 +113,11 @@ class EmptyInput(DTO):
         }
 
 
+class EmptyInputSkipTest(EmptyInput):
+    class Config:
+        schema_extra = {'skip_test': True}
+
+
 class IntDTO(int):
     """
     A DTO that can be used as an integer output (or input) to a model.

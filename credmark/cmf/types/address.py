@@ -14,7 +14,7 @@ def validate_address(addr: str) -> ChecksumAddress:
         eth_utils_validate_address(checksum_addr)
         return checksum_addr
     except Exception as e:
-        raise ModelTypeError(f'Address validation error: {str(e)}')
+        raise ModelTypeError(f'Address validation error: {str(e)}') from None
 
 
 evm_address_regex = re.compile(r'^0x[a-fA-F0-9]{40}$')
@@ -62,7 +62,7 @@ class Address(str):
 
         return cls(addr)
 
-    def __new__(cls, addr):
+    def __new__(cls, addr: Union[str, int, bytes]):
         if isinstance(addr, int):
             if addr > MAX_ADDRESS_VALUE:
                 raise ValueError(
@@ -73,7 +73,7 @@ class Address(str):
                 if len(addr) != 42:
                     addr = f'{int(addr, 16):#042x}'
             except Exception as e:
-                raise ModelTypeError(f'Address validation error: {str(e)}')
+                raise ModelTypeError(f'Address validation error: {str(e)}') from None
         elif isinstance(addr, bytes):
             addr = addr.hex()
             if len(addr) != 42:
@@ -83,7 +83,7 @@ class Address(str):
                 f'Address instance must be created with a string, int or bytes {addr}')
         return str.__new__(cls, addr.lower())
 
-    def __init__(self, _addr: Union[str, int]):
+    def __init__(self, _addr: Union[str, int, bytes]):
         super().__init__()
         self._checksum = validate_address(self)
 

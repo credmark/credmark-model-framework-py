@@ -2,7 +2,8 @@
 # All address in the field shall be checksum address
 
 from credmark.cmf.types.data.fungible_token_data_arbitrum_one import ARBITRUM_ONE_TOKENS
-from credmark.cmf.types.data.fungible_token_data_avalenche import AVALANCHE_TOKENS
+from credmark.cmf.types.data.fungible_token_data_avalanche import AVALANCHE_TOKENS
+from credmark.cmf.types.data.fungible_token_data_bsc import BSC_TOKENS
 from credmark.cmf.types.data.fungible_token_data_fantom import FANTOM_TOKENS
 from credmark.cmf.types.data.fungible_token_data_mainnet import MAINNET_TOKENS
 from credmark.cmf.types.data.fungible_token_data_optimism import OPTIMISM_TOKENS
@@ -75,6 +76,7 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
     int(Network.Optimism): OPTIMISM_TOKENS,
     int(Network.Avalanche): AVALANCHE_TOKENS,
     int(Network.Fantom): FANTOM_TOKENS,
+    int(Network.BSC): BSC_TOKENS,
 }
 
 FUNGIBLE_TOKEN_DATA_BY_ADDRESS = {

@@ -73,6 +73,9 @@ class Some(GenericDTO, Generic[DTOCLS]):
 
         return pd.DataFrame(data_dict)
 
+    def sorted(self, key=None, reverse=False):
+        return sorted(self.some, key=key, reverse=reverse) # type: ignore
+
 
 class Records(GenericDTO):
     records: List[Tuple] = DTOField([])
@@ -117,8 +120,8 @@ class Records(GenericDTO):
         return df_in
 
     @classmethod
-    def from_dataframe(cls, _df, fix_int_columns=[]):  # pylint:disable=dangerous-default-value
+    def from_dataframe(cls, _df, fix_int_columns=None):  # pylint:disable=dangerous-default-value
         return cls(records=list(_df.itertuples(index=False, name=None)),
                    fields=_df.columns.tolist(),
                    n_rows=_df.shape[0],
-                   fix_int_columns=fix_int_columns)
+                   fix_int_columns=[] if fix_int_columns is None else fix_int_columns)

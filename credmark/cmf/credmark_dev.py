@@ -1,4 +1,7 @@
 #! /usr/bin/env python3
+
+# pylint: disable=line-too-long
+
 import argparse
 import inspect
 import json
@@ -6,12 +9,14 @@ import logging
 import os
 import sys
 import unittest
+from datetime import datetime
 from typing import List, Union
 
 from dotenv import find_dotenv, load_dotenv
 
 from credmark.cmf.engine.model_unittest import ModelTestContextFactory
 from credmark.cmf.model.print import print_manifest, print_manifest_description
+from credmark.dto.dto_schema import dto_schema_viz
 from credmark.dto.encoder import json_dump, json_dumps
 
 from .engine.context import EngineModelContext
@@ -33,10 +38,51 @@ def add_api_url_arg(parser):
                         'You do not normally need to set this.')
 
 
+def add_run_arg(parser):
+    parser.add_argument('-b', '--block_number', type=int, required=False, default=None,
+                        help='Block number used for the context of the model run.'
+                        ' If not specified, it is set to the latest block of the chain.')
+    parser.add_argument('-f', '--from_block_number', type=int, required=False, default=None,
+                        help='From block number is used for partial run of incremental models.'
+                        ' If not specified, it is set to 0.')
+    parser.add_argument('-c', '--chain_id', type=int, default=1, required=False,
+                        help='Chain ID. Defaults to 1.')
+    parser.add_argument('-j', '--format_json', action='store_true', default=False,
+                        help='Format output json to be more readable')
+    parser.add_argument('--provider_url_map', required=False, default=None,
+                        help='JSON object of chain id to Web3 provider HTTP URL. '
+                        'Overrides settings in env var or .env file.')
+    parser.add_argument('-l', '--use_local_models', default=None,
+                        help=(
+                            'Comma-separated list of model slugs for models that should '
+                            'favor use of the local version. This is only required when a model is '
+                            'calling another model. '
+                            'Use "*" to favor the use of local versions of all models. '
+                            'Use "-" to use no local models.'))
+    parser.add_argument('-v', '--model_version', default=None, required=False,
+                        help='Version of the model to run. Defaults to latest.')
+    parser.add_argument('-i', '--input', required=False, default='{}',
+                        help='Input JSON or '
+                        'if value is "-" it will read input JSON from stdin.')
+    parser.add_argument('-o', '--output', required=False, default=None,
+                        help='Output path to save model results as JSON file.')
+    parser.add_argument('-d', '--debug', action='store_true', default=False,
+                        help='Log debug info for model run input and output')
+    parser.add_argument(
+        '-m', '--model_mocks', default=None,
+        help='Module path and symbol of model mocks config to use. '
+        'For example, models.contrib.mymodels.mymocks.mock_config')
+    parser.add_argument(
+        '--generate_mocks', default=None,
+        help='Generate model mocks and write them to the specified file. '
+        'The generated python file can be used with --model_mocks on another run or in unit tests.')
+
+
 def main():  # pylint: disable=too-many-statements
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='Credmark developer tool')
+
     parser.add_argument('--log_level', default=None, required=False,
                         help='Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL')
     parser.add_argument('--log_file', default=None, required=False,
@@ -51,6 +97,10 @@ def main():  # pylint: disable=too-many-statements
     subparsers = parser.add_subparsers(title='Commands',
                                        description='Supported commands',
                                        help='additional help')
+
+    parser_help = subparsers.add_parser(
+        'help', help='Show help', aliases=[])
+    parser_help.set_defaults(func=show_help)
 
     parser_version = subparsers.add_parser(
         'version', help='Show version of the framework', aliases=[])
@@ -101,39 +151,7 @@ def main():  # pylint: disable=too-many-statements
 
     parser_run = subparsers.add_parser(
         'run', help='Run a model', aliases=['run-model'])
-    parser_run.add_argument('-b', '--block_number', type=int, required=False, default=None,
-                            help='Block number used for the context of the model run.'
-                            ' If not specified, it is set to the latest block of the chain.')
-    parser_run.add_argument('-c', '--chain_id', type=int, default=1, required=False,
-                            help='Chain ID. Defaults to 1.')
-    parser_run.add_argument('-i', '--input', required=False, default='{}',
-                            help='Input JSON or '
-                            'if value is "-" it will read input JSON from stdin.')
-    parser_run.add_argument('-o', '--output', required=False, default=None,
-                            help='Output path to save model results as JSON file.')
-    parser_run.add_argument('-v', '--model_version', default=None, required=False,
-                            help='Version of the model to run. Defaults to latest.')
-    parser_run.add_argument('-j', '--format_json', action='store_true', default=False,
-                            help='Format output json to be more readable')
-    parser_run.add_argument('-d', '--debug', action='store_true', default=False,
-                            help='Log debug info for model run input and output')
-    parser_run.add_argument(
-        '-l', '--use_local_models', default=None,
-        help='Comma-separated list of model slugs for models that should '
-        'favor use of the local version. This is only required when a model is '
-        'calling another model. Use "*" to favor the use of local versions of all models.'
-        ' Use "-" to use no local models.')
-    parser_run.add_argument(
-        '-m', '--model_mocks', default=None,
-        help='Module path and symbol of model mocks config to use. '
-        'For example, models.contrib.mymodels.mymocks.mock_config')
-    parser_run.add_argument(
-        '--generate_mocks', default=None,
-        help='Generate model mocks and write them to the specified file. '
-        'The generated python file can be used with --model_mocks on another run or in unit tests.')
-    parser_run.add_argument('--provider_url_map', required=False, default=None,
-                            help='JSON object of chain id to Web3 provider HTTP URL. '
-                            'Overrides settings in env var or .env file.')
+    add_run_arg(parser_run)
     add_api_url_arg(parser_run)
     parser_run.add_argument(
         '--run_id', help=argparse.SUPPRESS, required=False, default=None)
@@ -156,6 +174,26 @@ def main():  # pylint: disable=too-many-statements
                              help='Folder to start discovery for tests. Defaults to "models".')
     parser_test.set_defaults(func=run_tests)
 
+    parser_test_all = subparsers.add_parser(
+        'test-all', help='Test all models', aliases=['test-all-models'])
+    parser_test_all.add_argument('--manifests', action='store_true', default=False,
+                                 help="Show full manifests")
+    parser_test_all.add_argument('--json', action='store_true',
+                                 default=False, help="Output as json")
+    parser_test_all.add_argument('-e', '--exit-on-fail', action='store_true')
+    parser_test_all.add_argument('-t', '--prefix', required=False, default=None,
+                                 help='comma-separated list of prefixes to match slug to run')
+    parser_test_all.add_argument('-s', '--skip-test', required=False, default=None,
+                                 help='comma-separated list of prefixes to match slug to skip')
+    parser_test_all.add_argument('-r', '--dry-run', action='store_true', help='Dry run')
+    add_run_arg(parser_test_all)
+    add_api_url_arg(parser_test_all)
+    parser_test_all.add_argument('--run_id', help=argparse.SUPPRESS, required=False, default=None)
+    parser_test_all.add_argument('--depth', help=argparse.SUPPRESS, type=int, required=False,
+                                 default=0)
+
+    parser_test_all.set_defaults(func=test_all_models)
+
     parser_build = subparsers.add_parser(
         'build', help='Build model manifest [Not required during development]',
         aliases=['build-manifest'])
@@ -171,7 +209,10 @@ def main():  # pylint: disable=too-many-statements
 
     args = parser.parse_args()
 
-    if args.func == run_tests:  # pylint: disable=comparison-with-callable
+    if args.func == show_help:  # pylint: disable=comparison-with-callable
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+    elif args.func == run_tests:  # pylint: disable=comparison-with-callable
         load_dotenv(find_dotenv('.env.test', usecwd=True))
     else:
         load_dotenv(find_dotenv(usecwd=True))
@@ -212,6 +253,10 @@ def load_models(args, load_dev_models=False):
     model_loader = ModelLoader(model_paths, manifest_file, load_dev_models)
     model_loader.log_errors()
     return model_loader
+
+
+def show_help(_args):
+    pass
 
 
 def show_version(_args):
@@ -389,11 +434,17 @@ def create_model(args):
 
     if not os.path.isdir(folder_path):
         try:
+            res = input(f'{folder_path} not found, create [Y/n]? ')
+            if res not in ['', 'Y', 'y']:
+                print('Exiting...')
+                sys.exit(1)
             print(f'Creating folder {folder_path}')
-            os.mkdir(folder_path)
+            os.makedirs(folder_path)
         except Exception as exc:
             logger.error(f'Error creating model folder {folder_path}: {exc}')
             sys.exit(1)
+    else:
+        print(f'Found folder {folder_path}')
 
     if os.path.isfile(file_path):
         res = input(f'File {file_path} exists, overwrite [Y/n]? ')
@@ -402,8 +453,14 @@ def create_model(args):
             sys.exit(1)
     try:
         print(f'Creating file {file_path}')
+        model_name_suggest = 'contrib.' + \
+            model_folder.replace('_', '-').replace(' ', '-') + '-' + \
+            filename.replace('_', '-').replace('.py', '')
         with open(file_path, 'w') as file:
-            file.write(inspect.getsource(credmark.cmf.model.template))
+            file.write(
+                inspect.getsource(credmark.cmf.model.template).replace('contrib.my-model',
+                                                                       model_name_suggest))
+        print(f'Run with: credmark-dev run {model_name_suggest}')
     except Exception as exc:
         logger.error(
             f'Error writing model template to path {file_path}: {exc}')
@@ -480,10 +537,18 @@ def run_tests(args):
     tests_folder = args['tests_folder']
     test_argv = [sys.argv[0], 'discover',
                  '-s', tests_folder, '-p', pattern]
-    unittest.main(module=None, argv=test_argv, verbosity=2)
+    if os.path.isdir(tests_folder):
+        unittest.main(module=None, argv=test_argv, verbosity=2)
+    else:
+        print(f'Folder {tests_folder} not found')
 
 
 def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,too-many-locals
+    sys.exit(run_model_no_exit(args))
+
+
+# pylint: disable=too-many-locals, too-many-branches, too-many-statements
+def run_model_no_exit(args, model_loader=None):
     exit_code = 0
 
     try:
@@ -494,11 +559,13 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
 
         chain_to_provider_url = create_chain_to_provider_url(providers_json)
 
-        model_loader = load_models(args, load_dev_models=not args.get(
-            'run_id'))  # we assume developer will not pass a run_id
+        if model_loader is None:
+            model_loader = load_models(args, load_dev_models=not args.get(
+                'run_id'))  # we assume developer will not pass a run_id
 
         chain_id: int = args['chain_id']
         block_number: Union[int, None] = args['block_number']
+        from_block_number: Union[int, None] = args['from_block_number']
         model_slug: str = args['model-slug']
         model_version: Union[str, None] = args['model_version']
         api_url: Union[str, None] = args['api_url']
@@ -538,7 +605,8 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
 
         result = EngineModelContext.create_context_and_run_model(
             chain_id=chain_id,
-            block_number=block_number,
+            block=block_number,
+            from_block=from_block_number,
             model_slug=model_slug,
             model_version=model_version,
             input=input,
@@ -592,7 +660,164 @@ def run_model(args):  # pylint: disable=too-many-statements,too-many-branches,to
         sys.stdout.write('\n')
         sys.stdout.flush()
 
-    sys.exit(exit_code)
+    return exit_code
+
+
+def test_all_models(args):
+    # pylint: disable=too-many-nested-blocks
+    model_loader = load_models(args, True)
+    manifests = model_loader.loaded_model_manifests()
+    format_json: bool = args['format_json']
+    get_manifests = args.get('manifests')
+    get_json = args.get('json')
+    exit_on_fail = args['exit_on_fail']
+    get_prefix = args.get('prefix')
+    model_prefix = None if get_prefix is None else get_prefix.split(',')
+    get_skip_test = args.get('skip_test')
+    model_prefix_skip = None if get_skip_test is None else get_skip_test.split(',')
+    get_dry_run = args.get('dry_run')
+
+    input_chain_id = args.get('chain_id')
+    input_block_number = args.get('block_number')
+
+    # TODO: allow multi-chain
+    # Add output of command line to run
+    for m in manifests:
+        _m_start_time = datetime.now()
+        model_args = args
+
+        first_input = {}
+        skip_test = model_prefix is not None
+
+        multi_chain_inputs = []
+        test_multi = False
+
+        has_input = False
+        has_slug = False
+        for i, v in m.items():
+            if i == 'slug':
+                model_args['model-slug'] = v
+                has_slug = True
+                if model_prefix is not None:
+                    false_by_other = False
+                    for pre in model_prefix:
+                        if pre.endswith('+'):
+                            pre = pre[:-2] + chr(ord(pre[-2]) + 1)
+                            if v >= pre and not false_by_other:
+                                skip_test = False
+                            else:
+                                skip_test = True
+                                false_by_other = True
+                        elif pre.endswith('-'):
+                            pre = pre[:-2] + chr(ord(pre[-2]) - 1)
+                            if v <= pre and not false_by_other:
+                                skip_test = False
+                            else:
+                                skip_test = True
+                                false_by_other = True
+                        elif v.startswith(pre):
+                            skip_test = False
+                            break
+                            # print(f'Running {v} with {pre}')
+
+                if model_prefix_skip is not None:
+                    for pre in model_prefix_skip:
+                        true_by_other = False
+                        if pre.endswith('+'):
+                            pre = pre[:-2] + chr(ord(pre[-2]) + 1)
+                            if v >= pre and not true_by_other:
+                                skip_test = True
+                            else:
+                                skip_test = False
+                                true_by_other = True
+                        elif pre.endswith('-'):
+                            pre = pre[:-2] + chr(ord(pre[-2]) - 1)
+                            if v <= pre and not true_by_other:
+                                skip_test = True
+                            else:
+                                skip_test = False
+                                true_by_other = True
+                        elif v.startswith(pre):
+                            skip_test = True
+                            break
+                if has_input:
+                    break
+            else:
+                if i == 'input':
+                    if v.get('skip_test', False):
+                        skip_test = True
+                        break
+
+                    test_multi = v.get('test_multi', False)
+
+                    has_input = True
+                    if not test_multi:
+                        input_examples = dto_schema_viz(
+                            v, v.get('title', 'Object'), v, 0,
+                            'example',
+                            only_required=False, tag='top', limit=10)
+                        first_input = input_examples[0]
+                        multi_chain_inputs = [(first_input, input_chain_id, input_block_number)]
+                    else:
+                        multi_chain_inputs = [
+                            (i,
+                             i['_test_multi']['chain_id'],
+                             i['_test_multi'].get('block_number', input_block_number))
+                            for i in v.get('examples', [])
+                            if '_test_multi' in i] + \
+                            ([(v['example'],
+                               v['example']['_test_multi']['chain_id'],
+                               (v['example']['_test_multi'].get('block_number', input_block_number)))]
+                             if 'example' in v
+                             else [])
+                    if has_slug:
+                        break
+
+        if skip_test:
+            continue
+
+        if get_dry_run:
+            print(model_args['model-slug'])
+            continue
+
+        _m_end_time = datetime.now()
+
+        if get_manifests:
+            if format_json:
+                print(json_dumps(m, indent=4).replace(
+                    '\\n', '\n').replace('\\"', '\''))
+            else:
+                if get_json:
+                    json.dump({'models': m}, sys.stdout)
+                else:
+                    print(m)
+
+        for model_input, multi_chain_chain_id, multi_chain_block_number in multi_chain_inputs:
+            if '_test_multi' in model_input:
+                del model_input['_test_multi']
+
+            model_run_args = {
+                'slug': model_args['model-slug'],
+                'input': json.dumps(model_input),
+                'chain_id': multi_chain_chain_id,
+                'block_number': multi_chain_block_number,
+            }
+
+            if format_json:
+                print(json_dumps(model_run_args, indent=4)
+                      .replace('\\"', '__DQ__')
+                      .replace('"', "'")
+                      .replace('__DQ__', '"'))
+            else:
+                print(model_run_args)
+
+            _exit_code = run_model_no_exit(model_args | model_run_args, model_loader=model_loader)
+            if exit_on_fail and _exit_code != 0:
+                sys.exit(_exit_code)
+
+        _r_end_time = datetime.now()
+
+        # print(f'm time {m_end_time - m_start_time} r time {r_end_time - m_end_time}')
 
 
 if __name__ == '__main__':

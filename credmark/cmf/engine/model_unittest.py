@@ -58,7 +58,7 @@ class ModelTestContextFactory:
 
     def create_context(self,
                        chain_id: int = 1,
-                       block_number: int = 15260851):
+                       block_number: int = 17_222_851):
         # Clear the current context first
         ModelContext.set_current_context(None)
 
@@ -89,7 +89,7 @@ class ModelTestContextFactory:
 
 
 def model_context(chain_id: int = 1,
-                  block_number: int = 15260851,
+                  block_number: int = 17_222_851,
                   mocks: Union[ModelMockConfig, None] = None):
     """
     A decorator that can be used on a test method in a
@@ -153,7 +153,7 @@ class ModelTestCase(unittest.TestCase):
 
     def create_model_context(self,
                              chain_id: int = 1,
-                             block_number: int = 15_260_851,
+                             block_number: int = 17_222_851,
                              mocks: Union[ModelMockConfig, None] = None):
         """
         Create a new model context and set it as the current context.

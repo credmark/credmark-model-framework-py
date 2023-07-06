@@ -1,14 +1,15 @@
 # pylint: disable=line-too-long
 
 from abc import abstractmethod
+from contextlib import contextmanager
 from contextvars import ContextVar, Token
-from typing import Any, Type, TypeVar, Union, overload
+from typing import Any, Generator, Type, TypeVar, Union, overload
 
-from web3 import Web3
+from web3 import AsyncWeb3, Web3
 
 from credmark.cmf.engine.web3_registry import Web3Registry
 from credmark.cmf.types import BlockNumber, Network
-from credmark.dto import DTOType, EmptyInput
+from credmark.dto import DTOType
 
 from .errors import ModelNoContextError
 from .ledger import Ledger
@@ -77,20 +78,33 @@ class ModelContext:
         return context
 
     def __init__(self, chain_id: int, block_number: BlockNumber,
-                 web3_registry: Web3Registry,
-                 parent_context: MaybeModelContext):
+                 web3_registry: Web3Registry):
         self._chain_id = chain_id
         self._block_number = block_number
         self._web3_registry = web3_registry
-        self._parent_context = parent_context
         self._web3 = None
+        self._web3_async = None
         self._ledger = None
         self._historical_util = None
         self._models = None
 
-    @property
-    def parent_context(self):
-        return self._parent_context
+    @contextmanager
+    @abstractmethod
+    def fork(self,
+             *,
+             chain_id: Union[int, None] = None,
+             block_number: Union[BlockNumber, int, None] = None
+             ) -> Generator['ModelContext', Any, None]:
+        """
+        The ``context.forked`` method can be use to create a temporary context.
+        It inherits all the properties from the `current_context`. Some properties
+        like `block_number` and `chain_id` can be changed.
+        """
+        if isinstance(block_number, int):
+            block_number = BlockNumber(block_number)
+        yield ModelContext(self.chain_id if chain_id is None else chain_id,
+                           self.block_number if block_number is None else block_number,
+                           self._web3_registry)
 
     @property
     def models(self) -> Models:
@@ -144,16 +158,6 @@ class ModelContext:
         # it will return None.
         ...
 
-    @abstractmethod
-    def enter(self, block_number: Union[int, BlockNumber]) -> 'ModelContext':
-        ...
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *_exc):
-        ModelContext.set_current_context(self.parent_context)
-
     @property
     def chain_id(self) -> int:
         """
@@ -180,6 +184,7 @@ class ModelContext:
         if block_number != self._block_number:
             self._block_number = BlockNumber(block_number)
             self._web3 = None
+            self._web3_async = None
             self._ledger = None
             self._historical_util = None
 
@@ -192,6 +197,16 @@ class ModelContext:
             self._web3 = self._web3_registry.web3_for_chain_id(self.chain_id)
             self._web3.eth.default_block = self.block_number if self.block_number is not None else 'latest'
         return self._web3
+
+    @property
+    def web3_async(self) -> AsyncWeb3:
+        """
+        A configured web3 instance
+        """
+        if self._web3_async is None:
+            self._web3_async = self._web3_registry.async_web3_for_chain_id(self.chain_id)
+            self._web3_async.eth.default_block = self.block_number if self.block_number is not None else 'latest'
+        return self._web3_async
 
     @property
     def ledger(self) -> Ledger:
@@ -229,7 +244,7 @@ class ModelContext:
     @abstractmethod
     def run_model(self,
                   slug: str,
-                  input: Union[dict, DTOType] = EmptyInput(),
+                  input: Union[dict, DTOType],
                   return_type: Union[Type[dict], None] = None,
                   block_number: Union[int, None] = None,
                   version: Union[str, None] = None,
@@ -239,7 +254,7 @@ class ModelContext:
     @abstractmethod
     def run_model(self,  # type: ignore
                   slug,
-                  input=EmptyInput(),
+                  input,
                   return_type=None,
                   block_number=None,
                   version=None,

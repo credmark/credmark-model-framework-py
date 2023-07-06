@@ -2,6 +2,84 @@
 
 History
 -------
+
+0.8.122 [2023-07-06]
+* fix: support for from_block_number in credmark-dev
+
+0.8.121 [2023-07-06]
+* fix: add native tokens to arb/polygon
+* feat: add disable_cache
+* chore: bump grpcio from 1.43.0 to 1.53.0
+
+0.8.120 [2023-07-04]
+* feat: cache policy
+* feat: incremental model
+* feat: immutable model
+* cleanup: removed lookup cache result
+
+0.8.119 [2023-06-21]
+* cleanup: portfolio and position DTOs
+
+0.8.118 [2023-06-19]
+* feat: enable ledger for polygon
+
+0.8.117 [2023-06-15]
+* chore: update token list
+
+0.8.116 [2023-06-11]
+* feat: support polygon ledger
+* feat: add .has_dex_price() to network
+
+0.8.115 [2023-06-03]
+* fix: disable BSC ledger
+
+0.8.114 [2023-06-02]
+* feat: add support for async web3 in fetch_events
+
+0.8.113 [2023-05-29]
+* feat: support for dry run and test model selection in test_all_models function
+* feat: updated token data for BSC and Polygon networks
+* chore: clean up cache object
+
+0.8.112 [2023-05-26]
+* feat: enable ledger for BSC
+
+0.8.111 [2023-05-26]
+* feat: add skip to test-all
+* feat: add BSC tokens to fungible token data (BTCB and WBNB, etc.)
+* fix: update Contract instance when chain_id changes
+* fix: correct name of USD Coin in Polygon token data
+* fix: update Token cache to include chain_id
+
+0.8.110 [2023-05-25]
+* fix: remove context enter remnants
+* fix: fail on fork to block > context.block_number
+
+0.8.109 [2023-05-25]
+* feat: replace context enter with fork context
+* fix: network enum enhancements
+* fix: allow BlockNumber to be > context.block_number
+
+0.8.108 [2023-05-22]
+* fix: improve test-all and test cases
+
+0.8.107 [2023-05-21]
+* feat: add web3 async
+
+0.8.106 [2023-05-18]
+* feat: test-all improvements
+
+0.8.105 [2023-05-16]
+* chore: ruff-ed
+
+0.8.104 [2023-05-15]
+* fix: move get_dt() and get_block() to BlockNumber object
+* feat: enrich command-line for create, help and test-all
+
+0.8.103 [2023-05-12]
+* feat: support of contract ledger join
+* feat: add as_integer() for ColumnField
+
 0.8.102 [2023-05-08]
 * feat: enrich context.models object with list() and get_result()
 * feat: enable context.enter() for Contract and Token web3 calls

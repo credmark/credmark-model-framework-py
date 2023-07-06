@@ -3,7 +3,10 @@ import logging
 import re
 from abc import abstractmethod
 from copy import deepcopy
-from typing import List, Tuple, Type, Union
+from typing import List, Literal, Tuple, Type, Union
+from credmark.cmf.engine.cache import CachePolicy
+from credmark.cmf.types import BlockNumber
+from credmark.cmf.types.series import BlockSeries, ImmutableOutput
 
 from credmark.dto import DTOType, DTOTypesTuple, EmptyInput
 from credmark.dto.transform import transform_data_for_dto
@@ -12,7 +15,15 @@ from .context import ModelContext
 from .errors import ModelBaseError, ModelDataErrorDTO, ModelDefinitionError
 
 
+class MissingModelBaseClass(ModelDefinitionError):
+    pass
+
+
 class WrongModelMethodSignature(ModelDefinitionError):
+    pass
+
+
+class InvalidModelCacheKey(ModelDefinitionError):
     pass
 
 
@@ -28,7 +39,8 @@ DICT_SCHEMA = {"title": "Object", "type": "object", "properties": {}}
 # different types and the DTOs are used to document the schema.
 
 MAX_SLUG_LENGTH = 64
-model_slug_re = re.compile(r'^(([A-Za-z0-9]+\-)*[A-Za-z0-9]+\.)?([A-Za-z0-9]+\-)*[A-Za-z0-9]+$')
+model_slug_re = re.compile(
+    r'^(([A-Za-z0-9]+\-)*[A-Za-z0-9]+\.)?([A-Za-z0-9]+\-)*[A-Za-z0-9]+$')
 
 
 class ModelErrorDesc:
@@ -65,7 +77,8 @@ class ModelDataErrorDesc(ModelErrorDesc):
             for ct in codes:
                 self.codes.append(ct if isinstance(ct, tuple) else (ct, ct))
         if code is not None:
-            self.codes.append((code, code_desc) if code_desc is not None else (code, code))
+            self.codes.append((code, code_desc)
+                              if code_desc is not None else (code, code))
         self.codes.sort()
 
     def schema(self, slug: str, include_definitions=True):
@@ -123,12 +136,13 @@ def create_error_schema_for_error_descs(slug: str,
 
     except Exception as err:
         raise ModelDefinitionError(
-            f'Exception processing "errors" in model {slug} describe(): {err}')
+            f'Exception processing "errors" in model {slug} describe(): {err}') from None
 
 
 def validate_model_slug(slug: str, prefix: Union[str, None] = None):
     if prefix is not None and not slug.startswith(prefix):
-        raise InvalidModelSlug(f'Slug for model {slug} must start with "{prefix}"')
+        raise InvalidModelSlug(
+            f'Slug for model {slug} must start with "{prefix}"')
 
     if model_slug_re.match(slug) is None or len(slug) > MAX_SLUG_LENGTH:
         quoted_prefix = f'"{prefix}"' if prefix else ''
@@ -142,37 +156,72 @@ def validate_model_slug(slug: str, prefix: Union[str, None] = None):
             'Slugs must be not more than {MAX_SLUG_LENGTH} characters.')
 
 
-def describe(slug: str,  # pylint: disable=too-many-arguments
-             version: str,
-             display_name: Union[str, None] = None,
-             description: Union[str, None] = None,
-             developer: Union[str, None] = None,
-             category: Union[str, None] = None,
-             subcategory: Union[str, None] = None,
-             tags: Union[list[str], None] = None,
-             input: Union[Type[DTOType], Type[dict]] = EmptyInput,
-             output: Union[Type[DTOType], Type[dict], None] = None,
-             errors: Union[List[ModelErrorDesc], ModelErrorDesc, None] = None):
-    """
-    Decorator for a model.
-
-    Deprecated. Use ``Model.describe``
-    """
-    def wrapper(cls_in):
+def _describe(*,
+              slug: str,
+              version: str,
+              display_name: Union[str, None] = None,
+              description: Union[str, None] = None,
+              developer: Union[str, None] = None,
+              category: Union[str, None] = None,
+              subcategory: Union[str, None] = None,
+              tags: Union[list[str], None] = None,
+              cache: CachePolicy = CachePolicy.FULL,
+              input: Union[Type[DTOType], Type[dict]] = EmptyInput,
+              output: Union[Type[DTOType], Type[dict], None] = None,
+              errors: Union[List[ModelErrorDesc], ModelErrorDesc, None] = None):
+    def wrapper(cls_in):  # pylint:disable=too-many-branches
         def is_parent(child, parent):
             found = parent in child.__bases__
             return found or True in [is_parent(pp, parent) for pp in child.__bases__]
 
-        if not is_parent(cls_in, Model):
-            cls = type(cls_in.__name__, (Model, *cls_in.__bases__), dict(cls_in.__dict__))
+        if cache is CachePolicy.INCREMENTAL:
+            base_cls = IncrementalModel
+            if not is_parent(cls_in, IncrementalModel):
+                raise MissingModelBaseClass("A model with incremental cache policy should inherit "
+                                            "from IncrementalModel imported from "
+                                            "credmark.cmf.model.")
+        elif cache is CachePolicy.IMMUTABLE:
+            base_cls = ImmutableModel
+            if not is_parent(cls_in, ImmutableModel):
+                raise MissingModelBaseClass("A model with immutable cache policy should inherit "
+                                            "from ImmutableModel imported from "
+                                            "credmark.cmf.model.")
         else:
-            cls = cls_in
+            base_cls = Model
+            if not is_parent(cls_in, Model):
+                raise MissingModelBaseClass("A model should inherit from Model "
+                                            "imported from credmark.cmf.model.")
+
+        cls = cls_in
 
         mod_parts = cls.__dict__['__module__'].split('.')
         if len(mod_parts) > 1 and mod_parts[1] == 'contrib':
             validate_model_slug(slug, 'contrib.')
         else:
             validate_model_slug(slug)
+
+        # 2. has abstract functions as defined in the Model class
+        method_list = [method for method in dir(base_cls)
+                       if method.startswith('__') is False and
+                       method in base_cls.__dict__ and
+                       '__isabstractmethod__' in base_cls.__dict__[method].__dict__ and
+                       base_cls.__dict__[method].__isabstractmethod__]
+
+        for method in method_list:
+            found_this_method = False
+            for mro_cls in cls.__mro__:
+                if mro_cls is base_cls or method not in mro_cls.__dict__:
+                    continue
+
+                found_this_method = True
+
+                # Since the run method is overloaded, the signatures won't match exactly.
+                # TODO: Add parameter and return value type compatibility check
+                break
+
+            if not found_this_method:
+                raise WrongModelMethodSignature(
+                    f'Model {cls.__name__} misses a method {method}() with signature {inspect.signature(base_cls.__dict__[method])}')  # pylint: disable=line-too-long
 
         model_desc = description
         if model_desc is None:
@@ -189,6 +238,7 @@ def describe(slug: str,  # pylint: disable=too-many-arguments
                 'category': category,
                 'subcategory': subcategory,
                 'tags': tags,
+                'cache': cache,
                 'input': input.schema()
                 if input is not None and issubclass(input, DTOTypesTuple)
                 else DICT_SCHEMA,
@@ -196,7 +246,7 @@ def describe(slug: str,  # pylint: disable=too-many-arguments
                 if output is not None and issubclass(output, DTOTypesTuple)
                 else DICT_SCHEMA,
                 'error': create_error_schema_for_error_descs(slug, errors),
-                'class': cls.__dict__['__module__'] + '.' + cls.__name__
+                'class': cls.__dict__['__module__'] + '.' + cls.__name__,
             }
         }
 
@@ -208,43 +258,49 @@ def describe(slug: str,  # pylint: disable=too-many-arguments
         setattr(cls, attr_name, attr_prop)
         setattr(cls, '_' + attr_name, attr_value)
 
-        setattr(cls, 'slug', slug)
-        setattr(cls, 'version', version)
-        setattr(cls, 'inputDTO', input)
-        setattr(cls, 'outputDTO', output)
-
-        # Checks for the class
-        # 1. it need to be inherited from Model class
-        assert is_parent(cls, Model)
-
-        # 2. has abstract functions as defined in the Model class
-        method_list = [method for method in dir(Model)
-                       if method.startswith('__') is False and
-                       '__isabstractmethod__' in Model.__dict__[method].__dict__ and
-                       Model.__dict__[method].__isabstractmethod__]
-
-        for method in method_list:
-            found_this_method = False
-            for mro_cls in cls.__mro__:
-                if method not in mro_cls.__dict__:
-                    continue
-
-                found_this_method = True
-
-                # Since the run method is overloaded, the signatures won't match exactly.
-                # TODO: Add parameter and return value type compatibility check
-                break
-
-            if not found_this_method:
-                raise WrongModelMethodSignature(
-                    f'Model {cls.__name__} misses a method {method}() with signature {inspect.signature(Model.__dict__[method])}')  # pylint: disable=line-too-long
+        cls.slug = slug
+        cls.version = version
+        cls.inputDTO = input
+        cls.outputDTO = output
 
         return cls
 
     return wrapper
 
 
-class Model:
+class BaseModel:
+    # These class variables will be set automatically by
+    # the loader or decorator
+    slug: str
+    version: str
+    _manifest: dict
+    inputDTO: Union[Type[DTOType], None]
+    outputDTO: Union[Type[DTOType], None]
+
+    def __init__(self, context: "ModelContext"):
+        self.context = context
+        # Configure our logger.
+        self.logger = logging.getLogger(
+            'credmark.cmf.model.{0}'.format(self.slug))
+        self.init()
+
+    def init(self):
+        """
+        Subclasses may override this method to do
+        any model instance initiation.
+        """
+
+    def convert_dict_to_dto(self,
+                            data: dict,
+                            dto_class: Type[DTOType]):
+        """
+        A model can call this method to convert a dict
+        of data in a known format into a DTO instance.
+        """
+        return transform_data_for_dto(data, dto_class, self.slug, 'transform')
+
+
+class Model(BaseModel):
     """
     The base model class.
 
@@ -258,7 +314,8 @@ class Model:
     """
 
     @classmethod
-    def describe(cls,  # pylint: disable=too-many-arguments
+    def describe(cls,
+                 *,
                  slug: str,
                  version: str,
                  display_name: Union[str, None] = None,
@@ -267,9 +324,14 @@ class Model:
                  category: Union[str, None] = None,
                  subcategory: Union[str, None] = None,
                  tags: Union[list[str], None] = None,
+                 cache: Literal[CachePolicy.FULL,
+                                CachePolicy.SKIP,
+                                CachePolicy.IGNORE_BLOCK,
+                                CachePolicy.OFF_CHAIN] = CachePolicy.FULL,
                  input: Union[Type[DTOType], Type[dict]] = EmptyInput,
                  output: Union[Type[DTOType], Type[dict], None] = None,
-                 errors: Union[List[ModelErrorDesc], ModelErrorDesc, None] = None):
+                 errors: Union[List[ModelErrorDesc],
+                               ModelErrorDesc, None] = None):
         """
         Decorator for credmark.cmf.model.Model subclasses to describe the model.
 
@@ -309,38 +371,20 @@ class Model:
                    ``ModelDataErrorDesc`` instance (or a list of instances) describing the
                    errors. Defaults to None.
         """
-        return describe(slug,
-                        version,
-                        display_name,
-                        description,
-                        developer,
-                        category,
-                        subcategory,
-                        tags,
-                        input,
-                        output,
-                        errors)
-
-    # These class variables will be set automatically by
-    # the loader or decorator
-    slug: str
-    version: str
-    _manifest: dict
-    inputDTO: Union[Type[DTOType], None]
-    outputDTO: Union[Type[DTOType], None]
-
-    def __init__(self, context: ModelContext):
-        self.context = context
-        # Configure our logger.
-        self.logger = logging.getLogger(
-            'credmark.cmf.model.{0}'.format(self.slug))
-        self.init()
-
-    def init(self):
-        """
-        Subclasses may override this method to do
-        any model instance initiation.
-        """
+        return _describe(
+            slug=slug,
+            version=version,
+            display_name=display_name,
+            description=description,
+            developer=developer,
+            category=category,
+            subcategory=subcategory,
+            tags=tags,
+            cache=cache,
+            input=input,
+            output=output,
+            errors=errors,
+        )
 
     @abstractmethod
     def run(self, input: Union[dict, DTOType]) -> Union[dict, DTOType]:
@@ -354,11 +398,166 @@ class Model:
         after each model run.
         """
 
-    def convert_dict_to_dto(self,
-                            data: dict,
-                            dto_class: Type[DTOType]):
+
+class IncrementalModel(BaseModel):
+    """
+    Use `IncrementalModel` for models that only append to output with new blocks.
+    Behind the scenes it uses `CachePolicy.INCREMENTAL` cache.
+    These models should always return a BlockSeries. Use additional `from_block` arg
+    in run method to only return BlockSeries for `from_block` -> `context.block`.
+    """
+    @classmethod
+    def describe(cls,
+                 *,
+                 slug: str,
+                 version: str,
+                 display_name: Union[str, None] = None,
+                 description: Union[str, None] = None,
+                 developer: Union[str, None] = None,
+                 category: Union[str, None] = None,
+                 subcategory: Union[str, None] = None,
+                 tags: Union[list[str], None] = None,
+                 input: Union[Type[DTOType], Type[dict]] = EmptyInput,
+                 output: Union[Type[BlockSeries], None] = BlockSeries,
+                 errors: Union[List[ModelErrorDesc],
+                               ModelErrorDesc, None] = None):
         """
-        A model can call this method to convert a dict
-        of data in a known format into a DTO instance.
+        Decorator for credmark.cmf.model.IncrementalModel subclasses to describe the model.
+
+        Example usage::
+
+            from credmark.cmf.model import IncrementalModel
+
+            @IncrementalModel.describe(slug='example.echo-inc',
+                            version='1.0',
+                            display_name='Echo',
+                            description="A test model to echo the message property sent in input.",
+                            developer="my_username",
+                            category="financial",
+                            input=EchoDto,
+                            output=BlockSeries[int])
+            class EchoModel(IncrementalModel):
+                def run(self, input: EchoDto, from_block: BlockNumber) -> BlockSeries[int]:
+                    ...
+
+
+        Parameters:
+            slug: slug (short unique name) for the model. Can contain alpha-numeric and
+                  and underscores. Contributor slugs must start with ``"contrib."``
+                  Once submitted, the model slug cannot be changed.
+            version: version string, ex. ``"1.0"``. The version number can be incremented
+                  when the model code is updated.
+            display_name: Name for the model
+            description: Description of the model. If description is not set,
+                        the doc string (``__doc__``) of the model class is used instead.
+            developer: Name or nickname of the developer
+            category: Category of the model (ex. "financial", "protocol" etc.)
+            subcategory: Optional subcategory (ex. "aave")
+            tags: optional list of string tags describing the model
+            input: Type that model uses as input; a ``DTO`` subclass or dict.
+                   Defaults to ``EmptyInput`` object.
+            output: Type that the model run returns; a ``BlockSeries`` subclass.
+            errors: If the model raises ``ModelDataError``, set this to a configured
+                   ``ModelDataErrorDesc`` instance (or a list of instances) describing the
+                   errors. Defaults to None.
         """
-        return transform_data_for_dto(data, dto_class, self.slug, 'transform')
+        return _describe(
+            slug=slug,
+            version=version,
+            display_name=display_name,
+            description=description,
+            developer=developer,
+            category=category,
+            subcategory=subcategory,
+            tags=tags,
+            cache=CachePolicy.INCREMENTAL,
+            input=input,
+            output=output,
+            errors=errors,
+        )
+
+    @abstractmethod
+    def run(self, input: Union[dict, DTOType], from_block: BlockNumber) -> BlockSeries[DTOType]:
+        ...
+
+
+class ImmutableModel(BaseModel):
+    """
+    Subclass with `ImmutableModel` for models whose result is only available after a particular
+    block and will not change for the future block numbers. For blocks before which
+    data is unavailable, the model should throw ModelDataError.
+    Behind the scenes it uses `CachePolicy.IMMUTABLE` cache.
+    """
+    @classmethod
+    def describe(cls,
+                 *,
+                 slug: str,
+                 version: str,
+                 display_name: Union[str, None] = None,
+                 description: Union[str, None] = None,
+                 developer: Union[str, None] = None,
+                 category: Union[str, None] = None,
+                 subcategory: Union[str, None] = None,
+                 tags: Union[list[str], None] = None,
+                 input: Union[Type[DTOType], Type[dict]] = EmptyInput,
+                 output: Union[Type[ImmutableOutput], None] = ImmutableOutput,
+                 errors: Union[List[ModelErrorDesc],
+                               ModelErrorDesc, None] = None):
+        """
+        Decorator for credmark.cmf.model.ImmutableModel subclasses to describe the model.
+
+        Example usage::
+
+            from credmark.cmf.model import ImmutableModel
+
+            @ImmutableModel.describe(slug='example.echo-imm',
+                            version='1.0',
+                            display_name='Echo',
+                            description="A test model to echo the message property sent in input.",
+                            developer="my_username",
+                            category="financial",
+                            input=EchoDto,
+                            output=ImmutableOutput)
+            class EchoModel(ImmutableModel):
+                def run(self, input: EchoDto, from_block: BlockNumber) -> ImmutableOutput:
+                    ...
+
+
+        Parameters:
+            slug: slug (short unique name) for the model. Can contain alpha-numeric and
+                  and underscores. Contributor slugs must start with ``"contrib."``
+                  Once submitted, the model slug cannot be changed.
+            version: version string, ex. ``"1.0"``. The version number can be incremented
+                  when the model code is updated.
+            display_name: Name for the model
+            description: Description of the model. If description is not set,
+                        the doc string (``__doc__``) of the model class is used instead.
+            developer: Name or nickname of the developer
+            category: Category of the model (ex. "financial", "protocol" etc.)
+            subcategory: Optional subcategory (ex. "aave")
+            tags: optional list of string tags describing the model
+            input: Type that model uses as input; a ``DTO`` subclass or dict.
+                   Defaults to ``EmptyInput`` object.
+            output: Type that the model run returns; a ``ImmutableOutput`` subclass.
+            errors: If the model raises ``ModelDataError``, set this to a configured
+                   ``ModelDataErrorDesc`` instance (or a list of instances) describing the
+                   errors. Defaults to None.
+        """
+        return _describe(
+            slug=slug,
+            version=version,
+            display_name=display_name,
+            description=description,
+            developer=developer,
+            category=category,
+            subcategory=subcategory,
+            tags=tags,
+            cache=CachePolicy.IMMUTABLE,
+            input=input,
+            output=output,
+            errors=errors,
+        )
+
+    @abstractmethod
+    def run(self, input: Union[dict, DTOType]) -> ImmutableOutput:
+        ...

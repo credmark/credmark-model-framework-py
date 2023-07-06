@@ -311,7 +311,7 @@ class Autosummary(SphinxDirective):
                     else:
                         errors = exc.exceptions + [exc2]
 
-                    raise ImportExceptionGroup(exc.args[0], errors)
+                    raise ImportExceptionGroup(exc.args[0], errors) from None
 
     def create_documenter(self, app: Sphinx, obj: Any,
                           parent: Any, full_name: str) -> "Documenter":
@@ -650,11 +650,15 @@ def get_import_prefixes_from_env(env: BuildEnvironment) -> List[Optional[str]]:
     return prefixes
 
 
-def import_by_name(name: str, prefixes: List[Optional[str]] = [None], grouped_exception: bool = False
+def import_by_name(name: str,
+                   prefixes: Optional[List[Optional[str]]] = None,
+                   grouped_exception: bool = False
                    ) -> Tuple[str, Any, Any, str]:
     """Import a Python object that has the given *name*, under one of the
     *prefixes*.  The first name that succeeds is used.
     """
+    prefixes = [None] if prefixes is None else prefixes
+
     tried = []
     errors: List[ImportExceptionGroup] = []
     for prefix in prefixes:
@@ -723,16 +727,18 @@ def _import_by_name(name: str, grouped_exception: bool = False) -> Tuple[Any, An
     except (ValueError, ImportError, AttributeError, KeyError) as exc:
         errors.append(exc)
         if grouped_exception:
-            raise ImportExceptionGroup('', errors)
+            raise ImportExceptionGroup('', errors) from None
         else:
             raise ImportError(*exc.args) from exc
 
 
-def import_ivar_by_name(name: str, prefixes: List[str] = [],
+def import_ivar_by_name(name: str, prefixes: Optional[List[str]] = None,
                         grouped_exception: bool = False) -> Tuple[str, Any, Any, str]:
     """Import an instance variable that has the given *name*, under one of the
     *prefixes*.  The first name that succeeds is used.
     """
+
+    prefixes = [] if prefixes is None else prefixes
     try:
         name, attr = name.rsplit(".", 1)
         real_name, obj, _parent, modname = import_by_name(name, prefixes, grouped_exception)

@@ -53,11 +53,13 @@ def load_module_items(namespace, module_name, selection: Optional[List[str]] = N
                 namespace[a] = getattr(imp, a)
 
 
-def create_cmf(cmf_param, display_params=False):
+def create_cmf(cmf_param=None, show=False):
     """
     create cmf
     """
-    context, _model_loader = create_cmf_context(cmf_param, display_params)
+    if cmf_param is None:
+        cmf_param = {}
+    context, _model_loader = create_cmf_context(cmf_param, show)
 
     model_loaded = _model_loader.loaded_model_version_lists()
     for _k, cache_value in model_loaded.items():
@@ -73,7 +75,7 @@ def create_cmf(cmf_param, display_params=False):
 
 
 # pylint: disable=too-many-locals, too-many-statements
-def create_cmf_context(cmf_param, display_params=False):
+def create_cmf_context(cmf_param, show=False):
     models_spec = importlib.util.find_spec("models")
     if models_spec is not None and models_spec.submodule_search_locations is not None:
         models_path = [models_spec.submodule_search_locations[0]]
@@ -135,8 +137,7 @@ def create_cmf_context(cmf_param, display_params=False):
             raise ValueError(
                 f'{p} specified for model_loader_path is not a valid path')
 
-    provider_url = cmf_init.chain_to_provider_url.get(
-        str(cmf_init.chain_id), None)
+    provider_url = cmf_init.chain_to_provider_url.get(str(cmf_init.chain_id), None)
     if provider_url is None:
         print(f'Warning: missing provider for chain_id={cmf_init.chain_id}')
         raise ValueError()
@@ -163,24 +164,22 @@ def create_cmf_context(cmf_param, display_params=False):
                                                 chain_to_provider_url=cmf_init.chain_to_provider_url,
                                                 api_url=cmf_init.api_url, run_id=None, console=True, use_local_models=cmf_init.use_local_models)
 
-    if param['chain_to_provider_url'][str(param['chain_id'])].startswith('http'):
-        context._web3 = Web3(HTTPProvider(context.web3.provider.endpoint_uri,  # type: ignore
-                             request_kwargs={'timeout': 3600 * 10}))
+    context._web3 = context._web3_registry.web3_for_chain_id(
+        context.chain_id,  {'request_kwargs': {'timeout': 3600 * 10}})
+    context._web3.eth.default_block = int(context.block_number)
+    context._web3_async = context._web3_registry.async_web3_for_chain_id(
+        context.chain_id,  {'request_kwargs': {'timeout': 3600 * 10}})
+    context._web3_async.eth.default_block = int(context.block_number)
 
-        if param['chain_id'] in [Network.Rinkeby,
-                                 Network.BSC,
-                                 Network.Polygon,
-                                 Network.Optimism,
-                                 Network.Avalanche]:
-            context._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-
-        context._web3.eth.default_block = int(context.block_number)
-
-    if display_params:
+    if show:
+        if cmf_init.block_number is None:
+            block_number_print = f'None ({context.block_number})'
+        else:
+            block_number_print = f'{context.block_number}'
         print(f'Credmark context created with \n'
               f'- chain_id={cmf_init.chain_id}\n'
-              f'- block_number={cmf_init.block_number}\n'
-              f'- chain_provider_url={provider_url[:10]+"..."+provider_url[-4:]}\n'
+              f'- block_number={block_number_print}\n'
+              f'- chain_to_provider_url={provider_url[:10]+"..."+provider_url[-4:]}\n'
               f'- model_loader_path={model_loader_path}\n'
               f'- api_url={cmf_init.api_url}\n'
               f'- use_local_models={cmf_init.use_local_models}\n'
@@ -255,7 +254,7 @@ Example: context, model_loader = %cmf default
                 pprint(cmf_param)
 
         context, model_loader = create_cmf_context(
-            cmf_param, display_params=verbose)
+            cmf_param, show=verbose)
         var_namespace = local_ns
         load_module_items(var_namespace, 'credmark.cmf.model', ['Model'])
         load_module_items(var_namespace, 'credmark.cmf.model.errors',
@@ -263,7 +262,7 @@ Example: context, model_loader = %cmf default
         load_module_items(var_namespace, 'credmark.cmf.types')
         load_module_items(var_namespace, 'credmark.dto')
         load_module_items(var_namespace, 'credmark.cmf.engine.dev_models.console',
-                          ['get_dt', 'get_block', 'log_output'])
+                          ['log_output'])
 
         if cmf_param.get('register_utility_global', True):
             var_namespace['ledger'] = context.ledger

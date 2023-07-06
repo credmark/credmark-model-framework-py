@@ -22,6 +22,44 @@ class Network(IntEnum):
     def __str__(self):
         return str(self.value)
 
+    @property
+    def chain_id(self):
+        return self.value
+
+    @property
+    def has_ledger(self):
+        return self in [Network.Mainnet, Network.Polygon]
+
+    @property
+    def has_dex_price(self):
+        return self in [Network.Mainnet, Network.BSC, Network.Polygon]
+
+    @property
+    def has_node(self):
+        return self in [Network.Mainnet,
+                        Network.BSC,
+                        Network.Polygon,
+                        Network.ArbitrumOne,
+                        Network.Optimism,
+                        Network.Avalanche,
+                        Network.Fantom]
+
+    @property
+    def is_testnet(self):
+        return self in [Network.Rinkeby,
+                        Network.Ropsten,
+                        Network.Görli,
+                        Network.Kovan,
+                        Network.BSCTestnet]
+
+    @property
+    def uses_geth_poa(self):
+        return self in [Network.Rinkeby,
+                        Network.BSC,
+                        Network.Polygon,
+                        Network.Optimism,
+                        Network.Avalanche]
+
     @classmethod
     def parse_network(cls, n: Any) -> "Network":
         if isinstance(n, str):
@@ -63,9 +101,10 @@ class NetworkDict(DefaultDict[Network, T], Generic[T]):
     @staticmethod
     def _process_args(mapping=(), **kwargs):
         if hasattr(mapping, 'items'):
-            mapping = getattr(mapping, 'items')()
+            mapping = mapping.items()
+
         return ((Network.parse_network(k), v)
-                for k, v in chain(mapping, getattr(kwargs, 'items')()))
+                for k, v in chain(mapping, kwargs.items()))
 
     def __setitem__(self, k: NetworkKey, v: T):
         super().__setitem__(Network.parse_network(k), v)
@@ -92,6 +131,7 @@ class NetworkDict(DefaultDict[Network, T], Generic[T]):
         super().setdefault(Network.parse_network(k), v)
 
     def update(self, mapping: Iterable[tuple[NetworkKey, T]] = (), **kwargs):
+        print('update')
         super().update(self._process_args(mapping, **kwargs))
 
     @classmethod

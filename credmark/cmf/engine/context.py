@@ -4,7 +4,8 @@ import json
 import logging
 import sys
 import traceback
-from typing import Callable, List, Optional, Set, Type, Union
+from contextlib import contextmanager
+from typing import Callable, List, Set, Type, Union, cast
 
 from credmark.cmf.engine.cache import ModelRunCache
 from credmark.cmf.engine.errors import ModelRunRequestError
@@ -12,7 +13,7 @@ from credmark.cmf.engine.mocks import ModelMockException, ModelMockRunner
 from credmark.cmf.engine.model_api import ModelApi
 from credmark.cmf.engine.model_loader import ModelLoader
 from credmark.cmf.engine.web3_registry import Web3Registry
-from credmark.cmf.model import Model
+from credmark.cmf.model import IncrementalModel, Model
 from credmark.cmf.model.context import ModelContext
 from credmark.cmf.model.errors import (
     MaxModelRunDepthError,
@@ -28,12 +29,8 @@ from credmark.cmf.model.errors import (
     create_instance_from_error_dict,
 )
 from credmark.cmf.model.models import RunModelMethod
-from credmark.cmf.types import (
-    BlockNumber,
-    BlockNumberOutOfRangeDetailDTO,
-    BlockNumberOutOfRangeError,
-)
-from credmark.dto import DTOType, DTOValidationError, EmptyInput
+from credmark.cmf.types import BlockNumber, BlockNumberOutOfRangeDetailDTO, BlockNumberOutOfRangeError, Network
+from credmark.dto import DTOType, DTOValidationError
 from credmark.dto.encoder import json_dumps
 from credmark.dto.transform import (
     DataTransformError,
@@ -41,8 +38,9 @@ from credmark.dto.transform import (
     transform_dto_to_dict,
 )
 
-LEDGER_GET_LATEST_BLOCK_NUMBER_SLUG = 'ledger.block-number'
+LEDGER_BLOCK_NUMBER_SLUG = 'ledger.block-number'
 CHAIN_GET_LATEST_BLOCK_NUMBER_SLUG = 'chain.get-latest-block'
+CHAIN_GET_BLOCK_NUMBER_BY_TIMESTAMP_SLUG = 'chain.get-block'
 
 
 def extract_most_recent_run_model_traceback(exc_traceback, skip=1):
@@ -89,6 +87,9 @@ class EngineModelContext(ModelContext):
 
     def reset_cache(self):
         self.__model_cache = ModelRunCache()
+
+    def disable_cache(self):
+        self.__model_cache = None
 
     @property
     def model_cache(self):
@@ -174,7 +175,8 @@ class EngineModelContext(ModelContext):
                 cls.logger.debug(f'Using local models {local_model_slugs}')
             else:
                 if len(local_model_slugs) > 1:
-                    cls.logger.warning(f'Using no local models (conflicting args: {use_local_models})')
+                    cls.logger.warning(
+                        f'Using no local models (conflicting args: {use_local_models})')
                 else:
                     cls.logger.debug('Using no local models')
             cls.use_local_models_slugs.update(local_model_slugs)
@@ -204,8 +206,7 @@ class EngineModelContext(ModelContext):
         context = EngineModelContext(
             chain_id, block_number, web3_registry,
             run_id, depth, model_loader, _model_cache, api, client,
-            is_top_level=not console,
-            parent_context=None)
+            is_top_level=not console)
 
         if console:
             context.is_active = True
@@ -216,10 +217,11 @@ class EngineModelContext(ModelContext):
     @classmethod
     def create_context_and_run_model(cls,  # pylint: disable=too-many-arguments,too-many-locals
                                      chain_id: int,
-                                     block_number: Union[dict, int, None],
+                                     block: Union[dict, int, None],
                                      model_slug: str,
                                      model_version: Union[str, None] = None,
                                      input: Union[dict, None] = None,
+                                     from_block: Union[dict, int, None] = None,
                                      model_loader: Union[ModelLoader,
                                                          None] = None,
                                      chain_to_provider_url: Union[dict[str,
@@ -242,7 +244,7 @@ class EngineModelContext(ModelContext):
 
         try:
             context = cls.create_context(chain_id,
-                                         block_number,
+                                         block,
                                          model_loader,
                                          chain_to_provider_url,
                                          api_url,
@@ -259,7 +261,8 @@ class EngineModelContext(ModelContext):
             response = cls.run_model_with_context(context,
                                                   model_slug,
                                                   model_version,
-                                                  input)
+                                                  input,
+                                                  from_block=from_block)
 
         except Exception as e:
             err = ModelEngineError(str(e))
@@ -267,7 +270,7 @@ class EngineModelContext(ModelContext):
                 'slug': model_slug,
                 'version': model_version,
                 'chainId': chain_id,
-                'blockNumber': block_number,
+                'blockNumber': block,
                 'error': err.dict(),
                 'dependencies': context.dependencies if context else {}}
 
@@ -279,6 +282,8 @@ class EngineModelContext(ModelContext):
                                model_slug: str,
                                model_version: Union[str, None],
                                input: Union[dict, DTOType],
+                               *,
+                               from_block: Union[dict, int, None] = None,
                                transform_output_to_dict=True):
         chain_id = context.chain_id
         block_number = int(context.block_number)
@@ -290,7 +295,7 @@ class EngineModelContext(ModelContext):
             # We set the block_number in the context above so we pass in
             # None for block_number to the run_model method.
             result_tuple = context._run_model(  # pylint: disable=protected-access
-                model_slug, input, None, model_version)
+                model_slug, input, None, model_version, from_block=from_block)
 
             output = result_tuple[2]
             if transform_output_to_dict:
@@ -332,8 +337,8 @@ class EngineModelContext(ModelContext):
 
     @classmethod
     def get_latest_block_number(cls, api: ModelApi, chain_id: int):
-        if chain_id == 1:
-            _s, _v, output, _e, _d = api.run_model(LEDGER_GET_LATEST_BLOCK_NUMBER_SLUG,
+        if Network(chain_id).has_ledger:
+            _s, _v, output, _e, _d = api.run_model(LEDGER_BLOCK_NUMBER_SLUG,
                                                    None, chain_id, 0, {}, raise_error_results=True)
             if output is None:
                 raise Exception('Error response getting latest block number')
@@ -346,6 +351,26 @@ class EngineModelContext(ModelContext):
             number, timestamp = output['blockNumber'], output['timestamp']
         return BlockNumber(number, timestamp)
 
+    @classmethod
+    def get_block_number_by_timestamp(cls, api: ModelApi, chain_id: int, sample_timestamp):
+        if Network(chain_id).has_ledger:
+            _s, _v, output, _e, _d = api.run_model(LEDGER_BLOCK_NUMBER_SLUG,
+                                                   None, chain_id, 0,
+                                                   {"timestamp": sample_timestamp},
+                                                   raise_error_results=True)
+            if output is None:
+                raise Exception('Error response getting latest block number')
+            number, timestamp = output['number'], output['timestamp']
+        else:
+            _s, _v, output, _e, _d = api.run_model(CHAIN_GET_BLOCK_NUMBER_BY_TIMESTAMP_SLUG,
+                                                   None, chain_id, 0,
+                                                   {"timestamp": sample_timestamp},
+                                                   raise_error_results=True)
+            if output is None:
+                raise Exception('Error response getting latest block number')
+            number, timestamp = output['block_number'], output['block_timestamp']
+        return BlockNumber(number, timestamp, sample_timestamp)
+
     def __init__(self,  # pylint: disable=too-many-arguments
                  chain_id: int,
                  block_number: Union[BlockNumber, int],
@@ -353,15 +378,14 @@ class EngineModelContext(ModelContext):
                  run_id: Union[str, None],
                  depth: int,
                  model_loader: ModelLoader,
-                 model_cache: Optional[ModelRunCache],
-                 api: Union[ModelApi, None],
+                 model_cache: Union[ModelRunCache, None],
+                 api: ModelApi,
                  client: Union[str, None] = None,
-                 is_top_level: bool = False,
-                 parent_context: Union[ModelContext, None] = None):
+                 is_top_level: bool = False):
         if isinstance(block_number, int):
             block_number = BlockNumber(block_number)
 
-        super().__init__(chain_id, block_number, web3_registry, parent_context)
+        super().__init__(chain_id, block_number, web3_registry)
         self.run_id = run_id
         self.__client = client
         self.__depth = depth
@@ -371,6 +395,47 @@ class EngineModelContext(ModelContext):
         self.__api = api
         self.__is_top_level = is_top_level
         self.is_active = False
+
+    @contextmanager
+    def fork(self,
+             *,
+             chain_id=None,
+             block_number=None):
+        if chain_id is None:
+            chain_id = self.chain_id
+        if block_number is None:
+            if chain_id != self.chain_id:
+                block_number = self.get_block_number_by_timestamp(
+                    self.__api, chain_id, self.block_number.sample_timestamp)
+            else:
+                block_number = self.block_number
+
+        if chain_id == self.chain_id and block_number > self._block_number:
+            raise BlockNumberOutOfRangeError(
+                message=(
+                    f'You can not enter a context with a larger block number ({block_number} > current {self._block_number})'),
+                detail=BlockNumberOutOfRangeDetailDTO(
+                    blockNumber=block_number,
+                    maxBlockNumber=self._block_number))
+
+        forked_context = EngineModelContext(
+            chain_id,
+            block_number,
+            self._web3_registry,
+            self.run_id,
+            self.__depth,
+            self.__model_loader,
+            self.__model_cache,
+            self.__api,
+            self.__client,
+            self.__is_top_level,
+        )
+
+        token = ModelContext.set_current_context(forked_context)
+        try:
+            yield forked_context
+        finally:
+            ModelContext.reset_current_context(token)
 
     @property
     def dependencies(self):
@@ -392,7 +457,8 @@ class EngineModelContext(ModelContext):
                 try:
                     deployed_manifests = self.__api.get_models()
                     for m in deployed_manifests:
-                        m |= {'mclass': self.__model_loader.get_model_class(m['slug'], m['version'])}
+                        m |= {'mclass': self.__model_loader.get_model_class(
+                            m['slug'], m['version'])}
                         slug = m['slug']
                         self._model_manifest_map[slug] = m
                         self._model_underscore_manifest_map[slug.replace(
@@ -434,7 +500,7 @@ class EngineModelContext(ModelContext):
 
     def run_model(self,
                   slug,
-                  input=EmptyInput(),
+                  input,
                   return_type=None,
                   block_number: Union[BlockNumber, int, None] = None,
                   version=None,
@@ -474,7 +540,8 @@ class EngineModelContext(ModelContext):
         if isinstance(block_number, int):
             block_number = BlockNumber(block_number)
 
-        res_tuple = self._run_model(slug, input, block_number, version, local)
+        res_tuple = self._run_model(
+            slug, input, block_number, version, local=local)
 
         # The last item of the tuple is the output.
         output = res_tuple[-1]
@@ -501,6 +568,8 @@ class EngineModelContext(ModelContext):
                    input: Union[dict, DTOType],
                    block_number: Union[BlockNumber, None],
                    version: Union[str, None],
+                   *,
+                   from_block: Union[dict, int, None] = None,
                    local: bool = False
                    ):
 
@@ -521,6 +590,11 @@ class EngineModelContext(ModelContext):
         try_remote = not is_top_level_inactive or is_cli
 
         debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
+
+        if isinstance(from_block, dict):
+            from_block = BlockNumber.from_dict(from_block)
+        elif isinstance(from_block, int):
+            from_block = BlockNumber(from_block)
 
         if debug_log:
             self.debug_logger.debug(
@@ -545,7 +619,8 @@ class EngineModelContext(ModelContext):
 
         try:
             if self.__depth >= self.max_run_depth:
-                raise MaxModelRunDepthError(f'Max model run depth hit {self.__depth}')
+                raise MaxModelRunDepthError(
+                    f'Max model run depth hit {self.__depth}')
 
             return self._run_model_with_class(
                 slug,
@@ -553,8 +628,9 @@ class EngineModelContext(ModelContext):
                 block_number,
                 version,
                 model_class,
+                from_block,
                 use_local,
-                try_remote)
+                try_remote,)
         finally:
             self.__depth -= 1
 
@@ -594,6 +670,7 @@ class EngineModelContext(ModelContext):
                               block_number: Union[BlockNumber, None],
                               version: Union[str, None],
                               model_class: Union[Type[Model], None],
+                              from_block: Union[BlockNumber, None],
                               use_local: bool,
                               try_remote: bool):
 
@@ -607,7 +684,8 @@ class EngineModelContext(ModelContext):
                 input,
                 block_number,
                 version,
-                model_class)
+                model_class,
+                from_block)
 
         elif try_remote and api is not None:
             run_block_number = block_number if block_number is not None else self.block_number
@@ -621,8 +699,8 @@ class EngineModelContext(ModelContext):
                 version_requested = version
                 input_as_dict = transform_dto_to_dict(input)
 
-                in_cache, cached_output = (
-                    (None, ({}, None, {})) if self.__model_cache is None
+                in_cache = (
+                    None if self.__model_cache is None
                     else self.__model_cache.get(self.chain_id, int(run_block_number),
                                                 slug, version_requested, input_as_dict))
 
@@ -630,7 +708,7 @@ class EngineModelContext(ModelContext):
                     if debug_log:
                         self.debug_logger.debug(
                             f'cached from remote, {slug, version_requested, input_as_dict}')
-                    output, error, dependencies = cached_output
+                    _cache_key, output, error, dependencies = in_cache
                 else:
                     # We pass depth - 1 which is the callers depth
                     # since we already incremented for this model run request
@@ -679,7 +757,8 @@ class EngineModelContext(ModelContext):
                         input,
                         block_number,
                         version,
-                        model_class)
+                        model_class,
+                        from_block)
                 else:
                     EngineModelContext.notify_model_run(slug, version, self.chain_id,
                                                         run_block_number, input, None, err)
@@ -701,35 +780,13 @@ class EngineModelContext(ModelContext):
 
         return slug, version, output
 
-    def enter(self, block_number):
-        if block_number > self._block_number:
-            raise BlockNumberOutOfRangeError(
-                message=(
-                    f'You can not enter a context with a larger block number ({block_number} > current {self._block_number})'),
-                detail=BlockNumberOutOfRangeDetailDTO(
-                    blockNumber=block_number,
-                    maxBlockNumber=self._block_number))
-
-        context = EngineModelContext(self.chain_id,
-                                     block_number,
-                                     self._web3_registry,
-                                     self.run_id,
-                                     self.__depth,
-                                     self.__model_loader,
-                                     self.__model_cache,
-                                     self.__api,
-                                     self.__client,
-                                     parent_context=self)
-
-        ModelContext.set_current_context(context)
-        return context
-
     def _run_local_model_with_class(self,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
                                     slug: str,
                                     input: Union[dict, DTOType],
                                     block_number: Union[BlockNumber, None],
                                     version: Union[str, None],
-                                    model_class: Type[Model]):
+                                    model_class: Type[Model],
+                                    from_block: Union[BlockNumber, None],):
 
         debug_log = self.debug_logger.isEnabledFor(logging.DEBUG)
 
@@ -749,23 +806,23 @@ class EngineModelContext(ModelContext):
                                          self.__model_loader,
                                          self.__model_cache,
                                          self.__api,
-                                         self.__client,
-                                         parent_context=self)
+                                         self.__client)
 
         original_input = input
 
         try:
             try:
-                input = transform_data_for_dto(input, model_class.inputDTO, slug, 'input')
+                input = transform_data_for_dto(
+                    input, model_class.inputDTO, slug, 'input')
             except DataTransformError as err:
                 # We convert to an input error here to distinguish
                 # from output transform errors below
-                raise ModelInputError(str(err))
+                raise ModelInputError(str(err)) from None
 
             input_as_dict = transform_dto_to_dict(input)
 
-            in_cache, cached_output = (
-                (None, ({}, None, {})) if self.__model_cache is None
+            in_cache = (
+                None if self.__model_cache is None
                 else self.__model_cache.get(context.chain_id,
                                             int(context.block_number),
                                             model_class.slug,
@@ -775,7 +832,7 @@ class EngineModelContext(ModelContext):
                 if debug_log:
                     self.debug_logger.debug(
                         f'cached from local {model_class.slug, model_class.version, input_as_dict}')
-                output, _error, _dependencies = cached_output
+                _cache_key, output, _error, _dependencies = in_cache
             else:
                 ModelContext.set_current_context(context)
                 context.is_active = True
@@ -785,13 +842,24 @@ class EngineModelContext(ModelContext):
 
                 context.__dict__['original_input'] = original_input
                 context.__dict__['slug'] = slug
-                model = model_class(context)
 
                 if debug_log:
                     self.debug_logger.debug(
                         f"> Run model '{slug}' input: {input} block_number: {block_number}")
 
-                output = model.run(input)
+                def is_parent(child, parent):
+                    found = parent in child.__bases__
+                    return found or True in [is_parent(pp, parent) for pp in child.__bases__]
+
+                if is_parent(model_class, IncrementalModel):
+                    inc_model_class = cast(Type[IncrementalModel], model_class)
+                    model = inc_model_class(context)
+                    from_block = BlockNumber(
+                        0) if from_block is None else from_block
+                    output = model.run(input, from_block)
+                else:
+                    model = model_class(context)
+                    output = model.run(input)
 
                 del context.__dict__['original_input']
                 del context.__dict__['slug']
@@ -807,7 +875,7 @@ class EngineModelContext(ModelContext):
                         output = json.loads(json_dumps(output))
 
                 except DataTransformError as err:
-                    raise ModelOutputError(str(err))
+                    raise ModelOutputError(str(err)) from None
 
             EngineModelContext.notify_model_run(slug,
                                                 model_class.version,
@@ -895,6 +963,7 @@ class EngineModelContext(ModelContext):
             self._add_dependency(slug, version, 1)
 
         if in_cache is None and self.__model_cache is not None:
+            # Save to cache
             output_as_dict = transform_dto_to_dict(output)
             self.__model_cache.put(context.chain_id,
                                    int(context.block_number),

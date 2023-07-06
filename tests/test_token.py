@@ -2,6 +2,7 @@
 
 import unittest
 
+import credmark.cmf.model
 from credmark.cmf.engine.model_unittest import ModelTestCase
 from credmark.cmf.model.errors import ModelBaseError, ModelRunError
 from credmark.cmf.types import Account, Address, Contract, Network, Portfolio, Position, Token
@@ -141,11 +142,13 @@ class TestToken(ModelTestCase):
                         self.assertEqual(token_symbol, token_meta['symbol'])
                     except AssertionError:
                         passed = False
-                        if chain_id == 1:
+                        if chain_id == Network.Mainnet:
                             passed = token_symbol in ['UST (Wormhole)',
                                                       'wLUNA',
                                                       'LUNA (Wormhole)',
                                                       'GreenMetaverseToken']
+                        elif chain_id == Network.ArbitrumOne:
+                            passed = token_symbol in ['USDC.e']
 
                         if not passed:
                             print(token_symbol, token_meta['symbol'])
@@ -168,9 +171,11 @@ class TestToken(ModelTestCase):
                             token_meta['symbol'] not in symbols_set)
                     except AssertionError:
                         passed = False
-                        if chain_id == 1:
+                        if chain_id == Network.Mainnet:
                             passed = token_meta['symbol'] in [
                                 'UST', 'GMT', 'LUNA']
+                        elif chain_id == Network.ArbitrumOne:
+                            passed = token_symbol in ['USDC']
 
                         if not passed:
                             print(token_meta['symbol'],
@@ -181,7 +186,7 @@ class TestToken(ModelTestCase):
                         self.assertTrue(token_meta['name'] not in names_set)
                     except AssertionError:
                         passed = False
-                        if chain_id == 1:
+                        if chain_id == Network.Mainnet:
                             passed = 'UST' == token_meta['name']
                         elif chain_id == Network.Avalanche:
                             passed = token_meta['address'] in [
@@ -203,7 +208,8 @@ class TestToken(ModelTestCase):
                     raise
 
             if not chain_has_native_token:
-                raise Exception(f'There is no native token on {chain_id}')
+                if chain_id in [Network.Mainnet,  Network.BSC, Network.Polygon, Network.ArbitrumOne]:
+                    raise Exception(f'There is no native token on {chain_id}')
 
         for chain_id, chain_tokens in FUNGIBLE_TOKEN_DATA_BY_ADDRESS.items():
             chain_has_native_token = False
@@ -231,7 +237,7 @@ class TestToken(ModelTestCase):
                             token_meta['symbol'] not in symbols_set)
                     except AssertionError:
                         passed = False
-                        if chain_id == 1:
+                        if chain_id == Network.Mainnet:
                             passed = token_meta['symbol'] in [
                                 'GMT', 'UST', 'LUNA']
 
@@ -267,21 +273,12 @@ class TestToken(ModelTestCase):
                 raise Exception('There is no native token on {chain_id}')
 
     def test_token_on_mainnet(self):
-        chain_tokens = FUNGIBLE_TOKEN_DATA_BY_SYMBOL[Network.Mainnet]
-        for token_n, (token_symbol, token_meta) in enumerate(chain_tokens.items()):
-            print(f'{token_n+1}/{len(chain_tokens)}: {token_symbol} {token_meta["address"]}')
-            token = Token(symbol=token_symbol)
-            self.assertEqual(token.symbol, token_meta['symbol'])
-            self.assertEqual(token.name, token_meta['name'])
-            self.assertEqual(token.address, token_meta['address'])
-            self.assertEqual(token.decimals, token_meta['decimals'])
-
         token = Token(symbol="CMK")
-        print(f'Testing on {token.instance.web3.eth.default_block}')
+        print(f'Testing on {token.instance.w3.eth.default_block}')
 
         self.assertEqual(token.symbol, "CMK")
-        self.assertEqual(
-            token.address, "0x68CFb82Eacb9f198d508B514d898a403c449533E")
+        self.assertEqual(token.address,
+                         "0x68CFb82Eacb9f198d508B514d898a403c449533E")
         self.assertEqual(token.decimals, 18)
         self.assertEqual(token.total_supply, 100_000_000 * 10**18)
 
@@ -301,6 +298,23 @@ class TestToken(ModelTestCase):
             self.assertEqual(native_token.symbol, "ETH")
             self.assertEqual(native_token.name, "Ethereum")
             self.assertEqual(native_token.decimals, 18)
+
+    def test_token_on_chains(self):
+        context = credmark.cmf.model.ModelContext.current_context()
+        for chain_id, chain_tokens in FUNGIBLE_TOKEN_DATA_BY_SYMBOL.items():
+            if chain_id in [Network.BSC, Network.Polygon, Network.Mainnet]:
+                with context.fork(chain_id=chain_id) as cc:
+                    print(f'Test tokens on chain: {chain_id} @ {cc.block_number}')
+                    for token_n, (token_symbol, token_meta) in enumerate(chain_tokens.items()):
+                        if chain_id == Network.Mainnet:
+                            token = Token(token_symbol)
+                        else:
+                            token = Token(token_symbol).as_erc20(set_loaded=True)
+                        self.assertEqual(token.symbol, token_meta['symbol'])
+                        self.assertEqual(token.name, token_meta['name'])
+                        self.assertEqual(token.address, token_meta['address'])
+                        self.assertEqual(token.decimals, token_meta['decimals'])
+                        print(f'{token_n+1}/{len(chain_tokens)}: {token_symbol} {token_meta["address"]}', flush=True)
 
 
 if __name__ == '__main__':
