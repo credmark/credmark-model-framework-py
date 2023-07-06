@@ -3,20 +3,20 @@
 
 import asyncio
 import math
-from typing import Optional, Sequence, cast
+from typing import Optional, Sequence, Union, cast
 
 from web3 import AsyncWeb3, Web3
+from web3._utils.events import get_event_data
+from web3._utils.filters import construct_event_filter_params
 from web3.contract.base_contract import BaseContractEvent
 from web3.types import ABIEvent, FilterParams
 from web3.utils.abi import get_abi_input_names
-from web3._utils.events import get_event_data
-from web3._utils.filters import construct_event_filter_params
 
 # from web3._utils.abi import get_constructor_abi, merge_args_and_kwargs
 # from web3._utils.contracts import encode_abi
 
 
-async def fetch_events_async(async_web3: AsyncWeb3, 
+async def fetch_events_async(async_web3: AsyncWeb3,
                              event_filter_params: FilterParams,
                              from_block: int,
                              to_block: int,
@@ -34,15 +34,15 @@ async def fetch_events_async(async_web3: AsyncWeb3,
                 _to_block = to_block
             else:
                 _to_block = _from_block + size_per_chunk - 1
-            filter = event_filter_params.copy()
-            filter['fromBlock'] = _from_block
-            filter['toBlock'] = _to_block
-            tasks.append(async_web3.eth.get_logs(filter))
+            event_filter = event_filter_params.copy()
+            event_filter['fromBlock'] = _from_block
+            event_filter['toBlock'] = _to_block
+            tasks.append(async_web3.eth.get_logs(event_filter))
     else:
-        filter = event_filter_params.copy()
-        filter['fromBlock'] = from_block
-        filter['toBlock'] = to_block
-        tasks = [async_web3.eth.get_logs(filter)]
+        event_filter = event_filter_params.copy()
+        event_filter['fromBlock'] = from_block
+        event_filter['toBlock'] = to_block
+        tasks = [async_web3.eth.get_logs(event_filter)]
     events = []
     for result in asyncio.as_completed(tasks):
         evts = await result
@@ -50,6 +50,7 @@ async def fetch_events_async(async_web3: AsyncWeb3,
     return events
 
 
+# pylint: disable=too-many-branches
 def fetch_events(
         event: BaseContractEvent,
         argument_filters=None,
@@ -80,7 +81,7 @@ def fetch_events(
         raise TypeError(
             "Missing mandatory keyword argument to getLogs: from_Block")
 
-    w3 = event.w3
+    w3: Union[Web3, AsyncWeb3] = event.w3
     if isinstance(w3, AsyncWeb3):
         raise TypeError(
             "Contract was initiailized with async_web3. fetch_events only support web3."

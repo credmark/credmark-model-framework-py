@@ -463,12 +463,12 @@ POLYGON_TOKENS = {
         "name": "BlackStallion",
         "address": "0x0c47298beee5203358e7bc30b9954b584361eab5"
     },
-    "BTC": {
-        "symbol": "BTC",
-        "decimals": 8,
-        "name": "Bitcoin",
-        "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-    },
+    # "BTC": {
+    #     "symbol": "BTC",
+    #     "decimals": 8,
+    #     "name": "Bitcoin",
+    #     "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    # },
     "BUILD": {
         "symbol": "BUILD",
         "decimals": 18,
@@ -757,10 +757,10 @@ POLYGON_TOKENS = {
         "name": "Streamr",
         "address": "0x3a9a81d576d83ff21f26f325066054540720fc34"
     },
-    "DAVOS": {
-        "symbol": "DAVOS",
+    "DUSD": {
+        "symbol": "DUSD",
         "decimals": 18,
-        "name": "Davos",
+        "name": "Davos.xyz USD",
         "address": "0xec38621e72d86775a89c7422746de1f52bba5320"
     },
     "DBD": {
@@ -1033,12 +1033,12 @@ POLYGON_TOKENS = {
         "name": "Coinerr",
         "address": "0xfb32513135e3267995268e3099d2b6114d20b6ed"
     },
-    "ETH": {
-        "symbol": "ETH",
-        "decimals": 18,
-        "name": "Ethereum",
-        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-    },
+    # "ETH": {
+    #     "symbol": "ETH",
+    #    "decimals": 18,
+    #    "name": "Ethereum",
+    #    "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+    # },
     "ETH2x-FLI-P": {
         "symbol": "ETH2x-FLI-P",
         "decimals": 18,

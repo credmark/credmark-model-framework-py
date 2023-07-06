@@ -4,8 +4,10 @@ import os
 from typing import Optional, Union
 
 from web3 import AsyncHTTPProvider, AsyncWeb3, HTTPProvider, Web3, WebsocketProvider
-from credmark.cmf.engine.web3 import inject_poa
+
+from credmark.cmf.engine.web3_helper import inject_poa
 from credmark.cmf.types.network import CREDMARK_PUBLIC_PROVIDERS, Network
+
 
 class Web3Registry:
 
@@ -23,7 +25,7 @@ class Web3Registry:
         provider = cls._url_to_web3_provider.get(provider_url)
         if provider is None:
             if provider_url.startswith('http'):
-                    provider = HTTPProvider(provider_url, **request_kwargs)
+                provider = HTTPProvider(provider_url, **request_kwargs)
             elif provider_url.startswith('ws'):
                 provider = WebsocketProvider(provider_url, **request_kwargs)
             else:
@@ -36,16 +38,16 @@ class Web3Registry:
         if Network(chain_id).uses_geth_poa:
             inject_poa(w3)
         return w3
-        
+
     @classmethod
     def async_web3_for_provider_url(cls, provider_url: str, chain_id: int,
-                              request_kwargs: Optional[dict] = None):
+                                    request_kwargs: Optional[dict] = None):
         if request_kwargs is None:
             request_kwargs = {}
         provider = cls._url_to_async_web3_provider.get(provider_url)
         if provider is None:
             if provider_url.startswith('http'):
-                    provider = AsyncHTTPProvider(provider_url, **request_kwargs)
+                provider = AsyncHTTPProvider(provider_url, **request_kwargs)
             elif provider_url.startswith('ws'):
                 raise Exception('Async WebsocketProvider not supported')
             else:
@@ -92,7 +94,7 @@ class Web3Registry:
                 f'No web3 provider url for chain id {chain_id}. '
                 "In .env file or environment, set CREDMARK_WEB3_PROVIDERS as {'1':'https://web3-node-provider-url'}.")
         return self.web3_for_provider_url(url, chain_id, request_kwargs)
-    
+
     def async_web3_for_chain_id(self, chain_id: int, request_kwargs: Optional[dict] = None):
         url = self.__chain_to_provider_url.get(str(chain_id))
         if url is None:

@@ -1,7 +1,6 @@
 from credmark.cmf.model import Model
 from credmark.dto import EmptyInput
 
-
 # Next Steps:
 
 # Set the slug, display_name, and description for your model below.

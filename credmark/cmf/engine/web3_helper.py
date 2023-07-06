@@ -1,6 +1,8 @@
 from typing import Union
-from web3.middleware.geth_poa import geth_poa_middleware, async_geth_poa_middleware
+
 from web3 import AsyncWeb3, Web3
+from web3.middleware.geth_poa import async_geth_poa_middleware, geth_poa_middleware
+
 
 def inject_poa(web3: Union[AsyncWeb3, Web3]):
     if isinstance(web3, Web3):

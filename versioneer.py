@@ -311,6 +311,7 @@ https://img.shields.io/travis/com/python-versioneer/python-versioneer.svg
 
 import configparser
 import errno
+import functools
 import json
 import os
 import re
@@ -318,7 +319,6 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Callable, Dict
-import functools
 
 have_tomllib = True
 if sys.version_info >= (3, 11):
@@ -1444,7 +1444,7 @@ def versions_from_file(filename):
         with open(filename) as f:
             contents = f.read()
     except OSError:
-        raise NotThisMethod("unable to read _version.py")
+        raise NotThisMethod("unable to read _version.py") from None
     mo = re.search(r"version_json = '''\n(.*)'''  # END VERSION_JSON",
                    contents, re.M | re.S)
     if not mo:
