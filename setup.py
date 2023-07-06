@@ -29,6 +29,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     description='Credmark model development framework',
     long_description=readme + '\n\n' + history,
+    long_description_content_type='text/x-rst',
     author='Credmark',
     author_email='info@credmark.com',
     url='https://github.com/credmark/credmark-model-framework-py',
