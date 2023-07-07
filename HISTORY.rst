@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.123 [2023-07-07]
+* upgrade to Python 3.11 and web3-py 6.5.0
+
 0.8.122 [2023-07-06]
 * fix: support for from_block_number in credmark-dev
 
