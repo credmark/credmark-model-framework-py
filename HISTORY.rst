@@ -265,7 +265,7 @@ History
 * feat: add IDLE and INDEX tokens
 
 0.8.49 [2022-10-21]
-* feat: add as_ and join to ledger model query
+* feat: add `as_` and `join`` to ledger model query
 
 0.8.48 [2022-10-09]
 * fix: price model used in portfolio/position
@@ -294,16 +294,16 @@ History
 
 0.8.40 [2022-09-09]
 * various fixes
-  - chore: fix type in Contract
-  - fix: override abi missing when set_abi()
-  - chore: update on error to raise...from
-  - feat: add PriceWithQuote
+- chore: fix type in Contract
+- fix: override abi missing when set_abi()
+- chore: update on error to raise...from
+- feat: add PriceWithQuote
 
 0.8.39 [2022-09-06]
 * feat: upgrade to new database setup (L2)
-    - remove table TokenBalance
-    - rename Event/Functions table column names (breaking)
-    - Event/Function-specific columns are prefixed with `EVT_` or `FN_`
+- remove table TokenBalance
+- rename Event/Functions table column names (breaking)
+- Event/Function-specific columns are prefixed with `EVT_` or `FN_`
 * chore: Some ColumnField methods to have `str_lower` as a bool to quote and lower case the string
 
 0.8.38 [2022-09-01]
@@ -432,8 +432,8 @@ History
 0.8.14 [2022-05-09]
 * Unit testing support
 
-* 0.8.13 [2022-05-03]
-Contract ledger queries
+0.8.13 [2022-05-03]
+* Contract ledger queries
 
 0.0.1 [2022-02-25]
 * First public release

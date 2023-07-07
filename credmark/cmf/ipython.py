@@ -165,10 +165,10 @@ def create_cmf_context(cmf_param, show=False):
                                                 api_url=cmf_init.api_url, run_id=None, console=True, use_local_models=cmf_init.use_local_models)
 
     context._web3 = context._web3_registry.web3_for_chain_id(
-        context.chain_id, False, {'request_kwargs': {'timeout': 3600 * 10}})
+        context.chain_id,  {'request_kwargs': {'timeout': 3600 * 10}})
     context._web3.eth.default_block = int(context.block_number)
-    context._web3_async = context._web3_registry.web3_for_chain_id(
-        context.chain_id, True, {'request_kwargs': {'timeout': 3600 * 10}})
+    context._web3_async = context._web3_registry.async_web3_for_chain_id(
+        context.chain_id,  {'request_kwargs': {'timeout': 3600 * 10}})
     context._web3_async.eth.default_block = int(context.block_number)
 
     if show:

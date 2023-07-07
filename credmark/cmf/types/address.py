@@ -10,7 +10,7 @@ from credmark.cmf.model.errors import ModelTypeError
 
 def validate_address(addr: str) -> ChecksumAddress:
     try:
-        checksum_addr = Web3.toChecksumAddress(addr)
+        checksum_addr = Web3.to_checksum_address(addr)
         eth_utils_validate_address(checksum_addr)
         return checksum_addr
     except Exception as e:

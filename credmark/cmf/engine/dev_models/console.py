@@ -16,6 +16,8 @@ import logging
 import os
 
 import yaml
+from web3.contract.async_contract import AsyncContract as Web3AsyncContract
+from web3.contract.contract import Contract as Web3Contract
 from web3.exceptions import ABIFunctionNotFound
 
 from credmark.cmf.engine.context import EngineModelContext

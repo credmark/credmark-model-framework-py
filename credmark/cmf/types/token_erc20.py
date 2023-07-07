@@ -407,7 +407,7 @@ class NativeToken(Token):
     def balance_of_scaled(self, address: ChecksumAddress) -> float:
         context = credmark.cmf.model.ModelContext.current_context()
         balance = self.balance_of(address)
-        return float(context.web3.fromWei(balance, 'ether'))
+        return float(context.web3.from_wei(balance, 'ether'))
 
     @property
     def symbol(self):

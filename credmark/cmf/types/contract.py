@@ -4,7 +4,8 @@ import json
 from typing import List, Optional, Sequence, Union
 
 from web3 import Web3
-from web3.contract import Contract as Web3Contract
+from web3.contract.async_contract import AsyncContract as Web3AsyncContract
+from web3.contract.contract import Contract as Web3Contract
 
 import credmark.cmf.model
 from credmark.cmf.engine.cache import ContractMetaCache
@@ -28,8 +29,9 @@ SLOT_PROXYMANYTOONE = hex(
     int(Web3.keccak(text='IMPLEMENTATION_ADDRESS').hex(), 16) + 1)
 SLOT_ARA = hex(int(Web3.keccak(text='io.ara.proxy.implementation').hex(), 16))
 
-
 # pylint:disable=too-many-branches
+
+
 def get_slot_proxy_address(context, contract_address,
                            contract_name, contract_abi) -> Optional[Address]:
     slot_proxy_address = None
@@ -149,7 +151,7 @@ class Contract(Account):
 
     _meta: ContractMetaData = PrivateAttr(
         default_factory=lambda: Contract.ContractMetaData())  # pylint: disable=unnecessary-lambda
-    _instance: Union[Web3Contract, None] = PrivateAttr(default=None)
+    _instance: Union[Web3Contract, Web3AsyncContract, None] = PrivateAttr(default=None)
     _proxy_implementation = PrivateAttr(default=None)
     _loaded = PrivateAttr(default=False)
     _ledger = PrivateAttr(default=None)
@@ -245,21 +247,22 @@ class Contract(Account):
                     f'abi not available for address {self.address}')
         self._loaded = True
 
-    @property
-    def instance(self) -> Web3Contract:
+    @ property
+    def instance(self) -> Union[Web3Contract, Web3AsyncContract]:
         """
         A web3 Web3Contract instance or raises a
         ``ModelDataError`` if no ABI is available.
         """
         context = credmark.cmf.model.ModelContext.current_context()
         if self._instance is not None:
-            if self._instance.web3.eth.chain_id != context.chain_id or self._instance.web3.eth.default_block != context.block_number:
+            if (self._instance.w3.eth.chain_id != context.chain_id
+                    or self._instance.w3.eth.default_block != context.block_number):
                 self._instance = None
 
         if self._instance is None:
             if self.abi is not None:
                 self._instance = context.web3.eth.contract(
-                    address=context.web3.toChecksumAddress(self.address),
+                    address=context.web3.to_checksum_address(self.address),
                     abi=self.abi
                 )
                 return self._instance
@@ -285,7 +288,7 @@ class Contract(Account):
         if self.proxy_for is not None:
             context = credmark.cmf.model.ModelContext.current_context()
             return context.web3.eth.contract(
-                address=context.web3.toChecksumAddress(self.address),
+                address=context.web3.to_checksum_address(self.address),
                 abi=self.proxy_for.abi).functions
         else:
             return self.instance.functions

@@ -115,12 +115,12 @@ BSC_TOKENS = {
         "name": "ArtWallet",
         "address": "0xd3c325848d7c6e29b574cb0789998b2ff901f17e"
     },
-    "1COIN": {
-        "symbol": "1COIN",
-        "decimals": 8,
-        "name": "1COIN",
-        "address": "0xf31327c3c16b58d365efc82e66b7a38cd123cbf8"
-    },
+    # "1COIN": {
+    #     "symbol": "1COIN",
+    #     "decimals": 8,
+    #     "name": "1COIN",
+    #     "address": "0xf31327c3c16b58d365efc82e66b7a38cd123cbf8"
+    # },
     "1INCH": {
         "symbol": "1INCH",
         "decimals": 18,
@@ -673,12 +673,12 @@ BSC_TOKENS = {
         "name": "Adora",
         "address": "0xa9243aeb1e1038273d479436d4f4dece656c62f3"
     },
-    "ARBI": {
-        "symbol": "ARBI",
-        "decimals": 18,
-        "name": "Arbipad",
-        "address": "0xa7bd657c5838472ddf85ff0797a2e6fce8fd4833"
-    },
+    # "ARBI": {
+    #     "symbol": "ARBI",
+    #     "decimals": 18,
+    #     "name": "Arbipad",
+    #     "address": "0xa7bd657c5838472ddf85ff0797a2e6fce8fd4833"
+    # },
     "ARCONA": {
         "symbol": "ARCONA",
         "decimals": 18,
@@ -1501,6 +1501,13 @@ BSC_TOKENS = {
         "name": "Binance Wrapped MVL",
         "address": "0x5f588efaf8eb57e3837486e834fc5a4e07768d98"
     },
+    "BNB": {
+        "symbol": "BNB",
+        "decimals": 18,
+        "name": "BSC",
+        "address": '0x0000000000000000010000100100111001000010',
+        "is_native_token": True,
+    },
     "BNBP": {
         "symbol": "BNBP",
         "decimals": 18,
@@ -1771,12 +1778,12 @@ BSC_TOKENS = {
         "name": "BTAF",
         "address": "0xcae3d82d63e2b0094bc959752993d3d3743b5d08"
     },
-    "BTC": {
-        "symbol": "BTC",
-        "decimals": 8,
-        "name": "Bitcoin",
-        "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-    },
+    # "BTC": {
+    #     "symbol": "BTC",
+    #     "decimals": 8,
+    #     "name": "Bitcoin",
+    #     "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    # },
     "BTCB": {
         "symbol": "BTCB",
         "decimals": 18,

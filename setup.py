@@ -29,10 +29,11 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     description='Credmark model development framework',
     long_description=readme + '\n\n' + history,
+    long_description_content_type='text/x-rst',
     author='Credmark',
     author_email='info@credmark.com',
     url='https://github.com/credmark/credmark-model-framework-py',
-    python_requires='>=3.9.0',
+    python_requires='>=3.11.0',
     packages=find_packages() if find_packages is not None else ['credmark'],
     package_dir={'credmark':
                  'credmark'},

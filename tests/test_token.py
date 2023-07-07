@@ -137,6 +137,7 @@ class TestToken(ModelTestCase):
                             f'There are >1 native token on {chain_id=}')
 
                     chain_has_native_token = True
+
                 try:
                     try:
                         self.assertEqual(token_symbol, token_meta['symbol'])
@@ -151,7 +152,7 @@ class TestToken(ModelTestCase):
                             passed = token_symbol in ['USDC.e']
 
                         if not passed:
-                            print(token_symbol, token_meta['symbol'])
+                            print(f'{chain_id=}', token_symbol, token_meta['symbol'])
                             raise
 
                     self.assertTrue('symbol' in token_meta)
@@ -178,8 +179,7 @@ class TestToken(ModelTestCase):
                             passed = token_symbol in ['USDC']
 
                         if not passed:
-                            print(token_meta['symbol'],
-                                  symbols_set, f'{chain_id=}')
+                            print(f'{chain_id=}', token_meta['symbol'], symbols_set)
                             raise
 
                     try:
@@ -187,12 +187,14 @@ class TestToken(ModelTestCase):
                     except AssertionError:
                         passed = False
                         if chain_id == Network.Mainnet:
-                            passed = 'UST' == token_meta['name']
+                            passed = token_meta['name'] in ['UST']
                         elif chain_id == Network.Avalanche:
                             passed = token_meta['address'] in [
                                 '0x152b9d0fdc40c096757f570a51e494bd4b943e50',
                                 '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
                                 '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab']
+                        elif chain_id == Network.BSC:
+                            passed = token_meta['name'] in ['Catcoin', 'Carbon', 'GameFi', 'SafeMoon', 'SafeMars']
 
                         if not passed:
                             print(f'{chain_id=}',
@@ -240,9 +242,11 @@ class TestToken(ModelTestCase):
                         if chain_id == Network.Mainnet:
                             passed = token_meta['symbol'] in [
                                 'GMT', 'UST', 'LUNA']
+                        elif chain_id == Network.ArbitrumOne:
+                            passed = token_meta['symbol'] in ['USDC']
 
                         if not passed:
-                            print(token_meta['symbol'], symbols_set)
+                            print(f'{chain_id=}', token_meta['symbol'], symbols_set)
                             raise
 
                     try:
@@ -254,11 +258,11 @@ class TestToken(ModelTestCase):
                                 '0x152b9d0fdc40c096757f570a51e494bd4b943e50',
                                 '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
                                 '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab']
+                        elif chain_id == Network.BSC:
+                            passed = token_meta['name'] in ['Catcoin', 'Carbon', 'GameFi', 'SafeMoon', 'SafeMars']
 
                         if not passed:
-                            print(token_meta['name'])
-                            print(f'{names_set=}')
-                            print(f'{chain_id=}')
+                            print(f'{chain_id=}', token_meta['name'], names_set)
                             raise
 
                     self.assertTrue(token_meta['address'] not in addresses_set)
@@ -274,7 +278,7 @@ class TestToken(ModelTestCase):
 
     def test_token_on_mainnet(self):
         token = Token(symbol="CMK")
-        print(f'Testing on {token.instance.web3.eth.default_block}')
+        print(f'Testing on {token.instance.w3.eth.default_block}')
 
         self.assertEqual(token.symbol, "CMK")
         self.assertEqual(token.address,
@@ -302,8 +306,9 @@ class TestToken(ModelTestCase):
     def test_token_on_chains(self):
         context = credmark.cmf.model.ModelContext.current_context()
         for chain_id, chain_tokens in FUNGIBLE_TOKEN_DATA_BY_SYMBOL.items():
-            if chain_id in [Network.BSC, Network.Polygon, Network.Mainnet]:
-                with context.fork(chain_id=chain_id) as cc:
+            if chain_id in [Network.Mainnet, Network.BSC, Network.Polygon]:
+                block_number = 29727653 if chain_id == Network.BSC else None
+                with context.fork(chain_id=chain_id, block_number=block_number) as cc:
                     print(f'Test tokens on chain: {chain_id} @ {cc.block_number}')
                     for token_n, (token_symbol, token_meta) in enumerate(chain_tokens.items()):
                         if chain_id == Network.Mainnet:

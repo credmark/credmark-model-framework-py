@@ -91,6 +91,13 @@ AVALANCHE_TOKENS = {
         "name": "AVAT",
         "address": "0x7086c48c997b8597a1692798155b4fcf2cee7f0f"
     },
+    "AVAX": {
+        "symbol": "AVAX",
+        "address": '0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa',
+        "decimals": 18,
+        "name": "Avalanche",
+        "is_native_token": True,
+    },
     "AVME": {
         "symbol": "AVME",
         "decimals": 18,

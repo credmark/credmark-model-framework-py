@@ -3,37 +3,46 @@
 
 import asyncio
 import math
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Union, cast
 
-from web3 import Web3
-from web3._utils.abi import get_abi_input_names
+from web3 import AsyncWeb3, Web3
 from web3._utils.events import get_event_data
 from web3._utils.filters import construct_event_filter_params
+from web3.contract.base_contract import BaseContractEvent
+from web3.types import ABIEvent, FilterParams
+from web3.utils.abi import get_abi_input_names
 
 # from web3._utils.abi import get_constructor_abi, merge_args_and_kwargs
 # from web3._utils.contracts import encode_abi
 
 
-async def fetch_events_async(_async_web3, event_filter_params, from_block, end_block, num_of_chunk):
+async def fetch_events_async(async_web3: AsyncWeb3,
+                             event_filter_params: FilterParams,
+                             from_block: int,
+                             to_block: int,
+                             num_of_chunk: int = 10):
     """
     events = asyncio.run(fetch_events_async(async_web3, event_filter_params,
                          from_block, to_block, num_of_chunk))  # type: ignore
     """
-    num_of_chunk = 10
-    size_per_chunk = (end_block - from_block + 1) // num_of_chunk
+    size_per_chunk = (to_block - from_block + 1) // num_of_chunk
     if size_per_chunk > 0:
         tasks = []
         for i in range(num_of_chunk):
             _from_block = from_block + i * size_per_chunk
             if i == num_of_chunk - 1:
-                _to_block = end_block
+                _to_block = to_block
             else:
                 _to_block = _from_block + size_per_chunk - 1
-            block_range = {'fromBlock': _from_block, 'toBlock': _to_block}
-            tasks.append(_async_web3.eth.get_logs(event_filter_params | block_range))
+            event_filter = event_filter_params.copy()
+            event_filter['fromBlock'] = _from_block
+            event_filter['toBlock'] = _to_block
+            tasks.append(async_web3.eth.get_logs(event_filter))
     else:
-        block_range = {'fromBlock': from_block, 'toBlock': end_block}
-        tasks = [_async_web3.eth.get_logs(event_filter_params | block_range)]
+        event_filter = event_filter_params.copy()
+        event_filter['fromBlock'] = from_block
+        event_filter['toBlock'] = to_block
+        tasks = [async_web3.eth.get_logs(event_filter)]
     events = []
     for result in asyncio.as_completed(tasks):
         evts = await result
@@ -41,8 +50,9 @@ async def fetch_events_async(_async_web3, event_filter_params, from_block, end_b
     return events
 
 
+# pylint: disable=too-many-branches
 def fetch_events(
-        event,
+        event: BaseContractEvent,
         argument_filters=None,
         from_block=None,
         to_block=None,
@@ -51,7 +61,7 @@ def fetch_events(
         contract_address=None,
         argument_names: Optional[Sequence[str]] = None,
         by_range: Optional[int] = None,
-        async_web3: Optional[Web3] = None,
+        async_web3: Optional[AsyncWeb3] = None,
         async_worker: int = 10):
     """Get events using eth_getLogs API.
 
@@ -71,7 +81,11 @@ def fetch_events(
         raise TypeError(
             "Missing mandatory keyword argument to getLogs: from_Block")
 
-    w3 = event.web3
+    w3: Union[Web3, AsyncWeb3] = event.w3
+    if isinstance(w3, AsyncWeb3):
+        raise TypeError(
+            "Contract was initiailized with async_web3. fetch_events only support web3."
+        )
     if to_block is None:
         to_block = w3.eth.block_number
 
@@ -88,7 +102,7 @@ def fetch_events(
     if len(event_abis) > 1:
         raise ValueError(
             'Multiple events found with same name and argument names')
-    event_abi = event_abis[0]
+    event_abi = cast(ABIEvent, event_abis[0])
 
     abi_codec = w3.codec
 
@@ -118,7 +132,7 @@ def fetch_events(
     else:
         if by_range is None:
             # Call node over JSON-RPC API
-            events = w3.eth.getLogs(event_filter_params)
+            events = w3.eth.get_logs(event_filter_params)
 
             # Convert raw binary event data to easily manipulable Python objects
             for entry in events:
@@ -138,7 +152,7 @@ def fetch_events(
                 event_filter_params |= {'fromBlock': _from_block, 'toBlock': _to_block}
 
                 # Call node over JSON-RPC API
-                events = w3.eth.getLogs(event_filter_params)
+                events = w3.eth.get_logs(event_filter_params)
 
                 # Convert raw binary event data to easily manipulable Python objects
                 for entry in events:

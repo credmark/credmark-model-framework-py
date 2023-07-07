@@ -173,7 +173,8 @@ OPTIMISM_TOKENS = {
         "symbol": "ETH",
         "decimals": 18,
         "name": "Ether",
-        "address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000"
+        "address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000",
+        "is_native_token": True
     },
     "fBOMB": {
         "symbol": "fBOMB",

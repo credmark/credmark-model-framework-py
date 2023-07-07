@@ -4,10 +4,10 @@ import re
 from abc import abstractmethod
 from copy import deepcopy
 from typing import List, Literal, Tuple, Type, Union
+
 from credmark.cmf.engine.cache import CachePolicy
 from credmark.cmf.types import BlockNumber
 from credmark.cmf.types.series import BlockSeries, ImmutableOutput
-
 from credmark.dto import DTOType, DTOTypesTuple, EmptyInput
 from credmark.dto.transform import transform_data_for_dto
 

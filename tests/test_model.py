@@ -118,7 +118,7 @@ class TestModel(ModelTestCase):
 
             with context.fork(block_number=current_block - 2_000_000):
                 self.assertEqual(
-                    usdc.functions.web3.eth.default_block, current_block - 2_000_000)
+                    usdc.functions.w3.eth.default_block, current_block - 2_000_000)
                 self.assertEqual(
                     usdc.functions.totalSupply().call(), usdc.total_supply)
                 self.assertEqual(usdc.total_supply_scaled,
@@ -129,7 +129,7 @@ class TestModel(ModelTestCase):
                     usdc.functions.decimals().call(), usdc.decimals)
                 with context.fork(block_number=current_block - 4_000_000):
                     self.assertEqual(
-                        usdc.functions.web3.eth.default_block, current_block - 4_000_000)
+                        usdc.functions.w3.eth.default_block, current_block - 4_000_000)
                     self.assertEqual(
                         usdc.functions.totalSupply().call(), usdc.total_supply)
                     self.assertEqual(usdc.total_supply_scaled,
