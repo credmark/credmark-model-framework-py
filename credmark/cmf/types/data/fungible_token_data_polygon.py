@@ -1,6 +1,27 @@
 # pylint:disable=too-many-lines
 
 POLYGON_TOKENS = {
+    "ETH": {
+        "symbol": "ETH",
+        "decimals": 18,
+        "name": "Ethereum",
+        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        "set_loaded": True
+    },
+    "BTC": {
+        "symbol": "BTC",
+        "decimals": 8,
+        "name": "Bitcoin",
+        "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "set_loaded": True
+    },
+    "MATIC": {
+        "symbol": "MATIC",
+        "decimals": 18,
+        "name": "Matic Token",
+        "address": "0x0000000000000000000000000000000000001010",
+        "is_native_token": True
+    },
     "$ANRX": {
         "symbol": "$ANRX",
         "decimals": 18,
@@ -463,12 +484,6 @@ POLYGON_TOKENS = {
         "name": "BlackStallion",
         "address": "0x0c47298beee5203358e7bc30b9954b584361eab5"
     },
-    # "BTC": {
-    #     "symbol": "BTC",
-    #     "decimals": 8,
-    #     "name": "Bitcoin",
-    #     "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-    # },
     "BUILD": {
         "symbol": "BUILD",
         "decimals": 18,
@@ -1033,12 +1048,6 @@ POLYGON_TOKENS = {
         "name": "Coinerr",
         "address": "0xfb32513135e3267995268e3099d2b6114d20b6ed"
     },
-    # "ETH": {
-    #     "symbol": "ETH",
-    #    "decimals": 18,
-    #    "name": "Ethereum",
-    #    "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-    # },
     "ETH2x-FLI-P": {
         "symbol": "ETH2x-FLI-P",
         "decimals": 18,
@@ -1860,13 +1869,6 @@ POLYGON_TOKENS = {
         "decimals": 18,
         "name": "MASQ (PoS)",
         "address": "0xee9a352f6aac4af1a5b9f467f6a93e0ffbe9dd35"
-    },
-    "MATIC": {
-        "symbol": "MATIC",
-        "decimals": 18,
-        "name": "Matic Token",
-        "address": "0x0000000000000000000000000000000000001010",
-        "is_native_token": True
     },
     "MaticX": {
         "symbol": "MaticX",

@@ -306,7 +306,7 @@ class TestToken(ModelTestCase):
     def test_token_on_chains(self):
         context = credmark.cmf.model.ModelContext.current_context()
         for chain_id, chain_tokens in FUNGIBLE_TOKEN_DATA_BY_SYMBOL.items():
-            if chain_id in [Network.Mainnet, Network.BSC, Network.Polygon]:
+            if chain_id in [Network.BSC, Network.Polygon, Network.Mainnet]:
                 block_number = 29727653 if chain_id == Network.BSC else None
                 with context.fork(chain_id=chain_id, block_number=block_number) as cc:
                     print(f'Test tokens on chain: {chain_id} @ {cc.block_number}')
