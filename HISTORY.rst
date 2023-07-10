@@ -3,6 +3,11 @@
 History
 -------
 
+0.8.124 [2023-07-10]
+* docs: update immutableModel and IncrementalModel
+* tokens: fix ETH and BTC loading in Polygon
+* query: ETL for self-destruct contracts
+
 0.8.123 [2023-07-07]
 * upgrade to Python 3.11 and web3-py 6.5.0
 

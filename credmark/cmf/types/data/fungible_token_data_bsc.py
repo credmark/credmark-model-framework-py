@@ -1,6 +1,20 @@
 # pylint:disable=too-many-lines
 
 BSC_TOKENS = {
+    "BTC": {
+        "symbol": "BTC",
+        "decimals": 8,
+        "name": "Bitcoin",
+        "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "set_loaded": True,
+    },
+    "BNB": {
+        "symbol": "BNB",
+        "decimals": 18,
+        "name": "BSC",
+        "address": '0x0000000000000000010000100100111001000010',
+        "is_native_token": True,
+    },
     " BTCPAY": {
         "symbol": " BTCPAY",
         "decimals": 18,
@@ -1501,13 +1515,6 @@ BSC_TOKENS = {
         "name": "Binance Wrapped MVL",
         "address": "0x5f588efaf8eb57e3837486e834fc5a4e07768d98"
     },
-    "BNB": {
-        "symbol": "BNB",
-        "decimals": 18,
-        "name": "BSC",
-        "address": '0x0000000000000000010000100100111001000010',
-        "is_native_token": True,
-    },
     "BNBP": {
         "symbol": "BNBP",
         "decimals": 18,
@@ -1778,12 +1785,6 @@ BSC_TOKENS = {
         "name": "BTAF",
         "address": "0xcae3d82d63e2b0094bc959752993d3d3743b5d08"
     },
-    # "BTC": {
-    #     "symbol": "BTC",
-    #     "decimals": 8,
-    #     "name": "Bitcoin",
-    #     "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-    # },
     "BTCB": {
         "symbol": "BTCB",
         "decimals": 18,

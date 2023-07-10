@@ -424,9 +424,12 @@ class IncrementalModel(BaseModel):
         """
         Decorator for credmark.cmf.model.IncrementalModel subclasses to describe the model.
 
+        It shall return a parameterized class of `BlockSeries`.
+
         Example usage::
 
             from credmark.cmf.model import IncrementalModel
+            from credmark.cmf.types.series import BlockSeries
 
             @IncrementalModel.describe(slug='example.echo-inc',
                             version='1.0',
@@ -438,7 +441,20 @@ class IncrementalModel(BaseModel):
                             output=BlockSeries[int])
             class EchoModel(IncrementalModel):
                 def run(self, input: EchoDto, from_block: BlockNumber) -> BlockSeries[int]:
-                    ...
+                    return BlockSeries(series=[
+                        BlockSeriesRow(
+                            blockNumber=0,
+                            blockTimestamp=0,
+                            sampleTimestamp=0,
+                            output=1
+                        ),
+                        BlockSeriesRow(
+                            blockNumber=1,
+                            blockTimestamp=1,
+                            sampleTimestamp=1,
+                            output=2
+                        ),
+                    ])
 
 
         Parameters:
@@ -484,8 +500,11 @@ class IncrementalModel(BaseModel):
 class ImmutableModel(BaseModel):
     """
     Subclass with `ImmutableModel` for models whose result is only available after a particular
-    block and will not change for the future block numbers. For blocks before which
-    data is unavailable, the model should throw ModelDataError.
+    block and will not change for the future block numbers.
+
+    It shall return a derived class of `ImmutableOutput` with field firstResultBlockNumber set.
+
+    For blocks before which data is unavailable, the model should throw ModelDataError.
     Behind the scenes it uses `CachePolicy.IMMUTABLE` cache.
     """
     @classmethod
@@ -509,6 +528,7 @@ class ImmutableModel(BaseModel):
         Example usage::
 
             from credmark.cmf.model import ImmutableModel
+            from credmark.cmf.types.series import ImmutableOutput
 
             @ImmutableModel.describe(slug='example.echo-imm',
                             version='1.0',
@@ -520,6 +540,7 @@ class ImmutableModel(BaseModel):
                             output=ImmutableOutput)
             class EchoModel(ImmutableModel):
                 def run(self, input: EchoDto, from_block: BlockNumber) -> ImmutableOutput:
+                    return ImmutableOutput(
                     ...
 
 
