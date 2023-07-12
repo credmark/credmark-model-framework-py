@@ -1,6 +1,69 @@
 # pylint:disable=too-many-lines
 
 ARBITRUM_ONE_TOKENS = {
+    "ETH": {
+        "symbol": "ETH",
+        "decimals": 18,
+        "name": "Ethereum",
+        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        "is_native_token": True,
+    },
+    "USDT": {
+        "symbol": "USDT",
+        "decimals": 6,
+        "name": "Tether USD",
+        "address": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9"
+    },
+    "USDC.e": {  # Bridged USDC
+        "symbol": "USDC",
+        "decimals": 6,
+        "name": "USD Coin (Arb1)",
+        "address": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8"
+    },
+    "USDC": {
+        "symbol": "USDC",
+        "decimals": 6,
+        "name": "USD Coin",
+        "address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+    },
+    "LINK": {
+        "symbol": "LINK",
+        "decimals": 18,
+        "name": "ChainLink Token",
+        "address": "0xf97f4df75117a78c1a5a0dbb814af92458539fb4"
+    },
+    "ARB": {
+        "symbol": "ARB",
+        "decimals": 18,
+        "name": "Arbitrum",
+        "address": "0x912ce59144191c1204e64559fe8253a0e49e6548"
+    },
+    "WBTC": {
+        "symbol": "WBTC",
+        "decimals": 8,
+        "name": "Wrapped BTC",
+        "address": "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f"
+    },
+    "WETH": {
+        "symbol": "WETH",
+        "decimals": 18,
+        "name": "Wrapped Ether",
+        "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1"
+    },
+    "CRV": {
+        "symbol": "CRV",
+        "decimals": 18,
+        "name": "Curve DAO Token",
+        "address": "0x11cdb42b0eb46d95f990bedd4695a6e3fa034978"
+    },
+    "BTC": {
+        "symbol": "BTC",
+        "decimals": 8,
+        "name": "Bitcoin",
+        "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "set_loaded": True,
+    },
+    ###
     "$SHARBI": {
         "symbol": "$SHARBI",
         "decimals": 9,
@@ -144,12 +207,6 @@ ARBITRUM_ONE_TOKENS = {
         "decimals": 18,
         "name": "ApeX Token",
         "address": "0x61a1ff55c5216b636a294a07d77c6f4df10d3b56"
-    },
-    "ARB": {
-        "symbol": "ARB",
-        "decimals": 18,
-        "name": "Arbitrum",
-        "address": "0x912ce59144191c1204e64559fe8253a0e49e6548"
     },
     "ARBI": {
         "symbol": "ARBI",
@@ -295,12 +352,6 @@ ARBITRUM_ONE_TOKENS = {
         "name": "Brr Protocol",
         "address": "0xd6e7c8af05d2d06a76811d44917613bdd258b995"
     },
-    "BTC": {
-        "symbol": "BTC",
-        "decimals": 8,
-        "name": "Bitcoin",
-        "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-    },
     "BUCK": {
         "symbol": "BUCK",
         "decimals": 18,
@@ -390,12 +441,6 @@ ARBITRUM_ONE_TOKENS = {
         "decimals": 18,
         "name": "CreDA Protocol Token",
         "address": "0xc136e6b376a9946b156db1ed3a34b08afdaed76d"
-    },
-    "CRV": {
-        "symbol": "CRV",
-        "decimals": 18,
-        "name": "Curve DAO Token",
-        "address": "0x11cdb42b0eb46d95f990bedd4695a6e3fa034978"
     },
     "CTSI": {
         "symbol": "CTSI",
@@ -540,13 +585,6 @@ ARBITRUM_ONE_TOKENS = {
         "decimals": 18,
         "name": "EthereumMax",
         "address": "0x123389c2f0e9194d9ba98c21e63c375b67614108"
-    },
-    "ETH": {
-        "symbol": "ETH",
-        "decimals": 18,
-        "name": "Ethereum",
-        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
-        "is_native_token": True,
     },
     "ETHFAI": {
         "symbol": "ETHFAI",
@@ -907,12 +945,6 @@ ARBITRUM_ONE_TOKENS = {
         "decimals": 18,
         "name": "Legends",
         "address": "0x9c8ef67c9168587134e1f29a71405dc753500a45"
-    },
-    "LINK": {
-        "symbol": "LINK",
-        "decimals": 18,
-        "name": "ChainLink Token",
-        "address": "0xf97f4df75117a78c1a5a0dbb814af92458539fb4"
     },
     "LION": {
         "symbol": "LION",
@@ -1580,18 +1612,6 @@ ARBITRUM_ONE_TOKENS = {
         "name": "USD+",
         "address": "0xe80772eaf6e2e18b651f160bc9158b2a5cafca65"
     },
-    "USDC.e": {  # Bridged USDC
-        "symbol": "USDC",
-        "decimals": 6,
-        "name": "USD Coin (Arb1)",
-        "address": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8"
-    },
-    "USDC": {
-        "symbol": "USDC",
-        "decimals": 6,
-        "name": "USD Coin",
-        "address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
-    },
     "USDD": {
         "symbol": "USDD",
         "decimals": 18,
@@ -1603,12 +1623,6 @@ ARBITRUM_ONE_TOKENS = {
         "decimals": 18,
         "name": "Sperax USD",
         "address": "0xd74f5255d557944cf7dd0e45ff521520002d5748"
-    },
-    "USDT": {
-        "symbol": "USDT",
-        "decimals": 6,
-        "name": "Tether USD",
-        "address": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9"
     },
     "USX": {
         "symbol": "USX",
@@ -1645,18 +1659,6 @@ ARBITRUM_ONE_TOKENS = {
         "decimals": 18,
         "name": "Wrapped AllianceBlock Token",
         "address": "0xeb1fbe8b6b2af542d0a167355604c7e1e40ca293"
-    },
-    "WBTC": {
-        "symbol": "WBTC",
-        "decimals": 8,
-        "name": "Wrapped BTC",
-        "address": "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f"
-    },
-    "WETH": {
-        "symbol": "WETH",
-        "decimals": 18,
-        "name": "Wrapped Ether",
-        "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1"
     },
     "WHEAT": {
         "symbol": "WHEAT",

@@ -306,8 +306,22 @@ class TestToken(ModelTestCase):
     def test_token_on_chains(self):
         context = credmark.cmf.model.ModelContext.current_context()
         for chain_id, chain_tokens in FUNGIBLE_TOKEN_DATA_BY_SYMBOL.items():
-            if chain_id in [Network.BSC, Network.Polygon, Network.Mainnet]:
-                block_number = 29727653 if chain_id == Network.BSC else None
+            if chain_id in [Network.BSC, Network.Polygon, Network.Mainnet,
+                            Network.Optimism, Network.Fantom, Network.Avalanche,
+                            Network.ArbitrumOne,]:
+                if chain_id == Network.BSC:
+                    block_number = 29727653
+                elif chain_id == Network.Optimism:
+                    block_number = 106760888
+                elif chain_id == Network.Fantom:
+                    block_number = 65603406
+                elif chain_id == Network.Avalanche:
+                    block_number = 32450685
+                elif chain_id == Network.ArbitrumOne:
+                    block_number = 110330888
+                else:
+                    block_number = None
+
                 with context.fork(chain_id=chain_id, block_number=block_number) as cc:
                     print(f'Test tokens on chain: {chain_id} @ {cc.block_number}')
                     for token_n, (token_symbol, token_meta) in enumerate(chain_tokens.items()):
