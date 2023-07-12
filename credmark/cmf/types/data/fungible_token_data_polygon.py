@@ -22,6 +22,25 @@ POLYGON_TOKENS = {
         "address": "0x0000000000000000000000000000000000001010",
         "is_native_token": True
     },
+    "WMATIC": {
+        "symbol": "WMATIC",
+        "decimals": 18,
+        "name": "Wrapped Matic",
+        "address": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"
+    },
+    "WBTC": {
+        "symbol": "WBTC",
+        "decimals": 8,
+        "name": "(PoS) Wrapped BTC",
+        "address": "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6"
+    },
+    "WETH": {
+        "symbol": "WETH",
+        "decimals": 18,
+        "name": "Wrapped Ether",
+        "address": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619"
+    },
+    ####
     "$ANRX": {
         "symbol": "$ANRX",
         "decimals": 18,
@@ -3406,12 +3425,6 @@ POLYGON_TOKENS = {
         "name": "Wrapped BNB",
         "address": "0xecdcb5b88f8e3c15f95c720c51c71c9e2080525d"
     },
-    "WBTC": {
-        "symbol": "WBTC",
-        "decimals": 8,
-        "name": "(PoS) Wrapped BTC",
-        "address": "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6"
-    },
     "WCHI": {
         "symbol": "WCHI",
         "decimals": 8,
@@ -3430,12 +3443,6 @@ POLYGON_TOKENS = {
         "name": "FABWELT",
         "address": "0x23e8b6a3f6891254988b84da3738d2bfe5e703b9"
     },
-    "WETH": {
-        "symbol": "WETH",
-        "decimals": 18,
-        "name": "Wrapped Ether",
-        "address": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619"
-    },
     "WIFI": {
         "symbol": "WIFI",
         "decimals": 18,
@@ -3447,12 +3454,6 @@ POLYGON_TOKENS = {
         "decimals": 18,
         "name": "wLitiDAO",
         "address": "0xa936e1f747d14fc30d08272d065c8aef4ab7f810"
-    },
-    "WMATIC": {
-        "symbol": "WMATIC",
-        "decimals": 18,
-        "name": "Wrapped Matic",
-        "address": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"
     },
     "WNT": {
         "symbol": "WNT",

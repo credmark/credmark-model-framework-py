@@ -1,6 +1,160 @@
 # pylint:disable=too-many-lines
 
 AVALANCHE_TOKENS = {
+    "AVAX": {
+        "symbol": "AVAX",
+        "address": '0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa',
+        "decimals": 18,
+        "name": "Avalanche",
+        "is_native_token": True,
+    },
+    "ETH": {
+        "symbol": "ETH",
+        "decimals": 18,
+        "name": "Ethereum",
+        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        "set_loaded": True,
+    },
+    "USDC": {
+        "symbol": "USDC",
+        "decimals": 6,
+        "name": "USD Coin",
+        "address": "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e"
+    },
+    "USDC.e": {
+        "symbol": "USDC.e",
+        "decimals": 6,
+        "name": "USD Coin",
+        "address": "0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664"
+    },
+    "CRV.e": {
+        "symbol": "CRV.e",
+        "decimals": 18,
+        "name": "Curve DAO Token",
+        "address": "0x249848beca43ac405b8102ec90dd5f22ca513c06"
+    },
+    "JOE": {
+        "symbol": "JOE",
+        "decimals": 18,
+        "name": "JoeToken",
+        "address": "0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd"
+    },
+    "QI": {
+        "symbol": "QI",
+        "decimals": 18,
+        "name": "BENQI",
+        "address": "0x8729438eb15e2c8b576fcc6aecda6a148776c0f5"
+    },
+    "UST": {
+        "symbol": "UST",
+        "decimals": 6,
+        "name": "UST",
+        "address": "0xb599c3590f42f8f995ecfa0f85d2980b76862fc1"
+    },
+    "GMX": {
+        "symbol": "GMX",
+        "decimals": 18,
+        "name": "GMX",
+        "address": "0x62edc0692bd897d2295872a9ffcac5425011c661"
+    },
+    "WAVAX": {
+        "symbol": "WAVAX",
+        "decimals": 18,
+        "name": "Wrapped AVAX",
+        "address": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
+    },
+    "USDt": {
+        "symbol": "USDt",
+        "decimals": 6,
+        "name": "TetherToken",
+        "address": "0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7"
+    },
+    "USDT.e": {
+        "symbol": "USDT.e",
+        "decimals": 6,
+        "name": "Tether USD",
+        "address": "0xc7198437980c041c805a1edcba50c1ce5db95118"
+    },
+    "WETH": {
+        "symbol": "WETH",
+        "decimals": 18,
+        "name": "Wrapped Ether",
+        "address": "0x8b82a291f83ca07af22120aba21632088fc92931"
+    },
+    "WETH.e": {
+        "symbol": "WETH.e",
+        "decimals": 18,
+        "name": "Wrapped Ether",
+        "address": "0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab"
+    },
+    "miMatic": {
+        "symbol": "miMatic",
+        "decimals": 18,
+        "name": "MAI",
+        "address": "0x3b55e45fd6bd7d4724f5c47e0d1bcaedd059263e"
+    },
+    "MKR.e": {
+        "symbol": "MKR.e",
+        "decimals": 18,
+        "name": "Maker",
+        "address": "0x88128fd4b259552a9a1d457f435a6527aab72d42"
+    },
+    "YETI": {
+        "symbol": "YETI",
+        "decimals": 18,
+        "name": "Yeti Finance",
+        "address": "0x77777777777d4554c39223c354a05825b2e8faa3"
+    },
+    "YFI.e": {
+        "symbol": "YFI.e",
+        "decimals": 18,
+        "name": "yearn.finance",
+        "address": "0x9eaac1b23d935365bd7b542fe22ceee2922f52dc"
+    },
+    "PTP": {
+        "symbol": "PTP",
+        "decimals": 18,
+        "name": "Platypus",
+        "address": "0x22d4002028f537599be9f666d1c4fa138522f9c8"
+    },
+    "WBNB": {
+        "symbol": "WBNB",
+        "decimals": 18,
+        "name": "Wrapped BNB",
+        "address": "0x442f7f22b1ee2c842beaff52880d4573e9201158"
+    },
+    "WBTC.e": {
+        "symbol": "WBTC.e",
+        "decimals": 8,
+        "name": "Wrapped BTC",
+        "address": "0x50b7545627a5162f82a992c33b87adc75187b218"
+    },
+    "MORE": {
+        "symbol": "MORE",
+        "decimals": 18,
+        "name": "More Token",
+        "address": "0xd9d90f882cddd6063959a9d837b05cb748718a05"
+    },
+    "MIM": {
+        "symbol": "MIM",
+        "decimals": 18,
+        "name": "Magic Internet Money",
+        "address": "0x130966628846bfd36ff31a822705796e8cb8c18d"
+    },
+    "BTC": {
+        "symbol": "BTC",
+        "decimals": 8,
+        "name": "Bitcoin",
+        "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "set_loaded": True,
+    },
+    "BTC.b": {
+        "symbol": "BTC.b",
+        "decimals": 8,
+        "name": "Bitcoin",
+        "address": "0x152b9d0fdc40c096757f570a51e494bd4b943e50"
+    },
+    ###
     "1INCH.e": {
         "symbol": "1INCH.e",
         "decimals": 18,
@@ -90,13 +244,6 @@ AVALANCHE_TOKENS = {
         "decimals": 6,
         "name": "AVAT",
         "address": "0x7086c48c997b8597a1692798155b4fcf2cee7f0f"
-    },
-    "AVAX": {
-        "symbol": "AVAX",
-        "address": '0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa',
-        "decimals": 18,
-        "name": "Avalanche",
-        "is_native_token": True,
     },
     "AVME": {
         "symbol": "AVME",
@@ -236,18 +383,6 @@ AVALANCHE_TOKENS = {
         "name": "Betswap.gg",
         "address": "0x63682bdc5f875e9bf69e201550658492c9763f89"
     },
-    "BTC": {
-        "symbol": "BTC",
-        "decimals": 8,
-        "name": "Bitcoin",
-        "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-    },
-    "BTC.b": {
-        "symbol": "BTC.b",
-        "decimals": 8,
-        "name": "Bitcoin",
-        "address": "0x152b9d0fdc40c096757f570a51e494bd4b943e50"
-    },
     "BUILD": {
         "symbol": "BUILD",
         "decimals": 18,
@@ -343,12 +478,6 @@ AVALANCHE_TOKENS = {
         "decimals": 18,
         "name": "CRAFT",
         "address": "0x8ae8be25c23833e0a01aa200403e826f611f9cd2"
-    },
-    "CRV.e": {
-        "symbol": "CRV.e",
-        "decimals": 18,
-        "name": "Curve DAO Token",
-        "address": "0x249848beca43ac405b8102ec90dd5f22ca513c06"
     },
     "CTSI": {
         "symbol": "CTSI",
@@ -452,12 +581,6 @@ AVALANCHE_TOKENS = {
         "name": "Elk",
         "address": "0xeeeeeb57642040be42185f49c52f7e9b38f8eeee"
     },
-    "ETH": {
-        "symbol": "ETH",
-        "decimals": 18,
-        "name": "Ethereum",
-        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-    },
     "EUROe": {
         "symbol": "EUROe",
         "decimals": 6,
@@ -535,12 +658,6 @@ AVALANCHE_TOKENS = {
         "decimals": 8,
         "name": "GhostMarket Token",
         "address": "0x0b53b5da7d0f275c31a6a182622bdf02474af253"
-    },
-    "GMX": {
-        "symbol": "GMX",
-        "decimals": 18,
-        "name": "GMX",
-        "address": "0x62edc0692bd897d2295872a9ffcac5425011c661"
     },
     "gOHM": {
         "symbol": "gOHM",
@@ -631,12 +748,6 @@ AVALANCHE_TOKENS = {
         "decimals": 18,
         "name": "Janus Network",
         "address": "0x7a023a408f51c23760eb31190fc731bc12b52954"
-    },
-    "JOE": {
-        "symbol": "JOE",
-        "decimals": 18,
-        "name": "JoeToken",
-        "address": "0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd"
     },
     "JPYC": {
         "symbol": "JPYC",
@@ -740,35 +851,11 @@ AVALANCHE_TOKENS = {
         "name": "MilkyWay Token by SpaceSwap v2",
         "address": "0x721c299e6bf7d6a430d9bea3364ea197314bce09"
     },
-    "MIM": {
-        "symbol": "MIM",
-        "decimals": 18,
-        "name": "Magic Internet Money",
-        "address": "0x130966628846bfd36ff31a822705796e8cb8c18d"
-    },
-    "miMatic": {
-        "symbol": "miMatic",
-        "decimals": 18,
-        "name": "MAI",
-        "address": "0x3b55e45fd6bd7d4724f5c47e0d1bcaedd059263e"
-    },
-    "MKR.e": {
-        "symbol": "MKR.e",
-        "decimals": 18,
-        "name": "Maker",
-        "address": "0x88128fd4b259552a9a1d457f435a6527aab72d42"
-    },
     "MONEY": {
         "symbol": "MONEY",
         "decimals": 18,
         "name": "Moremoney USD",
         "address": "0x0f577433bf59560ef2a79c124e9ff99fca258948"
-    },
-    "MORE": {
-        "symbol": "MORE",
-        "decimals": 18,
-        "name": "More Token",
-        "address": "0xd9d90f882cddd6063959a9d837b05cb748718a05"
     },
     "MSTR": {
         "symbol": "MSTR",
@@ -913,18 +1000,6 @@ AVALANCHE_TOKENS = {
         "decimals": 18,
         "name": "Pangolin",
         "address": "0x60781c2586d68229fde47564546784ab3faca982"
-    },
-    "PTP": {
-        "symbol": "PTP",
-        "decimals": 18,
-        "name": "Platypus",
-        "address": "0x22d4002028f537599be9f666d1c4fa138522f9c8"
-    },
-    "QI": {
-        "symbol": "QI",
-        "decimals": 18,
-        "name": "BENQI",
-        "address": "0x8729438eb15e2c8b576fcc6aecda6a148776c0f5"
     },
     "RADIO": {
         "symbol": "RADIO",
@@ -1166,36 +1241,6 @@ AVALANCHE_TOKENS = {
         "name": "UREEQA Token [via ChainPort.io]",
         "address": "0xbd3936ec8d83a5d4e73eca625ecfa006da8c8f52"
     },
-    "USDC": {
-        "symbol": "USDC",
-        "decimals": 6,
-        "name": "USD Coin",
-        "address": "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e"
-    },
-    "USDC.e": {
-        "symbol": "USDC.e",
-        "decimals": 6,
-        "name": "USD Coin",
-        "address": "0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664"
-    },
-    "USDt": {
-        "symbol": "USDt",
-        "decimals": 6,
-        "name": "TetherToken",
-        "address": "0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7"
-    },
-    "USDT.e": {
-        "symbol": "USDT.e",
-        "decimals": 6,
-        "name": "Tether USD",
-        "address": "0xc7198437980c041c805a1edcba50c1ce5db95118"
-    },
-    "UST": {
-        "symbol": "UST",
-        "decimals": 6,
-        "name": "UST",
-        "address": "0xb599c3590f42f8f995ecfa0f85d2980b76862fc1"
-    },
     "VEE": {
         "symbol": "VEE",
         "decimals": 18,
@@ -1225,30 +1270,6 @@ AVALANCHE_TOKENS = {
         "decimals": 18,
         "name": "Wrapped AllianceBlock Token",
         "address": "0x9e037de681cafa6e661e6108ed9c2bd1aa567ecd"
-    },
-    "WBNB": {
-        "symbol": "WBNB",
-        "decimals": 18,
-        "name": "Wrapped BNB",
-        "address": "0x442f7f22b1ee2c842beaff52880d4573e9201158"
-    },
-    "WBTC.e": {
-        "symbol": "WBTC.e",
-        "decimals": 8,
-        "name": "Wrapped BTC",
-        "address": "0x50b7545627a5162f82a992c33b87adc75187b218"
-    },
-    "WETH": {
-        "symbol": "WETH",
-        "decimals": 18,
-        "name": "Wrapped Ether",
-        "address": "0x8b82a291f83ca07af22120aba21632088fc92931"
-    },
-    "WETH.e": {
-        "symbol": "WETH.e",
-        "decimals": 18,
-        "name": "Wrapped Ether",
-        "address": "0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab"
     },
     "WINE": {
         "symbol": "WINE",
@@ -1345,18 +1366,6 @@ AVALANCHE_TOKENS = {
         "decimals": 18,
         "name": "YAY Games",
         "address": "0x01c2086facfd7aa38f69a6bd8c91bef3bb5adfca"
-    },
-    "YETI": {
-        "symbol": "YETI",
-        "decimals": 18,
-        "name": "Yeti Finance",
-        "address": "0x77777777777d4554c39223c354a05825b2e8faa3"
-    },
-    "YFI.e": {
-        "symbol": "YFI.e",
-        "decimals": 18,
-        "name": "yearn.finance",
-        "address": "0x9eaac1b23d935365bd7b542fe22ceee2922f52dc"
     },
     "YUSD": {
         "symbol": "YUSD",

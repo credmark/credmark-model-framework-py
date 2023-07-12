@@ -15,6 +15,85 @@ BSC_TOKENS = {
         "address": '0x0000000000000000010000100100111001000010',
         "is_native_token": True,
     },
+    "WBNB": {
+        "symbol": "WBNB",
+        "decimals": 18,
+        "name": "Wrapped BNB",
+        "address": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
+    },
+    "BUSD": {
+        "symbol": "BUSD",
+        "decimals": 18,
+        "name": "BUSD Token",
+        "address": "0xe9e7cea3dedca5984780bafc599bd69add087d56"
+    },
+    "LINK": {
+        "symbol": "LINK",
+        "decimals": 18,
+        "name": "ChainLink Token",
+        "address": "0xf8a0bf9cf54bb92f17374d9e9a321e6a111a51bd"
+    },
+    "FIL": {
+        "symbol": "FIL",
+        "decimals": 18,
+        "name": "Filecoin",
+        "address": "0x0d8ce2a99bb6e3b7db580ed848240e4a0f9ae153"
+    },
+    "USDT": {
+        "symbol": "USDT",
+        "decimals": 18,
+        "name": "Tether USD",
+        "address": "0x55d398326f99059ff775485246999027b3197955"
+    },
+    "TRX": {
+        "symbol": "TRX",
+        "decimals": 6,
+        "name": "TRON",
+        "address": "0xce7de646e7208a4ef112cb6ed5038fa6cc6b12e3"
+    },
+    "ETH": {
+        "symbol": "ETH",
+        "decimals": 18,
+        "name": "Ethereum Token",
+        "address": "0x2170ed0880ac9a755fd29b2688956bd959f933f8"
+    },
+    "AXS": {
+        "symbol": "AXS",
+        "decimals": 18,
+        "name": "Axie Infinity Shard",
+        "address": "0x715d400f88c167884bbcc41c5fea407ed4d2f8a0"
+    },
+    "Cake": {
+        "symbol": "Cake",
+        "decimals": 18,
+        "name": "PancakeSwap Token",
+        "address": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82"
+    },
+    "DAI": {
+        "symbol": "DAI",
+        "decimals": 18,
+        "name": "Dai Token",
+        "address": "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3"
+    },
+    "DOGE": {
+        "symbol": "DOGE",
+        "decimals": 8,
+        "name": "Dogecoin",
+        "address": "0xba2ae424d960c26247dd6c32edc70b295c744c43"
+    },
+    "BTCB": {
+        "symbol": "BTCB",
+        "decimals": 18,
+        "name": "BTCB Token",
+        "address": "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c"
+    },
+    "XRP": {
+        "symbol": "XRP",
+        "decimals": 18,
+        "name": "XRP Token",
+        "address": "0x1d2f0da169ceb9fc7b3144628db156f3f6c60dbe"
+    },
+    ###
     " BTCPAY": {
         "symbol": " BTCPAY",
         "decimals": 18,
@@ -963,12 +1042,6 @@ BSC_TOKENS = {
         "name": "Axelar Wrapped USDC",
         "address": "0x4268b8f0b87b6eae5d897996e6b845ddbd99adf3"
     },
-    "AXS": {
-        "symbol": "AXS",
-        "decimals": 18,
-        "name": "Axie Infinity Shard",
-        "address": "0x715d400f88c167884bbcc41c5fea407ed4d2f8a0"
-    },
     "AZ": {
         "symbol": "AZ",
         "decimals": 18,
@@ -1785,12 +1858,6 @@ BSC_TOKENS = {
         "name": "BTAF",
         "address": "0xcae3d82d63e2b0094bc959752993d3d3743b5d08"
     },
-    "BTCB": {
-        "symbol": "BTCB",
-        "decimals": 18,
-        "name": "BTCB Token",
-        "address": "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c"
-    },
     "BTCI": {
         "symbol": "BTCI",
         "decimals": 9,
@@ -1893,12 +1960,6 @@ BSC_TOKENS = {
         "name": "Burger Swap",
         "address": "0xae9269f27437f0fcbc232d39ec814844a51d6b8f"
     },
-    "BUSD": {
-        "symbol": "BUSD",
-        "decimals": 18,
-        "name": "BUSD Token",
-        "address": "0xe9e7cea3dedca5984780bafc599bd69add087d56"
-    },
     "BUUN": {
         "symbol": "BUUN",
         "decimals": 18,
@@ -1976,12 +2037,6 @@ BSC_TOKENS = {
         "decimals": 9,
         "name": "Crypto AI",
         "address": "0x3cef8d4cc106a169902ea985cec2dc6ab055ad4c"
-    },
-    "Cake": {
-        "symbol": "Cake",
-        "decimals": 18,
-        "name": "PancakeSwap Token",
-        "address": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82"
     },
     "CAL": {
         "symbol": "CAL",
@@ -2763,12 +2818,6 @@ BSC_TOKENS = {
         "name": "D3D",
         "address": "0xd3c7e51caab1089002ec05569a04d14bcc478bc4"
     },
-    "DAI": {
-        "symbol": "DAI",
-        "decimals": 18,
-        "name": "Dai Token",
-        "address": "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3"
-    },
     "DAL": {
         "symbol": "DAL",
         "decimals": 18,
@@ -3188,12 +3237,6 @@ BSC_TOKENS = {
         "decimals": 18,
         "name": "DOG BOSS",
         "address": "0x86c86ffdc0482d8dd918fc657c3fc51c4a1e3e5c"
-    },
-    "DOGE": {
-        "symbol": "DOGE",
-        "decimals": 8,
-        "name": "Dogecoin",
-        "address": "0xba2ae424d960c26247dd6c32edc70b295c744c43"
     },
     "DOGEAI": {
         "symbol": "DOGEAI",
@@ -3783,12 +3826,6 @@ BSC_TOKENS = {
         "name": "CryptoMines Eternal",
         "address": "0xd44fd09d74cd13838f137b590497595d6b3feea4"
     },
-    "ETH": {
-        "symbol": "ETH",
-        "decimals": 18,
-        "name": "Ethereum Token",
-        "address": "0x2170ed0880ac9a755fd29b2688956bd959f933f8"
-    },
     "ETHAX": {
         "symbol": "ETHAX",
         "decimals": 18,
@@ -4034,12 +4071,6 @@ BSC_TOKENS = {
         "decimals": 18,
         "name": "Fight Token",
         "address": "0x4f39c3319188a723003670c3f9b9e7ef991e52f3"
-    },
-    "FIL": {
-        "symbol": "FIL",
-        "decimals": 18,
-        "name": "Filecoin",
-        "address": "0x0d8ce2a99bb6e3b7db580ed848240e4a0f9ae153"
     },
     "FINA": {
         "symbol": "FINA",
@@ -6236,12 +6267,6 @@ BSC_TOKENS = {
         "decimals": 9,
         "name": "LindaYacc Ceo",
         "address": "0x58c764c18b6263ce97c8a22fec857e0139026b06"
-    },
-    "LINK": {
-        "symbol": "LINK",
-        "decimals": 18,
-        "name": "ChainLink Token",
-        "address": "0xf8a0bf9cf54bb92f17374d9e9a321e6a111a51bd"
     },
     "LION": {
         "symbol": "LION",
@@ -10923,12 +10948,6 @@ BSC_TOKENS = {
         "name": "TRVL",
         "address": "0x6a8fd46f88dbd7bdc2d536c604f811c63052ce0f"
     },
-    "TRX": {
-        "symbol": "TRX",
-        "decimals": 6,
-        "name": "TRON",
-        "address": "0xce7de646e7208a4ef112cb6ed5038fa6cc6b12e3"
-    },
     "TRY": {
         "symbol": "TRY",
         "decimals": 18,
@@ -11156,12 +11175,6 @@ BSC_TOKENS = {
         "decimals": 18,
         "name": "Decentralized USD",
         "address": "0xd17479997f34dd9156deef8f95a52d81d265be9c"
-    },
-    "USDT": {
-        "symbol": "USDT",
-        "decimals": 18,
-        "name": "Tether USD",
-        "address": "0x55d398326f99059ff775485246999027b3197955"
     },
     "USDZ": {
         "symbol": "USDZ",
@@ -11576,12 +11589,6 @@ BSC_TOKENS = {
         "decimals": 9,
         "name": "WB-Mining",
         "address": "0x19575b407e2dd49cb2ba46375a7fba37c8ec553a"
-    },
-    "WBNB": {
-        "symbol": "WBNB",
-        "decimals": 18,
-        "name": "Wrapped BNB",
-        "address": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
     },
     "wBTCZ": {
         "symbol": "wBTCZ",
@@ -12128,12 +12135,6 @@ BSC_TOKENS = {
         "decimals": 18,
         "name": "XROW",
         "address": "0x7cc1c126be3128c1f0441a893cd6220498b27650"
-    },
-    "XRP": {
-        "symbol": "XRP",
-        "decimals": 18,
-        "name": "XRP Token",
-        "address": "0x1d2f0da169ceb9fc7b3144628db156f3f6c60dbe"
     },
     "XRPC": {
         "symbol": "XRPC",

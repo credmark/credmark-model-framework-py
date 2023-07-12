@@ -1,6 +1,69 @@
 # pylint:disable=too-many-lines
 
 OPTIMISM_TOKENS = {
+    "BTC": {
+        "symbol": "BTC",
+        "decimals": 8,
+        "name": "Bitcoin",
+        "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "set_loaded": True,
+    },
+    "ETH": {
+        "symbol": "ETH",
+        "decimals": 18,
+        "name": "Ethereum",
+        "address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000",
+        "is_native_token": True
+    },
+    "USDC": {
+        "symbol": "USDC",
+        "decimals": 6,
+        "name": "USD Coin",
+        "address": "0x7f5c764cbc14f9669b88837ca1490cca17c31607"
+    },
+    "WBTC": {
+        "symbol": "WBTC",
+        "decimals": 8,
+        "name": "Wrapped BTC",
+        "address": "0x68f180fcce6836688e9084f035309e29bf0a2095"
+    },
+    "DAI": {
+        "symbol": "DAI",
+        "decimals": 18,
+        "name": "Dai Stablecoin",
+        "address": "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1"
+    },
+    "WETH": {
+        "symbol": "WETH",
+        "decimals": 18,
+        "name": "Wrapped Ether",
+        "address": "0x4200000000000000000000000000000000000006"
+    },
+    "wstETH": {
+        "symbol": "wstETH",
+        "decimals": 18,
+        "name": "Wrapped liquid staked Ether 2.0",
+        "address": "0x1f32b1c2345538c0c6f582fcb022739c4a194ebb"
+    },
+    "CRV": {
+        "symbol": "CRV",
+        "decimals": 18,
+        "name": "Curve DAO Token",
+        "address": "0x0994206dfe8de6ec6920ff4d779b0d950605fb53"
+    },
+    "THALES": {
+        "symbol": "THALES",
+        "decimals": 18,
+        "name": "Thales DAO Token",
+        "address": "0x217d47011b23bb961eb6d93ca9945b7501a5bb11"
+    },
+    "USDT": {
+        "symbol": "USDT",
+        "decimals": 6,
+        "name": "Tether USD",
+        "address": "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58"
+    },
+    ###
     "0xBTC": {
         "symbol": "0xBTC",
         "decimals": 8,
@@ -67,12 +130,6 @@ OPTIMISM_TOKENS = {
         "name": "BarnBridge Governance Token (Optimism)",
         "address": "0x3e7ef8f50246f725885102e8238cbba33f276747"
     },
-    "BTC": {
-        "symbol": "BTC",
-        "decimals": 8,
-        "name": "Bitcoin",
-        "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-    },
     "BUILD": {
         "symbol": "BUILD",
         "decimals": 18,
@@ -97,23 +154,11 @@ OPTIMISM_TOKENS = {
         "name": "Collab.Land",
         "address": "0x8b21e9b7daf2c4325bf3d18c1beb79a347fe902a"
     },
-    "CRV": {
-        "symbol": "CRV",
-        "decimals": 18,
-        "name": "Curve DAO Token",
-        "address": "0x0994206dfe8de6ec6920ff4d779b0d950605fb53"
-    },
     "CTSI": {
         "symbol": "CTSI",
         "decimals": 18,
         "name": "Cartesi Token",
         "address": "0xec6adef5e1006bb305bb1975333e8fc4071295bf"
-    },
-    "DAI": {
-        "symbol": "DAI",
-        "decimals": 18,
-        "name": "Dai Stablecoin",
-        "address": "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1"
     },
     "DAI+": {
         "symbol": "DAI+",
@@ -168,13 +213,6 @@ OPTIMISM_TOKENS = {
         "decimals": 18,
         "name": "Erica Social Token",
         "address": "0x7b0bcc23851bbf7601efc9e9fe532bf5284f65d3"
-    },
-    "ETH": {
-        "symbol": "ETH",
-        "decimals": 18,
-        "name": "Ether",
-        "address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000",
-        "is_native_token": True
     },
     "fBOMB": {
         "symbol": "fBOMB",
@@ -506,12 +544,6 @@ OPTIMISM_TOKENS = {
         "name": "Tarot",
         "address": "0x375488f097176507e39b9653b88fdc52cde736bf"
     },
-    "THALES": {
-        "symbol": "THALES",
-        "decimals": 18,
-        "name": "Thales DAO Token",
-        "address": "0x217d47011b23bb961eb6d93ca9945b7501a5bb11"
-    },
     "TheDAO": {
         "symbol": "TheDAO",
         "decimals": 16,
@@ -554,23 +586,11 @@ OPTIMISM_TOKENS = {
         "name": "USD+",
         "address": "0x73cb180bf0521828d8849bc8cf2b920918e23032"
     },
-    "USDC": {
-        "symbol": "USDC",
-        "decimals": 6,
-        "name": "USD Coin",
-        "address": "0x7f5c764cbc14f9669b88837ca1490cca17c31607"
-    },
     "USDD": {
         "symbol": "USDD",
         "decimals": 18,
         "name": "Decentralized USD",
         "address": "0x7113370218f31764c1b6353bdf6004d86ff6b9cc"
-    },
-    "USDT": {
-        "symbol": "USDT",
-        "decimals": 6,
-        "name": "Tether USD",
-        "address": "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58"
     },
     "UST": {
         "symbol": "UST",
@@ -601,24 +621,6 @@ OPTIMISM_TOKENS = {
         "decimals": 18,
         "name": "Wrapped AllianceBlock Token",
         "address": "0x276cf9e7a43d1b9422decd1f1d2608f3d588caad"
-    },
-    "WBTC": {
-        "symbol": "WBTC",
-        "decimals": 8,
-        "name": "Wrapped BTC",
-        "address": "0x68f180fcce6836688e9084f035309e29bf0a2095"
-    },
-    "WETH": {
-        "symbol": "WETH",
-        "decimals": 18,
-        "name": "Wrapped Ether",
-        "address": "0x4200000000000000000000000000000000000006"
-    },
-    "wstETH": {
-        "symbol": "wstETH",
-        "decimals": 18,
-        "name": "Wrapped liquid staked Ether 2.0",
-        "address": "0x1f32b1c2345538c0c6f582fcb022739c4a194ebb"
     },
     "wTBT": {
         "symbol": "wTBT",

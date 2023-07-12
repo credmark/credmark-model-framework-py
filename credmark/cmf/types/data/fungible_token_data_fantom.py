@@ -1,6 +1,50 @@
 # pylint:disable=too-many-lines
 
 FANTOM_TOKENS = {
+    "FTM": {
+        "symbol": "FTM",
+        "address": '0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF',
+        "decimals": 18,
+        "name": "Fantom",
+        "is_native_token": True,
+    },
+    "USDC": {
+        "symbol": "USDC",
+        "decimals": 6,
+        "name": "USD Coin",
+        "address": "0x04068da6c83afcfa0e13ba15a6696662335d5b75"
+    },
+    "FRAX": {
+        "symbol": "FRAX",
+        "decimals": 18,
+        "name": "Frax",
+        "address": "0xdc301622e621166bd8e82f2ca0a26c13ad0be355"
+    },
+    "DAI": {
+        "symbol": "DAI",
+        "decimals": 18,
+        "name": "Dai Stablecoin",
+        "address": "0x8d11ec38a3eb5e956b052f67da8bdc9bef8abf3e"
+    },
+    "fUSDT": {
+        "symbol": "fUSDT",
+        "decimals": 6,
+        "name": "Frapped USDT",
+        "address": "0x049d68029688eabf473097a2fc38ef61633a3c7a"
+    },
+    "BTC": {
+        "symbol": "BTC",
+        "decimals": 8,
+        "name": "Bitcoin",
+        "address": "0x321162cd933e2be498cd2267a90534a804051b11"
+    },
+    "WFTM": {
+        "symbol": "WFTM",
+        "decimals": 18,
+        "name": "Wrapped Fantom",
+        "address": "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83"
+    },
+    ###
     "1ART": {
         "symbol": "1ART",
         "decimals": 18,
@@ -145,12 +189,6 @@ FANTOM_TOKENS = {
         "name": "Betswap.gg",
         "address": "0x5a33869045db8a6a16c9f351293501cfd92cf7ed"
     },
-    "BTC": {
-        "symbol": "BTC",
-        "decimals": 8,
-        "name": "Bitcoin",
-        "address": "0x321162cd933e2be498cd2267a90534a804051b11"
-    },
     "BUILD": {
         "symbol": "BUILD",
         "decimals": 18,
@@ -210,12 +248,6 @@ FANTOM_TOKENS = {
         "decimals": 18,
         "name": "Curve DAO",
         "address": "0x1e4f97b9f9f913c46f1632781732927b9019c68b"
-    },
-    "DAI": {
-        "symbol": "DAI",
-        "decimals": 18,
-        "name": "Dai Stablecoin",
-        "address": "0x8d11ec38a3eb5e956b052f67da8bdc9bef8abf3e"
     },
     "DEUS": {
         "symbol": "DEUS",
@@ -301,12 +333,6 @@ FANTOM_TOKENS = {
         "name": "Fantom Libero Financial Freedom",
         "address": "0xc3f069d7439baf6d4d6e9478d9cc77778e62d147"
     },
-    "FRAX": {
-        "symbol": "FRAX",
-        "decimals": 18,
-        "name": "Frax",
-        "address": "0xdc301622e621166bd8e82f2ca0a26c13ad0be355"
-    },
     "frxETH": {
         "symbol": "frxETH",
         "decimals": 18,
@@ -324,19 +350,6 @@ FANTOM_TOKENS = {
         "decimals": 18,
         "name": "Fantom USD",
         "address": "0xad84341756bf337f5a0164515b1f6f993d194e1f"
-    },
-    "fUSDT": {
-        "symbol": "fUSDT",
-        "decimals": 6,
-        "name": "Frapped USDT",
-        "address": "0x049d68029688eabf473097a2fc38ef61633a3c7a"
-    },
-    "FTM": {
-        "symbol": "FTM",
-        "address": '0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF',
-        "decimals": 18,
-        "name": "Fantom",
-        "is_native_token": True,
     },
     "FXS": {
         "symbol": "FXS",
@@ -866,12 +879,6 @@ FANTOM_TOKENS = {
         "name": "USD Balance",
         "address": "0x6fc9383486c163fa48becdec79d6058f984f62ca"
     },
-    "USDC": {
-        "symbol": "USDC",
-        "decimals": 6,
-        "name": "USD Coin",
-        "address": "0x04068da6c83afcfa0e13ba15a6696662335d5b75"
-    },
     "UST": {
         "symbol": "UST",
         "decimals": 6,
@@ -913,12 +920,6 @@ FANTOM_TOKENS = {
         "decimals": 18,
         "name": "veDAO Token",
         "address": "0x911da02c1232a3c3e1418b834a311921143b04d7"
-    },
-    "WFTM": {
-        "symbol": "WFTM",
-        "decimals": 18,
-        "name": "Wrapped Fantom",
-        "address": "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83"
     },
     "WIGO": {
         "symbol": "WIGO",

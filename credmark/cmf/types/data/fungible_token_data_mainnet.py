@@ -52,6 +52,42 @@ MAINNET_TOKENS = {
         "name": "USD Coin",
         "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
     },
+    "ODDZ": {
+        "symbol": "ODDZ",
+        "decimals": 18,
+        "name": "OddzToken",
+        "address": '0xCd2828fc4D8E8a0eDe91bB38CF64B1a81De65Bf6',
+    },
+    "RING": {
+        "symbol": "RING",
+        "decimals": 18,
+        "name": "Darwinia Network Native Token",
+        "address": "0x9469d013805bffb7d3debe5e7839237e535ec483",
+    },
+    "MPL": {
+        "symbol": "MPL",
+        "decimals": 18,
+        "name": "Maple Token",
+        "address": "0x33349B282065b0284d756F0577FB39c158F935e6"
+    },
+    "XAUt": {
+        "symbol": "XAUt",
+        "decimals": 6,
+        "name": "Tether Gold",
+        "address": "0x68749665FF8D2d112Fa859AA293F07A622782F38",
+    },
+    "Metis": {
+        "symbol": "Metis",
+        "decimals": 18,
+        "name": "Metis Token",
+        "address": "0x9E32b13ce7f2E80A01932B42553652E053D6ed8e",
+    },
+    "FST": {
+        "symbol": "FST",
+        "decimals": 6,
+        "name": "1irst",
+        "address": "0x310c93dfc1c5e34cdf51678103f63c41762089cd"
+    },
     "EUROC": {
         "symbol": "EUROC",
         "decimals": 6,
@@ -545,12 +581,6 @@ MAINNET_TOKENS = {
         "decimals": 18,
         "name": "Origin Dollar",
         "address": "0x2A8e1E676Ec238d8A992307B495b45B3fEAa5e86"
-    },
-    "MPL": {
-        "symbol": "MPL",
-        "decimals": 18,
-        "name": "Maple Token",
-        "address": "0x33349B282065b0284d756F0577FB39c158F935e6"
     },
     "BADGER": {
         "symbol": "BADGER",
