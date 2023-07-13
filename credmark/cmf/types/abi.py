@@ -135,7 +135,7 @@ class ABI(list):
         self.__loaded_functions = False
 
     def __dir__(self):
-        return ['functions', 'events', 'find_events', 'find_functions']
+        return ['functions', 'events']
 
     @property
     def functions(self):
