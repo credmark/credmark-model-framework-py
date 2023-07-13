@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.125 [2023-07-13]
+* fix: multi-chain token metadata
+* feat: add raw_abi for ABI events and functions
+
 0.8.124 [2023-07-10]
 * docs: update immutableModel and IncrementalModel
 * tokens: fix ETH and BTC loading in Polygon
