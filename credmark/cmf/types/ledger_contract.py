@@ -264,7 +264,9 @@ class ContractLedger:
     @property
     def events(self):
         return ContractEntityFactory(
-            ContractEntityType.EVENTS, self._proxy_address if self._proxy_address else self._address, self._abi)
+            ContractEntityType.EVENTS,
+            self._proxy_address if self._proxy_address else self._address,
+            self._abi)
 
 
 class ContractEntityFactory:
