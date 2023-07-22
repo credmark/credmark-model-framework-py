@@ -3,9 +3,10 @@
 History
 -------
 
-0.8.125 [2023-07-13]
+0.8.125 [2023-07-13, 2023-07-22]
 * fix: multi-chain token metadata
 * feat: add raw_abi for ABI events and functions
+* fix: type cast from linting
 
 0.8.124 [2023-07-10]
 * docs: update immutableModel and IncrementalModel
