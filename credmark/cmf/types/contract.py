@@ -1,7 +1,7 @@
 # pylint: disable=line-too-long
 
 import json
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Union, cast
 
 from web3 import Web3
 from web3.contract.async_contract import AsyncContract as Web3AsyncContract
@@ -68,7 +68,7 @@ def get_slot_proxy_address(context, contract_address,
                 cc.functions.getController().call()))
             lookupName = cc.functions.controllerLookupName().call()
             slot_proxy_address = Address(
-                controller.functions.lookup(lookupName).call())
+                cast(str, controller.functions.lookup(lookupName).call()))
         elif contract_name in ['OwnedUpgradeabilityProxy']:
             if contract_address == Address('0x0000000000085d4780B73119b644AE5ecd22b376'):
                 slot_proxy_address = Address(
@@ -440,7 +440,7 @@ class Contract(Account):
                 raise ModelRunError('Unable to obtain abi for the contract')
         return self._ledger
 
-    #pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
     def fetch_events(self,
                      event,
                      argument_filters=None,

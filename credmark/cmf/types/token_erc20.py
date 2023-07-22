@@ -1,9 +1,9 @@
 # pylint: disable=line-too-long, protected-access, too-many-branches
 
-from typing import Any, List, Union
+from typing import Any, List, Union, cast
 
 from eth_typing.evm import ChecksumAddress
-from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput
+from web3.exceptions import ABIFunctionNotFound, BadFunctionCallOutput, InvalidAddress
 
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
@@ -333,8 +333,16 @@ class Token(Contract):
     def scaled(self, value) -> float:
         return value / (10 ** self.decimals)
 
-    def balance_of(self, address: ChecksumAddress) -> int:
-        balance = self.functions.balanceOf(address).call()
+    def balance_of(self, address: ChecksumAddress | str | bytes | Address) -> int:
+        if isinstance(address, Address):
+            address = address.checksum
+        elif isinstance(address, (bytes, int)):
+            address = Address(address).checksum
+        try:
+            balance = cast(int, self.functions.balanceOf(address).call())
+        except InvalidAddress:
+            balance = cast(int, self.functions.balanceOf(Address(address).checksum).call())
+
         return balance
 
     def balance_of_scaled(self, address: ChecksumAddress) -> float:
