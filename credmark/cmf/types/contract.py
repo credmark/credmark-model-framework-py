@@ -431,10 +431,12 @@ class Contract(Account):
         if self._ledger is None:
             if self.proxy_for is not None and self.proxy_for.abi is not None:
                 # TODO: Need to stitch all past proxied tables to become one table
-                self._ledger = ContractLedger(address=self.proxy_for.address,
+                self._ledger = ContractLedger(address=self.address,
+                                              proxy_address=self.proxy_for.address,
                                               abi=self.proxy_for.abi)
             elif self.abi is not None:
                 self._ledger = ContractLedger(address=str(self.address),
+                                              proxy_address=None,
                                               abi=self.abi)
             else:
                 raise ModelRunError('Unable to obtain abi for the contract')

@@ -250,9 +250,10 @@ class ContractLedger:
     They will be converted back to integer with .to_dataframe().
     """
 
-    def __init__(self, address: str, abi: ABI):
+    def __init__(self, address: str, proxy_address: Optional[str], abi: ABI):
         super().__init__()
         self._address = address
+        self._proxy_address = proxy_address
         self._abi = abi
 
     @property
@@ -263,7 +264,9 @@ class ContractLedger:
     @property
     def events(self):
         return ContractEntityFactory(
-            ContractEntityType.EVENTS, self._address, self._abi)
+            ContractEntityType.EVENTS,
+            self._proxy_address if self._proxy_address else self._address,
+            self._abi)
 
 
 class ContractEntityFactory:
