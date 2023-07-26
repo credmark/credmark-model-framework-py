@@ -345,7 +345,7 @@ class Token(Contract):
 
         return balance
 
-    def balance_of_scaled(self, address: ChecksumAddress) -> float:
+    def balance_of_scaled(self, address: ChecksumAddress | str | bytes | Address) -> float:
         return self.scaled(self.balance_of(address))
 
     @property

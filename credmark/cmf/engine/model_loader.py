@@ -351,7 +351,7 @@ class ModelLoader:
                 except:
                     err = ModelManifestWriteError(manifest_file)
                     self.logger.error(err)
-                    raise err
+                    raise err from None
         except Exception as err:
             self.logger.error(
                 f'Error writing manifest file {manifest_file}: {err}')
