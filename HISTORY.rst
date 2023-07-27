@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.127 [2023-07-27]
+* fix: contract instance type
+* fix: balance_of_scaled
+
 0.8.126 [2023-07-22]
 * fix: proxy address in contract events / functions
 
