@@ -4,7 +4,6 @@ import json
 from typing import List, Optional, Sequence, Union, cast
 
 from web3 import Web3
-from web3.contract.async_contract import AsyncContract as Web3AsyncContract
 from web3.contract.contract import Contract as Web3Contract
 
 import credmark.cmf.model
@@ -151,7 +150,7 @@ class Contract(Account):
 
     _meta: ContractMetaData = PrivateAttr(
         default_factory=lambda: Contract.ContractMetaData())  # pylint: disable=unnecessary-lambda
-    _instance: Union[Web3Contract, Web3AsyncContract, None] = PrivateAttr(default=None)
+    _instance: Web3Contract | None = PrivateAttr(default=None)
     _proxy_implementation = PrivateAttr(default=None)
     _loaded = PrivateAttr(default=False)
     _ledger = PrivateAttr(default=None)
@@ -247,8 +246,8 @@ class Contract(Account):
                     f'abi not available for address {self.address}')
         self._loaded = True
 
-    @ property
-    def instance(self) -> Union[Web3Contract, Web3AsyncContract]:
+    @property
+    def instance(self) -> Web3Contract:
         """
         A web3 Web3Contract instance or raises a
         ``ModelDataError`` if no ABI is available.
