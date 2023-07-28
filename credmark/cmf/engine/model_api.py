@@ -110,7 +110,7 @@ class ModelApi:
         url = urljoin(self.__url, path)
         return self._get(url)
 
-    def run_model(self,  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
+    def run_model(self,  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches, too-many-statements
                   slug: str,
                   version: Union[str, None],
                   chain_id: int,
@@ -154,6 +154,7 @@ class ModelApi:
                 data=json_dumps(req),
                 headers={'Content-Type': 'application/json'},
                 timeout=RUN_REQUEST_TIMEOUT)
+
             resp.raise_for_status()
             resp_obj = resp.json()
 
@@ -165,6 +166,23 @@ class ModelApi:
             if 'output' not in resp_obj and 'error' not in resp_obj:
                 raise ModelRunRequestError(
                     f'Model {slug} run request response missing both output and error', str(201))
+
+            return resp_obj['slug'], resp_obj['version'], resp_obj.get('output'), resp_obj.get('error'), resp_obj['dependencies']
+
+        except requests.exceptions.HTTPError:
+            # handle error from resp.raise_for_status()
+            if resp is not None:
+                resp_obj = resp.json()
+            else:
+                resp_obj = {}
+            if raise_error_results:
+                err_obj = resp_obj.get('error')
+                if err_obj is not None:
+                    raise create_instance_from_error_dict(err_obj) from None
+
+            if 'output' not in resp_obj and 'error' not in resp_obj:
+                raise ModelRunRequestError(
+                    f'Model {slug} run request response missing both output and error', str(201)) from None
 
             return resp_obj['slug'], resp_obj['version'], resp_obj.get('output'), resp_obj.get('error'), resp_obj['dependencies']
 
@@ -182,14 +200,14 @@ class ModelApi:
                 logger.error(f'Error api response {resp.text}')
 
                 try:
-                    error_result = resp.json()
+                    resp_obj = resp.json()
                 except Exception:
                     raise ModelRunRequestError(
                         f'Model run error response: {resp.text}', str(resp.status_code)) from None
 
                 raise ModelRunRequestError(
-                    str(error_result.get('message', 'Error response from runner api')),
-                    str(error_result.get('statusCode', 500)),
+                    str(resp_obj.get('message', 'Error response from runner api')),
+                    str(resp_obj.get('statusCode', 500)),
                 ) from None
 
             raise ModelRunRequestError(

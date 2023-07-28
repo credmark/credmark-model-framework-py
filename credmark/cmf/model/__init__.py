@@ -1,4 +1,4 @@
-# pylint: line-too-long
+# pylint: disable=line-too-long
 
 import inspect
 import logging
