@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.128 [2023-07-28]
+* feat: check incremental model result for valid block range in [from_block, context.block_number]
+* fix: handle change in error code from runner api
+
 0.8.127 [2023-07-27]
 * fix: contract instance type
 * fix: balance_of_scaled
