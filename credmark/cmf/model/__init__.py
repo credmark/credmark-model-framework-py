@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 import inspect
 import logging
 import re
@@ -424,7 +426,12 @@ class IncrementalModel(BaseModel):
         """
         Decorator for credmark.cmf.model.IncrementalModel subclasses to describe the model.
 
-        It shall return a parameterized class of `BlockSeries`.
+        It shall return a parameterized class of `BlockSeries` with below requirements:
+        1. Results with block number less than or equal to the current block number
+        2. Results with block number greater than or equal to `from_block`.
+        3. blockNumber >= 0
+
+        BlockSeries object has a method `.to_range(from_block, to_block)` to filter for [from_block, to_block]
 
         Example usage::
 
@@ -456,7 +463,6 @@ class IncrementalModel(BaseModel):
                         ),
                     ])
 
-
         Parameters:
             slug: slug (short unique name) for the model. Can contain alpha-numeric and
                   and underscores. Contributor slugs must start with ``"contrib."``
@@ -477,6 +483,7 @@ class IncrementalModel(BaseModel):
                    ``ModelDataErrorDesc`` instance (or a list of instances) describing the
                    errors. Defaults to None.
         """
+
         return _describe(
             slug=slug,
             version=version,
@@ -524,6 +531,15 @@ class ImmutableModel(BaseModel):
                                ModelErrorDesc, None] = None):
         """
         Decorator for credmark.cmf.model.ImmutableModel subclasses to describe the model.
+
+        1. Immutable model shall raise an error if result is not available before a block
+
+        ```
+        if self.context.block_number < 100:
+            raise ModelDataError('Block number shall be greater than 100')
+        ```
+
+        2. Immutable model shall return the type of ImmutableOutput with the field `firstResultBlockNumber`.
 
         Example usage::
 
