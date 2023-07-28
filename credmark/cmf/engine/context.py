@@ -854,9 +854,15 @@ class EngineModelContext(ModelContext):
                 if is_parent(model_class, IncrementalModel):
                     inc_model_class = cast(Type[IncrementalModel], model_class)
                     model = inc_model_class(context)
-                    from_block = BlockNumber(
-                        0) if from_block is None else from_block
+                    from_block = (BlockNumber(0) if from_block is None
+                                  else from_block)
                     output = model.run(input, from_block)
+                    output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
+                    invalid_range = output.invalid_range(from_block, context.block_number)  # type: ignore
+                    if len(invalid_range.series) > 0:
+                        err = ModelOutputError(message='Found BlockSeriesRows with block results out of range',
+                                               detail=invalid_range)
+                        raise err
                 else:
                     model = model_class(context)
                     output = model.run(input)

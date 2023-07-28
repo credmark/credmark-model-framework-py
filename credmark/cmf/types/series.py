@@ -1,3 +1,5 @@
+# pylint: disable = line-too-long
+
 from datetime import datetime
 from typing import Callable, Generic, List, Optional, Tuple, TypeVar, Union
 
@@ -113,6 +115,18 @@ class BlockSeries(IterableListGenericDTO[BlockSeriesRow[DTOCLS]], Generic[DTOCLS
             return pd.DataFrame(
                 data=series_in_list,
                 columns=['blockNumber', 'blockTime'] + [c for c, _ in fields])
+
+    def to_range(self, from_block, to_block) -> "BlockSeries[DTOCLS]":
+        """
+        Parameters:
+            from_block (int): The starting block number
+            to_block (int): The ending block number
+        Extract data with the specified range of block numbers
+        """
+        return self.__class__(series=[s for s in self.series if from_block <= s.blockNumber <= to_block])
+
+    def invalid_range(self, from_block, to_block):
+        return self.__class__(series=[s for s in self.series if s.blockNumber > to_block or s.blockNumber < from_block])
 
 
 class SeriesModelStartEndIntervalInput(DTO):
