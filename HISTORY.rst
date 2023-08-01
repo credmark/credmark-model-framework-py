@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.129 [2023-08-01]
+* fix: cache web3 chain_id
+
 0.8.128 [2023-07-28]
 * feat: check incremental model result for valid block range in [from_block, context.block_number]
 * fix: handle change in error code from runner api
