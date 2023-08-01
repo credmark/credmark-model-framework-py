@@ -1,23 +1,12 @@
 
-import asyncio
 import json
 import os
 from typing import Optional, Union
 
-from web3 import (AsyncHTTPProvider, AsyncWeb3, HTTPProvider, Web3,
-                  WebsocketProvider)
-from web3._utils.rpc_abi import RPC
-from web3.middleware.async_cache import async_construct_simple_cache_middleware
-from web3.middleware.cache import construct_simple_cache_middleware
+from web3 import AsyncHTTPProvider, AsyncWeb3, HTTPProvider, Web3, WebsocketProvider
 
-from credmark.cmf.engine.web3_helper import inject_poa
+from credmark.cmf.engine.web3_helper import add_chain_id_cache, inject_poa
 from credmark.cmf.types.network import CREDMARK_PUBLIC_PROVIDERS, Network
-
-SIMPLE_CACHE_RPC_CHAIN_ID = {
-    RPC.web3_clientVersion,
-    RPC.net_version,
-    RPC.eth_chainId
-}
 
 
 class Web3Registry:
@@ -49,14 +38,7 @@ class Web3Registry:
         if Network(chain_id).uses_geth_poa:
             inject_poa(w3)
 
-        cache_chain_id_middleware = construct_simple_cache_middleware(
-            rpc_whitelist=SIMPLE_CACHE_RPC_CHAIN_ID
-        )
-
-        w3.middleware_onion.add(
-            cache_chain_id_middleware,
-            name="chain_id_cache"
-        )
+        add_chain_id_cache(w3)
 
         return w3
 
@@ -81,14 +63,7 @@ class Web3Registry:
         if Network(chain_id).uses_geth_poa:
             inject_poa(w3)
 
-        cache_chain_id_middleware = asyncio.run(async_construct_simple_cache_middleware(
-            rpc_whitelist=SIMPLE_CACHE_RPC_CHAIN_ID
-        ))
-
-        w3.middleware_onion.add(
-            cache_chain_id_middleware,
-            name="async_chain_id_cache"
-        )
+        add_chain_id_cache(w3)
 
         return w3
 
