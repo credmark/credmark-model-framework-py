@@ -5,7 +5,7 @@ from typing import Optional, Union
 
 from web3 import AsyncHTTPProvider, AsyncWeb3, HTTPProvider, Web3, WebsocketProvider
 
-from credmark.cmf.engine.web3_helper import add_chain_id_cache, inject_poa
+from credmark.cmf.engine.web3_helper import add_chain_id_cache, add_chain_id_cache_async, inject_poa
 from credmark.cmf.types.network import CREDMARK_PUBLIC_PROVIDERS, Network
 
 
@@ -63,7 +63,7 @@ class Web3Registry:
         if Network(chain_id).uses_geth_poa:
             inject_poa(w3)
 
-        add_chain_id_cache(w3)
+        add_chain_id_cache_async(w3)
 
         return w3
 
