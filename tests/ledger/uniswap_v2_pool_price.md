@@ -14,8 +14,6 @@ set mintsig = 'Mint(address,uint256,uint256)';
 set swapsig = 'Swap(address,uint256,uint256,uint256,uint256,address)';
 set paircreatedsig = 'PairCreated(address,address,address,uint256)';
 
-
-
 // sum() over (partition by contract_address order by block_number asc) as liquidity0,
 select
     contract_address,
