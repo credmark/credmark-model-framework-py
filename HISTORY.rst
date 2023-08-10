@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.130 [2023-08-10]
+* fix: remove is_just from Maybe
+
 0.8.129 [2023-08-01]
 * fix: cache web3 chain_id
 
