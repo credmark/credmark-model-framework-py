@@ -14,9 +14,6 @@ DTOCLS = TypeVar('DTOCLS')
 class Maybe(GenericDTO, Generic[DTOCLS]):
     just: Optional[DTOCLS] = DTOField(None)
 
-    def is_just(self):
-        return self.just is not None
-
     def get_just(self, obj: DTOCLS) -> DTOCLS:
         return self.just if self.just is not None else obj
 
@@ -74,7 +71,7 @@ class Some(GenericDTO, Generic[DTOCLS]):
         return pd.DataFrame(data_dict)
 
     def sorted(self, key=None, reverse=False):
-        return sorted(self.some, key=key, reverse=reverse) # type: ignore
+        return sorted(self.some, key=key, reverse=reverse)  # type: ignore
 
 
 class Records(GenericDTO):
