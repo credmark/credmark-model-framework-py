@@ -45,7 +45,8 @@ NATIVE_TOKEN = {
     },
     int(Network.Optimism): {
         "symbol": "ETH",
-        "address": '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000',
+        # "address": '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000',
+        "address": '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
         "decimals": 18,
         "name": "Ethereum",
         "is_native_token": True,

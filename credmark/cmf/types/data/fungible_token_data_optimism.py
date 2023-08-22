@@ -12,7 +12,9 @@ OPTIMISM_TOKENS = {
         "symbol": "ETH",
         "decimals": 18,
         "name": "Ethereum",
-        "address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000",
+        # "address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000",
+        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        "set_loaded": True,
         "is_native_token": True
     },
     "USDC": {
