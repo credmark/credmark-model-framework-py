@@ -16,6 +16,21 @@ ERC20_BASE_ABI = [
         "stateMutability": "view",
         "type": "function"
     },
+    # Alternative ABI function
+    {
+        "constant": True,
+        "inputs": [],
+        "name": "NAME",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": False,
+        "stateMutability": "view",
+        "type": "function"
+    },
     {
         "constant": False,
         "inputs": [
@@ -94,6 +109,21 @@ ERC20_BASE_ABI = [
         "stateMutability": "view",
         "type": "function"
     },
+    # Alternative ABI function
+    {
+        "constant": True,
+        "inputs": [],
+        "name": "DECIMALS",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "payable": False,
+        "stateMutability": "view",
+        "type": "function"
+    },
     {
         "constant": True,
         "inputs": [
@@ -117,6 +147,21 @@ ERC20_BASE_ABI = [
         "constant": True,
         "inputs": [],
         "name": "symbol",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": False,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    # Alternative ABI function
+    {
+        "constant": True,
+        "inputs": [],
+        "name": "SYMBOL",
         "outputs": [
             {
                 "name": "",

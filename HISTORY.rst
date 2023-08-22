@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.131 [2023-08-22]
+* feat: multicall
+
 0.8.130 [2023-08-10]
 * fix: remove is_just from Maybe
 
