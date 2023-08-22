@@ -1,3 +1,5 @@
+# pylint:disable=protected-access
+
 import logging
 from dataclasses import dataclass
 from typing import Any, Iterator, Sequence, TypeVar, cast
@@ -31,7 +33,12 @@ class MulticallResult:
 @dataclass
 class MulticallDecodedResult:
     success: bool
-    return_data_decoded: Any | None
+    return_data_decoded: Any
+
+    def unwrap(self):
+        if not self.success:
+            raise ModelEngineError("Multicall function failed")
+        return self.return_data_decoded
 
 
 # https://github.com/mds1/multicall#deployments
@@ -69,7 +76,8 @@ class Web3Multicall:
                 self._contract = None
 
         if self._contract is None:
-            address = cast(ChecksumAddress, MULTICALL_CONTRACTS.get(context.network))
+            address = cast(ChecksumAddress,
+                           MULTICALL_CONTRACTS.get(context.network))
             self._contract = context.web3.eth.contract(
                 address=context.web3.to_checksum_address(address),
                 abi=MULTICALL_V3_ABI, bytecode=MULTICALL_V3_BYTECODE
@@ -87,11 +95,13 @@ class Web3Multicall:
             targets_with_data.append(
                 (
                     contract_function.address,
-                    HexBytes(contract_function._encode_transaction_data()),  # pylint:disable=protected-access
+                    HexBytes(contract_function._encode_transaction_data()
+                             ),
                 )
             )
 
-            outputs = contract_function.abi["outputs"] if "outputs" in contract_function.abi else []
+            outputs = contract_function.abi["outputs"] if "outputs" in contract_function.abi else [
+            ]
             output_types.append(
                 [output["type"] if "type" in output else None for output in outputs]
             )
@@ -125,7 +135,8 @@ class Web3Multicall:
 
             raise BadFunctionCallOutput(msg) from e
 
-        normalized_data = map_abi_data(BASE_RETURN_NORMALIZERS, output_types, output_data)
+        normalized_data = map_abi_data(
+            BASE_RETURN_NORMALIZERS, output_types, output_data)
 
         if len(normalized_data) == 1:
             return normalized_data[0]
@@ -153,8 +164,8 @@ class Web3Multicall:
                 MulticallResult(success, data)
                 for success, data in result
             ]
-        except (ContractLogicError, OverflowError, ValueError):
-            raise ModelEngineError("Multicall function failed")
+        except (ContractLogicError, OverflowError, ValueError) as err:
+            raise ModelEngineError("Multicall function failed") from err
 
     def try_aggregate(
         self,
@@ -189,6 +200,15 @@ class Web3Multicall:
 
         return result
 
+    def try_aggregate_unwrap(
+            self,
+            contract_functions: Sequence[ContractFunction],
+            *,
+            require_success: bool = False,
+            batch_size: int = 100):
+        return [x.unwrap() for x in self.try_aggregate(
+            contract_functions, require_success=require_success, batch_size=batch_size)]
+
     # pylint:disable=too-many-locals
     def try_aggregate_same_function(
         self,
@@ -203,7 +223,8 @@ class Web3Multicall:
 
         tx_data = HexBytes(contract_function._encode_transaction_data())  # pylint:disable=protected-access
         outputs = contract_function.abi["outputs"] if "outputs" in contract_function.abi else []
-        output_type = [output["type"] for output in outputs if "type" in output]
+        output_type = [output["type"]
+                       for output in outputs if "type" in output]
 
         for chunk in divide_chunks(contract_addresses, batch_size):
             for multicall_result in self._try_aggregate(
@@ -230,12 +251,29 @@ class Web3Multicall:
         if not failed or not fallback_contract_function:
             return result
 
-        fallback_results = self.try_aggregate_same_function(fallback_contract_function,
-                                                            [address for (_, address) in failed],
-                                                            require_success=require_success,
-                                                            batch_size=batch_size)
+        fallback_results = self.try_aggregate_same_function(
+            fallback_contract_function,
+            [address for (_, address) in failed],
+            require_success=require_success,
+            batch_size=batch_size)
 
         for idx, fallback_result in enumerate(fallback_results):
             result[failed[idx][0]] = fallback_result
 
         return result
+
+    def try_aggregate_same_function_unwrap(
+            self,
+            contract_function: ContractFunction,
+            contract_addresses: Sequence[ChecksumAddress],
+            *,
+            require_success: bool = False,
+            batch_size: int = 100,
+            fallback_contract_function: ContractFunction | None = None):
+        return [x.unwrap() for x in self.try_aggregate_same_function(
+            contract_function,
+            contract_addresses,
+            require_success=require_success,
+            batch_size=batch_size,
+            fallback_contract_function=fallback_contract_function,
+        )]

@@ -2,11 +2,10 @@
 
 import unittest
 
-from credmark.cmf.engine.model_unittest import ModelTestCase, model_context
-from credmark.cmf.types.token_erc20 import Token
-from credmark.cmf.types.address import Address
-
 import credmark.cmf.model
+from credmark.cmf.engine.model_unittest import ModelTestCase, model_context
+from credmark.cmf.types.address import Address
+from credmark.cmf.types.token_erc20 import Token
 
 
 class TestModel(ModelTestCase):
@@ -23,6 +22,11 @@ class TestModel(ModelTestCase):
 
         self.assertEqual(decimals_result.success, True)
         self.assertEqual(decimals_result.return_data_decoded, 6)
+
+        [symbol_result2, decimals_result2] = m.try_aggregate_unwrap([t.functions.symbol(), t.functions.decimals()])
+
+        self.assertEqual(symbol_result2, symbol_result)
+        self.assertEqual(decimals_result2, decimals_result)
 
     @model_context(chain_id=1, block_number=17_000_000)
     def test_try_aggregate_same_function(self):
@@ -42,6 +46,13 @@ class TestModel(ModelTestCase):
 
         self.assertEqual(b2.success, True)
         self.assertEqual(b2.return_data_decoded, 0)
+
+        results2 = m.try_aggregate_same_function_unwrap(
+            t1.functions.balanceOf(Address(address).checksum),
+            [t1.address.checksum, t2.address.checksum])
+
+        self.assertEqual(results2[0], b1.return_data_decoded)
+        self.assertEqual(results2[1], b2.return_data_decoded)
 
     @model_context(chain_id=1, block_number=17_000_000)
     def test_try_aggregate_same_function_failure(self):
