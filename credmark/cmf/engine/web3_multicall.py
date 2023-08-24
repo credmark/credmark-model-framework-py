@@ -35,7 +35,9 @@ class MulticallDecodedResult:
     success: bool
     return_data_decoded: Any
 
-    def unwrap(self):
+    def unwrap(self, replace_with: Any = None) -> Any:
+        if replace_with:
+            return self.return_data_decoded if self.success else replace_with
         if not self.success:
             raise ModelEngineError("Multicall function failed")
         return self.return_data_decoded
@@ -54,6 +56,12 @@ MULTICALL_CONTRACTS = NetworkDict(lambda: "0xcA11bde05977b3631167028862bE2a17397
     Network.Fantom: "0xcA11bde05977b3631167028862bE2a173976CA11",
     Network.ArbitrumOne: "0xcA11bde05977b3631167028862bE2a173976CA11",
     Network.Avalanche: "0xcA11bde05977b3631167028862bE2a173976CA11",
+})
+
+MULTICALL_DEPLOYMENT = NetworkDict(lambda: "0xcA11bde05977b3631167028862bE2a173976CA11", {
+    Network.Mainnet: 14353601,
+    Network.Optimism: 4286263,
+    Network.ArbitrumOne: 7654707,
 })
 
 T = TypeVar("T")
@@ -167,6 +175,27 @@ class Web3Multicall:
         except (ContractLogicError, OverflowError, ValueError) as err:
             raise ModelEngineError("Multicall function failed") from err
 
+    @property
+    def is_deployed(self) -> bool:
+        context = credmark.cmf.model.ModelContext.current_context()
+        deployment = MULTICALL_DEPLOYMENT.get(context.network)
+        if deployment is None:
+            return True
+        return self.contract.w3.eth.default_block >= deployment
+
+    def run_sequence(self, contract_functions: Sequence[ContractFunction], require_success) -> list[MulticallDecodedResult]:
+        results = []
+        for contract_function in contract_functions:
+            try:
+                result = contract_function.call()
+                results.append(MulticallDecodedResult(True, result))
+            except (ContractLogicError, OverflowError, ValueError) as err:
+                if require_success:
+                    raise ModelEngineError(
+                        "Multicall function failed") from err
+                results.append(MulticallDecodedResult(False, None))
+        return results
+
     def try_aggregate(
         self,
         contract_functions: Sequence[ContractFunction],
@@ -174,6 +203,8 @@ class Web3Multicall:
         require_success: bool = False,
         batch_size: int = 100,
     ) -> list[MulticallDecodedResult]:
+        if not self.is_deployed:
+            return self.run_sequence(contract_functions, require_success)
         result: list[MulticallDecodedResult] = []
         for chunk in divide_chunks(contract_functions, batch_size):
             targets_with_data, output_types = self._build_payload(chunk)
@@ -205,8 +236,9 @@ class Web3Multicall:
             contract_functions: Sequence[ContractFunction],
             *,
             require_success: bool = False,
-            batch_size: int = 100):
-        return [x.unwrap() for x in self.try_aggregate(
+            batch_size: int = 100,
+            replace_with: Any = None):
+        return [x.unwrap(replace_with) for x in self.try_aggregate(
             contract_functions, require_success=require_success, batch_size=batch_size)]
 
     # pylint:disable=too-many-locals
@@ -221,8 +253,10 @@ class Web3Multicall:
     ) -> list[MulticallDecodedResult]:
         result: list[MulticallDecodedResult] = []
 
-        tx_data = HexBytes(contract_function._encode_transaction_data())  # pylint:disable=protected-access
-        outputs = contract_function.abi["outputs"] if "outputs" in contract_function.abi else []
+        tx_data = HexBytes(contract_function._encode_transaction_data(
+        ))  # pylint:disable=protected-access
+        outputs = contract_function.abi["outputs"] if "outputs" in contract_function.abi else [
+        ]
         output_type = [output["type"]
                        for output in outputs if "type" in output]
 

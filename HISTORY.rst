@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.132 [2023-08-24]
+* feat: multicall: add unwrap() and run_sequence() to run multicall before its deployment
+
 0.8.131 [2023-08-22]
 * feat: multicall
 
