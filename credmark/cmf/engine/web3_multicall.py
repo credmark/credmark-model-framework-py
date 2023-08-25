@@ -39,7 +39,7 @@ class MulticallDecodedResult:
         if replace_with:
             return self.return_data_decoded if self.success else replace_with
         if not self.success:
-            raise ModelEngineError("Multicall function failed")
+            raise ModelEngineError("Multicall function failed during unwrap")
         return self.return_data_decoded
 
 
@@ -185,14 +185,14 @@ class Web3Multicall:
 
     def run_sequence(self, contract_functions: Sequence[ContractFunction], require_success) -> list[MulticallDecodedResult]:
         results = []
-        for contract_function in contract_functions:
+        for n_call, contract_function in enumerate(contract_functions):
             try:
                 result = contract_function.call()
                 results.append(MulticallDecodedResult(True, result))
             except (ContractLogicError, OverflowError, ValueError) as err:
                 if require_success:
                     raise ModelEngineError(
-                        "Multicall function failed") from err
+                        f"Multicall function failed for [{n_call}] on {contract_function}") from err
                 results.append(MulticallDecodedResult(False, None))
         return results
 
