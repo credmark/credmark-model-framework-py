@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.133 [2023-10-04]
+* refactor: enhance multicall with fallback to rpc batch
+* fix: unwrap and type hinting in multicall methods
+
 0.8.132 [2023-08-24]
 * feat: multicall: add unwrap() and run_sequence() to run multicall before its deployment
 

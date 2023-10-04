@@ -7,8 +7,9 @@ from typing import Any, Generator, Type, TypeVar, Union, overload
 
 from web3 import AsyncWeb3, Web3
 
-from credmark.cmf.engine.web3_multicall import Web3Multicall
-from credmark.cmf.engine.web3_registry import Web3Registry
+from credmark.cmf.engine.web3.batch_fallback import (Web3Batch,
+                                                     Web3BatchFallback)
+from credmark.cmf.engine.web3.registry import Web3Registry
 from credmark.cmf.types import BlockNumber, Network
 from credmark.dto import DTOType
 
@@ -85,7 +86,7 @@ class ModelContext:
         self._web3_registry = web3_registry
         self._web3 = None
         self._web3_async = None
-        self._multicall = None
+        self._web3_batch = None
         self._ledger = None
         self._historical_util = None
         self._models = None
@@ -221,14 +222,14 @@ class ModelContext:
         return self._ledger
 
     @property
-    def multicall(self) -> Web3Multicall:
+    def web3_batch(self) -> Web3Batch:
         """
-        A :class:`~credmark.cmf.engine.web3_multicall.Web3Multicall` instance which can be
+        A :class:`~credmark.cmf.engine.web3.web3_multicall.Web3Multicall` instance which can be
         used to batch query web3 using multicall.
         """
-        if self._multicall is None:
-            self._multicall = Web3Multicall()
-        return self._multicall
+        if self._web3_batch is None:
+            self._web3_batch = Web3BatchFallback()
+        return self._web3_batch
 
     @property
     def historical(self) -> HistoricalUtil:

@@ -24,7 +24,7 @@ from .engine.github import get_latest_cmf_version_tag
 from .engine.mocks import MockGenerator, ModelMockRunner
 from .engine.model_api import ModelApi
 from .engine.model_loader import ModelLoader
-from .engine.web3_registry import Web3Registry
+from .engine.web3.registry import Web3Registry
 
 logger = logging.getLogger(__name__)
 
