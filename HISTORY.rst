@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.134 [2023-10-16]
+* fix: abi loading
+
 0.8.133 [2023-10-04]
 * refactor: enhance multicall with fallback to rpc batch
 * fix: unwrap and type hinting in multicall methods
