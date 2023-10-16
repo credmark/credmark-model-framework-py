@@ -125,7 +125,10 @@ class Funcs(Events):
 class ABI(list):
     def __init__(self, abi: Union[List, str, None] = None):
         if isinstance(abi, str):
-            self._abi = json.loads(abi)
+            try:
+                self._abi = json.loads(abi)
+            except json.decoder.JSONDecodeError:
+                self._abi = json.loads(abi.replace('\\t', ''))
         else:
             self._abi = abi
         super().__init__([] if not self._abi else self._abi)

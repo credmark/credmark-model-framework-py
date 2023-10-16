@@ -7,8 +7,7 @@ from typing import Any, Generator, Type, TypeVar, Union, overload
 
 from web3 import AsyncWeb3, Web3
 
-from credmark.cmf.engine.web3.batch_fallback import (Web3Batch,
-                                                     Web3BatchFallback)
+from credmark.cmf.engine.web3.batch_fallback import Web3Batch, Web3BatchFallback
 from credmark.cmf.engine.web3.registry import Web3Registry
 from credmark.cmf.types import BlockNumber, Network
 from credmark.dto import DTOType
