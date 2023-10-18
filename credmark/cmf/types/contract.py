@@ -52,7 +52,8 @@ def get_slot_proxy_address(context, contract_address,
                                'AppProxyUpgradeable',
                                'ZoraProxy',
                                'TokenProxy',
-                               'MeterGovProxy']:
+                               'MeterGovProxy',
+                               'InstaToken']:
             # EIP-897
             cc = context.web3.eth.contract(address=Address(
                 contract_address).checksum, abi=contract_abi)
