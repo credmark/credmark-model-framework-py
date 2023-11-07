@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.135 [2023-11-07]
+* fix: disable polygon ledger
+
 0.8.134 [2023-10-16]
 * fix: abi loading
 
