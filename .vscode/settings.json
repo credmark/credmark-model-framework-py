@@ -4,7 +4,12 @@
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.diagnosticMode": "workspace",
     "autopep8.args": ["--max-line-length", "120"],
-    "ruff.args": ["--ignore", "E501", "--ignore", "F841"],
+    "ruff.lint.args": [
+        "--ignore",
+        "E501",
+        "--ignore",
+        "F841",
+      ],
     "python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
