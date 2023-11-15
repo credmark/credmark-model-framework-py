@@ -14,6 +14,7 @@ from .address import Address, evm_address_regex
 from .block_number import BlockNumberOutOfRangeError
 from .contract import Contract
 from .data.erc_standard_data import ERC20_BASE_ABI
+from .data.erc_standard_data_alt import ERC20_BASE_ABI_ALT
 from .data.fungible_token_data import FUNGIBLE_TOKEN_DATA_BY_ADDRESS, FUNGIBLE_TOKEN_DATA_BY_SYMBOL, NATIVE_TOKEN
 
 
@@ -189,15 +190,16 @@ class Token(Contract):
 
         super()._load()
 
-    def as_erc20(self, set_loaded=False):
+    def as_erc20(self, set_loaded=False, use_alt=False):
+        erc20_abi = ABI(ERC20_BASE_ABI_ALT if use_alt else ERC20_BASE_ABI)
         if set_loaded:
-            self.set_abi(ABI(ERC20_BASE_ABI), set_loaded=True)
+            self.set_abi(erc20_abi, set_loaded=True)
             return self
 
         try:
             _ = self.abi
         except ModelDataError:
-            self._meta.abi = ABI(ERC20_BASE_ABI)
+            self._meta.abi = ABI(erc20_abi)
 
         if self.proxy_for is not None:
             try:
@@ -206,7 +208,7 @@ class Token(Contract):
                 raise BlockNumberOutOfRangeError(
                     err.data.message + f' for contract {self.address}') from err
             except ModelDataError:
-                self.proxy_for.set_abi(ERC20_BASE_ABI, set_loaded=True)
+                self.proxy_for.set_abi(erc20_abi, set_loaded=True)
 
         return self
 

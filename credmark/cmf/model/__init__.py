@@ -158,6 +158,7 @@ def validate_model_slug(slug: str, prefix: Union[str, None] = None):
             'Slugs must be not more than {MAX_SLUG_LENGTH} characters.')
 
 
+# pylint: disable=too-many-arguments
 def _describe(*,
               slug: str,
               version: str,
@@ -196,7 +197,7 @@ def _describe(*,
 
         cls = cls_in
 
-        mod_parts = cls.__dict__['__module__'].split('.')
+        mod_parts = cls.__dict__['__module__'].split('.')  # pylint: disable=too-many-arguments
         if len(mod_parts) > 1 and mod_parts[1] == 'contrib':
             validate_model_slug(slug, 'contrib.')
         else:
@@ -291,6 +292,7 @@ class BaseModel:
         Subclasses may override this method to do
         any model instance initiation.
         """
+# pylint: disable=too-many-arguments
 
     def convert_dict_to_dto(self,
                             data: dict,
@@ -315,6 +317,7 @@ class Model(BaseModel):
     - ``context`` - a ``ModelContext`` instance
     """
 
+    # pylint: disable=too-many-arguments
     @classmethod
     def describe(cls,
                  *,
@@ -408,6 +411,8 @@ class IncrementalModel(BaseModel):
     These models should always return a BlockSeries. Use additional `from_block` arg
     in run method to only return BlockSeries for `from_block` -> `context.block`.
     """
+
+    # pylint: disable=too-many-arguments
     @classmethod
     def describe(cls,
                  *,
@@ -514,6 +519,8 @@ class ImmutableModel(BaseModel):
     For blocks before which data is unavailable, the model should throw ModelDataError.
     Behind the scenes it uses `CachePolicy.IMMUTABLE` cache.
     """
+
+    # pylint: disable=too-many-arguments
     @classmethod
     def describe(cls,
                  *,
