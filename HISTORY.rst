@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.136 [2023-11-15]
+* feat: add support to ERC20 ABI for symbols of bytes32 type
+
 0.8.135 [2023-11-07]
 * fix: disable polygon ledger
 
