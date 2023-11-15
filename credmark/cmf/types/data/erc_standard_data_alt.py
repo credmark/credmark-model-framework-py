@@ -153,7 +153,7 @@ ERC20_BASE_ABI_ALT = [
         "outputs": [
             {
                 "name": "",
-                "type": "byte32"
+                "type": "bytes32"
             }
         ],
         "payable": False,
