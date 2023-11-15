@@ -211,7 +211,7 @@ class ConsoleModel(Model):
         print(f'The block stack is {self.blocks}')
 
     def save(self, filename):
-        ipython = get_ipython()
+        ipython = get_ipython()  # pylint: disable=used-before-assignment
         if ipython is not None:
             # ipython will automatically add a .py ext
             ipython.magic(f"%save -f {filename}")
@@ -335,6 +335,7 @@ class ConsoleModel(Model):
                         f'\nCurrent context at block {self.blocks[-2]}. '
                         f'Remaining block stack {self.blocks[:-2]}.')
 
+        # pylint: disable=used-before-assignment
         IPython.embed(banner1=banner1,
                       banner2=banner2,
                       exit_msg=exit_msg)
