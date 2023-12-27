@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.137 [2023-12-27]
+* fix: support for python 3.12
+
 0.8.136 [2023-11-15]
 * feat: add support to ERC20 ABI for symbols of bytes32 type
 
