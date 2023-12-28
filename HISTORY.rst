@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.138 [2023-12-28]
+* fix: event contract ledger for proxy contracts
+
 0.8.137 [2023-12-27]
 * fix: support for python 3.12
 

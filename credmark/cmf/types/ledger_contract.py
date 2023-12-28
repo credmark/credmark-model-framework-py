@@ -258,14 +258,19 @@ class ContractLedger:
 
     @property
     def functions(self):
+        # TODO: Validate
+        # Check if functions are emitted by proxy contract or
+        # underlying implementation contract
         return ContractEntityFactory(
             ContractEntityType.FUNCTIONS, self._address, self._abi)
 
     @property
     def events(self):
+        # When using a proxy pattern, events emitted during the execution
+        # of functions are logged by the proxy contract.
         return ContractEntityFactory(
             ContractEntityType.EVENTS,
-            self._proxy_address if self._proxy_address else self._address,
+            self._address,
             self._abi)
 
 
