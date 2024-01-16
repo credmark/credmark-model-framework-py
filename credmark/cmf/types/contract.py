@@ -1,6 +1,5 @@
 # pylint: disable=line-too-long
 
-import json
 from typing import List, Optional, Sequence, Union, cast
 
 from web3 import Web3
@@ -8,7 +7,8 @@ from web3.contract.contract import Contract as Web3Contract
 
 import credmark.cmf.model
 from credmark.cmf.engine.cache import ContractMetaCache
-from credmark.cmf.model.errors import ModelDataError, ModelEngineError, ModelRunError
+from credmark.cmf.model.errors import (ModelDataError, ModelEngineError,
+                                       ModelRunError)
 from credmark.dto import DTO, DTOField, IterableListGenericDTO, PrivateAttr
 
 from .abi import ABI
@@ -152,9 +152,9 @@ class Contract(Account):
     _meta: ContractMetaData = PrivateAttr(
         default_factory=lambda: Contract.ContractMetaData())  # pylint: disable=unnecessary-lambda
     _instance: Web3Contract | None = PrivateAttr(default=None)
-    _proxy_implementation = PrivateAttr(default=None)
-    _loaded = PrivateAttr(default=False)
-    _ledger = PrivateAttr(default=None)
+    _loaded: bool = PrivateAttr(default=False)
+    _ledger: Optional[ContractLedger] = PrivateAttr(default=None)
+    _custom_abi: Optional[ABI] = PrivateAttr(default=None)
 
     class Config:
         arbitrary_types_allowed = True
@@ -162,7 +162,7 @@ class Contract(Account):
         schema_extra = {
             'examples': Account.Config.schema_extra['examples'] +
             [{'address': '0x1F98431c8aD98523631AE4a59f267346ea31F984',
-              'abi': '(Optional) contract abi JSON string'
+              'abi': '(Optional) contract abi JSON string or list'
               }]
         }
 
@@ -176,10 +176,10 @@ class Contract(Account):
             if isinstance(meta, type(self._meta)):
                 self._meta = meta
 
-        if isinstance(data.get('abi'), str):
-            self._meta.abi = json.loads(data['abi'])
+        if isinstance(data.get('abi'), (str, list)):
+            self._meta.abi = ABI(data['abi'])
+            self._custom_abi = self._meta.abi
         self._instance = None
-        self._proxy_implementation = None
         self._ledger = None
 
     def _load(self):
@@ -223,23 +223,26 @@ class Contract(Account):
             self._meta.abi = ABI(res.get('abi'))
             self._meta.is_transparent_proxy = res.get('proxy', 0) == "1"
 
+            implementation_address = None
             if self._meta.contract_name in ['BeaconProxy', 'BridgeToken'] and self._meta.is_transparent_proxy:
                 # TODO: Special case for BeaconProxy, proxy address may not up to date
-                proxy_address = res.get('implementation')
-                self._meta.proxy_implementation = Contract(
-                    address=proxy_address)
+                implementation_address = res.get('implementation')
             else:
                 slot_proxy_address = get_slot_proxy_address(
                     context, self.address, self._meta.contract_name, self._meta.abi)
 
                 if slot_proxy_address is not None and not slot_proxy_address.is_null():
                     # TODO: as we only store the latest implementation in DB but not for the history.
-                    self._meta.proxy_implementation = Contract(
-                        address=slot_proxy_address)
+                    implementation_address = slot_proxy_address
                 elif self._meta.is_transparent_proxy:
-                    proxy_address = res.get('implementation')
-                    self._meta.proxy_implementation = Contract(
-                        address=proxy_address)
+                    implementation_address = res.get('implementation')
+
+            if implementation_address is not None:
+                self._meta.proxy_implementation = Contract(
+                    address=implementation_address,
+                    # If a custom ABI is provided, we pass it on to
+                    # the implementation contract to use as fallback
+                    abi=self._custom_abi)
             self._loaded = True
         else:
             if self._meta.abi is None:

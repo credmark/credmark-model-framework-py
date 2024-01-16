@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.139 [2024-01-16]
+* fix: custom ABI loading for proxy contracts
+
 0.8.138 [2023-12-28]
 * fix: event contract ledger for proxy contracts
 

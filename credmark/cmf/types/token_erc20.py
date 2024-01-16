@@ -179,14 +179,14 @@ class Token(Contract):
             raise ModelDataError(
                 f'NULL address ({Address.null()}) is not a valid Token Address')
 
+        if 'abi' not in data:
+            data['abi'] = ERC20_BASE_ABI
+
         super().__init__(**data)
 
     def _load(self):
         if self._loaded:
             return
-
-        if self._meta.abi is None:
-            self._meta.abi = ABI(ERC20_BASE_ABI)
 
         super()._load()
 
