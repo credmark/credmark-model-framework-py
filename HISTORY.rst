@@ -3,6 +3,11 @@
 History
 -------
 
+0.8.140 [2024-01-29]
+* fix: ledger table return type
+* fix: docs generation
+* fix: line length linter settings
+
 0.8.139 [2024-01-16]
 * fix: custom ABI loading for proxy contracts
 
