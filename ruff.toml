@@ -1,5 +1,5 @@
-line-length = 120
-select = ["E", "F", "B",  "W", "I001"]
+line-length = 100
+select = ["E", "F", "B", "W", "I001"]
 ignore = ["E501", "B905", "F401"]
 unfixable = ["B"]
 [per-file-ignores]
