@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath('../..'))  # Source code dir relative to this
 sys.path.insert(1, os.path.abspath('../ext'))  # Source code dir relative to this file
 
 project = 'Credmark Model Framework'
-copyright = '2022, Credmark'
+copyright = '2024, Credmark'
 author = 'Credmark'
 
 release = '0.1'

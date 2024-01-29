@@ -20,12 +20,10 @@ import pkgutil
 import pydoc
 import re
 import sys
-import warnings
 from gettext import NullTranslations
 from os import path
-from typing import Any, Dict, List, NamedTuple, Optional, Sequence, Set, Tuple, Type, Union
+from typing import Any, Dict, List, NamedTuple, Optional, Sequence, Set, Tuple, Type
 
-import sphinx.ext.autodoc.importer
 import sphinx.locale
 from jinja2 import TemplateNotFound
 from jinja2.sandbox import SandboxedEnvironment
@@ -33,12 +31,11 @@ from sphinx import __display_version__, package_dir
 from sphinx.application import Sphinx
 from sphinx.builders import Builder
 from sphinx.config import Config
-from sphinx.deprecation import RemovedInSphinx50Warning
-from sphinx.errors import PycodeError
 from sphinx.ext.autodoc import Documenter
 from sphinx.ext.autodoc.importer import import_module
+from sphinx.ext.autosummary import ImportExceptionGroup, get_documenter, import_by_name, import_ivar_by_name
 from sphinx.locale import __
-from sphinx.pycode import ModuleAnalyzer
+from sphinx.pycode import ModuleAnalyzer, PycodeError
 from sphinx.registry import SphinxComponentRegistry
 from sphinx.util import logging, rst, split_full_qualified_name
 from sphinx.util.inspect import getall, safe_getattr
@@ -103,18 +100,6 @@ def setup_documenters(app: Any) -> None:
         app.registry.add_documenter(documenter.objtype, documenter)
 
 
-def _simple_info(msg: str) -> None:
-    warnings.warn('_simple_info() is deprecated.',
-                  RemovedInSphinx50Warning, stacklevel=2)
-    print(msg)
-
-
-def _simple_warn(msg: str) -> None:
-    warnings.warn('_simple_warn() is deprecated.',
-                  RemovedInSphinx50Warning, stacklevel=2)
-    print('WARNING: ' + msg, file=sys.stderr)
-
-
 def _underline(title: str, line: str = '=') -> str:
     if '\n' in title:
         raise ValueError('Can only underline single lines')
@@ -124,15 +109,9 @@ def _underline(title: str, line: str = '=') -> str:
 class AutosummaryRenderer:
     """A helper class for rendering."""
 
-    def __init__(self, app: Union[Builder, Sphinx], template_dir: Optional[str] = None) -> None:
+    def __init__(self, app: Sphinx) -> None:
         if isinstance(app, Builder):
-            warnings.warn('The first argument for AutosummaryRenderer has been '
-                          'changed to Sphinx object',
-                          RemovedInSphinx50Warning, stacklevel=2)
-        if template_dir:
-            warnings.warn('template_dir argument for AutosummaryRenderer is deprecated.',
-                          RemovedInSphinx50Warning, stacklevel=2)
-
+            raise ValueError('Expected a Sphinx application object!')
         # credmark_autosummary change:
         system_templates_path = [os.path.join(os.path.dirname(__file__), 'templates')]
         loader = SphinxTemplateLoader(app.srcdir, app.config.templates_path,
@@ -143,24 +122,9 @@ class AutosummaryRenderer:
         self.env.filters['e'] = rst.escape
         self.env.filters['underline'] = _underline
 
-        if isinstance(app, (Sphinx, DummyApplication)):
-            if app.translator:
-                self.env.add_extension("jinja2.ext.i18n")
-                self.env.install_gettext_translations(app.translator)
-        elif isinstance(app, Builder):
-            if app.app.translator:
-                self.env.add_extension("jinja2.ext.i18n")
-                self.env.install_gettext_translations(app.app.translator)
-
-    def exists(self, template_name: str) -> bool:
-        """Check if template file exists."""
-        warnings.warn('AutosummaryRenderer.exists() is deprecated.',
-                      RemovedInSphinx50Warning, stacklevel=2)
-        try:
-            self.env.get_template(template_name)
-            return True
-        except TemplateNotFound:
-            return False
+        if app.translator:
+            self.env.add_extension("jinja2.ext.i18n")
+            self.env.install_gettext_translations(app.translator)
 
     def render(self, template_name: str, context: Dict) -> str:
         """Render a template file."""
@@ -185,7 +149,7 @@ class ModuleScanner:
         self.app = app
         self.object = obj
 
-    def get_object_type(self, _name: str, value: Any) -> str:
+    def get_object_type(self, name: str, value: Any) -> str:
         return get_documenter(self.app, value, self.object).objtype
 
     def is_skipped(self, name: str, value: Any, objtype: str) -> bool:
@@ -200,6 +164,12 @@ class ModuleScanner:
 
     def scan(self, imported_members: bool) -> List[str]:
         members = []
+        try:
+            analyzer = ModuleAnalyzer.for_module(self.object.__name__)
+            attr_docs = analyzer.find_attr_docs()
+        except PycodeError:
+            attr_docs = {}
+
         for name in members_of(self.object, self.app.config):
             try:
                 value = safe_getattr(self.object, name)
@@ -211,7 +181,9 @@ class ModuleScanner:
                 continue
 
             try:
-                if inspect.ismodule(value):
+                if ('', name) in attr_docs:
+                    imported = False
+                elif inspect.ismodule(value):
                     imported = True
                 elif safe_getattr(value, '__module__') != self.object.__name__:
                     imported = True
@@ -264,10 +236,7 @@ def generate_autosummary_content(name: str, obj: Any, parent: Any,
             return False
 
     def get_class_members(obj: Any) -> Dict[str, Any]:
-        if qualname:
-            members = sphinx.ext.autodoc.importer.get_class_members(obj, [qualname], safe_getattr)
-        else:
-            members = sphinx.ext.autodoc.importer.get_class_members(obj, [], safe_getattr)
+        members = sphinx.ext.autodoc.get_class_members(obj, [qualname], safe_getattr)
         return {name: member.object for name, member in members.items()}
 
     def get_module_members(obj: Any) -> Dict[str, Any]:
@@ -286,14 +255,10 @@ def generate_autosummary_content(name: str, obj: Any, parent: Any,
             return get_class_members(obj)
         return {}
 
-    def get_members(obj: Any,
-                    types: Set[str],
-                    include_public: Optional[List[str]] = None,
+    def get_members(obj: Any, types: Set[str], include_public: List[str] = [],
                     imported: bool = True) -> Tuple[List[str], List[str]]:
         items: List[str] = []
         public: List[str] = []
-
-        include_public = [] if include_public is None else include_public
 
         all_members = get_all_members(obj)
         for name, value in all_members.items():
@@ -351,8 +316,10 @@ def generate_autosummary_content(name: str, obj: Any, parent: Any,
     if doc.objtype == 'module':
         scanner = ModuleScanner(app, obj)
         ns['members'] = scanner.scan(imported_members)
-        ns['functions'], ns['all_functions'] = get_members(obj, {'function'}, imported=imported_members)
-        ns['classes'], ns['all_classes'] = get_members(obj, {'class'}, imported=imported_members)
+        ns['functions'], ns['all_functions'] = \
+            get_members(obj, {'function'}, imported=imported_members)
+        ns['classes'], ns['all_classes'] = \
+            get_members(obj, {'class'}, imported=imported_members)
 
         # credmark_autosummary
         ns['pydantic_models'], ns['all_pydantic_models'] = get_members(
@@ -361,16 +328,22 @@ def generate_autosummary_content(name: str, obj: Any, parent: Any,
             obj, {'pydantic_settings'}, imported=imported_members)
         # -- credmark_autosummary
 
-        ns['exceptions'], ns['all_exceptions'] = get_members(obj, {'exception'}, imported=imported_members)
-        ns['attributes'], ns['all_attributes'] = get_module_attrs(ns['members'])
+        ns['exceptions'], ns['all_exceptions'] = \
+            get_members(obj, {'exception'}, imported=imported_members)
+        ns['attributes'], ns['all_attributes'] = \
+            get_module_attrs(ns['members'])
         ispackage = hasattr(obj, '__path__')
         if ispackage and recursive:
             ns['modules'], ns['all_modules'] = get_modules(obj)
     elif doc.objtype == 'class':
         ns['members'] = dir(obj)
-        ns['inherited_members'] = set(dir(obj)) - set(obj.__dict__.keys())
-        ns['methods'], ns['all_methods'] = get_members(obj, {'method'}, ['__init__'])
-        ns['attributes'], ns['all_attributes'] = get_members(obj, {'attribute', 'property'})
+        ns['inherited_members'] = \
+            set(dir(obj)) - set(obj.__dict__.keys())
+        ns['methods'], ns['all_methods'] = \
+            get_members(obj, {'method'}, ['__init__'])
+        ns['attributes'], ns['all_attributes'] = \
+            get_members(obj, {'attribute', 'property'})
+
         # credmark_autosummary
         ns['is_int'] = issubclass(obj, int)
         ns['is_str'] = issubclass(obj, str)
@@ -402,18 +375,9 @@ def generate_autosummary_content(name: str, obj: Any, parent: Any,
 
 def generate_autosummary_docs(sources: List[str], output_dir: Optional[str] = None,
                               suffix: str = '.rst', base_path: Optional[str] = None,
-                              builder: Optional[Builder] = None, template_dir: Optional[str] = None,
                               imported_members: bool = False, app: Any = None,
                               overwrite: bool = True, encoding: str = 'utf-8') -> None:
-    if builder:
-        warnings.warn('builder argument for generate_autosummary_docs() is deprecated.',
-                      RemovedInSphinx50Warning, stacklevel=2)
-
-    if template_dir:
-        warnings.warn('template_dir argument for generate_autosummary_docs() is deprecated.',
-                      RemovedInSphinx50Warning, stacklevel=2)
-
-    showed_sources = list(sorted(sources))
+    showed_sources = sorted(sources)
     if len(showed_sources) > 20:
         showed_sources = showed_sources[:10] + ['...'] + showed_sources[-10:]
     logger.info(__('[autosummary] generating autosummary for: %s') %
@@ -445,11 +409,11 @@ def generate_autosummary_docs(sources: List[str], output_dir: Optional[str] = No
             # a :toctree: option
             continue
 
-        path1 = output_dir or os.path.abspath(entry.path)
-        ensuredir(path1)
+        path = output_dir or os.path.abspath(entry.path)
+        ensuredir(path)
 
         try:
-            name, obj, parent, modname = import_by_name(entry.name, grouped_exception=True)
+            name, obj, parent, modname = import_by_name(entry.name)
             qualname = name.replace(modname + ".", "")
         except ImportExceptionGroup as exc:
             try:
@@ -462,7 +426,7 @@ def generate_autosummary_docs(sources: List[str], output_dir: Optional[str] = No
                 else:
                     exceptions = exc.exceptions + [exc2]
 
-                errors = list(set("* %s: %s" % (type(e).__name__, e) for e in exceptions))
+                errors = list({"* %s: %s" % (type(e).__name__, e) for e in exceptions})
                 logger.warning(__('[autosummary] failed to import %s.\nPossible hints:\n%s'),
                                entry.name, '\n'.join(errors))
                 continue
@@ -475,7 +439,7 @@ def generate_autosummary_docs(sources: List[str], output_dir: Optional[str] = No
                                                imported_members, app, entry.recursive, context,
                                                modname, qualname)
 
-        filename = os.path.join(path1, filename_map.get(name, name) + suffix)
+        filename = os.path.join(path, filename_map.get(name, name) + suffix)
         if os.path.isfile(filename):
             with open(filename, encoding=encoding) as f:
                 old_content = f.read()
@@ -495,7 +459,6 @@ def generate_autosummary_docs(sources: List[str], output_dir: Optional[str] = No
     if new_files:
         generate_autosummary_docs(new_files, output_dir=output_dir,
                                   suffix=suffix, base_path=base_path,
-                                  builder=builder, template_dir=template_dir,
                                   imported_members=imported_members, app=app,
                                   overwrite=overwrite)
 
@@ -515,26 +478,21 @@ def find_autosummary_in_files(filenames: List[str]) -> List[AutosummaryEntry]:
     return documented
 
 
-def find_autosummary_in_docstring(name: str,
-                                  module: Optional[str] = None,
-                                  filename: Optional[str] = None
-                                  ) -> List[AutosummaryEntry]:
+def find_autosummary_in_docstring(
+    name: str, filename: Optional[str] = None
+) -> List[AutosummaryEntry]:
     """Find out what items are documented in the given object's docstring.
 
     See `find_autosummary_in_lines`.
     """
-    if module:
-        warnings.warn('module argument for find_autosummary_in_docstring() is deprecated.',
-                      RemovedInSphinx50Warning, stacklevel=2)
-
     try:
-        _real_name, obj, _parent, _modname = import_by_name(name, grouped_exception=True)
+        real_name, obj, parent, modname = import_by_name(name)
         lines = pydoc.getdoc(obj).splitlines()
         return find_autosummary_in_lines(lines, module=name, filename=filename)
     except AttributeError:
         pass
     except ImportExceptionGroup as exc:
-        errors = list(set("* %s: %s" % (type(e).__name__, e) for e in exc.exceptions))
+        errors = list({"* %s: %s" % (type(e).__name__, e) for e in exc.exceptions})
         print('Failed to import %s.\nPossible hints:\n%s' % (name, '\n'.join(errors)))
     except SystemExit:
         print("Failed to import '%s'; the module executes module level "
@@ -542,10 +500,9 @@ def find_autosummary_in_docstring(name: str,
     return []
 
 
-def find_autosummary_in_lines(lines: List[str],
-                              module: Optional[str] = None,
-                              filename: Optional[str] = None
-                              ) -> List[AutosummaryEntry]:
+def find_autosummary_in_lines(
+    lines: List[str], module: Optional[str] = None, filename: Optional[str] = None
+) -> List[AutosummaryEntry]:
     """Find out what items appear in autosummary:: directives in the
     given lines.
 
@@ -585,7 +542,7 @@ def find_autosummary_in_lines(lines: List[str],
             m = toctree_arg_re.match(line)
             if m:
                 toctree = m.group(1)
-                if filename and toctree:
+                if filename:
                     toctree = os.path.join(os.path.dirname(filename),
                                            toctree)
                 continue
@@ -603,10 +560,10 @@ def find_autosummary_in_lines(lines: List[str],
                 name = m.group(1).strip()
                 if name.startswith('~'):
                     name = name[1:]
-                if current_module and not name.startswith(current_module + '.'):
+                if current_module and \
+                   not name.startswith(current_module + '.'):
                     name = "%s.%s" % (current_module, name)
-                if toctree and template:
-                    documented.append(AutosummaryEntry(name, toctree, template, recursive))
+                documented.append(AutosummaryEntry(name, toctree, template, recursive))
                 continue
 
             if not line.strip() or line.startswith(base_indent + " "):

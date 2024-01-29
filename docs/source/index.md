@@ -19,5 +19,5 @@ components
 errors
 tests
 reference
-api
+sdk
 ```
