@@ -3,6 +3,7 @@ from typing import List
 from credmark.cmf.types.ledger import (
     BlockTable,
     ContractTable,
+    LedgerTable,
     LogTable,
     ReceiptTable,
     TokenBalanceTable,
@@ -114,6 +115,10 @@ class LedgerQueryTokenBalance(TokenBalanceTable, LedgerQuery):
         super().__init__(**kwargs)
 
 
+class LedgerQueryTable(LedgerQuery, LedgerTable):
+    pass
+
+
 class Ledger:
     """
     Performs queries on ledger data.
@@ -138,7 +143,7 @@ class Ledger:
         return [prop for prop in dir(self) if
                 isinstance(getattr(self, prop), LedgerQuery)]
 
-    def table(self, table_name: str) -> List[str]:
+    def table(self, table_name: str) -> LedgerQueryTable:
         """
         Returns a query handle for the given table name.
         """
