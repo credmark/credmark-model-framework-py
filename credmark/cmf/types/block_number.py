@@ -1,6 +1,6 @@
 # pylint: disable=line-too-long
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any, Dict, Union
 
 from web3.types import BlockData, Timestamp
@@ -113,7 +113,7 @@ class BlockNumber(IntDTO):
                     blockNumber=number,
                     maxBlockNumber=context.block_number if context is not None else None))
 
-        return super().__new__(BlockNumber, number)
+        return super().__new__(cls, number)
 
     def __init__(self,
                  number: int,  # pylint: disable=unused-argument
@@ -212,6 +212,11 @@ class BlockNumber(IntDTO):
     def from_datetime(cls, in_dt: datetime):
         """Get the BlockNumber instance at or before the datetime timestamp."""
         return cls.from_timestamp(in_dt.replace(tzinfo=timezone.utc).timestamp())
+
+    @classmethod
+    def from_date(cls, in_d: date):
+        """Get the BlockNumber instance at or before the date timestamp."""
+        return cls.from_timestamp(cls.get_dt(in_d.year, in_d.month, in_d.day))
 
     @classmethod
     def from_ymd(cls, year: int, month: int, day: int, hour=0, minute=0, second=0, microsecond=0):
