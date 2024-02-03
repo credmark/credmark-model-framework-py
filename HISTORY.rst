@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.141 [2024-02-03]
+* feat: block number from date
+* fix: model api http error logs
+
 0.8.140 [2024-01-29]
 * fix: ledger table return type
 * fix: docs generation
