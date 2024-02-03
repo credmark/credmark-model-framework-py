@@ -169,7 +169,9 @@ class ModelApi:
 
             return resp_obj['slug'], resp_obj['version'], resp_obj.get('output'), resp_obj.get('error'), resp_obj['dependencies']
 
-        except requests.exceptions.HTTPError:
+        except requests.exceptions.HTTPError as err:
+            logger.error(
+                f'Error running api request for {slug} {self.__url}: {err}')
             # handle error from resp.raise_for_status()
             if resp is not None:
                 resp_obj = resp.json()
