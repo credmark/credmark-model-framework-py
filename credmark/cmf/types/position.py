@@ -1,4 +1,4 @@
-from typing import Optional
+from pydantic import validator
 
 import credmark.cmf.model
 from credmark.cmf.model.errors import ModelDataError, ModelRunError
@@ -11,7 +11,18 @@ from .token_erc20 import Token
 class Position(DTO):
     amount: float = DTOField(0.0, description='Quantity of token held')
     asset: Token
-    price_quote: Optional[PriceWithQuote] = None
+    price_quote: PriceWithQuote | None = None
+    value: float | None = None
+
+    @validator("value", always=True)
+    def compute_value(cls, value, values):  # pylint: disable=no-self-argument
+        """
+        Workaround for adding a computed "value" field
+        """
+        price_quote: PriceWithQuote | None = values["price_quote"]
+        if price_quote is not None and value is not None:
+            return price_quote.price * values["amount"]
+        return None
 
     def get_value(self, price_model='price.quote', block_number=None, quote=None) -> float:
         """
