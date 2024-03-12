@@ -3,6 +3,11 @@
 History
 -------
 
+0.8.142 [2024-03-12]
+* feat: include requester in context
+* feat: computed value in position
+* feat: PortfolioBuilder
+
 0.8.141 [2024-02-03]
 * feat: block number from date
 * fix: model api http error logs
