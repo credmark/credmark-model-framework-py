@@ -29,14 +29,15 @@ from credmark.cmf.model.errors import (
     create_instance_from_error_dict,
 )
 from credmark.cmf.model.models import RunModelMethod
-from credmark.cmf.types import BlockNumber, BlockNumberOutOfRangeDetailDTO, BlockNumberOutOfRangeError, Network
+from credmark.cmf.types import (
+    BlockNumber,
+    BlockNumberOutOfRangeDetailDTO,
+    BlockNumberOutOfRangeError,
+    Network,
+)
 from credmark.dto import DTOType, DTOValidationError
 from credmark.dto.encoder import json_dumps
-from credmark.dto.transform import (
-    DataTransformError,
-    transform_data_for_dto,
-    transform_dto_to_dict,
-)
+from credmark.dto.transform import DataTransformError, transform_data_for_dto, transform_dto_to_dict
 
 LEDGER_BLOCK_NUMBER_SLUG = 'ledger.block-number'
 CHAIN_GET_LATEST_BLOCK_NUMBER_SLUG = 'chain.get-latest-block'
@@ -144,6 +145,7 @@ class EngineModelContext(ModelContext):
                        run_id: Union[str, None] = None,
                        depth: int = 0,
                        client: Union[str, None] = None,
+                       requester: Union[str, None] = None,
                        console: bool = False,
                        use_local_models: Union[str, None] = None,
                        model_cache: Union[ModelRunCache,
@@ -205,7 +207,7 @@ class EngineModelContext(ModelContext):
 
         context = EngineModelContext(
             chain_id, block_number, web3_registry,
-            run_id, depth, model_loader, _model_cache, api, client,
+            run_id, depth, model_loader, _model_cache, api, client, requester,
             is_top_level=not console)
 
         if console:
@@ -230,6 +232,7 @@ class EngineModelContext(ModelContext):
                                      run_id: Union[str, None] = None,
                                      depth: int = 0,
                                      client: Union[str, None] = None,
+                                     requester: Union[str, None] = None,
                                      use_local_models: Union[str, None] = None,
                                      model_cache: Union[ModelRunCache,
                                                         bool] = True):
@@ -251,6 +254,7 @@ class EngineModelContext(ModelContext):
                                          run_id,
                                          depth,
                                          client,
+                                         requester,
                                          console=False,
                                          use_local_models=use_local_models,
                                          model_cache=model_cache)
@@ -381,6 +385,7 @@ class EngineModelContext(ModelContext):
                  model_cache: Union[ModelRunCache, None],
                  api: ModelApi,
                  client: Union[str, None] = None,
+                 requester: Union[str, None] = None,
                  is_top_level: bool = False):
         if isinstance(block_number, int):
             block_number = BlockNumber(block_number)
@@ -388,6 +393,7 @@ class EngineModelContext(ModelContext):
         super().__init__(chain_id, block_number, web3_registry)
         self.run_id = run_id
         self.__client = client
+        self.__requester = requester
         self.__depth = depth
         self.__dependencies = {}
         self.__model_loader = model_loader
@@ -428,6 +434,7 @@ class EngineModelContext(ModelContext):
             self.__model_cache,
             self.__api,
             self.__client,
+            self.__requester,
             self.__is_top_level,
         )
 
@@ -716,7 +723,7 @@ class EngineModelContext(ModelContext):
                         slug, version, self.chain_id,
                         run_block_number,
                         input_as_dict,
-                        self.run_id, self.__depth - 1, self.__client)
+                        self.run_id, self.__depth - 1, self.__client, self.__requester)
 
                     if self.__model_cache is not None:
                         self.__model_cache.put(self.chain_id,
@@ -806,7 +813,8 @@ class EngineModelContext(ModelContext):
                                          self.__model_loader,
                                          self.__model_cache,
                                          self.__api,
-                                         self.__client)
+                                         self.__client,
+                                         self.__requester)
 
         original_input = input
 
@@ -858,7 +866,8 @@ class EngineModelContext(ModelContext):
                                   else from_block)
                     output = model.run(input, from_block)
                     output = transform_data_for_dto(output, model_class.outputDTO, slug, 'output')
-                    invalid_range = output.invalid_range(from_block, context.block_number)  # type: ignore
+                    invalid_range = output.invalid_range(  # type: ignore
+                        from_block, context.block_number)
                     if len(invalid_range.series) > 0:
                         err = ModelOutputError(message='Found BlockSeriesRows with block results out of range',
                                                detail=invalid_range)

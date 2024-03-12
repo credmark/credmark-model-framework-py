@@ -119,6 +119,7 @@ class ModelApi:
                   run_id: Union[str, None] = None,
                   depth: Union[int, None] = None,
                   client: Union[str, None] = None,
+                  requester: Union[str, None] = None,
                   raise_error_results=False) -> tuple[
             str, str,
             Union[dict[str, Any], None],
@@ -143,6 +144,8 @@ class ModelApi:
                 req['depth'] = depth
             if client is not None:
                 req['client'] = client
+            if requester is not None:
+                req['requester'] = requester
 
         resp = None
         resp_obj = None
