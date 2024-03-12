@@ -1,16 +1,17 @@
 import math
-from typing import List
 
 import credmark.cmf.model
 from credmark.dto import DTOField, IterableListGenericDTO, PrivateAttr
 
 from .adt import Maybe, Some
+from .fiat_currency import Currency, FiatCurrency
 from .position import Position
 from .price import PriceWithQuote
+from .token_erc20 import Token
 
 
 class Portfolio(IterableListGenericDTO[Position]):
-    positions: List[Position] = DTOField(
+    positions: list[Position] = DTOField(
         default=[], description='List of positions')
     _iterator: str = PrivateAttr('positions')
 
@@ -72,3 +73,97 @@ class Portfolio(IterableListGenericDTO[Position]):
                 positions[pos_key].amount += pos.amount
 
         return cls(positions=list(positions.values()))
+
+
+class PortfolioBuilder:
+    _positions: dict[str, Position] = {}
+    _scale: bool = False
+    _include_price = False
+    _quote: Currency | None = None
+
+    def append(self, pos: Position):
+        return self.extend([pos])
+
+    def extend(self, positions: list[Position]):
+        for pos in positions:
+            pos_key = str(pos.asset.address)
+            if self._positions.get(pos_key, None) is None:
+                self._positions[pos_key] = pos.copy()
+            else:
+                self._positions[pos_key].amount += pos.amount
+        return self
+
+    def scale(self, scale=True):
+        self._scale = scale
+        return self
+
+    def include_price(self, include_price=True, quote: Currency | None = None):
+        self._include_price = include_price
+        if quote is not None:
+            self._quote = quote
+        return self
+
+    @classmethod
+    def _scale_by_token_decimals(cls, positions: list[Position]):
+        if not positions:
+            return positions
+
+        context = credmark.cmf.model.ModelContext.current_context()
+
+        token_addresses = map(lambda x: x.asset.address.checksum, positions)
+
+        fn = Token('WETH').as_erc20(True).functions.decimals()
+        fn_fallback = Token('WETH').as_erc20(True).functions.DECIMALS()
+        decimals = context.web3_batch.call_same_function(
+            fn,
+            list(token_addresses),
+            fallback_contract_function=fn_fallback,
+            unwrap=True
+        )
+
+        scaled_positions: list[Position] = []
+        for position, position_decimals in zip(positions, decimals):
+            position_decimals = position_decimals if isinstance(position_decimals, int) else 0
+            amount = position.amount / 10 ** position_decimals
+            new_position = position.copy()
+            new_position.amount = amount
+            scaled_positions.append(new_position)
+
+        return scaled_positions
+
+    @classmethod
+    def _price_by_quote(cls,
+                        positions: list[Position],
+                        quote: FiatCurrency | Currency | None = None):
+        if not positions:
+            return positions
+
+        context = credmark.cmf.model.ModelContext.current_context()
+
+        quote = FiatCurrency(symbol='USD') if quote is None else quote
+        pqs_maybe = context.run_model(
+            slug='price.quote-multiple-maybe',
+            input=Some(some=[
+                {'base': p.asset.address, 'quote': quote} for p in positions
+            ]),
+            return_type=Some[Maybe[PriceWithQuote]],
+        )
+
+        price_positions = []
+        for price_maybe, position in zip(pqs_maybe.some, positions):
+            price_quote = price_maybe.get_just(PriceWithQuote(price=0.0, src="none",
+                                                              quoteAddress=quote.address))
+            price_position = position.copy()
+            price_position.price_quote = price_quote
+            price_positions.append(price_position)
+
+        return price_positions
+
+    def build(self) -> Portfolio:
+        positions = list(self._positions.values())
+        if self._scale:
+            positions = self._scale_by_token_decimals(positions)
+        if self._include_price:
+            positions = self._price_by_quote(positions)
+
+        return Portfolio(positions=positions)
