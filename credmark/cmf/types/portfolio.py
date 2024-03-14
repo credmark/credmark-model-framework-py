@@ -117,13 +117,13 @@ class PortfolioBuilder:
         decimals = context.web3_batch.call_same_function(
             fn,
             list(token_addresses),
-            fallback_contract_function=fn_fallback,
-            unwrap=True
+            fallback_functions=[fn_fallback],
+            unwrap=True,
+            unwrap_default=0,
         )
 
         scaled_positions: list[Position] = []
         for position, position_decimals in zip(positions, decimals):
-            position_decimals = position_decimals if isinstance(position_decimals, int) else 0
             amount = position.amount / 10 ** position_decimals
             new_position = position.copy()
             new_position.amount = amount
