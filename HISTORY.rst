@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.143 [2024-03-14]
+* feat: analytics mode in query input
+* feat: multiple fallback functions for web3 batch
+
 0.8.142 [2024-03-12]
 * feat: include requester in context
 * feat: computed value in position
