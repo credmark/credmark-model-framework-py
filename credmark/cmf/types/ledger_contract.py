@@ -104,7 +104,8 @@ class ContractEntityQuery(LedgerQueryBase):
         self._name = kwargs['name']
         super().__init__()
 
-    def select(self,  # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-locals
+    def select(self,
                columns: Optional[Union[List[str], List[ColumnField]]] = None,
                joins: Optional[list[JoinAllTypes]] = None,
                where: Optional[str] = None,
@@ -114,7 +115,8 @@ class ContractEntityQuery(LedgerQueryBase):
                offset: Optional[int] = None,
                aggregates: Optional[List[Tuple[str, str]]] = None,
                having: Optional[str] = None,
-               bigint_cols: Optional[List[str]] = None) -> LedgerModelOutput:
+               bigint_cols: Optional[List[str]] = None,
+               analytics_mode: Optional[bool] = None) -> LedgerModelOutput:
         """
         Run a query on a contract's function or event data.
 
@@ -195,7 +197,8 @@ class ContractEntityQuery(LedgerQueryBase):
             limit=limit,
             offset=offset,
             aggregates=aggregates,
-            having=having)
+            having=having,
+            analytics_mode=analytics_mode)
 
         if self._entity_type == ContractEntityType.FUNCTIONS:
             model_input['functionName'] = self._name

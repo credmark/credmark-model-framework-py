@@ -46,7 +46,8 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                          limit: Optional[int] = None,
                          offset: Optional[int] = None,
                          aggregates: Optional[list[Tuple[str, str]]] = None,
-                         having: Optional[str] = None) -> dict:
+                         having: Optional[str] = None,
+                         analytics_mode: Optional[bool] = None) -> dict:
 
         aggregates_names = [agg[0] for agg in aggregates] if aggregates else []
 
@@ -120,7 +121,8 @@ class LedgerQueryBase(contextlib.AbstractContextManager):
                 'orderBy': order_by,
                 'limit': str(limit) if limit is not None else None,
                 'offset': str(offset) if offset is not None else None,
-                'originator': originator
+                'originator': originator,
+                'analyticsMode': analytics_mode
                 }
 
 
@@ -142,7 +144,8 @@ class LedgerQuery(LedgerQueryBase):
                offset: Optional[int] = None,
                aggregates: Optional[list[tuple[str, str]]] = None,
                having: Optional[str] = None,
-               bigint_cols: Optional[list[str]] = None) -> LedgerModelOutput:
+               bigint_cols: Optional[list[str]] = None,
+               analytics_mode: Optional[bool] = None) -> LedgerModelOutput:
         """
         Query data from the table.
         """
@@ -158,7 +161,8 @@ class LedgerQuery(LedgerQueryBase):
             limit=limit,
             offset=offset,
             aggregates=aggregates,
-            having=having)
+            having=having,
+            analytics_mode=analytics_mode)
 
         ledger_out = context.run_model(slug=self._cwgo_query,
                                        input=model_input,
