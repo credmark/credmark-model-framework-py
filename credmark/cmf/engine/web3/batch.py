@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Iterator, Literal, NotRequired, Sequence, TypedDict, TypeVar, overload
+from typing import Any, Iterator, Literal, NotRequired, Sequence, TypedDict, TypeVar, cast, overload
 
 from eth_abi.exceptions import DecodingError
 from eth_typing import ChecksumAddress, HexStr
@@ -14,6 +14,7 @@ from credmark.cmf.engine.web3.helper import MulticallDecodedResult, MulticallRes
 from credmark.cmf.model.errors import ModelEngineError
 
 T = TypeVar("T")
+U = TypeVar("U", bound=tuple)
 
 
 Payload = TypedDict('Payload', {
@@ -100,6 +101,14 @@ class Web3Batch(ABC):
             )
 
             raise BadFunctionCallOutput(msg) from e
+        # Workaround for https://github.com/ethereum/eth-abi/issues/142
+        except OverflowError as e:
+            msg = (
+                f"Could not decode contract function call to {fn_name} "
+                f"with return data: {str(return_data)}, output_types: {output_types}"
+            )
+
+            raise BadFunctionCallOutput(msg) from e
 
         normalized_data = map_abi_data(
             BASE_RETURN_NORMALIZERS, output_types, output_data)
@@ -152,7 +161,8 @@ class Web3Batch(ABC):
             require_success: bool = False,
             batch_size: int = 100,
             unwrap: Literal[True],
-            unwrap_default: Any = None) -> list[Any]:
+            unwrap_default: Any = None,
+            return_type: type[U] = tuple[Any, ...]) -> U:
         ...
 
     @overload
@@ -162,8 +172,7 @@ class Web3Batch(ABC):
             *,
             require_success: bool = False,
             batch_size: int = 100,
-            unwrap: Literal[False] = ...,
-            unwrap_default: Any = None) -> list[MulticallDecodedResult]:
+            unwrap: Literal[False] = ...,) -> tuple[MulticallDecodedResult[Any], ...]:
         ...
 
     def call(
@@ -173,7 +182,8 @@ class Web3Batch(ABC):
             require_success: bool = False,
             batch_size: int = 100,
             unwrap: bool = False,
-            unwrap_default: Any = None):
+            unwrap_default: Any = None,
+            return_type: type[U] = tuple[Any]) -> U:  # pylint: disable=unused-argument
         results: list[MulticallDecodedResult] = []
         for chunk in self._divide_chunks(contract_functions, batch_size):
             payloads = self._build_payload(chunk)
@@ -183,9 +193,10 @@ class Web3Batch(ABC):
                                                 require_success=require_success))
 
         if unwrap:
-            return [result.unwrap(unwrap_default) for result in results]
+            # pylint disable=consider-using-generator
+            return cast(U, tuple(result.unwrap(unwrap_default) for result in results))
 
-        return results
+        return cast(U, tuple(results))
 
     @overload
     def call_same_function(
@@ -195,9 +206,35 @@ class Web3Batch(ABC):
             *,
             require_success: bool = False,
             batch_size: int = 100,
-            fallback_contract_function: ContractFunction | None = None,
+            fallback_functions: Sequence[ContractFunction] | None = None,
+            unwrap: Literal[True]) -> list[Any]:
+        ...
+
+    @overload
+    def call_same_function(
+            self,
+            contract_function: ContractFunction,
+            contract_addresses: Sequence[ChecksumAddress],
+            *,
+            require_success: bool = False,
+            batch_size: int = 100,
+            fallback_functions: Sequence[ContractFunction] | None = None,
+            unwrap: Literal[False]) -> list[MulticallDecodedResult[Any]]:
+        ...
+
+    # pylint: disable=too-many-arguments
+    @overload
+    def call_same_function(
+            self,
+            contract_function: ContractFunction,
+            contract_addresses: Sequence[ChecksumAddress],
+            *,
+            require_success: bool = False,
+            batch_size: int = 100,
+            fallback_functions: Sequence[ContractFunction] | None = None,
             unwrap: Literal[True],
-            unwrap_default: Any = None) -> list[Any]:
+            unwrap_default: T = None,
+            return_type: type[T] | Any = Any) -> list[T]:
         ...
 
     @overload
@@ -208,39 +245,42 @@ class Web3Batch(ABC):
             *,
             require_success: bool = False,
             batch_size: int = 100,
-            fallback_contract_function: ContractFunction | None = None,
+            fallback_functions: Sequence[ContractFunction] | None = None,
             unwrap: Literal[False] = ...,
-            unwrap_default: Any = None) -> list[MulticallDecodedResult]:
+            return_type: type[T] | Any = Any) -> list[MulticallDecodedResult[T]]:
         ...
 
-    def call_same_function( # pylint: disable=too-many-locals
+    # pylint: disable=too-many-arguments
+    def call_same_function(  # pylint: disable=too-many-locals
             self,
             contract_function: ContractFunction,
             contract_addresses: Sequence[ChecksumAddress],
             *,
             require_success: bool = False,
             batch_size: int = 100,
-            fallback_contract_function: ContractFunction | None = None,
+            fallback_functions: Sequence[ContractFunction] | None = None,
             unwrap: bool = False,
-            unwrap_default: Any = None) -> list[Any] | list[MulticallDecodedResult]:
-        results: list[MulticallDecodedResult] = []
+            unwrap_default: Any = None,
+            return_type: type[T] | Any = Any) -> list[T | None] | list[MulticallDecodedResult[T]]:  # pylint: disable=unused-argument
+        results: list[MulticallDecodedResult[T]] = []
         for chunk in self._divide_chunks(contract_addresses, batch_size):
             payloads = self._build_payload_same_function(contract_function, chunk)
             encoded_results = self._process_payloads(payloads)
             results.extend(self._decode_results(
                 payloads,
                 encoded_results,
-                require_success=require_success and not fallback_contract_function))
+                require_success=require_success and not fallback_functions))
 
         failed = [(idx, contract_addresses[idx])
                   for idx, decoded_result in enumerate(results) if not decoded_result.success]
 
-        if failed and fallback_contract_function:
+        if failed and fallback_functions:
             fallback_results = self.call_same_function(
-                fallback_contract_function,
+                fallback_functions[0],
                 [address for (_, address) in failed],
                 require_success=require_success,
-                batch_size=batch_size)
+                batch_size=batch_size,
+                fallback_functions=fallback_functions[1:])
 
             for idx, fallback_result in enumerate(fallback_results):
                 results[failed[idx][0]] = fallback_result

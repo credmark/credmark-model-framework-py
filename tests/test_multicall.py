@@ -15,14 +15,17 @@ class TestModel(ModelTestCase):
         t = Token('USDC')
 
         batch = credmark.cmf.model.ModelContext.current_context().web3_batch
-        [symbol_result, decimals_result] = batch.call([t.functions.symbol(), t.functions.decimals()])
+        [symbol_result, decimals_result] = batch.call(
+            [t.functions.symbol(), t.functions.decimals()])
         self.assertEqual(symbol_result.success, True)
         self.assertEqual(symbol_result.return_data_decoded, 'USDC')
 
         self.assertEqual(decimals_result.success, True)
         self.assertEqual(decimals_result.return_data_decoded, 6)
 
-        [symbol_result2, decimals_result2] = batch.call([t.functions.symbol(), t.functions.decimals()], unwrap=True)
+        [symbol_result2, decimals_result2] = batch.call(
+            [t.functions.symbol(), t.functions.decimals()], unwrap=True,
+            return_type=tuple[str, int])
 
         self.assertEqual(symbol_result2, symbol_result.return_data_decoded)
         self.assertEqual(decimals_result2, decimals_result.return_data_decoded)
