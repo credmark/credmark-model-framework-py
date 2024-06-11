@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.144 [2024-06-11]
+* migrate: ledger columns to new model runner
+
 0.8.143 [2024-03-14]
 * feat: analytics mode in query input
 * feat: multiple fallback functions for web3 batch
