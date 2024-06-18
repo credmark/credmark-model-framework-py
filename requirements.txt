@@ -2,7 +2,7 @@ ipython>=8.14.0
 numpy>=1.25.0
 packaging==23.1
 pandas>=2.0.3
-pydantic==1.10.10
+pydantic==1.10.16
 python-dotenv==1.0.0
 pyyaml==6.0.1
 web3==6.5.0
