@@ -749,7 +749,9 @@ class TokenTransferTable(LedgerTable):
     """"""
     TO_ADDRESS = ColumnField("to_address")
     """"""
-    VALUE = ColumnField("value")
+    RAW_AMOUNT = ColumnField("raw_amount")
+    """"""
+    USD_AMOUNT = ColumnField("usd_amount")
     """"""
     TRANSACTION_HASH = ColumnField("transaction_hash")
     """"""
@@ -766,7 +768,8 @@ class TokenTransferTable(LedgerTable):
         "token_address": "str",
         "from_address": "str",
         "to_address": "str",
-        "value": "int",
+        "raw_amount": "int",
+        "usd_amount": "float",
         "transaction_hash": "str",
         "log_index": "int",
         "block_hash": "str",
@@ -779,7 +782,7 @@ class TokenTransferTable(LedgerTable):
 
     @property
     def bigint_cols(self) -> List[ColumnField]:
-        return [self.VALUE]
+        return [self.RAW_AMOUNT]
 
 
 class TraceTable(LedgerTable):
