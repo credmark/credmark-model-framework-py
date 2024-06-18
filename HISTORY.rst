@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.144 [2024-06-18]
+* fix: bump up pydantic for python 3.12.4
+* fix: token transfer table columns
+
 0.8.144 [2024-06-11]
 * migrate: ledger columns to new model runner
 
