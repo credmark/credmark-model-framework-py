@@ -10,6 +10,7 @@ import os
 import sys
 import unittest
 from datetime import datetime
+from pathlib import Path
 from typing import List, Union
 
 from dotenv import find_dotenv, load_dotenv
@@ -247,7 +248,18 @@ def load_models(args, load_dev_models=False):
         if model_paths is None:
             model_paths = [tests_folder]
         else:
-            if tests_folder not in model_paths:
+            outside_model_paths = True
+
+            if len(tests_folder) > 1 and tests_folder[-1] == os.sep:
+                tests_folder = tests_folder[:-1]
+            tests_path_parents = Path(tests_folder).parents
+            for mpath_str in model_paths:
+                mpath = Path(mpath_str)
+                if tests_folder == mpath_str or mpath in tests_path_parents:
+                    outside_model_paths = False
+                    break
+
+            if outside_model_paths:
                 model_paths.append(tests_folder)
 
     model_loader = ModelLoader(model_paths, manifest_file, load_dev_models)
