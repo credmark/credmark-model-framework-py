@@ -13,7 +13,7 @@ from credmark.cmf.types.network import Network
 NATIVE_TOKEN = {
     int(Network.Mainnet): {
         "symbol": "ETH",
-        "address": '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         "decimals": 18,
         "name": "Ethereum",
         "is_native_token": True,
@@ -21,7 +21,7 @@ NATIVE_TOKEN = {
     },
     int(Network.BSC): {
         "symbol": "BNB",
-        "address": '0x0000000000000000010000100100111001000010',
+        "address": "0x0000000000000000010000100100111001000010",
         "decimals": 18,
         "name": "BSC",
         "is_native_token": True,
@@ -29,7 +29,7 @@ NATIVE_TOKEN = {
     },
     int(Network.Polygon): {
         "symbol": "MATIC",
-        'address': '0x0000000000000000000000000000000000001010',
+        "address": "0x0000000000000000000000000000000000001010",
         "decimals": 18,
         "name": "Matic Token",
         "is_native_token": True,
@@ -37,7 +37,7 @@ NATIVE_TOKEN = {
     },
     int(Network.ArbitrumOne): {
         "symbol": "ETH",
-        "address": '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         "decimals": 18,
         "name": "Ethereum",
         "is_native_token": True,
@@ -46,7 +46,7 @@ NATIVE_TOKEN = {
     int(Network.Optimism): {
         "symbol": "ETH",
         # "address": '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000',
-        "address": '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         "decimals": 18,
         "name": "Ethereum",
         "is_native_token": True,
@@ -54,7 +54,7 @@ NATIVE_TOKEN = {
     },
     int(Network.Avalanche): {
         "symbol": "AVAX",
-        "address": '0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa',
+        "address": "0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa",
         "decimals": 18,
         "name": "Avalanche",
         "is_native_token": True,
@@ -62,12 +62,36 @@ NATIVE_TOKEN = {
     },
     int(Network.Fantom): {
         "symbol": "FTM",
-        "address": '0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF',
+        "address": "0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF",
         "decimals": 18,
         "name": "Fantom",
         "is_native_token": True,
         "wrapped": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83",
-    }
+    },
+    int(Network.Base): {
+        "symbol": "ETH",
+        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        "decimals": 18,
+        "name": "Ethereum",
+        "is_native_token": True,
+        "wrapped": "0x4200000000000000000000000000000000000006",
+    },
+    int(Network.Linea): {
+        "symbol": "ETH",
+        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        "decimals": 18,
+        "name": "Ethereum",
+        "is_native_token": True,
+        "wrapped": "0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f",
+    },
+    int(Network.Oasys): {
+        "symbol": "OAS",
+        "address": "0x5200000000000000000000000000000000000000",
+        "decimals": 18,
+        "name": "Ethereum",
+        "is_native_token": True,
+        "wrapped": "0x5200000000000000000000000000000000000001",
+    },
 }
 
 FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
@@ -81,9 +105,6 @@ FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {
 }
 
 FUNGIBLE_TOKEN_DATA_BY_ADDRESS = {
-    chain_id: {
-        chain_meta['address']: chain_meta
-        for chain_meta in chain_tokens.values()
-    }
+    chain_id: {chain_meta["address"]: chain_meta for chain_meta in chain_tokens.values()}
     for chain_id, chain_tokens in FUNGIBLE_TOKEN_DATA_BY_SYMBOL.items()
 }

@@ -15,9 +15,12 @@ class Network(IntEnum):
     BSCTestnet = 97
     xDai = 100
     Polygon = 137
+    Oasys = 248
     Fantom = 250
+    Base = 8453
     ArbitrumOne = 42161
     Avalanche = 43114
+    Linea = 59144
 
     def __str__(self):
         return str(self.value)
@@ -28,43 +31,64 @@ class Network(IntEnum):
 
     @property
     def has_ledger(self):
-        return self in [Network.Mainnet]
+        return self in [
+            Network.Mainnet,
+            Network.BSC,
+            Network.Polygon,
+            Network.ArbitrumOne,
+            Network.Optimism,
+            Network.Avalanche,
+            Network.Base,
+            Network.Oasys,
+            Network.Linea,
+        ]
 
     @property
     def has_dex_price(self):
-        return self in [Network.Mainnet, Network.BSC, Network.Polygon]
+        return False
 
     @property
     def has_node(self):
-        return self in [Network.Mainnet,
-                        Network.BSC,
-                        Network.Polygon,
-                        Network.ArbitrumOne,
-                        Network.Optimism,
-                        Network.Avalanche,
-                        Network.Fantom]
+        return self in [
+            Network.Mainnet,
+            Network.BSC,
+            Network.Polygon,
+            Network.ArbitrumOne,
+            Network.Optimism,
+            Network.Avalanche,
+            Network.Fantom,
+            Network.Base,
+            Network.Oasys,
+            Network.Linea,
+        ]
 
     @property
     def is_testnet(self):
-        return self in [Network.Rinkeby,
-                        Network.Ropsten,
-                        Network.Görli,
-                        Network.Kovan,
-                        Network.BSCTestnet]
+        return self in [
+            Network.Rinkeby,
+            Network.Ropsten,
+            Network.Görli,
+            Network.Kovan,
+            Network.BSCTestnet,
+        ]
 
     @property
     def uses_geth_poa(self):
-        return self in [Network.Rinkeby,
-                        Network.BSC,
-                        Network.Polygon,
-                        Network.Optimism,
-                        Network.Avalanche]
+        return self in [
+            Network.Rinkeby,
+            Network.BSC,
+            Network.Polygon,
+            Network.Optimism,
+            Network.Avalanche,
+            Network.Oasys,
+            Network.Linea,
+        ]
 
     @classmethod
     def parse_network(cls, n: Any) -> "Network":
         if isinstance(n, str):
             if not n.isdigit():
-                raise KeyError(f'Network {n} is not a valid network')
+                raise KeyError(f"Network {n} is not a valid network")
             n = int(n)
         if isinstance(n, int):
             n = Network(n)
@@ -73,12 +97,12 @@ class Network(IntEnum):
 
 
 NetworkKey = Union[Network, str, int]
-T = TypeVar('T')
-_T = TypeVar('_T')
+T = TypeVar("T")
+_T = TypeVar("_T")
 
 
 class NetworkDict(DefaultDict[Network, T], Generic[T]):
-    '''
+    """
     A dictionary with network as key. It implements a defaultdict to make it easier
     to provide default values for missing networks. Key can be Network enum, int or int as str.
 
@@ -96,15 +120,14 @@ class NetworkDict(DefaultDict[Network, T], Generic[T]):
     d[Network.Optimism].append(10)
     print(d[Network.Optimism]) # [10]
     ```
-    '''
+    """
 
     @staticmethod
     def _process_args(mapping=(), **kwargs):
-        if hasattr(mapping, 'items'):
+        if hasattr(mapping, "items"):
             mapping = mapping.items()
 
-        return ((Network.parse_network(k), v)
-                for k, v in chain(mapping, kwargs.items()))
+        return ((Network.parse_network(k), v) for k, v in chain(mapping, kwargs.items()))
 
     def __setitem__(self, k: NetworkKey, v: T):
         super().__setitem__(Network.parse_network(k), v)
@@ -131,7 +154,7 @@ class NetworkDict(DefaultDict[Network, T], Generic[T]):
         super().setdefault(Network.parse_network(k), v)
 
     def update(self, mapping: Iterable[tuple[NetworkKey, T]] = (), **kwargs):
-        print('update')
+        print("update")
         super().update(self._process_args(mapping, **kwargs))
 
     @classmethod
@@ -147,4 +170,7 @@ CREDMARK_PUBLIC_PROVIDERS = {
     str(Network.Fantom): "https://nodes.credmark.com/250",
     str(Network.ArbitrumOne): "https://nodes.credmark.com/42161",
     str(Network.Avalanche): "https://nodes.credmark.com/43114",
+    str(Network.Base): "https://base.llamarpc.com",
+    str(Network.Linea): "https://1rpc.io/linea",
+    str(Network.Oasys): "https://rpc.mainnet.oasys.games",
 }
