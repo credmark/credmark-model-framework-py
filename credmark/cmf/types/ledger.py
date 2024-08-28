@@ -713,8 +713,10 @@ class TokenBalanceTable(LedgerTable):
     """"""
     COUNTERPARTY_ADDRESS = ColumnField("counterparty_address")
     """"""
+    RAW_AMOUNT = ColumnField("raw_amount")
+    """Unscaled raw amount"""
     AMOUNT = ColumnField("amount")
-    """"""
+    """Raw Amount scaled by token decimals"""
 
     TYPE_MAPPER = {
         "block_timestamp": "str",
@@ -726,6 +728,7 @@ class TokenBalanceTable(LedgerTable):
         "address": "str",
         "from_address": "str",
         "to_address": "str",
+        "raw_amount": "int",
         "amount": "int",
     }
 
@@ -734,7 +737,7 @@ class TokenBalanceTable(LedgerTable):
 
     @property
     def bigint_cols(self) -> List[ColumnField]:
-        return [self.AMOUNT]
+        return [self.RAW_AMOUNT]
 
 
 class TokenTransferTable(LedgerTable):

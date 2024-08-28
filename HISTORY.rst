@@ -2,10 +2,14 @@
 
 History
 -------
-0.8.145 [2024-08-12]
+
+0.8.147 [2024-08-28]
+* fix: add raw_amount column to token balance
+
+0.8.146 [2024-08-12]
 * fix: enable ledger db for more chains
 
-0.8.144 [2024-06-18]
+0.8.145 [2024-06-18]
 * fix: bump up pydantic for python 3.12.4
 * fix: token transfer table columns
 
