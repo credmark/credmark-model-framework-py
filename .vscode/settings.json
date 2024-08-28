@@ -172,5 +172,8 @@
         "yfarm",
         "ZEPPELINOS",
         "Zora"
-    ]
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
 }

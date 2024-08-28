@@ -3,6 +3,9 @@
 History
 -------
 
+0.8.148 [2024-08-28]
+* fix: unscale by token decimals
+
 0.8.147 [2024-08-28]
 * fix: add raw_amount column to token balance
 
