@@ -740,6 +740,58 @@ class TokenBalanceTable(LedgerTable):
         return [self.RAW_AMOUNT]
 
 
+class NFTBalanceTable(LedgerTable):
+    """
+    NFT balance ledger data table
+    Column names
+    """
+
+    BLOCK_TIMESTAMP = ColumnField("block_timestamp")
+    """"""
+    BLOCK_HASH = ColumnField("block_hash")
+    """"""
+    BLOCK_NUMBER = ColumnField("block_number")
+    """"""
+    TOKEN_ADDRESS = ColumnField("token_address")
+    """"""
+    TOKEN_ID = ColumnField("token_id")
+    """"""
+    TRANSACTION_HASH = ColumnField("transaction_hash")
+    """"""
+    LOG_INDEX = ColumnField("log_index")
+    """"""
+    ADDRESS = ColumnField("address")
+    """"""
+    COUNTERPARTY_ADDRESS = ColumnField("counterparty_address")
+    """"""
+    RAW_AMOUNT = ColumnField("raw_amount")
+    """Unscaled raw amount"""
+    AMOUNT = ColumnField("amount")
+    """Raw Amount scaled by token decimals"""
+
+    TYPE_MAPPER = {
+        "block_timestamp": "str",
+        "block_hash": "str",
+        "block_number": "int",
+        "token_address": "str",
+        "token_id": "str",
+        "transaction_hash": "str",
+        "log_index": "int",
+        "address": "str",
+        "from_address": "str",
+        "to_address": "str",
+        "raw_amount": "int",
+        "amount": "int",
+    }
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self) -> List[ColumnField]:
+        return [self.RAW_AMOUNT]
+
+
 class TokenTransferTable(LedgerTable):
     """
     Token transfers ledger data table
@@ -773,6 +825,54 @@ class TokenTransferTable(LedgerTable):
         "to_address": "str",
         "raw_amount": "int",
         "usd_amount": "float",
+        "transaction_hash": "str",
+        "log_index": "int",
+        "block_hash": "str",
+        "block_number": "int",
+        "block_timestamp": "str",
+    }
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    @property
+    def bigint_cols(self) -> List[ColumnField]:
+        return [self.RAW_AMOUNT]
+
+
+class NFTTransferTable(LedgerTable):
+    """
+    NFT transfers ledger data table
+    Column names
+    """
+
+    TOKEN_ADDRESS = ColumnField("token_address")
+    """"""
+    TOKEN_ID = ColumnField("token_address")
+    """"""
+    FROM_ADDRESS = ColumnField("from_address")
+    """"""
+    TO_ADDRESS = ColumnField("to_address")
+    """"""
+    RAW_AMOUNT = ColumnField("raw_amount")
+    """"""
+    TRANSACTION_HASH = ColumnField("transaction_hash")
+    """"""
+    LOG_INDEX = ColumnField("log_index")
+    """"""
+    BLOCK_HASH = ColumnField("block_hash")
+    """"""
+    BLOCK_NUMBER = ColumnField("block_number")
+    """"""
+    BLOCK_TIMESTAMP = ColumnField("block_timestamp")
+    """"""
+
+    TYPE_MAPPER = {
+        "token_address": "str",
+        "token_id": "str",
+        "from_address": "str",
+        "to_address": "str",
+        "raw_amount": "int",
         "transaction_hash": "str",
         "log_index": "int",
         "block_hash": "str",

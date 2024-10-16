@@ -5,6 +5,8 @@ from credmark.cmf.types.ledger import (
     ContractTable,
     LedgerTable,
     LogTable,
+    NFTBalanceTable,
+    NFTTransferTable,
     ReceiptTable,
     TokenBalanceTable,
     TokenTable,
@@ -61,12 +63,11 @@ QUERY_METHOD_DOC_STRING = """
 
 def ledger_table_doc(func):
     def wrapper(self, *args, **kwargs):
-        func.__doc__ = QUERY_METHOD_DOC_STRING.replace(
-            '{TABLE}', func.__name__)
+        func.__doc__ = QUERY_METHOD_DOC_STRING.replace("{TABLE}", func.__name__)
         result = func(self, *args, **kwargs)
-        result.__doc__ = QUERY_METHOD_DOC_STRING.replace(
-            '{TABLE}', func.__name__)
+        result.__doc__ = QUERY_METHOD_DOC_STRING.replace("{TABLE}", func.__name__)
         return result
+
     return wrapper
 
 
@@ -110,7 +111,17 @@ class LedgerQueryTokenTransfer(TokenTransferTable, LedgerQuery):
         super().__init__(**kwargs)
 
 
+class LedgerQueryNFTTransfer(NFTTransferTable, LedgerQuery):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
 class LedgerQueryTokenBalance(TokenBalanceTable, LedgerQuery):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+class LedgerQueryNFTBalance(NFTBalanceTable, LedgerQuery):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -131,6 +142,7 @@ class Ledger:
     The query parameters are common to all query methods.
 
     """
+
     # pylint: disable=locally-disabled,invalid-name
 
     def __init__(self):
@@ -140,8 +152,7 @@ class Ledger:
         """
         Returns a list of tables in the ledger database.
         """
-        return [prop for prop in dir(self) if
-                isinstance(getattr(self, prop), LedgerQuery)]
+        return [prop for prop in dir(self) if isinstance(getattr(self, prop), LedgerQuery)]
 
     def table(self, table_name: str) -> LedgerQueryTable:
         """
@@ -153,70 +164,81 @@ class Ledger:
     @ledger_table_doc
     def Transaction(self):
         return LedgerQueryTransaction(
-            cwgo_query_table='ledger.transaction_data',
-            table_key='transactions',
-            more_cols=[])
+            cwgo_query_table="ledger.transaction_data", table_key="transactions", more_cols=[]
+        )
 
     @property
     @ledger_table_doc
     def Trace(self):
         return LedgerQueryTrace(
-            cwgo_query_table='ledger.trace_data',
-            table_key='traces',
-            more_cols=[])
+            cwgo_query_table="ledger.trace_data", table_key="traces", more_cols=[]
+        )
 
     @property
     @ledger_table_doc
     def Block(self):
         return LedgerQueryBlock(
-            cwgo_query_table='ledger.block_data',
-            table_key='blocks',
-            more_cols=[])
+            cwgo_query_table="ledger.block_data", table_key="blocks", more_cols=[]
+        )
 
     @property
     @ledger_table_doc
     def Contract(self):
         return LedgerQueryContract(
-            cwgo_query_table='ledger.contract_data',
-            table_key='contracts',
-            more_cols=[])
+            cwgo_query_table="ledger.contract_data", table_key="contracts", more_cols=[]
+        )
 
     @property
     @ledger_table_doc
     def Log(self):
-        return LedgerQueryLog(
-            cwgo_query_table='ledger.log_data',
-            table_key='logs',
-            more_cols=[])
+        return LedgerQueryLog(cwgo_query_table="ledger.log_data", table_key="logs", more_cols=[])
 
     @property
     @ledger_table_doc
     def Receipt(self):
         return LedgerQueryReceipt(
-            cwgo_query_table='ledger.receipt_data',
-            table_key='receipts',
-            more_cols=[])
+            cwgo_query_table="ledger.receipt_data", table_key="receipts", more_cols=[]
+        )
 
     @property
     @ledger_table_doc
     def Token(self):
         return LedgerQueryToken(
-            cwgo_query_table='ledger.erc20_token_data',
-            table_key='tokens',
-            more_cols=[])
+            cwgo_query_table="ledger.erc20_token_data", table_key="tokens", more_cols=[]
+        )
 
     @property
     @ledger_table_doc
     def TokenTransfer(self):
         return LedgerQueryTokenTransfer(
-            cwgo_query_table='ledger.erc20_token_transfer_data',
-            table_key='token_transfers',
-            more_cols=[])
+            cwgo_query_table="ledger.erc20_token_transfer_data",
+            table_key="token_transfers",
+            more_cols=[],
+        )
+
+    @property
+    @ledger_table_doc
+    def NFTTransfer(self):
+        return LedgerQueryNFTTransfer(
+            cwgo_query_table="ledger.erc721_token_transfer_data",
+            table_key="nft_transfers",
+            more_cols=[],
+        )
 
     @property
     @ledger_table_doc
     def TokenBalance(self):
         return LedgerQueryTokenBalance(
-            cwgo_query_table='ledger.token_balance',
-            table_key='token_double_entry_book',
-            more_cols=[])
+            cwgo_query_table="ledger.token_balance",
+            table_key="token_double_entry_book",
+            more_cols=[],
+        )
+
+    @property
+    @ledger_table_doc
+    def NFTBalance(self):
+        return LedgerQueryNFTBalance(
+            cwgo_query_table="ledger.nft_balance",
+            table_key="nft_double_entry_book",
+            more_cols=[],
+        )
