@@ -3,6 +3,10 @@
 History
 -------
 
+0.8.149 [2024-10-16]
+* feat: nft transfer and balance ledgers
+* fix: option to skip auto add group by columns in select query
+
 0.8.148 [2024-08-28]
 * fix: unscale by token decimals
 
