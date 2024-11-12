@@ -92,6 +92,14 @@ NATIVE_TOKEN = {
         "is_native_token": True,
         "wrapped": "0x5200000000000000000000000000000000000001",
     },
+    int(Network.Sepolia): {
+        "symbol": "ETH",
+        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        "decimals": 18,
+        "name": "Sepolia Ethereum",
+        "is_native_token": True,
+        "wrapped": "0x7b79995e5f793a07bc00c21412e50ecae098e7f9",
+    },
 }
 
 FUNGIBLE_TOKEN_DATA_BY_SYMBOL = {

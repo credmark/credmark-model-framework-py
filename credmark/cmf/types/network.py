@@ -6,11 +6,7 @@ from typing import Any, DefaultDict, Generic, Iterable, TypeVar, Union
 
 class Network(IntEnum):
     Mainnet = 1
-    Ropsten = 3
-    Rinkeby = 4
-    Görli = 5
     Optimism = 10
-    Kovan = 42
     BSC = 56
     BSCTestnet = 97
     xDai = 100
@@ -21,6 +17,7 @@ class Network(IntEnum):
     ArbitrumOne = 42161
     Avalanche = 43114
     Linea = 59144
+    Sepolia = 11155111
 
     def __str__(self):
         return str(self.value)
@@ -65,17 +62,13 @@ class Network(IntEnum):
     @property
     def is_testnet(self):
         return self in [
-            Network.Rinkeby,
-            Network.Ropsten,
-            Network.Görli,
-            Network.Kovan,
+            Network.Sepolia,
             Network.BSCTestnet,
         ]
 
     @property
     def uses_geth_poa(self):
         return self in [
-            Network.Rinkeby,
             Network.BSC,
             Network.Polygon,
             Network.Optimism,
@@ -109,7 +102,7 @@ class NetworkDict(DefaultDict[Network, T], Generic[T]):
     ```
     d = NetworkDict(list, {
         Network.Mainnet: [1, 2, 3],
-        Network.Ropsten: [4, 5, 6],
+        Network.Sepolia: [4, 5, 6],
     })
 
     print(d[Network.Mainnet]) # [1, 2, 3]
@@ -173,4 +166,5 @@ CREDMARK_PUBLIC_PROVIDERS = {
     str(Network.Base): "https://base.llamarpc.com",
     str(Network.Linea): "https://1rpc.io/linea",
     str(Network.Oasys): "https://rpc.mainnet.oasys.games",
+    str(Network.Sepolia): "https://1rpc.io/sepolia",
 }

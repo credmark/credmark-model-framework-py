@@ -2,6 +2,8 @@
 
 History
 -------
+0.8.150 [2024-11-12]
+* fix: replace deprecated eth testnets with sepolia
 
 0.8.149 [2024-10-16]
 * feat: nft transfer and balance ledgers
