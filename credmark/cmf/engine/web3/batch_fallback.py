@@ -5,9 +5,14 @@ from credmark.cmf.engine.web3.helper import MulticallResult
 
 
 class Web3BatchFallback(Web3Batch):
-    def __init__(self,):
+    def __init__(
+        self,
+    ):
         self._multicall = None
         self._rpc = None
+
+    def batch_size(self):
+        return self.multicall.batch_size()
 
     @property
     def multicall(self) -> Web3BatchMulticall:
@@ -33,4 +38,4 @@ class Web3BatchFallback(Web3Batch):
         try:
             return self.multicall._process_payloads(payloads)  # pylint: disable=protected-access
         except Exception:
-            return self.rpc._process_payloads(payloads)  # pylint: disable=protected-access
+            return self.rpc._chunk_process_payloads(payloads)  # pylint: disable=protected-access

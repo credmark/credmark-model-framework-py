@@ -31,16 +31,21 @@ MULTICALL_DEPLOYMENT = NetworkDict(
         Network.Optimism: 4286263,
         Network.BSC: 15921452,
         Network.Polygon: 25770160,
-        Network.ArbitrumOne: 7654707,
         Network.Fantom: 33001987,
-        Network.Avalanche: 11907934,
         Network.Base: 11907934,
+        Network.ArbitrumOne: 7654707,
+        Network.Avalanche: 11907934,
+        Network.Linea: 42,
+        Network.Sepolia: 751532,
     },
 )
 
 
 class Web3BatchMulticall(Web3Batch):
     _contract: Contract | None = None
+
+    def batch_size(self) -> int:
+        return 100
 
     @property
     def contract(self) -> Contract:
@@ -72,7 +77,6 @@ class Web3BatchMulticall(Web3Batch):
         ]
         try:
             result = self.contract.functions.tryAggregate(False, aggregate_parameter).call()
-
             return [MulticallResult(success, data) for success, data in result]
         except (ContractLogicError, OverflowError, ValueError) as err:
             raise ModelEngineError("Multicall function failed") from err

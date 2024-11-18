@@ -2,6 +2,10 @@
 
 History
 -------
+
+0.8.151 [2024-11-18]
+* fix: web3 batch for different batch sizes
+
 0.8.150 [2024-11-12]
 * fix: replace deprecated eth testnets with sepolia
 

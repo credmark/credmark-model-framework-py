@@ -1,16 +1,19 @@
 from typing import Any
 
 from eth_typing import URI
-
 from hexbytes import HexBytes
 from web3._utils.request import get_response_from_post_request
-from credmark.cmf.engine.web3.helper import MulticallResult
+
 import credmark.cmf.model
-from credmark.cmf.model.errors import ModelEngineError
 from credmark.cmf.engine.web3.batch import Payload, Web3Batch
+from credmark.cmf.engine.web3.helper import MulticallResult
+from credmark.cmf.model.errors import ModelEngineError
 
 
 class Web3BatchRpc(Web3Batch):
+    def batch_size(self) -> int:
+        return 10
+
     def _process_payloads(self, payloads: list[Payload]) -> list[MulticallResult]:
         if not payloads:
             return []
@@ -40,12 +43,11 @@ class Web3BatchRpc(Web3Batch):
             )
 
         provider_url = context._web3_registry.provider_url_for_chain_id(  # pylint: disable=protected-access
-            context.chain_id)
+            context.chain_id
+        )
         response = get_response_from_post_request(URI(provider_url), json=queries)
         if not response.ok:
-            raise ModelEngineError(
-                f"Error connecting to {provider_url}: {response.text}"
-            )
+            raise ModelEngineError(f"Error connecting to {provider_url}: {response.text}")
 
         results = response.json()
 
@@ -54,9 +56,7 @@ class Web3BatchRpc(Web3Batch):
 
         return_values: list[MulticallResult] = []
         errors = []
-        for payload, result in zip(
-            payloads, sorted(results, key=lambda x: x["id"])
-        ):
+        for payload, result in zip(payloads, sorted(results, key=lambda x: x["id"])):
             if "error" in result:
                 fn_name = payload.get("fn_name", HexBytes(payload["data"] or "").hex())
                 errors.append(f'`{fn_name}`: {result["error"]}')
